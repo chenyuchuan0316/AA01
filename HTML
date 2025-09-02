@@ -50,7 +50,7 @@
         </select>
       </div>
       <div>
-        <label>個案管理師（自動帶入，可改選）</label>
+        <label>個案管理師</label>
         <select id="caseManagerName"></select>
       </div>
     </div>
@@ -304,7 +304,7 @@
           <div>
             <label>起身/移位</label>
             <select id="s1_transfer">
-              <option>獨立</option><option selected>需要輕扶</option><option>中度協助</option><option>重度協助</option><option>完全依賴</option>
+              <option selected>獨立</option><option>需要輕扶</option><option>中度協助</option><option>重度協助</option><option>完全依賴</option>
             </select>
           </div>
           <div>
@@ -588,35 +588,24 @@
         <div class="grid2">
           <div>
             <label>主照者關係</label>
-            <select id="sp_primaryRel">
-              <option value="">—不選—</option>
-              <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
-              <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
-              <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
-              <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
-              <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
-              <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
-              <optgroup label="自訂"><option>自訂角色</option></optgroup>
-            </select>
+            <div id="sp_primaryRel_text" class="badge">—</div>
           </div>
           <div>
             <label>主照者姓名</label>
-            <input id="sp_primaryName" type="text" placeholder="請填寫">
+            <div id="sp_primaryName_text" class="badge">—</div>
           </div>
           <div>
             <label>同住狀態</label>
             <select id="sp_cohabit"><option value="">—不選—</option><option>同住</option><option>不同住</option></select>
           </div>
-          <div class="inline" style="align-items:flex-end;">
-            <button class="small" onclick="copyFromH1Primary()">← 由三、偕同訪視者帶入</button>
-          </div>
         </div>
+
 
         <div class="hr"></div>
 
         <div class="grid2">
           <div>
-            <label>主要聯繫人/決策者（關係）</label>
+            <label>主要聯繫人/決策者</label>
             <select id="sp_deciderRel">
               <option value="">—不選—</option>
               <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
@@ -655,26 +644,50 @@
           <div>
             <label class="inline"><input type="checkbox" id="sp_inf_pt" onchange="toggleInfInput('pt')"> 據點</label>
             <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+            <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;">
+            <option value="">—請選擇頻率—</option>
+            <option>每週</option>
+            <option>每月</option>
+            <option>不定期</option>
+            <option>未知</option>
+          </select>
+
           </div>
           <div>
             <label class="inline"><input type="checkbox" id="sp_inf_nb" onchange="toggleInfInput('nb')"> 鄰里</label>
             <input id="sp_inf_nb_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+            <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;">
+            <option value="">—請選擇頻率—</option>
+            <option>每週</option>
+            <option>每月</option>
+            <option>不定期</option>
+            <option>未知</option>
+          </select>
+
           </div>
           <div>
             <label class="inline"><input type="checkbox" id="sp_inf_rg" onchange="toggleInfInput('rg')"> 宗教/社團</label>
             <input id="sp_inf_rg_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+            <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;">
+            <option value="">—請選擇頻率—</option>
+            <option>每週</option>
+            <option>每月</option>
+            <option>不定期</option>
+            <option>未知</option>
+          </select>
+
           </div>
           <div>
             <label class="inline"><input type="checkbox" id="sp_inf_fw" onchange="toggleInfInput('fw')"> 財團/社會福利</label>
             <input id="sp_inf_fw_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-          </div>
-        </div>
+            <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;">
+            <option value="">—請選擇頻率—</option>
+            <option>每週</option>
+            <option>每月</option>
+            <option>不定期</option>
+            <option>未知</option>
+          </select>
 
-        <div class="hr"></div>
-        <div class="grid2">
-          <div>
-            <label>探視/支持頻率</label>
-            <select id="sp_freq"><option value="">—不選—</option><option>每週</option><option>每月</option><option>不定期</option><option>未知</option></select>
           </div>
         </div>
 
@@ -987,30 +1000,32 @@
     }
 
     /* === 疼痛：擴充為同時控制 部位/側別/皮膚病灶 的出現 === */
+    /* === 疼痛：擴充為同時控制 部位/側別 的出現（已取消對皮膚病灶的控制） === */
     function togglePainCombined(){
       const v  = document.getElementById('s1_pain').value;
       const on = (v === '有');
 
-      // 既有：疼痛強度顯示
+      // 疼痛強度顯示（維持原邏輯）
       document.getElementById('s1_pain_score_wrap').style.display = on ? '' : 'none';
 
-      // 新增：疼痛=有 才顯示 部位大分類、細部分位、側別(交由 updateLaterality 再細判)、皮膚病灶
+      // 若切到「有」，且目前強度尚未填寫，自動帶入 5（維持原邏輯）
+      if(on){
+        const ps = document.getElementById('s1_pain_score');
+        if(ps && !ps.value) ps.value = 5;
+      }
+
+      // 疼痛＝有 才顯示：部位大分類、細部分位、側別（側別是否顯示交由 updateLaterality 判斷）
       setRowVisibleByControlId('s1_body_region', on);
       setRowVisibleByControlId('s1_subregion',    on);
-      setRowVisibleByControlId('s1_laterality',   on);  // 先開，再由 updateLaterality() 決定是否需要顯示
-      setRowVisibleByControlId('s1_lesion_has',   on);
+      setRowVisibleByControlId('s1_laterality',   on);
 
-      if(on){
-        // 依現有邏輯動態處理：子部位→側別、皮膚病灶細節
-        updateLaterality();       // 決定側別是否需要顯示（見下方改寫）
-        toggleLesionCombined();   // 病灶=有 才顯示細節（沿用原函式）
-      }else{
-        // 疼痛≠有：病灶整段不顯示（含細節）
-        document.getElementById('s1_lesion_layer_wrap').style.display = 'none';
-        document.getElementById('s1_lesion_size_wrap').style.display  = 'none';
-        document.getElementById('s1_lesion_more').style.display       = 'none';
-      }
+      // 重要：取消對「皮膚病灶」主選單與其細節的任何顯示控制
+      // （皮膚病灶細節顯示改由 toggleLesionCombined() 依 s1_lesion_has 自主決定）
+
+      // 依目前規則重算一次側別顯示（其內部仍會判斷 pain 是否為「有」）
+      updateLaterality();
     }
+
 
     // 細部分位與側別
     function updateSubregion(){
@@ -1445,9 +1460,34 @@
       RISKS.forEach((it,i)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${it[0]}"> ${i+1}. ${it[0]} <span class="muted">（${it[1]}）</span>`; rHost.appendChild(lab);});
     }
     function toggleInfInput(key){
-      const on=document.getElementById('sp_inf_'+key).checked;
-      document.getElementById('sp_inf_'+key+'_name').style.display= on?'':'none';
+      const on  = document.getElementById('sp_inf_'+key).checked;
+      const name= document.getElementById('sp_inf_'+key+'_name');
+      const freq= document.getElementById('sp_inf_'+key+'_freq');
+      if(name){ 
+        name.style.display = on ? '' : 'none'; 
+        if(!on) name.value='';
+      }
+      // 頻率僅在「有勾選且名稱非空」時顯示
+      if(freq){
+        const showFreq = on && name && name.value.trim();
+        freq.style.display = showFreq ? '' : 'none';
+        if(!showFreq) freq.value='';
+      }
     }
+    function bindInfNameToFreq(key){
+      const name = document.getElementById('sp_inf_'+key+'_name');
+      const freq = document.getElementById('sp_inf_'+key+'_freq');
+      if(!name || !freq) return;
+      name.addEventListener('input', ()=>{
+        if(name.value.trim()){
+          freq.style.display='';
+        }else{
+          freq.style.display='none';
+          freq.value='';
+        }
+      });
+    }
+
     function copyFromH1Primary(){
       const rel=document.getElementById('primaryRel').value;
       const name=document.getElementById('primaryName').value;
@@ -1484,30 +1524,43 @@
       return out;
     }
     function buildSection4(){
-      const pr = (document.getElementById('sp_primaryRel').value || '').trim();
-      const pn = (document.getElementById('sp_primaryName').value || '').trim();
+      // ① 主照者（改讀三、偕同訪視者）
+      const pr = (document.getElementById('primaryRel').value || '').trim();
+      const pn = (document.getElementById('primaryName').value || '').trim();
       const ch = (document.getElementById('sp_cohabit').value || '').trim();
+
+      // ② 主要聯繫人/決策者（維持原機制）
       let dr = (document.getElementById('sp_deciderRel').value || '').trim();
       if(dr==='自訂角色') dr = '（自訂）';
       const dn = (document.getElementById('sp_deciderName').value || '').trim();
+
+      // ③ 共同照顧者（原機制）
       const cc = collectCoCare();
+
+      // ④ 正式資源（原機制）
       const formal=[...document.querySelectorAll('#sp_formal input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
-      const inf = [];
-      if(document.getElementById('sp_inf_pt').checked){
-        const v=(document.getElementById('sp_inf_pt_name').value||'').trim(); if(v) inf.push(`據點（單位：${v}）`); else inf.push('據點');
+
+      // ⑤ 非正式資源（改為每類各自名稱＋頻率）
+      function infText(key, label){
+        const chk = document.getElementById('sp_inf_'+key);
+        if(!chk || !chk.checked) return '';
+        const name = (document.getElementById('sp_inf_'+key+'_name')?.value || '').trim();
+        const freq = (document.getElementById('sp_inf_'+key+'_freq')?.value || '').trim();
+        if(name && freq) return `${label}（單位：${name}；頻率：${freq}）`;
+        if(name)         return `${label}（單位：${name}）`;
+        return label;
       }
-      if(document.getElementById('sp_inf_nb').checked){
-        const v=(document.getElementById('sp_inf_nb_name').value||'').trim(); if(v) inf.push(`鄰里（單位：${v}）`); else inf.push('鄰里');
-      }
-      if(document.getElementById('sp_inf_rg').checked){
-        const v=(document.getElementById('sp_inf_rg_name').value||'').trim(); if(v) inf.push(`宗教/社團（單位：${v}）`); else inf.push('宗教/社團');
-      }
-      if(document.getElementById('sp_inf_fw').checked){
-        const v=(document.getElementById('sp_inf_fw_name').value||'').trim(); if(v) inf.push(`財團/社會福利（單位：${v}）`); else inf.push('財團/社會福利');
-      }
-      const freq=(document.getElementById('sp_freq').value || '').trim();
+      const infParts = [
+        infText('pt','據點'),
+        infText('nb','鄰里'),
+        infText('rg','宗教/社團'),
+        infText('fw','財團/社會福利')
+      ].filter(Boolean);
+
+      // ⑥ 風險（原機制）
       const risks=[...document.querySelectorAll('#sp_risks input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
 
+      // ⑦ 組字（維持原用語順序；僅變更主照者來源與非正式資源格式）
       let s='';
       if(pr && pn) s += `主照者為${pr}(${pn})${ch? '（'+ch+'）':''}`;
       if(dr && dn) s += (s? '，':'') + `主要聯繫人/決策者為${dr}(${dn})`;
@@ -1517,12 +1570,20 @@
       }
       s += (s? '；':'') + '社區整合型服務中心為福安';
       if(formal.length) s += `，目前可運用資源：${formal.join('、')}`;
-      if(inf.length) s += `；非正式資源：${inf.join('、')}`;
-      if(freq) s += `；探視/支持頻率：${freq}`;
+      if(infParts.length) s += `；非正式資源：${infParts.join('、')}`;
       if(risks.length) s += `；高風險評估：${risks.join('、')}`;
       if(s) s+='。';
       document.getElementById('section4_out').value = s;
     }
+    function syncSocialPrimary(){
+      const rel  = document.getElementById('primaryRel')?.value || '';
+      const name = (document.getElementById('primaryName')?.value || '').trim();
+      const relBox  = document.getElementById('sp_primaryRel_text');
+      const nameBox = document.getElementById('sp_primaryName_text');
+      if(relBox)  relBox.textContent  = rel || '—';
+      if(nameBox) nameBox.textContent = name || '—';
+    }
+
 
     /* ===== (六) 複評（結構→單行） ===== */
     function buildSection6(){
@@ -1687,6 +1748,17 @@
       renderS3(); toggleOtherType(); buildS3();
       renderFormal();
       renderProblems(); limitProblems();
+      // 非正式資源：名稱→頻率 顯示/隱藏
+      bindInfNameToFreq('pt');
+      bindInfNameToFreq('nb');
+      bindInfNameToFreq('rg');
+      bindInfNameToFreq('fw');
+
+      // 主照者關係/姓名：自動連動到(四)唯讀展示
+      syncSocialPrimary();
+      document.getElementById('primaryRel')?.addEventListener('change', syncSocialPrimary);
+      document.getElementById('primaryName')?.addEventListener('input',  syncSocialPrimary);
+
     });
   </script>
 </body>
