@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>AA01計畫助手</title>
+  <style>
+    body { font-family: Arial, "Noto Sans TC", sans-serif; margin: 12px; }
+    .group { border:1px solid #e5e5e5; border-radius:8px; padding:12px; margin-bottom:12px; }
+    .row { display:flex; gap:8px; margin-bottom:8px; }
+    .row > div { flex:1; }
+    label { display:block; font-size:12px; margin-bottom:4px; color:#333; }
+    input[type="text"], input[type="number"], select, textarea {
+      width:100%; box-sizing:border-box; padding:8px; font-size:13px;
+      border:1px solid #ccc; border-radius:6px;
+    }
+    textarea { resize: vertical; min-height: 70px; }
+    .btnbar { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+    button { padding:6px 10px; border:1px solid #ccc; background:#fff; border-radius:6px; cursor:pointer; }
+    button.primary { background:#0b57d0; color:#fff; border-color:#0b57d0; }
+    .small { font-size:12px; padding:4px 6px; }
+    .datebox { display:flex; align-items:center; gap:6px; }
+    .dateval { padding:6px 8px; border:1px solid #ccc; border-radius:6px; min-width:120px; text-align:center; background:#f9f9f9; }
+    .hint { font-size:12px; color:#666; }
+    .danger { color:#b00020; }
+    .hr { border-top:1px dashed #ddd; margin:10px 0; }
+    .grid2 { display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; }
+    .grid3 { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
+    .checkcol { columns:2; column-gap:16px; }
+    .checkcol label { display:block; break-inside:avoid; margin-bottom:6px; }
+    .count { font-size:12px; color:#444; }
+    .inline { display:flex; align-items:center; gap:6px; }
+    .muted { color:#999; font-size:12px; }
+    .subtle { color:#555; font-size:12px; }
+    .badge { display:inline-block; font-size:11px; background:#f1f3f4; border:1px solid #e0e0e0; padding:1px 6px; border-radius:10px; }
+    .titlebar { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .preview { padding:8px; background:#fafafa; border:1px dashed #e0e0e0; border-radius:6px; white-space:pre-wrap; }
+    /* 灰色 placeholder（disabled option 額外補強） */
+    .placeholder-option { color:#999; }
+  </style>
+</head>
+<body>
+
+  <!-- 基本資訊 -->
+  <div class="group">
+    <div class="row">
+      <div>
+        <label>單位代碼</label>
+        <select id="unitCode" onchange="loadManagers()">
+          <option>FNA1</option><option>FNA2</option><option>FNA3</option>
+        </select>
+      </div>
+      <div>
+        <label>個案管理師（自動帶入，可改選）</label>
+        <select id="caseManagerName"></select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>個案姓名</label>
+        <input id="caseName" type="text" placeholder="請輸入">
+      </div>
+      <div>
+        <label>照專姓名</label>
+        <input id="consultName" type="text" placeholder="請輸入">
+      </div>
+    </div>
+  </div>
+
+  <!-- 一、電聯日期 -->
+  <div class="group">
+    <label>一、電聯日期</label>
+    <div class="datebox">
+      <div id="callDate" class="dateval"></div>
+      <div class="btnbar">
+        <button class="small" onclick="shiftDate('callDate', -5)">-5天</button>
+        <button class="small" onclick="shiftDate('callDate',  5)">+5天</button>
+        <button class="small" onclick="shiftDate('callDate', -1)">-1天</button>
+        <button class="small" onclick="shiftDate('callDate',  1)">+1天</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 二、家訪日期 + 出院 -->
+  <div class="group">
+    <label>二、家訪日期</label>
+    <div class="datebox">
+      <div id="visitDate" class="dateval"></div>
+      <div class="btnbar">
+        <button class="small" onclick="shiftDate('visitDate', -5)">-5天</button>
+        <button class="small" onclick="shiftDate('visitDate',  5)">+5天</button>
+        <button class="small" onclick="shiftDate('visitDate', -1)">-1天</button>
+        <button class="small" onclick="shiftDate('visitDate',  1)">+1天</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <div>
+        <label><input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出院準備（勾選後顯示出院日期）</label>
+      </div>
+    </div>
+    <div id="dischargeBox" style="display:none;">
+      <div class="datebox">
+        <div id="dischargeDate" class="dateval"></div>
+        <div class="btnbar">
+          <button class="small" onclick="shiftDate('dischargeDate', -5)">-5天</button>
+          <button class="small" onclick="shiftDate('dischargeDate',  5)">+5天</button>
+          <button class="small" onclick="shiftDate('dischargeDate', -1)">-1天</button>
+          <button class="small" onclick="shiftDate('dischargeDate',  1)">+1天</button>  
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 三、偕同訪視者 -->
+  <div class="group">
+    <label><strong>三、偕同訪視者</strong></label>
+    <div class="row">
+      <div>
+        <label>主要照顧者關係 <span class="danger">*</span></label>
+        <select id="primaryRel" required onchange="enforcePrimaryExclusionOnExtras()">
+          <option value="" class="placeholder-option" disabled selected>請選擇</option>
+          <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
+          <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
+          <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
+          <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
+          <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
+          <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
+          <optgroup label="自訂"><option>自訂角色</option></optgroup>
+        </select>
+      </div>
+      <div>
+        <label>主要照顧者姓名</label>
+        <input id="primaryName" type="text" placeholder="請輸入">
+      </div>
+    </div>
+
+    <!-- 預設輸出主照者：移除勾選框，改用 hidden 固定為 true -->
+    <input type="hidden" id="includePrimary" value="true">
+
+    <div class="hr"></div>
+    <label>其他參與者</label>
+    <div id="extras"></div>
+    <div class="btnbar">
+      <button class="small" onclick="addExtraRow()">新增參與者</button>
+    </div>
+    <!-- （已移除原「輸出格式：個案(姓名)…」說明） -->
+  </div>
+
+  <!-- 四、個案概況 -->
+  <div class="group">
+    <div class="titlebar">
+      <label>四、個案概況</label>
+      <label class="inline"><input type="checkbox" id="doBatchPolish"> 產出前做「一致性潤稿」</label>
+    </div>
+
+    <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
+    <div class="row">
+      <div>
+        <div class="titlebar">
+          <label>(一) 身心概況</label>
+          <div class="btnbar">
+            <button class="small" onclick="buildSection1()">重組/預覽</button>
+            <button class="small" onclick="buildSection1();polishOne('section1_out')">AI潤稿</button>
+          </div>
+        </div>
+
+        <!-- 基本＋意識/認知 -->
+        <div class="grid3">
+          <div><label>年齡</label><input id="s1_age" type="number" min="1" max="120" value="70"></div>
+          <div>
+            <label>性別</label>
+            <select id="s1_gender">
+              <option>男</option><option>女</option>
+            </select>
+          </div>
+          <div>
+            <label>認知溝通</label>
+            <select id="s1_cognition">
+              <option>清楚可應答</option>
+              <option>需重複或放慢</option>
+              <option>表達或理解困難</option>
+              <option>無法溝通</option>
+              <option>無法評估</option>
+            </select>
+          </div>
+          <div>
+            <label>意識狀態</label>
+            <select id="s1_awareness">
+              <option>清楚</option><option>健忘</option><option>遲鈍</option>
+              <option>混亂</option><option>模糊</option><option>嗜睡</option><option>昏迷</option>
+            </select>
+          </div>
+          <div>
+            <label>視力狀態</label>
+            <select id="s1_vision" onchange="toggleVisionNotes()">
+              <option>視力清晰</option>
+              <option>辨識時需額外光源或靠近物體</option>
+              <option>即使配戴眼鏡，仍難以辨識</option>
+              <option>僅能分辨明暗，無法辨識人臉或物體輪廓</option>
+              <option>完全失去視覺功能，無法感知光線</option>
+            </select>
+          </div>
+          <div>
+            <label>視力補充</label>
+            <div class="checkcol" id="s1_vision_note_box"></div>
+            <input id="s1_vision_other" type="text" placeholder="其他說明" style="display:none; margin-top:6px;">
+          </div>
+
+          <!-- 聽力（新版：兩層） -->
+          <div>
+            <label>聽力程度</label>
+            <select id="s1_hearing_level" onchange="renderHearingDetails()">
+              <option>無明顯異常</option>
+              <option>輕度受損</option>
+              <option>中度受損</option>
+              <option>重度受損</option>
+              <option>極重度受損</option>
+              <option>完全失聰</option>
+            </select>
+          </div>
+          <div id="s1_hearing_detail_wrap" style="display:none;">
+            <label>狀態說明（可複選）</label>
+            <div class="checkcol" id="s1_hearing_detail_box"></div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- 疼痛 × 皮膚病灶（合併與連動） -->
+        <div class="grid3">
+          <div>
+            <label>疼痛</label>
+            <select id="s1_pain" onchange="togglePainCombined()">
+              <option selected>無</option><option>有</option><option>未知</option>
+            </select>
+          </div>
+          <div id="s1_pain_score_wrap" style="display:none;">
+            <label>疼痛強度（1-10）</label>
+            <input id="s1_pain_score" type="number" min="1" max="10" step="1">
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div>
+            <label>部位大分類</label>
+            <select id="s1_body_region" onchange="updateSubregion(); updateLaterality();">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option>頭頸部</option><option>上肢</option><option>軀幹</option><option>下肢</option><option>全身性</option>
+            </select>
+          </div>
+          <div>
+            <label>細部分位</label>
+            <select id="s1_subregion" onchange="updateLaterality()">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+            </select>
+            <input id="s1_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:6px;">
+          </div>
+          <div>
+            <label>側別</label>
+            <select id="s1_laterality">
+              <option>無側別</option><option>左側</option><option>右側</option><option>雙側</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div>
+            <label>皮膚病灶</label>
+            <select id="s1_lesion_has" onchange="toggleLesionCombined()">
+              <option selected>無</option><option>有</option><option>未知</option>
+            </select>
+          </div>
+          <div id="s1_lesion_layer_wrap" style="display:none;">
+            <label>病灶部位</label>
+            <select id="s1_lesion_layer" onchange="toggleLesionLayerOther()">
+              <option>無</option><option>表皮</option><option>皮下</option><option>關節附近</option><option>其他</option>
+            </select>
+            <input id="s1_lesion_layer_other" type="text" placeholder="請填寫" style="display:none; margin-top:6px;">
+          </div>
+          <div id="s1_lesion_size_wrap" style="display:none;">
+            <label>病灶大小（cm）</label>
+            <input id="s1_lesion_size" type="number" min="0" step="0.1" placeholder="無">
+          </div>
+        </div>
+
+        <div id="s1_lesion_more" style="display:none;">
+          <div class="row">
+            <div>
+              <label>病灶症狀</label>
+              <div class="checkcol" id="s1_lesion_sx_box"></div>
+            </div>
+            <div>
+              <label>醫療評估</label>
+              <select id="s1_lesion_eval">
+                <option>未評估</option><option>醫師評估無大礙</option><option>已安排追蹤</option><option>持續治療中</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- 移位/行走/樓梯 -->
+        <div class="grid3">
+          <div>
+            <label>起身/移位</label>
+            <select id="s1_transfer">
+              <option>獨立</option><option selected>需要輕扶</option><option>中度協助</option><option>重度協助</option><option>完全依賴</option>
+            </select>
+          </div>
+          <div>
+            <label>室內行走</label>
+            <select id="s1_walk_indoor">
+              <option selected>無輔具緩慢</option><option>單拐</option><option>助行器</option><option>輪椅</option><option>無法</option>
+            </select>
+          </div>
+          <div>
+            <label>外出行走</label>
+            <select id="s1_walk_outdoor">
+              <option>獨立</option><option selected>單拐</option><option>助行器</option><option>輪椅</option><option>無法</option>
+            </select>
+          </div>
+          <div>
+            <label>上下樓</label>
+            <select id="s1_stairs">
+              <option>可獨立</option><option selected>需扶手</option><option>需人協助</option><option>無法</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ADL + 排泄 -->
+        <div class="grid3" style="margin-top:8px;">
+          <div>
+            <label>進食</label>
+            <select id="s1_adl_eating">
+              <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
+            </select>
+          </div>
+          <div>
+            <label>刷牙/洗臉</label>
+            <select id="s1_adl_groom">
+              <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
+            </select>
+          </div>
+          <div>
+            <label>洗澡</label>
+            <select id="s1_adl_bathing">
+              <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
+            </select>
+          </div>
+          <div>
+            <label>穿脫衣</label>
+            <select id="s1_adl_dressing">
+              <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
+            </select>
+          </div>
+          <div>
+            <label>白天排尿</label>
+            <select id="s1_urine_day">
+              <option selected>正常（4–6次）</option><option>偏少（少於3次）</option><option>偏多（7–9次）</option><option>失禁</option><option>其他</option>
+
+            </select>
+          </div>
+          <div>
+            <label>夜間排尿</label>
+            <select id="s1_urine_night">
+              <option selected>無夜間排尿</option><option>輕度（1次）</option><option>中度（2–3次）</option><option>失禁</option><option>其他</option>
+
+            </select>
+          </div>
+          <div>
+            <label>如廁後清潔</label>
+            <select id="s1_post_toilet">
+              <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- 生活管理/社會參與 -->
+        <div class="grid3">
+          <div>
+            <label>電話使用</label>
+            <select id="s1_phone">
+              <option>會接聽及撥號</option><option selected>只會接聽</option><option>不會使用</option>
+            </select>
+          </div>
+          <div>
+            <label>外出購物</label>
+            <select id="s1_shopping">
+              <option>可獨立</option><option selected>需陪同</option><option>不外出</option>
+            </select>
+          </div>
+          <div>
+            <label>備餐</label>
+            <select id="s1_meal_prep">
+              <option>獨立</option><option selected>部分協助</option><option>完全由家屬</option>
+            </select>
+          </div>
+          <div>
+            <label>餐具清洗</label>
+            <select id="s1_dishwash">
+              <option>乾淨</option><option selected>尚可或不一定乾淨</option>
+            </select>
+          </div>
+          <div>
+            <label>家務整理</label>
+            <select id="s1_housework">
+              <option>獨立</option><option selected>部分協助</option><option>完全由家屬</option>
+            </select>
+          </div>
+          <div>
+            <label>財務管理</label>
+            <select id="s1_finance">
+              <option selected>獨立</option><option>部分協助</option><option>他人代辦</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid3" style="margin-top:8px;">
+          <div>
+            <label>睡眠品質</label>
+            <select id="s1_sleep">
+              <option>良好</option><option>尚可</option><option selected>不佳（疼痛/頻尿）</option>
+            </select>
+          </div>
+          <div>
+            <label>白天活動（選填）</label>
+            <input id="s1_daytime" type="text" placeholder="例：坐後門外看電視，累了打盹">
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- 疾病/用藥/就醫 -->
+        <div class="row">
+          <div>
+            <label>慢性病史</label>
+            <div class="checkcol" id="s1_dhx_box"></div>
+            <input id="s1_dhx_other" type="text" placeholder="其他慢性病" style="display:none; margin-top:6px;">
+          </div>
+        </div>
+        <div class="grid3">
+          <div><label>手術史（選填）</label><input id="s1_surgery" type="text" placeholder="例：10多年前髖關節手術"></div>
+          <div><label>藥物過敏（選填）</label><input id="s1_allergy" type="text" placeholder="無則留空"></div>
+          <div><label>固定就醫單位</label><input id="s1_follow_clinic" type="text" placeholder="例：嘉誠診所"></div>
+          <div>
+            <label>處方型態</label>
+            <select id="s1_rx_type"><option>慢箋</option><option>一般門診</option></select>
+          </div>
+          <div>
+            <label>用藥管理</label>
+            <select id="s1_med_manage">
+              <option>可自行規則服藥</option><option>需提醒</option><option>他人給藥</option>
+            </select>
+          </div>
+          <div>
+            <label>就醫交通</label>
+            <select id="s1_visit_transport" onchange="toggleTransportOther()">
+              <option>計程車</option><option>家屬接送</option><option>交通接送服務</option><option>其他</option>
+            </select>
+            <input id="s1_visit_transport_other" type="text" placeholder="請填寫其他交通方式" style="display:none; margin-top:6px;">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>現用藥別</label>
+            <div class="checkcol" id="s1_med_classes_box"></div>
+            <input id="s1_med_classes_other" type="text" placeholder="其他用藥" style="display:none; margin-top:6px;">
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- 身障（有才顯示） -->
+        <div class="grid3">
+          <div>
+            <label>身心障礙證明</label>
+            <select id="s1_disab_has" onchange="toggleDisab()">
+              <option>無</option><option>有</option><option>未知</option>
+            </select>
+          </div>
+          <div id="s1_disab_grade_wrap" style="display:none;">
+            <label>身障等級</label>
+            <select id="s1_disab_grade">
+              <option>輕度</option><option>中度</option><option>重度</option><option>極重度</option><option>未註記</option>
+            </select>
+          </div>
+          <div id="s1_disab_type_wrap" style="display:none;">
+            <label>身障類別</label>
+            <div class="checkcol" id="s1_disab_type_box"></div>
+            <input id="s1_disab_note" type="text" placeholder="補充說明（選填）" style="margin-top:6px;">
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- 補充內容 + 預覽（自動產文） -->
+        <label>補充內容（選填）</label>
+        <textarea id="s1_notes" placeholder="其他未涵蓋重點（限簡要）；將附加於段落末端。"></textarea>
+        <textarea id="section1_out" style="display:none;"></textarea>
+        <div class="hint" style="margin-top:6px;">預覽（重組後）：</div>
+        <div id="section1_preview" class="preview"></div>
+      </div>
+    </div>
+
+    <!-- (二) 經濟收入（原功能保留） -->
+    <div class="row">
+      <div>
+        <div class="titlebar">
+          <label>(二) 經濟收入</label>
+          <button class="small" onclick="polishOne('section2_out')">AI潤稿</button>
+        </div>
+        <div class="grid2">
+          <div>
+            <label>主要經濟來源</label>
+            <div class="checkcol" id="s2_sources"></div>
+          </div>
+          <div>
+            <label>戶籍/福利身分</label>
+            <select id="s2_id">
+              <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
+            </select>
+          </div>
+          <div>
+            <label>身障等級</label>
+            <select id="s2_dis_level" onchange="toggleDisCategory()">
+              <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
+            </select>
+          </div>
+          <div id="disCatBox" style="display:none;">
+            <label>身障類別（等級≠無才需選）</label>
+            <select id="s2_dis_cat"></select>
+          </div>
+        </div>
+        <textarea id="section2_out" style="display:none;"></textarea>
+      </div>
+    </div>
+
+    <!-- (三) 居住環境（原功能保留） -->
+    <div class="row">
+      <div>
+        <div class="titlebar">
+          <label>(三) 居住環境</label>
+          <button class="small" onclick="polishOne('section3_out')">AI潤稿</button>
+        </div>
+        <div class="grid3">
+          <div>
+            <label>居住型態</label>
+            <select id="s3_type" onchange="toggleOtherType()">
+              <option>透天</option><option>鐵皮屋</option><option>公寓</option><option>大樓</option><option>套房</option><option>其他</option>
+            </select>
+            <input id="s3_type_other" type="text" placeholder="請輸入其他型態" style="display:none; margin-top:6px;">
+          </div>
+          <div>
+            <label>居住權屬</label>
+            <select id="s3_own"><option>自有</option><option>租賃</option><option>借住</option></select>
+          </div>
+          <div>
+            <label>整潔度</label>
+            <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
+          </div>
+          <div>
+            <label>異味</label>
+            <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
+          </div>
+          <div>
+            <label>無障礙設施</label>
+            <div class="checkcol" id="s3_fac"></div>
+          </div>
+          <div>
+            <label>輔具</label>
+            <div class="checkcol" id="s3_aids"></div>
+          </div>
+        </div>
+        <textarea id="section3_out" style="display:none;"></textarea>
+      </div>
+    </div>
+
+    <!-- (四) 社會支持（原功能保留） -->
+    <div class="row">
+      <div>
+        <div class="titlebar">
+          <label>(四) 社會支持</label>
+          <button class="small" onclick="polishOne('section4_out')">AI潤稿</button>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>主照者關係</label>
+            <select id="sp_primaryRel">
+              <option value="">—不選—</option>
+              <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
+              <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
+              <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
+              <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
+              <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
+              <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
+              <optgroup label="自訂"><option>自訂角色</option></optgroup>
+            </select>
+          </div>
+          <div>
+            <label>主照者姓名</label>
+            <input id="sp_primaryName" type="text" placeholder="請填寫">
+          </div>
+          <div>
+            <label>同住狀態</label>
+            <select id="sp_cohabit"><option value="">—不選—</option><option>同住</option><option>不同住</option></select>
+          </div>
+          <div class="inline" style="align-items:flex-end;">
+            <button class="small" onclick="copyFromH1Primary()">← 由三、偕同訪視者帶入</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="grid2">
+          <div>
+            <label>主要聯繫人/決策者（關係）</label>
+            <select id="sp_deciderRel">
+              <option value="">—不選—</option>
+              <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
+              <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
+              <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
+              <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
+              <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
+              <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
+              <optgroup label="自訂"><option>自訂角色</option></optgroup>
+            </select>
+          </div>
+          <div>
+            <label>主要聯繫人/決策者（姓名）</label>
+            <input id="sp_deciderName" type="text" placeholder="請選擇">
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <label>共同照顧者（可多筆）</label>
+        <div id="coCare"></div>
+        <div class="btnbar"><button class="small" onclick="addCoCare()">＋新增共同照顧者</button></div>
+
+        <div class="hr"></div>
+
+        <div>
+          <label>正式資源（多選）</label>
+          <div class="muted">固定：<span class="badge">社區整合型服務中心為福安</span></div>
+          <div class="checkcol" id="sp_formal"></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div>
+          <label>非正式資源（多選，每類需填「單位名稱」）</label>
+          <div>
+            <label class="inline"><input type="checkbox" id="sp_inf_pt" onchange="toggleInfInput('pt')"> 據點</label>
+            <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+          </div>
+          <div>
+            <label class="inline"><input type="checkbox" id="sp_inf_nb" onchange="toggleInfInput('nb')"> 鄰里</label>
+            <input id="sp_inf_nb_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+          </div>
+          <div>
+            <label class="inline"><input type="checkbox" id="sp_inf_rg" onchange="toggleInfInput('rg')"> 宗教/社團</label>
+            <input id="sp_inf_rg_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+          </div>
+          <div>
+            <label class="inline"><input type="checkbox" id="sp_inf_fw" onchange="toggleInfInput('fw')"> 財團/社會福利</label>
+            <input id="sp_inf_fw_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="grid2">
+          <div>
+            <label>探視/支持頻率</label>
+            <select id="sp_freq"><option value="">—不選—</option><option>每週</option><option>每月</option><option>不定期</option><option>未知</option></select>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div>
+          <label>高風險評估（多選）</label>
+          <div class="checkcol" id="sp_risks"></div>
+          <div class="subtle">勾選將只輸出「標題短語」，說明文字僅作參考。</div>
+        </div>
+
+        <textarea id="section4_out" style="display:none;"></textarea>
+      </div>
+    </div>
+
+    <!-- (五) 其他 -->
+    <div class="row">
+      <div>
+        <div class="titlebar">
+          <label>(五) 其他</label>
+          <button class="small" onclick="polishOne('section5')">AI潤稿</button>
+        </div>
+        <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
+      </div>
+    </div>
+
+    <!-- (六) 複評評值 -->
+    <div class="row">
+      <div>
+        <div class="titlebar">
+          <label>(六) 複評評值</label>
+          <button class="small" onclick="polishOne('section6_struct')">AI潤稿</button>
+        </div>
+        <div class="grid2">
+          <div><label>介入前</label><textarea id="s6_before"></textarea></div>
+          <div><label>介入後</label><textarea id="s6_after"></textarea></div>
+        </div>
+        <textarea id="section6_struct" style="display:none;"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 五、照顧目標（原功能保留） -->
+  <div class="group">
+    <label>五、照顧目標</label>
+
+    <div class="row"><div>
+      <label>(一) 照顧問題（最多選 5 項）</label>
+      <div class="checkcol" id="problemList"></div>
+      <div class="count" id="problemCount">已選 0 / 5</div>
+      <label style="margin-top:8px;">補充說明（可選）</label>
+      <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
+    </div></div>
+
+    <div class="row"><div>
+      <label>(二) 短期目標(0-3個月)</label>
+      <div class="grid2">
+        <div><label>照顧服務：</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
+        <div><label>專業服務：</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
+        <div><label>交通車服務：</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
+        <div><label>喘息服務：</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
+      </div>
+    </div></div>
+
+    <div class="row"><div>
+      <label>(三) 中期目標(3-4個月)</label>
+      <div class="grid2">
+        <div><label>照顧服務：</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
+        <div><label>專業服務：</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
+        <div><label>交通車服務：</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
+        <div><label>喘息服務：</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
+      </div>
+    </div></div>
+
+    <div class="row"><div>
+      <label>(四) 長期目標(4-6個月)</label>
+      <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
+    </div></div>
+  </div>
+
+  <!-- 六、與照專…（原功能保留） -->
+  <div class="group">
+    <label>六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃</label>
+    <div class="row"><div>
+      <label>1. 目標達成的狀況以及未達成的差距</label>
+      <textarea id="reason1" placeholder="填寫欄位"></textarea>
+    </div></div>
+    <div class="row"><div>
+      <label>2. 資源的變動情形</label>
+      <textarea id="reason2" placeholder="填寫欄位"></textarea>
+    </div></div>
+    <div class="row"><div>
+      <label>3. 未使用的替代方案或是可能的影響</label>
+      <textarea id="reason3" placeholder="填寫欄位"></textarea>
+      <div class="hr"></div>
+      <label>常用快捷（勾選即加入第 3 格）</label>
+      <label><input type="checkbox" id="rq1"> 1..經與案○討論，目前暫無備餐之需求，改為代購服務。</label>
+      <label><input type="checkbox" id="rq2"> 2..經與案○討論，目前因個案身體狀況，暫無專業服務需求，日後待個案狀況好轉後，依當下狀況核定，續追蹤。</label>
+    </div></div>
+  </div>
+
+  <!-- 動作 -->
+  <div class="group">
+    <div class="btnbar">
+      <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
+    </div>
+    <div id="msg" class="hint" style="margin-top:8px;"></div>
+  </div>
+
+  <script>
+    /* ===== 日期工具 ===== */
+    function toYMD(d){const y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),da=('0'+d.getDate()).slice(-2);return `${y}-${m}-${da}`;}
+    function setDateBox(id,d){document.getElementById(id).textContent=toYMD(d);}
+    function getDateBox(id){return document.getElementById(id).textContent;}
+    function shiftDate(id,delta){const cur=getDateBox(id), base=cur?new Date(cur):new Date(); base.setDate(base.getDate()+delta); setDateBox(id,base);}
+    function toggleDischarge(){const on=document.getElementById('isDischarge').checked; document.getElementById('dischargeBox').style.display=on?'':'none'; if(on&&!getDateBox('dischargeDate')) setDateBox('dischargeDate', new Date());}
+
+    /* ===== 個管師名單 ===== */
+    function loadManagers(){
+      const unit=document.getElementById('unitCode').value;
+      google.script.run.withSuccessHandler(list=>{
+        const sel=document.getElementById('caseManagerName'); sel.innerHTML='';
+        (list && list.length? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);});
+      }).getCaseManagersByUnit(unit);
+    }
+
+    /* ===== 三、偕同訪視者（下拉＋多筆） ===== */
+    let extraIdx=0, coCareIdx=0;
+    function roleOptionsHTML(withPlaceholder=true){
+      return `
+        ${withPlaceholder ? '<option value="" class="placeholder-option" disabled selected>請選擇</option>' : ''}
+        <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
+        <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
+        <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
+        <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
+        <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
+        <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
+        <optgroup label="自訂"><option>自訂角色</option></optgroup>`;
+    }
+    function addExtraRow(){
+      const host=document.getElementById('extras');
+      const idx=extraIdx++;
+      const wrap=document.createElement('div');
+      wrap.className='row'; wrap.id=`extra-${idx}`;
+      wrap.innerHTML=`
+        <div>
+          <label>角色</label>
+          <select id="ex-role-${idx}" onchange="toggleCustomRole(${idx}, 'ex')">
+            ${roleOptionsHTML(true)}
+          </select>
+          <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:6px;">
+        </div>
+        <div>
+          <label>姓名</label>
+          <input id="ex-name-${idx}" type="text" placeholder="姓名，例如：李○○">
+        </div>
+        <div style="flex:0; align-self:flex-end;">
+          <button class="small" onclick="document.getElementById('extra-${idx}').remove()">移除</button>
+        </div>`;
+      host.appendChild(wrap);
+      enforcePrimaryExclusionOnSelect(document.getElementById(`ex-role-${idx}`));
+    }
+    function toggleCustomRole(idx, prefix){
+      const sel=document.getElementById(`${prefix}-role-${idx}`), custom=document.getElementById(`${prefix}-custom-${idx}`);
+      const isCustom= sel && sel.value==='自訂角色'; if(custom) custom.style.display= isCustom?'':'none';
+    }
+    function enforcePrimaryExclusionOnSelect(sel){
+      if(!sel) return;
+      const primary = document.getElementById('primaryRel').value;
+      [...sel.options].forEach(opt=>{
+        if(!opt.value) return; // placeholder
+        opt.disabled = (primary && opt.value===primary);
+      });
+      // 若當前選到與主照者相同，重置為 placeholder
+      if(primary && sel.value===primary){
+        sel.selectedIndex = 0;
+      }
+    }
+    function enforcePrimaryExclusionOnExtras(){
+      document.querySelectorAll('[id^="ex-role-"]').forEach(enforcePrimaryExclusionOnSelect);
+    }
+    function collectExtras(){
+      const reserved=new Set(['個案','福安個管','照專']);
+      const uniq=new Set(), out=[];
+      const rows=[...document.querySelectorAll('[id^="extra-"]')];
+      rows.forEach(row=>{
+        const idx=row.id.split('-')[1];
+        const sel=document.getElementById(`ex-role-${idx}`),
+              custom=document.getElementById(`ex-custom-${idx}`),
+              nameEl=document.getElementById(`ex-name-${idx}`);
+        let role=(sel?sel.value:'').trim(); if(role==='自訂角色') role=(custom?custom.value:'').trim();
+        const name=(nameEl?nameEl.value:'').trim();
+        if(!role||!name) return; if(reserved.has(role)) return;
+        const key=role+'|'+name; if(uniq.has(key)) return; uniq.add(key);
+        out.push({role, name});
+      });
+      return out;
+    }
+
+    /* ================== (一) 身心概況：字典、連動、蒐集、產文 ================== */
+
+    // 字典
+    const S1_VISION_NOTES = ['白內障術後','配戴眼鏡','其他'];
+    const S1_LESION_SX_LIST = ['疼痛','搔癢','出血','紅腫','滲液','潰瘍','無不適'];
+    const S1_DHX_LIST     = ['高血壓','甲狀腺疾病','高膽固醇','焦慮','糖尿病','心臟病','腦血管','骨關節','其他'];
+    const S1_MED_CLASSES  = ['降壓藥','甲狀腺藥','降脂藥','抗焦慮藥','其他'];
+    const S1_DISAB_TYPES  = ['視覺','聽覺','肢體','神經','語言','精神','智能','自閉症','多重','其他'];
+
+    // 聽力：兩層
+    const HEARING_DETAIL = {
+      '無明顯異常': ['對話流暢，無需特別協助'],
+      '輕度受損':   ['需提高音量','在安靜環境下才能聽清'],
+      '中度受損':   ['需近距離交談','借助助聽器才能理解'],
+      '重度受損':   ['助聽器效果有限','需讀唇或書寫輔助'],
+      '極重度受損': ['僅能感知大聲或震動','幾乎無法辨識語音內容'],
+      '完全失聰':   ['完全聽不見','無法感知聲音']
+    };
+
+    // 疼痛部位 × 皮膚病灶：大分類 → 細部分位 → 側別
+    const REGION_MAP = {
+      '頭頸部': ['頭部','眼睛','口腔牙齒','咽喉','頸部'],
+      '上肢':   ['肩膀','手臂','手部'],
+      '軀幹':   ['胸部','腹部','背部','腰部','臀部'],
+      '下肢':   ['大腿','膝蓋','小腿','足部'],
+      '全身性': ['全身痠痛','多處關節','其他']
+    };
+    const SYMMETRIC_PARTS = new Set(['眼睛','肩膀','手臂','手部','大腿','膝蓋','小腿','足部']);
+
+    // 渲染
+    function renderS1() {
+      // 視力補充
+      const vbox=document.getElementById('s1_vision_note_box'); vbox.innerHTML='';
+      S1_VISION_NOTES.forEach(name=>{
+        const id='vnote_'+name;
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${name}" id="${id}" onchange="toggleVisionOther()"> ${name}`;
+        vbox.appendChild(lab);
+      });
+
+      // 病灶症狀（互斥：無不適）
+      setupLesionSymptomsBox();
+
+      // 慢性病
+      const dhx=document.getElementById('s1_dhx_box'); dhx.innerHTML='';
+      S1_DHX_LIST.forEach(name=>{
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleDhxOther()"> ${name}`;
+        dhx.appendChild(lab);
+      });
+
+      // 現用藥別
+      const meds=document.getElementById('s1_med_classes_box'); meds.innerHTML='';
+      S1_MED_CLASSES.forEach(name=>{
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleMedOther()"> ${name}`;
+        meds.appendChild(lab);
+      });
+
+      // 身障類別
+      const dis=document.getElementById('s1_disab_type_box'); if (dis) {
+        dis.innerHTML='';
+        S1_DISAB_TYPES.forEach(name=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}"> ${name}`;
+          dis.appendChild(lab);
+        });
+      }
+    }
+
+    function setupLesionSymptomsBox(){
+      const box = document.getElementById('s1_lesion_sx_box'); box.innerHTML='';
+      S1_LESION_SX_LIST.forEach(name=>{
+        const id = 'lsx_'+name;
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${name}" id="${id}" onchange="syncNoDiscomfort('s1_lesion_sx_box')"> ${name}`;
+        box.appendChild(lab);
+      });
+    }
+
+    // 連動
+    function toggleVisionNotes(){ toggleVisionOther(); }
+    function toggleVisionOther(){
+      const hasOther = document.querySelector('#s1_vision_note_box input[value="其他"]')?.checked;
+      document.getElementById('s1_vision_other').style.display = hasOther?'':'none';
+    }
+
+    // 聽力兩層渲染
+    function renderHearingDetails(){
+      const level = document.getElementById('s1_hearing_level').value;
+      const wrap  = document.getElementById('s1_hearing_detail_wrap');
+      const box   = document.getElementById('s1_hearing_detail_box');
+      if(!level){ wrap.style.display='none'; box.innerHTML=''; return; }
+      const items = HEARING_DETAIL[level] || [];
+      box.innerHTML = '';
+      items.forEach((txt, i)=>{
+        const id = 'hear_'+i;
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${txt}" id="${id}"> ${txt}`;
+        box.appendChild(lab);
+      });
+      wrap.style.display='';
+    }
+
+    // 疼痛預設無；有→顯示 1-10
+    /* === 共用：以控制項 ID 隱藏/顯示其外層欄位容器（含 label+input） === */
+    function setRowVisibleByControlId(ctrlId, visible){
+      const ctrl = document.getElementById(ctrlId);
+      if(!ctrl) return;
+      const wrap = ctrl.parentElement; // 當前結構下，label 與 input 同在此 div 內
+      if(wrap) wrap.style.display = visible ? '' : 'none';
+    }
+
+    /* === 疼痛：擴充為同時控制 部位/側別/皮膚病灶 的出現 === */
+    function togglePainCombined(){
+      const v  = document.getElementById('s1_pain').value;
+      const on = (v === '有');
+
+      // 既有：疼痛強度顯示
+      document.getElementById('s1_pain_score_wrap').style.display = on ? '' : 'none';
+
+      // 新增：疼痛=有 才顯示 部位大分類、細部分位、側別(交由 updateLaterality 再細判)、皮膚病灶
+      setRowVisibleByControlId('s1_body_region', on);
+      setRowVisibleByControlId('s1_subregion',    on);
+      setRowVisibleByControlId('s1_laterality',   on);  // 先開，再由 updateLaterality() 決定是否需要顯示
+      setRowVisibleByControlId('s1_lesion_has',   on);
+
+      if(on){
+        // 依現有邏輯動態處理：子部位→側別、皮膚病灶細節
+        updateLaterality();       // 決定側別是否需要顯示（見下方改寫）
+        toggleLesionCombined();   // 病灶=有 才顯示細節（沿用原函式）
+      }else{
+        // 疼痛≠有：病灶整段不顯示（含細節）
+        document.getElementById('s1_lesion_layer_wrap').style.display = 'none';
+        document.getElementById('s1_lesion_size_wrap').style.display  = 'none';
+        document.getElementById('s1_lesion_more').style.display       = 'none';
+      }
+    }
+
+    // 細部分位與側別
+    function updateSubregion(){
+      const region = document.getElementById('s1_body_region').value;
+      const subSel = document.getElementById('s1_subregion');
+      const other  = document.getElementById('s1_subregion_other');
+      subSel.innerHTML = '<option value="" class="placeholder-option" disabled selected>請選擇</option>';
+      other.style.display='none';
+      if(!region) return;
+      (REGION_MAP[region] || []).forEach(name=>{
+        const o=document.createElement('option'); o.textContent=name; subSel.appendChild(o);
+      });
+    }
+    /* === 細部分位→側別：改為「無需求就不出現」，並受 疼痛=有 條件限制 === */
+    function updateLaterality(){
+      const sub = document.getElementById('s1_subregion').value;
+      const subOtherInput = document.getElementById('s1_subregion_other');
+      const latSel = document.getElementById('s1_laterality');
+      const latWrap = latSel ? latSel.parentElement : null;
+
+      // 維持原邏輯：細部分位=其他 時出現自填框
+      if(sub === '其他'){ subOtherInput.style.display = ''; }
+      else { subOtherInput.style.display = 'none'; }
+
+      // 是否需要側別：仍沿用既有對稱部位集合
+      const needLat = SYMMETRIC_PARTS.has(sub);  // 眼睛/肩膀/手臂/手部/大腿/膝蓋/小腿/足部…等
+      const painOn  = (document.getElementById('s1_pain').value === '有');
+
+      // **新規則**：只有在「疼痛=有 且 需要側別」時才顯示側別欄位；否則不出現
+      const showLat = painOn && needLat;
+      if(latWrap) latWrap.style.display = showLat ? '' : 'none';
+
+      // 維持原值控制：無需求時鎖定為「無側別」
+      latSel.disabled = !showLat;
+      if(!showLat){ latSel.value = '無側別'; }
+    }
+
+    // 皮膚病灶顯示
+    function toggleLesionCombined(){
+      const v=document.getElementById('s1_lesion_has').value;
+      const on=(v==='有');
+      document.getElementById('s1_lesion_layer_wrap').style.display = on?'':'none';
+      document.getElementById('s1_lesion_size_wrap').style.display = on?'':'none';
+      document.getElementById('s1_lesion_more').style.display = on?'':'none';
+    }
+    function toggleLesionLayerOther(){
+      const v=document.getElementById('s1_lesion_layer').value;
+      document.getElementById('s1_lesion_layer_other').style.display = (v==='其他')?'':'none';
+    }
+
+    // 病灶症狀互斥（無不適）
+    function syncNoDiscomfort(containerId){
+      const box = document.getElementById(containerId);
+      const checks = [...box.querySelectorAll('input[type=checkbox]')];
+      const none = checks.find(c=>c.value==='無不適');
+      if(!none) return;
+      if(none.checked){
+        checks.forEach(c=>{ if(c!==none){ c.checked=false; c.disabled=true; }});
+      }else{
+        checks.forEach(c=>{ if(c!==none){ c.disabled=false; }});
+      }
+    }
+
+    function toggleTransportOther(){
+      const v=document.getElementById('s1_visit_transport').value;
+      document.getElementById('s1_visit_transport_other').style.display = (v==='其他')?'':'none';
+    }
+    function toggleDhxOther(){
+      const on = document.querySelector('#s1_dhx_box input[value="其他"]')?.checked;
+      document.getElementById('s1_dhx_other').style.display = on?'':'none';
+    }
+    function toggleMedOther(){
+      const on = document.querySelector('#s1_med_classes_box input[value="其他"]')?.checked;
+      document.getElementById('s1_med_classes_other').style.display = on?'':'none';
+    }
+    function toggleDisab(){
+      const v=document.getElementById('s1_disab_has').value;
+      const on=(v==='有');
+      document.getElementById('s1_disab_grade_wrap').style.display = on?'':'none';
+      document.getElementById('s1_disab_type_wrap').style.display = on?'':'none';
+    }
+
+    // 蒐集
+    function collectChecks(containerId, otherInputId){
+      const list=[...document.querySelectorAll(`#${containerId} input[type=checkbox]`)].filter(x=>x.checked).map(x=>x.value);
+      if(otherInputId && list.includes('其他')){
+        const t=(document.getElementById(otherInputId).value||'').trim();
+        if(t) list[list.indexOf('其他')] = `其他（${t}）`;
+      }
+      return list;
+    }
+
+    function collectHearingDetails(){
+      return [...document.querySelectorAll('#s1_hearing_detail_box input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
+    }
+
+    function collectS1(){
+      const s = {};
+      // 基本
+      s.s1_age = document.getElementById('s1_age').value;
+      s.s1_gender = document.getElementById('s1_gender').value;
+      s.s1_awareness = document.getElementById('s1_awareness').value;
+      s.s1_cognition = document.getElementById('s1_cognition').value;
+      // 視聽
+      s.s1_vision = document.getElementById('s1_vision').value;
+      s.s1_vision_note = collectChecks('s1_vision_note_box','s1_vision_other');
+      s.s1_hearing_level = document.getElementById('s1_hearing_level').value;
+      s.s1_hearing_details = collectHearingDetails();
+      // 疼痛/皮膚 + 部位
+      s.s1_pain = document.getElementById('s1_pain').value;
+      s.s1_pain_score = document.getElementById('s1_pain_score').value;
+      s.s1_body_region = document.getElementById('s1_body_region').value;
+      let subreg = document.getElementById('s1_subregion').value;
+      if(subreg==='其他'){
+        const oth=(document.getElementById('s1_subregion_other').value||'').trim();
+        if(oth) subreg = `其他（${oth}）`;
+      }
+      s.s1_subregion = subreg;
+      s.s1_laterality = document.getElementById('s1_laterality').value || '無側別';
+
+      s.s1_lesion_has = document.getElementById('s1_lesion_has').value;
+      let layer = document.getElementById('s1_lesion_layer').value;
+      if(layer==='其他'){
+        const lo=(document.getElementById('s1_lesion_layer_other').value||'').trim();
+        if(lo) layer = `其他（${lo}）`;
+      }
+      s.s1_lesion_layer = layer || '無';
+      s.s1_lesion_size  = document.getElementById('s1_lesion_size').value;
+      s.s1_lesion_sx    = collectChecks('s1_lesion_sx_box');
+      s.s1_lesion_eval  = document.getElementById('s1_lesion_eval').value;
+
+      // 行動/ADL/排泄
+      s.s1_transfer = document.getElementById('s1_transfer').value;
+      s.s1_walk_indoor = document.getElementById('s1_walk_indoor').value;
+      s.s1_walk_outdoor = document.getElementById('s1_walk_outdoor').value;
+      s.s1_stairs = document.getElementById('s1_stairs').value;
+      s.s1_adl_eating = document.getElementById('s1_adl_eating').value;
+      s.s1_adl_groom = document.getElementById('s1_adl_groom').value;
+      s.s1_adl_bathing = document.getElementById('s1_adl_bathing').value;
+      s.s1_adl_dressing = document.getElementById('s1_adl_dressing').value;
+      s.s1_urine_day = document.getElementById('s1_urine_day').value;
+      s.s1_urine_night = document.getElementById('s1_urine_night').value;
+      s.s1_post_toilet = document.getElementById('s1_post_toilet').value;
+
+      // 生活管理
+      s.s1_phone = document.getElementById('s1_phone').value;
+      s.s1_shopping = document.getElementById('s1_shopping').value;
+      s.s1_meal_prep = document.getElementById('s1_meal_prep').value;
+      s.s1_dishwash = document.getElementById('s1_dishwash').value;
+      s.s1_housework = document.getElementById('s1_housework').value;
+      s.s1_finance = document.getElementById('s1_finance').value;
+      s.s1_sleep = document.getElementById('s1_sleep').value;
+      s.s1_daytime = document.getElementById('s1_daytime').value;
+
+      // 疾病/用藥/就醫
+      s.s1_dhx = collectChecks('s1_dhx_box','s1_dhx_other');
+      s.s1_surgery = document.getElementById('s1_surgery').value;
+      s.s1_allergy = document.getElementById('s1_allergy').value;
+      s.s1_follow_clinic = document.getElementById('s1_follow_clinic').value;
+      s.s1_rx_type = document.getElementById('s1_rx_type').value;
+      s.s1_med_manage = document.getElementById('s1_med_manage').value;
+      let vt = document.getElementById('s1_visit_transport').value;
+      const vtOther = (document.getElementById('s1_visit_transport_other').value||'').trim();
+      if(vt==='其他' && vtOther) vt = `其他（${vtOther}）`;
+      s.s1_visit_transport = vt;
+      s.s1_med_classes = collectChecks('s1_med_classes_box','s1_med_classes_other');
+
+      // 身障
+      s.s1_disab_has = document.getElementById('s1_disab_has').value;
+      s.s1_disab_grade = document.getElementById('s1_disab_grade').value;
+      s.s1_disab_type = collectChecks('s1_disab_type_box');
+      s.s1_disab_note = document.getElementById('s1_disab_note').value;
+
+      // 補充
+      s.s1_notes = document.getElementById('s1_notes').value;
+
+      return s;
+    }
+
+    // 產文（新版）
+    function buildSection1Text_v2(s) {
+      const has = v => v !== undefined && v !== null && String(v).trim() !== "";
+      const join = arr => arr.filter(Boolean).join("，");
+      const listCN = arr => arr.filter(Boolean).join("、");
+      const sexWord = g => g === "男" ? "男性" : g === "女" ? "女性" : (g || "");
+
+      function phraseAwareness(v) {
+        if (!has(v)) return "";
+        switch (String(v)) {
+          case "清楚": return "意識清楚";
+          case "健忘": return "意識健忘";
+          case "遲鈍": return "意識遲鈍";
+          case "混亂": return "意識混亂";
+          case "模糊": return "意識模糊";
+          case "嗜睡": return "呈嗜睡狀態";
+          case "昏迷": return "呈昏迷狀態";
+          default: return `意識${v}`;
+        }
+      }
+      function phraseCognition(v) {
+        if (!has(v)) return "";
+        switch (String(v)) {
+          case "清楚可應答":     return "認知清楚可應答";
+          case "需重複或放慢":   return "認知需重複或放慢";
+          case "表達或理解困難": return "表達或理解困難";
+          case "無法溝通":       return "無法溝通";
+          case "無法評估":       return "認知狀態無法評估";
+          default:               return `認知${v}`;
+        }
+      }
+      function phraseVision(v) {
+        if (!has(v)) return "";
+        switch (String(v)) {
+          case "視力清晰": return "視力清晰";
+          case "辨識時需額外光源或靠近物體": return "辨識時需額外光源或靠近物體";
+          case "即使配戴眼鏡，仍難以辨識": return "即使配戴眼鏡，仍難以辨識";
+          case "僅能分辨明暗，無法辨識人臉或物體輪廓": return "僅能分辨明暗，無法辨識人臉或物體輪廓";
+          case "完全失去視覺功能，無法感知光線": return "完全失去視覺功能，無法感知光線";
+          default: return v;
+        }
+      }
+
+      // ① 基本
+      const header = [];
+      if (has(s.s1_age) || has(s.s1_gender)) header.push(`${s.s1_age||""}歲${sexWord(s.s1_gender)||""}`);
+      const aw = phraseAwareness(s.s1_awareness);
+      const cg = phraseCognition(s.s1_cognition);
+      if (aw || cg) header.push([aw, cg].filter(Boolean).join("，"));
+      const p1 = header.join("，");
+
+      // ② 視聽
+      let visionPhrase = phraseVision(s.s1_vision);
+      const vNotes = [].concat(Array.isArray(s.s1_vision_note) ? s.s1_vision_note : (has(s.s1_vision_note) ? [s.s1_vision_note] : []));
+      if (visionPhrase && vNotes.length) visionPhrase += `（${listCN(vNotes)}）`;
+      let hearingPhrase = '';
+      if (has(s.s1_hearing_level)) {
+        hearingPhrase = `聽力${s.s1_hearing_level}`;
+        if (Array.isArray(s.s1_hearing_details) && s.s1_hearing_details.length){
+          hearingPhrase += `（${listCN(s.s1_hearing_details)}）`;
+        }
+      }
+      const p2 = [visionPhrase, hearingPhrase].filter(Boolean).join("，");
+
+      // ③ 疼痛/皮膚（合併）
+      // 部位描述：大分類 → 細部分位 → 側別
+      let siteBits = '';
+      if (has(s.s1_body_region) || has(s.s1_subregion)){
+        const lat = s.s1_laterality && s.s1_laterality!=='無側別' ? `（${s.s1_laterality}）` : '';
+        siteBits = `${s.s1_body_region||''}${s.s1_subregion? '－'+s.s1_subregion: ''}${lat}`;
+      }
+      const painBits = [];
+      if (String(s.s1_pain) === "有") {
+        painBits.push(`${siteBits || '部位'}疼痛`);
+        if (has(s.s1_pain_score)) painBits.push(`疼痛強度約 ${s.s1_pain_score}/10`);
+      }
+      const lesionBits = [];
+      if (String(s.s1_lesion_has) === "有") {
+        const layer = has(s.s1_lesion_layer) ? s.s1_lesion_layer : '無';
+        const size  = has(s.s1_lesion_size) ? `${s.s1_lesion_size}cm` : '無';
+        const sxArr = Array.isArray(s.s1_lesion_sx) ? s.s1_lesion_sx : [];
+        const sxTxt = sxArr.length ? listCN(sxArr) : '無不適';
+        lesionBits.push(`${siteBits || '部位'}之皮膚病灶`);
+        lesionBits.push(`病灶部位：${layer}`);
+        lesionBits.push(`大小：${size}`);
+        lesionBits.push(`症狀：${sxTxt}`);
+        lesionBits.push(`醫療評估：${s.s1_lesion_eval||'未評估'}`);
+      }
+      const p3 = [painBits.join('，'), lesionBits.join('，')].filter(Boolean).join('；');
+
+      // ④ 行動
+      const moveBits=[];
+      if (has(s.s1_transfer)) moveBits.push(`起身移位${s.s1_transfer}`);
+      if (has(s.s1_walk_indoor)) moveBits.push(`在家${s.s1_walk_indoor}行走`);
+      if (has(s.s1_walk_outdoor)) moveBits.push(`外出${s.s1_walk_outdoor}輔助`);
+      if (has(s.s1_stairs)) moveBits.push(`上下樓${s.s1_stairs}`);
+      const p4 = moveBits.join("，");
+
+      // ⑤ ADL/排泄
+      const adlBits=[];
+      if (has(s.s1_adl_eating)) adlBits.push(`進食${s.s1_adl_eating}`);
+      const adlSub=[
+        has(s.s1_adl_groom)?`刷牙/洗臉${s.s1_adl_groom}`:null,
+        has(s.s1_adl_bathing)?`洗澡${s.s1_adl_bathing}`:null,
+        has(s.s1_adl_dressing)?`穿脫衣${s.s1_adl_dressing}`:null
+      ].filter(Boolean).join("、");
+      if (adlSub) adlBits.push(adlSub);
+      const toiletBits=[];
+      if (has(s.s1_urine_day)) toiletBits.push(`白天排尿${s.s1_urine_day}`);
+      if (has(s.s1_urine_night)) toiletBits.push(`夜間排尿${s.s1_urine_night}`);
+      if (has(s.s1_post_toilet)) toiletBits.push(`如廁後清潔${s.s1_post_toilet}`);
+      const p5 = [adlBits.join("；"), toiletBits.join("，")].filter(Boolean).join("；");
+
+      // ⑥ 生活管理/睡眠
+      const lifeBits=[];
+      if (has(s.s1_phone)) lifeBits.push(`電話使用${s.s1_phone}`);
+      if (has(s.s1_shopping)) lifeBits.push(`外出購物${s.s1_shopping}`);
+      const mealBits=[];
+      if (has(s.s1_meal_prep)) mealBits.push(`備餐${s.s1_meal_prep}`);
+      if (has(s.s1_dishwash)) mealBits.push(`餐具清洗${s.s1_dishwash}`);
+      if (has(s.s1_housework)) mealBits.push(`家務整理${s.s1_housework}`);
+      if (mealBits.length) lifeBits.push(mealBits.join("、"));
+      if (has(s.s1_finance)) lifeBits.push(`具金錢觀念，財務管理${s.s1_finance}`);
+      if (has(s.s1_sleep)) lifeBits.push(`睡眠${s.s1_sleep}`);
+      if (has(s.s1_daytime)) lifeBits.push(`白天多${s.s1_daytime}`);
+      const p6 = lifeBits.join("，");
+
+      // ⑦ 疾病/用藥/就醫
+      const dxArr = Array.isArray(s.s1_dhx)? s.s1_dhx : (has(s.s1_dhx)?[s.s1_dhx]:[]);
+      const medArr= Array.isArray(s.s1_med_classes)? s.s1_med_classes : (has(s.s1_med_classes)?[s.s1_med_classes]:[]);
+      const p7 = join([
+        dxArr.length ? `慢性病史包含：${listCN(dxArr)}` : null,
+        has(s.s1_surgery) ? s.s1_surgery : null,
+        (has(s.s1_follow_clinic)||has(s.s1_rx_type)||medArr.length)
+          ? `固定至${s.s1_follow_clinic||"既定醫療院所"}領${s.s1_rx_type||"處方"}${medArr.length?`（${listCN(medArr)}）`:''}` : null,
+        (has(s.s1_med_manage)||has(s.s1_visit_transport))
+          ? `平時${s.s1_med_manage||""}，並以${s.s1_visit_transport||"既定方式"}就醫` : null
+      ]);
+
+      // ⑧ 身障（有才輸出）
+      const p8 = (String(s.s1_disab_has)==="有")
+        ? join([
+            "持有身心障礙證明",
+            (Array.isArray(s.s1_disab_type)&&s.s1_disab_type.length)?`類別：${listCN(s.s1_disab_type)}`:null,
+            has(s.s1_disab_grade)?`等級：${s.s1_disab_grade}`:null,
+            has(s.s1_disab_note)?s.s1_disab_note:null
+          ])
+        : "";
+
+      // ⑨ 補充（有才輸出）
+      const p9 = has(s.s1_notes) ? s.s1_notes : "";
+
+      const segments=[p1,p2,p3,p4,p5,p6,p7,p8,p9].filter(Boolean);
+      return `（一）身心概況：${segments.join("。")}。`;
+    }
+
+    function buildSection1(){
+      const s = collectS1();
+      const text = buildSection1Text_v2(s);
+      document.getElementById('section1_out').value = text;
+      document.getElementById('section1_preview').textContent = text;
+      return text;
+    }
+
+    /* ===== 四-(二) 經濟收入：原程式 ===== */
+    const S2_SOURCES = ['退休金（軍公教/勞退）','老人福利津貼','勞保/農保年金','身心障礙生活補助','社會福利補助','子女/親屬支持','儲蓄/投資收益','房租收入','其他'];
+    const S2_CATS = [
+      '第一類：神經系統構造及精神、心智功能',
+      '第二類：眼、耳及相關構造與感官功能及疼痛',
+      '第三類：涉及聲音與言語構造及其功能',
+      '第四類：循環、造血、免疫與呼吸系統構造及其功能',
+      '第五類：消化、新陳代謝與內分泌系統相關構造及其功能',
+      '第六類：泌尿與生殖系統相關構造及其功能',
+      '第七類：神經、肌肉、骨骼之移動相關構造及其功能',
+      '第八類：皮膚與相關構造及其功能',
+      '未註明'
+    ];
+    function renderS2(){
+      const host=document.getElementById('s2_sources'); host.innerHTML='';
+      S2_SOURCES.forEach((name,i)=>{
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS2()"> ${name}`;
+        host.appendChild(lab);
+      });
+      const catSel=document.getElementById('s2_dis_cat'); catSel.innerHTML='';
+      S2_CATS.forEach(c=>{const o=document.createElement('option'); o.textContent=c; catSel.appendChild(o);});
+    }
+    function toggleDisCategory(){
+      const lv=document.getElementById('s2_dis_level').value;
+      document.getElementById('disCatBox').style.display= (lv && lv!=='無') ? '' : 'none';
+      buildS2();
+    }
+    function buildS2(){
+      const srcs=[...document.querySelectorAll('#s2_sources input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
+      const id=document.getElementById('s2_id').value;
+      const lv=document.getElementById('s2_dis_level').value;
+      const catSel=document.getElementById('s2_dis_cat'); const cat=(catSel && catSel.value)? catSel.value : '';
+      let s='';
+      if(srcs.length) s+=`主要經濟來源為${srcs.join('、')}`;
+      if(id){ s += (s? '，':'') + `戶籍/福利身分為${id}`; }
+      if(lv && lv!=='無'){ s += `；身障等級：${lv}${cat? '（'+cat+'）':''}`; }
+      if(s) s+='。';
+      document.getElementById('section2_out').value=s;
+    }
+
+    /* ===== 四-(三) 居住環境：原程式 ===== */
+    const S3_FAC = ['扶手','止滑','斜坡','樓梯升降設備'];
+    const S3_AIDS= ['輪椅','助行器','拐杖','照顧床','氣墊床','便盆椅','助行拐'];
+    function renderS3(){
+      const facHost=document.getElementById('s3_fac'); facHost.innerHTML='';
+      S3_FAC.forEach((name)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS3()"> ${name}`; facHost.appendChild(lab);});
+      const aidsHost=document.getElementById('s3_aids'); aidsHost.innerHTML='';
+      S3_AIDS.forEach((name)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS3()"> ${name}`; aidsHost.appendChild(lab);});
+    }
+    function toggleOtherType(){
+      const sel=document.getElementById('s3_type'); const on= sel.value==='其他';
+      document.getElementById('s3_type_other').style.display= on?'':'none';
+      buildS3();
+    }
+    function buildS3(){
+      const typeSel=document.getElementById('s3_type'); let type=typeSel.value;
+      if(type==='其他'){ const t=document.getElementById('s3_type_other').value.trim(); if(t) type=t; }
+      const own=document.getElementById('s3_own').value;
+      const clean=document.getElementById('s3_clean').value;
+      const smell=document.getElementById('s3_smell').value;
+      const fac=[...document.querySelectorAll('#s3_fac input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
+      const aids=[...document.querySelectorAll('#s3_aids input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
+      if(!type) { document.getElementById('section3_out').value=''; return; }
+      let s=`現居住於${own}${type}，環境整潔度${clean}，${smell==='無'?'無異味':(smell+'異味')}。`;
+      if(fac.length) s+=`無障礙設施：${fac.join('、')}。`;
+      if(aids.length) s+=`已備輔具：${aids.join('、')}。`;
+      document.getElementById('section3_out').value=s;
+    }
+
+    /* ===== 四-(四) 社會支持：原程式 ===== */
+    const FORMAL = ['居家服務','專業服務','日間照顧','喘息服務','交通服務','無障礙及輔具','營養送餐'];
+    const RISKS = [
+      ['被照顧者嚴重情緒/干擾行為','BPSD、自/他傷、攻擊破壞、遊走、妄想、吼叫等'],
+      ['高齡照顧者','≥65歲；原住民≥55歲；<18歲應通報'],
+      ['無照顧經驗/知能不足','家庭變故或病況改變致知能不足'],
+      ['沒有照顧替手','每週≥20小時主要照顧、難求助/抗拒資源'],
+      ['需照顧兩人以上','含雙老家庭、多名身障或精神病人'],
+      ['照顧者疾病/身心影響能力或意願','精神疾患/憂鬱焦慮失眠/重大傷病'],
+      ['資源不符/變動或突發緊急需求','不符補助或突發事故致負擔'],
+      ['三個月內照顧情境改變','急性醫療、病況改變、外籍看護空窗、資源中斷'],
+      ['家暴或照顧疏忽風險','含自述暴力意念、疑似未通報'],
+      ['自殺風險','意念/企圖/具體計畫/準備']
+    ];
+    function renderFormal(){
+      const host=document.getElementById('sp_formal'); host.innerHTML='';
+      FORMAL.forEach((name)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${name}"> ${name}`; host.appendChild(lab);});
+      const rHost=document.getElementById('sp_risks'); rHost.innerHTML='';
+      RISKS.forEach((it,i)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${it[0]}"> ${i+1}. ${it[0]} <span class="muted">（${it[1]}）</span>`; rHost.appendChild(lab);});
+    }
+    function toggleInfInput(key){
+      const on=document.getElementById('sp_inf_'+key).checked;
+      document.getElementById('sp_inf_'+key+'_name').style.display= on?'':'none';
+    }
+    function copyFromH1Primary(){
+      const rel=document.getElementById('primaryRel').value;
+      const name=document.getElementById('primaryName').value;
+      if(!rel||!name){ alert('三、偕同訪視者的主要照顧者尚未完整。'); return; }
+      document.getElementById('sp_primaryRel').value= rel==='自訂角色'?'自訂角色':rel;
+      document.getElementById('sp_primaryName').value= name;
+    }
+    function addCoCare(){
+      const host=document.getElementById('coCare');
+      const idx=coCareIdx++;
+      const wrap=document.createElement('div'); wrap.className='row'; wrap.id=`cc-${idx}`;
+      wrap.innerHTML=`
+        <div>
+          <label>關係</label>
+          <select id="cc-rel-${idx}" onchange="toggleCustomRole(${idx}, 'cc')">
+            ${roleOptionsHTML()}
+          </select>
+          <input id="cc-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:6px;">
+        </div>
+        <div><label>姓名</label><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
+        <div style="flex:0; align-self:flex-end;"><button class="small" onclick="document.getElementById('cc-${idx}').remove()">移除</button></div>
+      `;
+      host.appendChild(wrap);
+    }
+    function collectCoCare(){
+      const out=[]; const rows=[...document.querySelectorAll('[id^="cc-"]')];
+      rows.forEach(row=>{
+        const idx=row.id.split('-')[1];
+        const sel=document.getElementById(`cc-rel-${idx}`), custom=document.getElementById(`cc-custom-${idx}`), nameEl=document.getElementById(`cc-name-${idx}`);
+        let rel=(sel?sel.value:'').trim(); if(rel==='自訂角色') rel=(custom?custom.value:'').trim();
+        const name=(nameEl?nameEl.value:'').trim();
+        if(rel && name) out.push({rel, name});
+      });
+      return out;
+    }
+    function buildSection4(){
+      const pr = (document.getElementById('sp_primaryRel').value || '').trim();
+      const pn = (document.getElementById('sp_primaryName').value || '').trim();
+      const ch = (document.getElementById('sp_cohabit').value || '').trim();
+      let dr = (document.getElementById('sp_deciderRel').value || '').trim();
+      if(dr==='自訂角色') dr = '（自訂）';
+      const dn = (document.getElementById('sp_deciderName').value || '').trim();
+      const cc = collectCoCare();
+      const formal=[...document.querySelectorAll('#sp_formal input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
+      const inf = [];
+      if(document.getElementById('sp_inf_pt').checked){
+        const v=(document.getElementById('sp_inf_pt_name').value||'').trim(); if(v) inf.push(`據點（單位：${v}）`); else inf.push('據點');
+      }
+      if(document.getElementById('sp_inf_nb').checked){
+        const v=(document.getElementById('sp_inf_nb_name').value||'').trim(); if(v) inf.push(`鄰里（單位：${v}）`); else inf.push('鄰里');
+      }
+      if(document.getElementById('sp_inf_rg').checked){
+        const v=(document.getElementById('sp_inf_rg_name').value||'').trim(); if(v) inf.push(`宗教/社團（單位：${v}）`); else inf.push('宗教/社團');
+      }
+      if(document.getElementById('sp_inf_fw').checked){
+        const v=(document.getElementById('sp_inf_fw_name').value||'').trim(); if(v) inf.push(`財團/社會福利（單位：${v}）`); else inf.push('財團/社會福利');
+      }
+      const freq=(document.getElementById('sp_freq').value || '').trim();
+      const risks=[...document.querySelectorAll('#sp_risks input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
+
+      let s='';
+      if(pr && pn) s += `主照者為${pr}(${pn})${ch? '（'+ch+'）':''}`;
+      if(dr && dn) s += (s? '，':'') + `主要聯繫人/決策者為${dr}(${dn})`;
+      if(cc.length){
+        const list = cc.map(x=>`${x.rel}(${x.name})`).join('、');
+        s += (s? '，':'') + `並由${list}等共同協助`;
+      }
+      s += (s? '；':'') + '社區整合型服務中心為福安';
+      if(formal.length) s += `，目前可運用資源：${formal.join('、')}`;
+      if(inf.length) s += `；非正式資源：${inf.join('、')}`;
+      if(freq) s += `；探視/支持頻率：${freq}`;
+      if(risks.length) s += `；高風險評估：${risks.join('、')}`;
+      if(s) s+='。';
+      document.getElementById('section4_out').value = s;
+    }
+
+    /* ===== (六) 複評（結構→單行） ===== */
+    function buildSection6(){
+      const b=(document.getElementById('s6_before').value||'').trim();
+      const a=(document.getElementById('s6_after').value||'').trim();
+      let s='';
+      if(b) s += `介入前：${b}`;
+      if(a) s += (s? '；':'') + `介入後：${a}`;
+      if(s) s+='。'; else s='';
+      document.getElementById('section6_struct').value = s;
+    }
+
+    /* ===== 五、照顧目標（原程式） ===== */
+    const PROBLEMS = {
+      1:'進食問題',2:'洗澡問題',3:'個人修飾問題',4:'穿脫衣物問題',5:'大小便控制問題',
+      6:'上廁所問題',7:'移位問題',8:'走路問題',9:'上下樓梯問題',10:'使用電話問題',
+      11:'購物或外出問題',12:'備餐問題',13:'處理家務問題',14:'用藥問題',15:'處理財務問題',
+      16:'溝通問題',17:'短期記憶障礙',18:'疼痛問題',19:'不動症候群風險',20:'皮膚照護問題',
+      21:'傷口問題',22:'水份及營養問題',23:'吞嚥問題',24:'管路照顧問題',25:'其他醫療照護問題',
+      26:'跌倒風險',27:'安全疑慮',28:'居住環境障礙',29:'社會參與需協助',30:'困擾行為',
+      31:'照顧負荷過重',32:'輔具使用問題',33:'感染問題',34:'其他問題'
+    };
+    function renderProblems(){
+      const host=document.getElementById('problemList'); host.innerHTML='';
+      for(let n=1;n<=34;n++){
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${n}" onchange="limitProblems()"> ${n}.${PROBLEMS[n]}`;
+        host.appendChild(lab);
+      }
+    }
+    function limitProblems(){
+      const boxes=[...document.querySelectorAll('#problemList input[type=checkbox]')];
+      const selected=boxes.filter(b=>b.checked);
+      document.getElementById('problemCount').textContent=`已選 ${selected.length} / 5`;
+      if (selected.length>=5){ boxes.forEach(b=>{ if(!b.checked) b.disabled=true; }); } else { boxes.forEach(b=>b.disabled=false); }
+    }
+    function getSelectedProblems(){
+      return [...document.querySelectorAll('#problemList input[type=checkbox]')].filter(b=>b.checked).map(b=>parseInt(b.value,10));
+    }
+    function buildLongGoal(){
+      const parts=[];
+      const short={care: val('short_care'), prof:val('short_prof'), car:val('short_car'), resp:val('short_resp')};
+      const mid  ={care: val('mid_care'),   prof:val('mid_prof'),   car:val('mid_car'),   resp:val('mid_resp')};
+      function val(id){return (document.getElementById(id).value||'').trim();}
+      function push(tag, sc, mc){
+        const arr=[sc, mc].filter(Boolean); if(arr.length) parts.push(`${tag}：${arr.join('；')}`);
+      }
+      push('照顧服務', short.care, mid.care);
+      push('專業服務', short.prof, mid.prof);
+      push('交通車服務', short.car, mid.car);
+      push('喘息服務', short.resp, mid.resp);
+      document.getElementById('long_goal').value = parts.join('。') + (parts.length?'。':'');
+    }
+
+    /* ===== AI 潤稿（Stub） ===== */
+    function polishOne(key){
+      if(key==='section1_out') buildSection1();
+      if(key==='section2_out') buildS2();
+      if(key==='section3_out') buildS3();
+      if(key==='section4_out') buildSection4();
+      if(key==='section6_struct') buildSection6();
+
+      const text = (document.getElementById(key).value||'').trim();
+      const ctx  = {
+        age: document.getElementById('s1_age').value,
+        gender: document.getElementById('s1_gender').value,
+        disLevel: document.getElementById('s2_dis_level').value,
+        disCat: document.getElementById('s2_dis_cat') ? document.getElementById('s2_dis_cat').value : '',
+        problems: getSelectedProblems()
+      };
+      google.script.run.withSuccessHandler(res=>{
+        document.getElementById(key).value = res && res.text ? res.text : text;
+        if(key==='section1_out'){ document.getElementById('section1_preview').textContent = document.getElementById(key).value; }
+        alert('AI潤稿完成（已更新於欄位）。');
+      }).polishSection(key, text, ctx);
+    }
+
+    /* ===== 送出 ===== */
+    function applyAndSave(){
+      const msg=document.getElementById('msg'); msg.textContent='';
+      const unitCode=document.getElementById('unitCode').value;
+      const caseManagerName=document.getElementById('caseManagerName').value;
+      const caseName=(document.getElementById('caseName').value||'').trim();
+      const consultName=(document.getElementById('consultName').value||'').trim();
+      if(!caseName){ msg.textContent='請輸入：個案姓名'; return; }
+
+      const primaryCaregiverRel = (document.getElementById('primaryRel').value||'').trim();
+      const primaryCaregiverName= (document.getElementById('primaryName').value||'').trim();
+      if(!primaryCaregiverRel){ msg.textContent='請選擇：主要照顧者關係'; return; }
+
+      // 組裝各段
+      buildSection1();
+      buildS2(); buildS3(); buildSection4(); buildSection6(); buildLongGoal();
+
+      const form = {
+        unitCode, caseManagerName, caseName, consultName,
+        callDate: getDateBox('callDate'),
+        visitDate: getDateBox('visitDate'),
+        isDischarge: document.getElementById('isDischarge').checked,
+        dischargeDate: getDateBox('dischargeDate'),
+        // 三、偕同訪視者
+        primaryCaregiverRel: primaryCaregiverRel,
+        primaryCaregiverName: primaryCaregiverName,
+        includePrimary: true,              // 固定預設輸出
+        extras: collectExtras(),
+        // 四、個案概況（已組句）
+        section1: (document.getElementById('section1_out').value || '').trim(),
+        section2: (document.getElementById('section2_out').value || '').trim(),
+        section3: (document.getElementById('section3_out').value || '').trim(),
+        section4: (document.getElementById('section4_out').value || '').trim(),
+        section5: (document.getElementById('section5').value || '').trim(),
+        section6: (document.getElementById('section6_struct').value || '').trim(),
+        // 五、照顧目標
+        problemKeys: getSelectedProblems(),
+        problemNote: (document.getElementById('problemNote').value || '').trim(),
+        short_care: (document.getElementById('short_care').value || '').trim(),
+        short_prof: (document.getElementById('short_prof').value || '').trim(),
+        short_car : (document.getElementById('short_car').value  || '').trim(),
+        short_resp: (document.getElementById('short_resp').value || '').trim(),
+        mid_care: (document.getElementById('mid_care').value || '').trim(),
+        mid_prof: (document.getElementById('mid_prof').value || '').trim(),
+        mid_car : (document.getElementById('mid_car').value  || '').trim(),
+        mid_resp: (document.getElementById('mid_resp').value || '').trim(),
+        long_goal: (document.getElementById('long_goal').value || '').trim(),
+        // 產出前一致性潤稿
+        doBatchPolish: document.getElementById('doBatchPolish').checked
+      };
+
+      google.script.run
+        .withSuccessHandler(res=>{
+          msg.innerHTML = (res && res.message ? res.message+' ' : '') + (res && res.file ? `→ <b>${res.file.name}</b>` : '');
+          if (res && res.file && res.file.url) window.open(res.file.url, '_blank');
+        })
+        .withFailureHandler(err=>{
+          msg.innerHTML = '<span class="danger">錯誤：</span>' + (err && err.message ? err.message : err);
+        })
+        .applyAndSave(form);
+    }
+
+    /* ===== 初始化 ===== */
+    function initSection1State(){
+      toggleVisionNotes(); toggleTransportOther(); toggleDhxOther(); toggleMedOther(); toggleDisab();
+      toggleLesionCombined(); toggleLesionLayerOther(); togglePainCombined();
+      renderHearingDetails(); updateSubregion(); updateLaterality();
+      syncNoDiscomfort('s1_lesion_sx_box'); // 初始化互斥狀態
+      buildSection1(); // 初次預覽一次
+    }
+
+    window.addEventListener('load', ()=>{
+      setDateBox('callDate', new Date());
+      setDateBox('visitDate', new Date());
+      loadManagers();
+
+      // S1
+      renderS1(); initSection1State();
+
+      // 偕同訪視者：初次建立一筆空白行以利輸入（選配）
+      // addExtraRow();
+
+      // 其它原有初始化
+      renderS2(); toggleDisCategory();
+      renderS3(); toggleOtherType(); buildS3();
+      renderFormal();
+      renderProblems(); limitProblems();
+    });
+  </script>
+</body>
+</html>
