@@ -155,11 +155,10 @@
 
     <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
     <div class="row">
-      <div>
+      <div id="section1_block">
         <div class="titlebar">
           <label>(一) 身心概況</label>
           <div class="btnbar">
-            <button class="small" onclick="buildSection1()">重組/預覽</button>
             <button class="small" onclick="buildSection1();polishOne('section1_out')">AI潤稿</button>
           </div>
         </div>
@@ -258,7 +257,8 @@
           <div>
             <label>側別</label>
             <select id="s1_laterality">
-              <option>無側別</option><option>左側</option><option>右側</option><option>雙側</option>
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option>左側</option><option>右側</option><option>雙側</option>
             </select>
           </div>
         </div>
@@ -1077,9 +1077,9 @@
       const showLat = painOn && needLat;
       if(latWrap) latWrap.style.display = showLat ? '' : 'none';
 
-      // 維持原值控制：無需求時鎖定為「無側別」
+      // 無需求時清空值並鎖定
       latSel.disabled = !showLat;
-      if(!showLat){ latSel.value = '無側別'; }
+      if(!showLat){ latSel.value = ''; }
     }
 
     // 皮膚病灶顯示
@@ -1192,7 +1192,7 @@
         if(oth) subreg = `其他（${oth}）`;
       }
       s.s1_subregion = subreg;
-      s.s1_laterality = document.getElementById('s1_laterality').value || '無側別';
+      s.s1_laterality = document.getElementById('s1_laterality').value || '';
 
       s.s1_lesion_has = document.getElementById('s1_lesion_has').value;
       let layer = document.getElementById('s1_lesion_layer').value;
@@ -1329,7 +1329,7 @@
       // 部位描述：大分類 → 細部分位 → 側別
       let siteBits = '';
       if (has(s.s1_body_region) || has(s.s1_subregion)){
-        const lat = s.s1_laterality && s.s1_laterality!=='無側別' ? `（${s.s1_laterality}）` : '';
+        const lat = s.s1_laterality ? `（${s.s1_laterality}）` : '';
         siteBits = `${s.s1_body_region||''}${s.s1_subregion? '－'+s.s1_subregion: ''}${lat}`;
       }
       const painBits = [];
@@ -1962,6 +1962,13 @@
       toggleAdlHow('s1_adl_dressing'); toggleAdlHow('s1_post_toilet'); toggleAdlHow('s1_meal_prep');
       toggleAdlHow('s1_housework'); toggleAdlHow('s1_finance');
       syncNoDiscomfort('s1_lesion_sx_box'); // 初始化互斥狀態
+
+      const s1block = document.getElementById('section1_block');
+      if(s1block){
+        s1block.addEventListener('input', buildSection1);
+        s1block.addEventListener('change', buildSection1);
+      }
+
       buildSection1(); // 初次預覽一次
     }
 
