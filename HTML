@@ -394,9 +394,14 @@
           </div>
           <div>
             <label>外出購物</label>
-            <select id="s1_shopping">
+            <select id="s1_shopping" onchange="toggleShoppingHow()">
               <option>可獨立</option><option selected>需陪同</option><option>不外出</option>
             </select>
+            <select id="s1_shopping_how" style="display:none; margin-top:6px;" onchange="toggleShoppingHow()">
+              <option value="" class="placeholder-option" disabled selected>方式/說明</option>
+              <option>家屬陪同購物</option><option>由家屬代購</option><option>使用外送平台</option><option>其他</option>
+            </select>
+            <input id="s1_shopping_how_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>備餐</label>
@@ -407,9 +412,13 @@
           </div>
           <div>
             <label>餐具清洗</label>
-            <select id="s1_dishwash">
-              <option>乾淨</option><option selected>尚可或不一定乾淨</option>
+            <select id="s1_dishwash" onchange="toggleDishwashHow()">
+              <option>乾淨</option><option selected>尚可或不一定乾淨</option><option>無法自行清洗</option>
             </select>
+            <select id="s1_dishwash_how" style="display:none; margin-top:6px;" onchange="toggleDishwashHow()">
+              <option>由他人代辦</option><option>其他</option>
+            </select>
+            <input id="s1_dishwash_how_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>家務整理</label>
@@ -430,9 +439,26 @@
         <div class="grid3" style="margin-top:8px;">
           <div>
             <label>睡眠品質</label>
-            <select id="s1_sleep">
-              <option>良好</option><option>尚可</option><option selected>不佳（疼痛/頻尿）</option>
+            <select id="s1_sleep" onchange="toggleSleepReason()">
+              <option>良好</option><option>尚可</option><option selected>不佳</option>
             </select>
+            <select id="s1_sleep_reason" style="display:none; margin-top:6px;" onchange="toggleSleepReasonDetail()">
+              <option value="" class="placeholder-option" disabled selected>失眠原因</option>
+              <option>疼痛</option>
+              <option>頻尿</option>
+              <option>慢性疾病</option>
+              <option>焦慮、憂鬱</option>
+              <option>生活壓力</option>
+              <option>環境干擾</option>
+              <option>不良睡眠習慣</option>
+              <option>日夜顛倒</option>
+              <option>藥物影響</option>
+              <option>咖啡因</option>
+              <option>酒精</option>
+              <option>其他</option>
+            </select>
+            <select id="s1_sleep_reason_detail" style="display:none; margin-top:6px;"></select>
+            <input id="s1_sleep_reason_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>白天活動（選填）</label>
@@ -456,7 +482,7 @@
           <div><label>固定就醫單位</label><input id="s1_follow_clinic" type="text" placeholder="例：嘉誠診所"></div>
           <div>
             <label>處方型態</label>
-            <select id="s1_rx_type"><option>慢箋</option><option>一般門診</option></select>
+            <select id="s1_rx_type"><option>慢性處方箋</option><option>一般門診</option></select>
           </div>
           <div>
             <label>用藥管理</label>
@@ -915,8 +941,17 @@
     // 字典
     const S1_VISION_NOTES = ['白內障術後','配戴眼鏡','其他'];
     const S1_LESION_SX_LIST = ['疼痛','搔癢','出血','紅腫','滲液','潰瘍','無不適'];
-    const S1_DHX_LIST     = ['高血壓','甲狀腺疾病','高膽固醇','焦慮','糖尿病','心臟病','腦血管','骨關節','其他'];
+    const S1_DHX_LIST     = ['高血壓','糖尿病','高脂血症','心臟病','腦中風','失智症','慢性腎臟病','慢性阻塞性肺病','退化性關節炎','其他'];
     const S1_MED_CLASSES  = ['降壓藥','甲狀腺藥','降脂藥','抗焦慮藥','其他'];
+    const INSOMNIA_DETAIL = {
+      '疼痛': ['關節炎','骨刺','神經病變','慢性病帶來'],
+      '頻尿': ['攝護腺肥大','膀胱功能下降','糖尿病','泌尿道疾病'],
+      '慢性疾病': ['心臟衰竭','咳嗽','呼吸困難'],
+      '生活壓力': ['經濟','家庭','健康狀況'],
+      '環境干擾': ['光線','噪音','溫度過高','溫度過低','床墊不舒適'],
+      '不良睡眠習慣': ['白天長時間小睡','晚間過度使用電視','晚間過度使用手機'],
+      '藥物影響': ['降壓藥','利尿劑','類固醇','抗憂鬱藥']
+    };
 
     // 聽力：兩層
     const HEARING_DETAIL = {
@@ -1140,6 +1175,64 @@
       const on = document.querySelector('#s1_med_classes_box input[value="其他"]')?.checked;
       document.getElementById('s1_med_classes_other').style.display = on?'':'none';
     }
+    function toggleShoppingHow(){
+      const sel=document.getElementById('s1_shopping');
+      const how=document.getElementById('s1_shopping_how');
+      const other=document.getElementById('s1_shopping_how_other');
+      if(!sel||!how||!other) return;
+      const show = sel.value==='需陪同' || sel.value==='不外出';
+      how.style.display = show ? '' : 'none';
+      if(!show){
+        how.value=''; other.style.display='none'; other.value='';
+        return;
+      }
+      const showOther = how.value==='其他';
+      other.style.display = showOther ? '' : 'none';
+      if(!showOther) other.value='';
+    }
+    function toggleDishwashHow(){
+      const sel=document.getElementById('s1_dishwash');
+      const how=document.getElementById('s1_dishwash_how');
+      const other=document.getElementById('s1_dishwash_how_other');
+      if(!sel||!how||!other) return;
+      const show = sel.value==='無法自行清洗';
+      how.style.display = show ? '' : 'none';
+      if(!show){
+        how.value='由他人代辦'; other.style.display='none'; other.value='';
+        return;
+      }
+      const showOther = how.value==='其他';
+      other.style.display = showOther ? '' : 'none';
+      if(!showOther) other.value='';
+    }
+    function toggleSleepReason(){
+      const sleep=document.getElementById('s1_sleep').value;
+      const reason=document.getElementById('s1_sleep_reason');
+      const detail=document.getElementById('s1_sleep_reason_detail');
+      const other=document.getElementById('s1_sleep_reason_other');
+      const show = sleep !== '良好';
+      reason.style.display = show ? '' : 'none';
+      if(!show){
+        reason.value=''; detail.style.display='none'; detail.innerHTML=''; other.style.display='none'; other.value='';
+        return;
+      }
+      toggleSleepReasonDetail();
+    }
+    function toggleSleepReasonDetail(){
+      const reason=document.getElementById('s1_sleep_reason').value;
+      const detail=document.getElementById('s1_sleep_reason_detail');
+      const other=document.getElementById('s1_sleep_reason_other');
+      const list=INSOMNIA_DETAIL[reason];
+      if(list){
+        detail.style.display=''; detail.innerHTML='<option value="" class="placeholder-option" disabled selected>請選擇</option>';
+        list.forEach(name=>{ const o=document.createElement('option'); o.textContent=name; detail.appendChild(o); });
+        other.style.display='none'; other.value='';
+      }else{
+        detail.style.display='none'; detail.innerHTML='';
+        if(reason==='其他'){ other.style.display=''; }
+        else { other.style.display='none'; other.value=''; }
+      }
+    }
     function syncDisab(from){
       const lv1=document.getElementById('s1_dis_level'); // 段一身障等級
       const cat1=document.getElementById('s1_dis_cat'); // 段一身障類別
@@ -1228,14 +1321,21 @@
       // 生活管理
       s.s1_phone = document.getElementById('s1_phone').value;
       s.s1_shopping = document.getElementById('s1_shopping').value;
+      s.s1_shopping_how = document.getElementById('s1_shopping_how').value;
+      s.s1_shopping_how_other = document.getElementById('s1_shopping_how_other').value;
       s.s1_meal_prep = document.getElementById('s1_meal_prep').value;
       s.s1_meal_prep_how = document.getElementById('s1_meal_prep_how').value;
       s.s1_dishwash = document.getElementById('s1_dishwash').value;
+      s.s1_dishwash_how = document.getElementById('s1_dishwash_how').value;
+      s.s1_dishwash_how_other = document.getElementById('s1_dishwash_how_other').value;
       s.s1_housework = document.getElementById('s1_housework').value;
       s.s1_housework_how = document.getElementById('s1_housework_how').value;
       s.s1_finance = document.getElementById('s1_finance').value;
       s.s1_finance_how = document.getElementById('s1_finance_how').value;
       s.s1_sleep = document.getElementById('s1_sleep').value;
+      s.s1_sleep_reason = document.getElementById('s1_sleep_reason').value;
+      s.s1_sleep_reason_detail = document.getElementById('s1_sleep_reason_detail').value;
+      s.s1_sleep_reason_other = document.getElementById('s1_sleep_reason_other').value;
       s.s1_daytime = document.getElementById('s1_daytime').value;
 
       // 疾病/用藥/就醫
@@ -1416,14 +1516,31 @@
       // ⑥ 生活管理/睡眠
       const lifeBits=[];
       if (has(s.s1_phone)) lifeBits.push(`電話使用${s.s1_phone}`);
-      if (has(s.s1_shopping)) lifeBits.push(`外出購物${s.s1_shopping}`);
+      if (has(s.s1_shopping)){
+        let shopping = s.s1_shopping;
+        if((shopping==='需陪同' || shopping==='不外出') && has(s.s1_shopping_how)){
+          let how = s.s1_shopping_how;
+          if(how==='其他' && has(s.s1_shopping_how_other)) how = s.s1_shopping_how_other;
+          if(has(how)) shopping += `（${how}）`;
+        }
+        lifeBits.push(`外出購物${shopping}`);
+      }
       const mealBits=[];
       if (has(s.s1_meal_prep)){
         let txt=`備餐${s.s1_meal_prep}`;
         if(s.s1_meal_prep==='部分協助' && has(s.s1_meal_prep_how)) txt+=`（部分協助方式：${s.s1_meal_prep_how}）`;
         mealBits.push(txt);
       }
-      if (has(s.s1_dishwash)) mealBits.push(`餐具清洗${s.s1_dishwash}`);
+      if (has(s.s1_dishwash)){
+        if(s.s1_dishwash==='無法自行清洗'){
+          let how = s.s1_dishwash_how;
+          if(how==='其他' && has(s.s1_dishwash_how_other)) how = s.s1_dishwash_how_other;
+          if(!has(how)) how='由他人代辦';
+          mealBits.push(`無法自行清洗餐具（${how}）`);
+        }else{
+          mealBits.push(`餐具清洗${s.s1_dishwash}`);
+        }
+      }
       if (has(s.s1_housework)){
         let txt=`家務整理${s.s1_housework}`;
         if(s.s1_housework==='部分協助' && has(s.s1_housework_how)) txt+=`（部分協助方式：${s.s1_housework_how}）`;
@@ -1435,7 +1552,19 @@
         if(s.s1_finance==='部分協助' && has(s.s1_finance_how)) txt+=`（部分協助方式：${s.s1_finance_how}）`;
         lifeBits.push(txt);
       }
-      if (has(s.s1_sleep)) lifeBits.push(`睡眠${s.s1_sleep}`);
+      if (has(s.s1_sleep)){
+        let sleep = s.s1_sleep;
+        if(s.s1_sleep!=='良好' && has(s.s1_sleep_reason)){
+          let reason = s.s1_sleep_reason;
+          if(reason==='其他' && has(s.s1_sleep_reason_other)){
+            reason = s.s1_sleep_reason_other;
+          }else if(has(s.s1_sleep_reason_detail)){
+            reason += `：${s.s1_sleep_reason_detail}`;
+          }
+          sleep += `（${reason}）`;
+        }
+        lifeBits.push(`睡眠${sleep}`);
+      }
       if (has(s.s1_daytime)) lifeBits.push(`白天多${s.s1_daytime}`);
       const p6 = lifeBits.join("，");
 
@@ -1961,6 +2090,7 @@
       toggleAdlHow('s1_adl_eating'); toggleAdlHow('s1_adl_groom'); toggleAdlHow('s1_adl_bathing');
       toggleAdlHow('s1_adl_dressing'); toggleAdlHow('s1_post_toilet'); toggleAdlHow('s1_meal_prep');
       toggleAdlHow('s1_housework'); toggleAdlHow('s1_finance');
+      toggleShoppingHow(); toggleDishwashHow(); toggleSleepReason();
       syncNoDiscomfort('s1_lesion_sx_box'); // 初始化互斥狀態
 
       const s1block = document.getElementById('section1_block');
