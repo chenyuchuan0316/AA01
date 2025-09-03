@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>AA01計畫助手</title>
   <style>
-    body { font-family: Arial, "Noto Sans TC", sans-serif; margin: 12px; }
+    body { font-family: Arial, "Noto Sans TC", sans-serif; margin: 12px; resize: horizontal; overflow: auto; }
     .group { border:1px solid #e5e5e5; border-radius:8px; padding:12px; margin-bottom:12px; }
     .row { display:flex; gap:8px; margin-bottom:8px; }
     .row > div { flex:1; }
@@ -155,11 +155,10 @@
 
     <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
     <div class="row">
-      <div>
+      <div id="s1">
         <div class="titlebar">
           <label>(一) 身心概況</label>
           <div class="btnbar">
-            <button class="small" onclick="buildSection1()">重組/預覽</button>
             <button class="small" onclick="buildSection1();polishOne('section1_out')">AI潤稿</button>
           </div>
         </div>
@@ -258,7 +257,7 @@
           <div>
             <label>側別</label>
             <select id="s1_laterality">
-              <option>無側別</option><option>左側</option><option>右側</option><option>雙側</option>
+              <option>左側</option><option>右側</option><option>雙側</option>
             </select>
           </div>
         </div>
@@ -396,9 +395,13 @@
           </div>
           <div>
             <label>外出購物</label>
-            <select id="s1_shopping">
+            <select id="s1_shopping" onchange="toggleShoppingHow()">
               <option>可獨立</option><option selected>需陪同</option><option>不外出</option>
             </select>
+            <select id="s1_shopping_how" style="display:none; margin-top:6px;" onchange="toggleShoppingHowOther()">
+              <option>家屬陪同購物</option><option>由家屬代購</option><option>使用外送平台</option><option>其他</option>
+            </select>
+            <input id="s1_shopping_how_other" type="text" placeholder="其他方式" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>備餐</label>
@@ -409,9 +412,13 @@
           </div>
           <div>
             <label>餐具清洗</label>
-            <select id="s1_dishwash">
-              <option>乾淨</option><option selected>尚可或不一定乾淨</option>
+            <select id="s1_dishwash" onchange="toggleDishwashHow()">
+              <option>乾淨</option><option selected>尚可或不一定乾淨</option><option>無法自行清洗</option>
             </select>
+            <select id="s1_dishwash_how" style="display:none; margin-top:6px;" onchange="toggleDishwashHowOther()">
+              <option>由他人代辦</option><option>其他</option>
+            </select>
+            <input id="s1_dishwash_how_other" type="text" placeholder="其他方式" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>家務整理</label>
@@ -442,15 +449,8 @@
           </div>
         </div>
         <div id="s1_sleep_causes_wrap" style="display:none; margin-top:6px;">
-          <label>睡眠原因</label>
-          <div class="checkcol" id="s1_sleep_causes_box">
-            <label><input type="checkbox" value="疼痛" onchange="toggleSleepCauseOther()"> 疼痛</label>
-            <label><input type="checkbox" value="頻尿" onchange="toggleSleepCauseOther()"> 頻尿</label>
-            <label><input type="checkbox" value="環境干擾" onchange="toggleSleepCauseOther()"> 環境干擾</label>
-            <label><input type="checkbox" value="日夜顛倒" onchange="toggleSleepCauseOther()"> 日夜顛倒</label>
-            <label><input type="checkbox" value="其他" onchange="toggleSleepCauseOther()"> 其他</label>
-          </div>
-          <input id="s1_sleep_cause_other" type="text" placeholder="其他原因" style="display:none; margin-top:6px;">
+          <label>失眠原因</label>
+          <div class="checkcol" id="s1_sleep_causes_box"></div>
         </div>
 
         <div class="hr"></div>
@@ -469,7 +469,7 @@
           <div><label>固定就醫單位</label><input id="s1_follow_clinic" type="text" placeholder="例：嘉誠診所"></div>
           <div>
             <label>處方型態</label>
-            <select id="s1_rx_type"><option>慢箋</option><option>一般門診</option></select>
+            <select id="s1_rx_type"><option>慢性處方籤</option><option>一般門診</option></select>
           </div>
           <div>
             <label>用藥管理</label>
@@ -928,8 +928,22 @@
     // 字典
     const S1_VISION_NOTES = ['白內障術後','配戴眼鏡','其他'];
     const S1_LESION_SX_LIST = ['疼痛','搔癢','出血','紅腫','滲液','潰瘍','無不適'];
-    const S1_DHX_LIST     = ['高血壓','甲狀腺疾病','高膽固醇','焦慮','糖尿病','心臟病','腦血管','骨關節','其他'];
+    const S1_DHX_LIST     = ['高血壓','糖尿病','高脂血症','心臟病','腦中風','失智症','慢性腎臟病','慢性阻塞性肺病','退化性關節炎','其他'];
     const S1_MED_CLASSES  = ['降壓藥','甲狀腺藥','降脂藥','抗焦慮藥','其他'];
+    const SLEEP_CAUSES = {
+      '疼痛':['關節炎','骨刺','神經病變','慢性病帶來'],
+      '頻尿':['攝護腺肥大','膀胱功能下降','糖尿病','泌尿道疾病'],
+      '慢性疾病':['心臟衰竭','咳嗽','呼吸困難'],
+      '焦慮、憂鬱':null,
+      '生活壓力':['經濟','家庭','健康狀況'],
+      '環境干擾':['光線','噪音','溫度過高','溫度過低','床墊不舒適'],
+      '不良睡眠習慣':['白天長時間小睡','晚間過度使用電視','晚間過度使用手機'],
+      '日夜顛倒':null,
+      '藥物影響':['降壓藥','利尿劑','類固醇','抗憂鬱藥'],
+      '咖啡因':null,
+      '酒精':null,
+      '其他':null
+    };
 
     // 聽力：兩層
     const HEARING_DETAIL = {
@@ -981,6 +995,8 @@
         meds.appendChild(lab);
       });
 
+      // 失眠原因
+      renderSleepCauses();
     }
 
     function setupLesionSymptomsBox(){
@@ -991,6 +1007,67 @@
         lab.innerHTML=`<input type="checkbox" value="${name}" id="${id}" onchange="syncNoDiscomfort('s1_lesion_sx_box')"> ${name}`;
         box.appendChild(lab);
       });
+    }
+
+    function renderSleepCauses(){
+      const box=document.getElementById('s1_sleep_causes_box'); box.innerHTML='';
+      let i=0;
+      for(const [cause, subs] of Object.entries(SLEEP_CAUSES)){
+        const id=`slc_${i++}`;
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${cause}" id="${id}" onchange="toggleSleepCause('${id}')"> ${cause}`;
+        box.appendChild(lab);
+        if(subs){
+          const sel=document.createElement('select');
+          sel.id=id+'_sub';
+          sel.style.display='none';
+          sel.innerHTML='<option value="" disabled selected>請選擇</option>' + subs.map(s=>`<option>${s}</option>`).join('');
+          sel.addEventListener('change', buildSection1);
+          box.appendChild(sel);
+        }
+        if(cause==='其他'){
+          const inp=document.createElement('input');
+          inp.id='sleep_other_text';
+          inp.type='text';
+          inp.placeholder='其他原因';
+          inp.style.display='none';
+          inp.addEventListener('input', buildSection1);
+          box.appendChild(inp);
+        }
+      }
+    }
+
+    function toggleSleepCause(id){
+      const chk=document.getElementById(id);
+      const cause=chk.value;
+      const sel=document.getElementById(id+'_sub');
+      if(sel){ sel.style.display = chk.checked ? '' : 'none'; if(!chk.checked) sel.value=''; }
+      if(cause==='其他'){
+        const inp=document.getElementById('sleep_other_text');
+        if(inp){ inp.style.display = chk.checked ? '' : 'none'; if(!chk.checked) inp.value=''; }
+      }
+      buildSection1();
+    }
+
+    function collectSleepCauses(){
+      const arr=[]; let i=0;
+      for(const [cause, subs] of Object.entries(SLEEP_CAUSES)){
+        const chk=document.getElementById(`slc_${i}`);
+        if(chk && chk.checked){
+          if(cause==='其他'){
+            const t=(document.getElementById('sleep_other_text')?.value||'').trim();
+            if(t) arr.push(`其他（${t}）`);
+          }else if(subs){
+            const sel=document.getElementById(`slc_${i}_sub`);
+            const sv=sel ? sel.value : '';
+            arr.push(sv?`${cause}（${sv}）`:cause);
+          }else{
+            arr.push(cause);
+          }
+        }
+        i++;
+      }
+      return arr;
     }
 
     // 連動
@@ -1090,9 +1167,9 @@
       const showLat = painOn && needLat;
       if(latWrap) latWrap.style.display = showLat ? '' : 'none';
 
-      // 維持原值控制：無需求時鎖定為「無側別」
+      // 無需求時清空側別
       latSel.disabled = !showLat;
-      if(!showLat){ latSel.value = '無側別'; }
+      if(!showLat){ latSel.value = ''; }
     }
 
     // 皮膚病灶顯示
@@ -1161,15 +1238,40 @@
       const v=document.getElementById('s1_urine_night').value;
       document.getElementById('s1_urine_night_other').style.display = (v==='其他')?'':'none';
     }
+    function toggleShoppingHow(){
+      const v=document.getElementById('s1_shopping').value;
+      const sel=document.getElementById('s1_shopping_how');
+      const show=(v==='需陪同' || v==='不外出');
+      sel.style.display=show?'':'none';
+      if(!show){ sel.value=''; document.getElementById('s1_shopping_how_other').style.display='none'; document.getElementById('s1_shopping_how_other').value=''; }
+      toggleShoppingHowOther();
+    }
+    function toggleShoppingHowOther(){
+      const sel=document.getElementById('s1_shopping_how');
+      const oth=document.getElementById('s1_shopping_how_other');
+      const show=(sel.style.display!== 'none' && sel.value==='其他');
+      oth.style.display=show?'':'none';
+      if(sel.style.display==='none'){ oth.value=''; }
+    }
+    function toggleDishwashHow(){
+      const v=document.getElementById('s1_dishwash').value;
+      const sel=document.getElementById('s1_dishwash_how');
+      const show=(v==='無法自行清洗');
+      sel.style.display=show?'':'none';
+      if(!show){ sel.value=''; document.getElementById('s1_dishwash_how_other').style.display='none'; document.getElementById('s1_dishwash_how_other').value=''; }
+      toggleDishwashHowOther();
+    }
+    function toggleDishwashHowOther(){
+      const sel=document.getElementById('s1_dishwash_how');
+      const oth=document.getElementById('s1_dishwash_how_other');
+      const show=(sel.style.display!== 'none' && sel.value==='其他');
+      oth.style.display=show?'':'none';
+      if(sel.style.display==='none'){ oth.value=''; }
+    }
     function toggleSleepCauses(){
       const v=document.getElementById('s1_sleep').value;
       const wrap=document.getElementById('s1_sleep_causes_wrap');
       wrap.style.display = (v==='良好')?'none':'';
-      toggleSleepCauseOther();
-    }
-    function toggleSleepCauseOther(){
-      const on=document.querySelector('#s1_sleep_causes_box input[value="其他"]')?.checked;
-      document.getElementById('s1_sleep_cause_other').style.display = on?'':'none';
     }
     function syncDisab(from){
       const lv1=document.getElementById('s1_dis_level'); // 段一身障等級
@@ -1223,7 +1325,7 @@
         if(oth) subreg = `其他（${oth}）`;
       }
       s.s1_subregion = subreg;
-      s.s1_laterality = document.getElementById('s1_laterality').value || '無側別';
+      s.s1_laterality = document.getElementById('s1_laterality').value;
 
       s.s1_lesion_has = document.getElementById('s1_lesion_has').value;
       let layer = document.getElementById('s1_lesion_layer').value;
@@ -1269,15 +1371,27 @@
       // 生活管理
       s.s1_phone = document.getElementById('s1_phone').value;
       s.s1_shopping = document.getElementById('s1_shopping').value;
+      let shopHow = document.getElementById('s1_shopping_how').value;
+      if(shopHow==='其他'){
+        const t=(document.getElementById('s1_shopping_how_other').value||'').trim();
+        if(t) shopHow = `其他（${t}）`;
+      }
+      s.s1_shopping_how = shopHow;
       s.s1_meal_prep = document.getElementById('s1_meal_prep').value;
       s.s1_meal_prep_how = document.getElementById('s1_meal_prep_how').value;
       s.s1_dishwash = document.getElementById('s1_dishwash').value;
+      let dwHow = document.getElementById('s1_dishwash_how').value;
+      if(dwHow==='其他'){
+        const t=(document.getElementById('s1_dishwash_how_other').value||'').trim();
+        if(t) dwHow = `其他（${t}）`;
+      }
+      s.s1_dishwash_how = dwHow;
       s.s1_housework = document.getElementById('s1_housework').value;
       s.s1_housework_how = document.getElementById('s1_housework_how').value;
       s.s1_finance = document.getElementById('s1_finance').value;
       s.s1_finance_how = document.getElementById('s1_finance_how').value;
       s.s1_sleep = document.getElementById('s1_sleep').value;
-      s.s1_sleep_causes = collectChecks('s1_sleep_causes_box','s1_sleep_cause_other');
+      s.s1_sleep_causes = collectSleepCauses();
       s.s1_daytime = document.getElementById('s1_daytime').value;
 
       // 疾病/用藥/就醫
@@ -1371,7 +1485,7 @@
       // 部位描述：大分類 → 細部分位 → 側別
       let siteBits = '';
       if (has(s.s1_body_region) || has(s.s1_subregion)){
-        const lat = s.s1_laterality && s.s1_laterality!=='無側別' ? `（${s.s1_laterality}）` : '';
+        const lat = s.s1_laterality ? `（${s.s1_laterality}）` : '';
         siteBits = `${s.s1_body_region||''}${s.s1_subregion? '－'+s.s1_subregion: ''}${lat}`;
       }
       const painBits = [];
@@ -1439,7 +1553,16 @@
       if (adlSub) adlBits.push(adlSub);
       const toiletBits=[];
       if (has(s.s1_urine_day)) toiletBits.push(`白天排尿${s.s1_urine_day}`);
-      if (has(s.s1_urine_night)) toiletBits.push(`夜間排尿${s.s1_urine_night}`);
+      if (has(s.s1_urine_night)){
+        const map={'無夜間排尿':'夜間未起夜','輕度（1次）':'夜間起夜1次','中度（2–3次）':'夜間起夜2–3次','失禁':'夜間有尿失禁'};
+        let nightVal=s.s1_urine_night;
+        if(nightVal.startsWith('其他')){
+          nightVal='夜間排尿'+nightVal.replace(/^其他/,'：');
+        }else{
+          nightVal=map[nightVal]||`夜間排尿${nightVal}`;
+        }
+        toiletBits.push(nightVal);
+      }
       if (has(s.s1_post_toilet)){
         let txt=`如廁後清潔${s.s1_post_toilet}`;
         if(s.s1_post_toilet==='部分協助' && has(s.s1_post_toilet_how)) txt+=`（部分協助方式：${s.s1_post_toilet_how}）`;
@@ -1457,7 +1580,15 @@
         };
         lifeBits.push(`電話使用：${phoneMap[s.s1_phone]||s.s1_phone}`);
       }
-      if (has(s.s1_shopping)) lifeBits.push(`外出購物${s.s1_shopping}`);
+      if (has(s.s1_shopping)){
+        let txt=`外出購物${s.s1_shopping}`;
+        if((s.s1_shopping==='需陪同' || s.s1_shopping==='不外出') && has(s.s1_shopping_how)){
+          let detail=s.s1_shopping_how;
+          if(detail.startsWith('其他（')) detail = detail.replace(/^其他（(.+)）$/, '$1');
+          txt+=`（${detail}）`;
+        }
+        lifeBits.push(txt);
+      }
       const mealBits=[];
       if (has(s.s1_meal_prep)){
         let txt=`備餐${s.s1_meal_prep}`;
@@ -1465,8 +1596,14 @@
         mealBits.push(txt);
       }
       if (has(s.s1_dishwash)){
-        const dishMap={'乾淨':'乾淨','尚可或不一定乾淨':'尚可或不穩定'};
-        mealBits.push(`餐具清潔度${dishMap[s.s1_dishwash]||s.s1_dishwash}`);
+        if(s.s1_dishwash==='無法自行清洗'){
+          let detail=s.s1_dishwash_how;
+          if(detail && detail.startsWith('其他（')) detail = detail.replace(/^其他（(.+)）$/, '$1');
+          mealBits.push(`無法自行清洗餐具${detail?`（${detail}）`:'（由他人代辦）'}`);
+        }else{
+          const dishMap={'乾淨':'乾淨','尚可或不一定乾淨':'尚可或不穩定'};
+          mealBits.push(`餐具清潔度${dishMap[s.s1_dishwash]||s.s1_dishwash}`);
+        }
       }
       if (has(s.s1_housework)){
         let txt=`家務整理${s.s1_housework}`;
@@ -2001,6 +2138,13 @@
         .applyAndSave(form);
     }
 
+    function bindS1AutoBuild(){
+      document.querySelectorAll('#s1 input, #s1 select, #s1 textarea').forEach(el=>{
+        el.addEventListener('change', buildSection1);
+        el.addEventListener('input', buildSection1);
+      });
+    }
+
     /* ===== 初始化 ===== */
     function initSection1State(){
       toggleVisionNotes(); toggleTransportOther(); toggleDhxOther(); toggleMedOther();
@@ -2010,19 +2154,20 @@
       toggleAdlHow('s1_adl_dressing'); toggleAdlHow('s1_post_toilet'); toggleAdlHow('s1_meal_prep');
       toggleAdlHow('s1_housework'); toggleAdlHow('s1_finance');
       toggleUrineDayOther(); toggleUrineNightOther();
-      toggleSleepCauses();
+      toggleShoppingHow(); toggleDishwashHow(); toggleSleepCauses();
       syncNoDiscomfort('s1_lesion_sx_box'); // 初始化互斥狀態
       buildSection1(); // 初次預覽一次
     }
 
     window.addEventListener('load', ()=>{
+      google.script.host.setWidth(document.body.clientWidth);
       setDateBox('callDate', new Date());
       setDateBox('visitDate', new Date());
       loadManagers();
       loadConsultants();
 
       // S1
-      renderS1(); initSection1State();
+      renderS1(); initSection1State(); bindS1AutoBuild();
 
       // 偕同訪視者：初次建立一筆空白行以利輸入（選配）
       // addExtraRow();
@@ -2047,6 +2192,7 @@
       document.getElementById('caseName')?.addEventListener('input', syncSocialPrimary);
 
     });
+    window.addEventListener('resize', ()=>{ google.script.host.setWidth(document.body.clientWidth); });
   </script>
 </body>
 </html>
