@@ -746,20 +746,24 @@
     <div class="row"><div>
       <label>(二) 短期目標(0-3個月)</label>
       <div class="grid2">
-        <div><label>照顧服務：</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
-        <div><label>專業服務：</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
-        <div><label>交通車服務：</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
-        <div><label>喘息服務：</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
+        <div id="short_care_wrap"><label>照顧服務：</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
+        <div id="short_prof_wrap"><label>專業服務：</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
+        <div id="short_car_wrap"><label>交通服務：</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
+        <div id="short_resp_wrap"><label>喘息服務：</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
+        <div id="short_access_wrap"><label>無障礙及輔具：</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
+        <div id="short_meal_wrap"><label>營養送餐：</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
       </div>
     </div></div>
 
     <div class="row"><div>
       <label>(三) 中期目標(3-4個月)</label>
       <div class="grid2">
-        <div><label>照顧服務：</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
-        <div><label>專業服務：</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
-        <div><label>交通車服務：</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
-        <div><label>喘息服務：</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
+        <div id="mid_care_wrap"><label>照顧服務：</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
+        <div id="mid_prof_wrap"><label>專業服務：</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
+        <div id="mid_car_wrap"><label>交通服務：</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
+        <div id="mid_resp_wrap"><label>喘息服務：</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
+        <div id="mid_access_wrap"><label>無障礙及輔具：</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
+        <div id="mid_meal_wrap"><label>營養送餐：</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
       </div>
     </div></div>
 
@@ -785,8 +789,15 @@
       <textarea id="reason3" placeholder="填寫欄位"></textarea>
       <div class="hr"></div>
       <label>常用快捷（勾選即加入第 3 格）</label>
-      <label><input type="checkbox" id="rq1"> 1..經與案○討論，目前暫無備餐之需求，改為代購服務。</label>
-      <label><input type="checkbox" id="rq2"> 2..經與案○討論，目前因個案身體狀況，暫無專業服務需求，日後待個案狀況好轉後，依當下狀況核定，續追蹤。</label>
+      <div style="margin:6px 0;">
+        <input id="rq1_no" type="text" placeholder="原服務，例如：備餐" style="margin-right:4px;">
+        <input id="rq1_alt" type="text" placeholder="替代服務，例如：代購服務">
+      </div>
+      <label><input type="checkbox" id="rq1"> 1.經與<span id="rq1_who">案○</span>討論，目前暫無<span id="rq1_no_preview" data-def="備餐">備餐</span>之需求，改為<span id="rq1_alt_preview" data-def="代購服務">代購服務</span>。</label>
+      <div style="margin:6px 0;">
+        <input id="rq2_service" type="text" placeholder="服務，例如：專業服務">
+      </div>
+      <label><input type="checkbox" id="rq2"> 2.經與<span id="rq2_who">案○</span>討論，目前因個案身體狀況，暫無<span id="rq2_service_preview" data-def="專業服務">專業服務</span>需求，日後待個案狀況好轉後，依當下狀況核定，續追蹤。</label>
     </div></div>
   </div>
 
@@ -1522,12 +1533,17 @@
       ['家暴或照顧疏忽風險','含自述暴力意念、疑似未通報'],
       ['自殺風險','意念/企圖/具體計畫/準備']
     ];
-    function renderFormal(){
-      const host=document.getElementById('sp_formal'); host.innerHTML='';
-      FORMAL.forEach((name)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${name}"> ${name}`; host.appendChild(lab);});
-      const rHost=document.getElementById('sp_risks'); rHost.innerHTML='';
-      RISKS.forEach((it,i)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${it[0]}"> ${i+1}. ${it[0]} <span class="muted">（${it[1]}）</span>`; rHost.appendChild(lab);});
-    }
+      function renderFormal(){
+        const host=document.getElementById('sp_formal'); host.innerHTML='';
+        FORMAL.forEach((name)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleGoalInputs()"> ${name}`;
+          host.appendChild(lab);
+        });
+        const rHost=document.getElementById('sp_risks'); rHost.innerHTML='';
+        RISKS.forEach((it,i)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${it[0]}"> ${i+1}. ${it[0]} <span class="muted">（${it[1]}）</span>`; rHost.appendChild(lab);});
+        toggleGoalInputs();
+      }
     function toggleInfInput(key){
       const on  = document.getElementById('sp_inf_'+key).checked;
       const name= document.getElementById('sp_inf_'+key+'_name');
@@ -1555,6 +1571,76 @@
           freq.value='';
         }
       });
+    }
+
+    function toggleGoalInputs(){
+      const selected=[...document.querySelectorAll('#sp_formal input[type=checkbox]:checked')].map(b=>b.value);
+      const hasCare = selected.includes('居家服務') || selected.includes('日間照顧') || selected.includes('專業服務');
+      const hasProf = selected.includes('專業服務');
+      const hasCar  = selected.includes('交通服務');
+      const hasResp = selected.includes('喘息服務');
+      const hasAcc  = selected.includes('無障礙及輔具');
+      const hasMeal = selected.includes('營養送餐');
+      setVisible('short_care_wrap', hasCare); setVisible('mid_care_wrap', hasCare);
+      setVisible('short_prof_wrap', hasProf); setVisible('mid_prof_wrap', hasProf);
+      setVisible('short_car_wrap', hasCar);   setVisible('mid_car_wrap', hasCar);
+      setVisible('short_resp_wrap', hasResp); setVisible('mid_resp_wrap', hasResp);
+      setVisible('short_access_wrap', hasAcc); setVisible('mid_access_wrap', hasAcc);
+      setVisible('short_meal_wrap', hasMeal);  setVisible('mid_meal_wrap', hasMeal);
+    }
+    function setVisible(id,on){ const el=document.getElementById(id); if(el) el.style.display = on? '' : 'none'; }
+
+    function bindQuickReasons(){
+      ['rq1_no','rq1_alt','rq2_service'].forEach(id=>{
+        const inp=document.getElementById(id);
+        const span=document.getElementById(id+'_preview');
+        if(inp && span){ const def=span.dataset.def; inp.addEventListener('input', ()=>{ span.textContent = inp.value || def; }); }
+      });
+      const rel=document.getElementById('sp_deciderRel');
+      const name=document.getElementById('sp_deciderName');
+      rel?.addEventListener('change', syncQuickWho);
+      name?.addEventListener('input', syncQuickWho);
+      syncQuickWho();
+      document.getElementById('rq1')?.addEventListener('change', ()=>toggleQuick(1));
+      document.getElementById('rq2')?.addEventListener('change', ()=>toggleQuick(2));
+    }
+    function syncQuickWho(){
+      const rel=document.getElementById('sp_deciderRel')?.value || '案';
+      const name=(document.getElementById('sp_deciderName')?.value || '').trim() || '○';
+      const who=rel+name;
+      ['rq1_who','rq2_who'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=who; });
+    }
+    function toggleQuick(idx){
+      const area=document.getElementById('reason3');
+      let text=''; let box;
+      const who=document.getElementById('rq1_who')?.textContent || '案○';
+      if(idx===1){
+        box=document.getElementById('rq1');
+        const no=document.getElementById('rq1_no').value || document.getElementById('rq1_no_preview').dataset.def;
+        const alt=document.getElementById('rq1_alt').value || document.getElementById('rq1_alt_preview').dataset.def;
+        text=`經與${who}討論，目前暫無${no}之需求，改為${alt}。`;
+      }else if(idx===2){
+        box=document.getElementById('rq2');
+        const svc=document.getElementById('rq2_service').value || document.getElementById('rq2_service_preview').dataset.def;
+        text=`經與${who}討論，目前因個案身體狀況，暫無${svc}需求，日後待個案狀況好轉後，依當下狀況核定，續追蹤。`;
+      }
+      if(!box) return;
+      if(box.checked){
+        area.value = appendSentence(area.value, text);
+        box.dataset.text=text;
+      }else{
+        area.value = removeSentence(area.value, box.dataset.text);
+        box.dataset.text='';
+      }
+    }
+    function appendSentence(base, text){
+      base=base.trim();
+      if(!base) return text;
+      if(!base.endsWith('。')) base+='。';
+      return base+text;
+    }
+    function removeSentence(base, text){
+      return (base||'').replace(text,'').trim();
     }
 
     function copyFromH1Primary(){
@@ -1700,16 +1786,18 @@
     }
     function buildLongGoal(){
       const parts=[];
-      const short={care: val('short_care'), prof:val('short_prof'), car:val('short_car'), resp:val('short_resp')};
-      const mid  ={care: val('mid_care'),   prof:val('mid_prof'),   car:val('mid_car'),   resp:val('mid_resp')};
+      const short={care: val('short_care'), prof:val('short_prof'), car:val('short_car'), resp:val('short_resp'), access:val('short_access'), meal:val('short_meal')};
+      const mid  ={care: val('mid_care'),   prof:val('mid_prof'),   car:val('mid_car'),   resp:val('mid_resp'), access:val('mid_access'), meal:val('mid_meal')};
       function val(id){return (document.getElementById(id).value||'').trim();}
       function push(tag, sc, mc){
         const arr=[sc, mc].filter(Boolean); if(arr.length) parts.push(`${tag}：${arr.join('；')}`);
       }
       push('照顧服務', short.care, mid.care);
       push('專業服務', short.prof, mid.prof);
-      push('交通車服務', short.car, mid.car);
+      push('交通服務', short.car, mid.car);
       push('喘息服務', short.resp, mid.resp);
+      push('無障礙及輔具', short.access, mid.access);
+      push('營養送餐', short.meal, mid.meal);
       document.getElementById('long_goal').value = parts.join('。') + (parts.length?'。':'');
     }
 
@@ -1814,10 +1902,14 @@
         short_prof: (document.getElementById('short_prof').value || '').trim(),
         short_car : (document.getElementById('short_car').value  || '').trim(),
         short_resp: (document.getElementById('short_resp').value || '').trim(),
+        short_access: (document.getElementById('short_access').value || '').trim(),
+        short_meal: (document.getElementById('short_meal').value || '').trim(),
         mid_care: (document.getElementById('mid_care').value || '').trim(),
         mid_prof: (document.getElementById('mid_prof').value || '').trim(),
         mid_car : (document.getElementById('mid_car').value  || '').trim(),
         mid_resp: (document.getElementById('mid_resp').value || '').trim(),
+        mid_access: (document.getElementById('mid_access').value || '').trim(),
+        mid_meal: (document.getElementById('mid_meal').value || '').trim(),
         long_goal: (document.getElementById('long_goal').value || '').trim(),
         // 產出前一致性潤稿
         doBatchPolish: document.getElementById('doBatchPolish').checked
@@ -1867,6 +1959,8 @@
       bindInfNameToFreq('nb');
       bindInfNameToFreq('rg');
       bindInfNameToFreq('fw');
+
+      bindQuickReasons();
 
       // 主照者關係/姓名：自動連動到(四)唯讀展示
       syncSocialPrimary();
