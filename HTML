@@ -40,11 +40,6 @@
 </head>
 <body>
 
-  <div class="row" style="align-items:center; margin-bottom:12px;">
-    <label for="sidebarWidth" style="flex:0 0 70px;">視窗寬度</label>
-    <input id="sidebarWidth" type="range" min="300" max="800" value="600">
-  </div>
-
   <!-- 基本資訊 -->
   <div class="group">
     <div class="row">
@@ -461,7 +456,7 @@
           <div><label>固定就醫單位</label><input id="s1_follow_clinic" type="text" placeholder="例：嘉誠診所"></div>
           <div>
             <label>處方型態</label>
-            <select id="s1_rx_type"><option>慢性處方籤</option><option>一般門診</option></select>
+            <select id="s1_rx_type"><option>慢箋</option><option>一般門診</option></select>
           </div>
           <div>
             <label>用藥管理</label>
@@ -816,13 +811,6 @@
   </div>
 
   <script>
-    const widthInput = document.getElementById('sidebarWidth');
-    if (widthInput) {
-      const updateWidth = () => google.script.host.setWidth(Number(widthInput.value));
-      widthInput.addEventListener('input', updateWidth);
-      updateWidth();
-    }
-
     /* ===== 日期工具 ===== */
     function toYMD(d){const y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),da=('0'+d.getDate()).slice(-2);return `${y}-${m}-${da}`;}
     function setDateBox(id,d){document.getElementById(id).textContent=toYMD(d);}
