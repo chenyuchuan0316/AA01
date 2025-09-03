@@ -61,7 +61,8 @@
       </div>
       <div>
         <label>照專姓名</label>
-        <select id="consultName"></select>
+        <select id="consultName">
+        </select>
       </div>
     </div>
   </div>
@@ -828,10 +829,11 @@
 
     /* ===== 照專名單 ===== */
     function loadConsultants(){
-      const unit=document.getElementById('unitCode').value;
+      const unit = document.getElementById('unitCode').value;
       google.script.run.withSuccessHandler(list=>{
-        const sel=document.getElementById('consultName'); sel.innerHTML='';
-        (list && list.length? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);});
+        const sel = document.getElementById('consultName');
+        sel.innerHTML='';
+        (list && list.length ? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);}); sel.selectedIndex=0;
       }).getConsultantsByUnit(unit);
     }
 
