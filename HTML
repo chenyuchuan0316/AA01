@@ -115,8 +115,8 @@
     <label><strong>三、偕同訪視者</strong></label>
     <div class="row">
       <div>
-        <label>主要照顧者關係 <span class="danger">*</span></label>
-        <select id="primaryRel" required onchange="enforcePrimaryExclusionOnExtras()">
+        <label>主要照顧者關係</label>
+        <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
           <option value="" class="placeholder-option" disabled selected>請選擇</option>
           <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
           <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
@@ -290,9 +290,10 @@
             </div>
             <div>
               <label>醫療評估</label>
-              <select id="s1_lesion_eval">
+              <select id="s1_lesion_eval" onchange="toggleLesionHospital()">
                 <option>未評估</option><option>醫師評估無大礙</option><option>已安排追蹤</option><option>持續治療中</option>
               </select>
+              <input id="s1_lesion_hospital" type="text" placeholder="醫療院所名稱" style="display:none; margin-top:6px;">
             </div>
           </div>
         </div>
@@ -331,27 +332,31 @@
         <div class="grid3" style="margin-top:8px;">
           <div>
             <label>進食</label>
-            <select id="s1_adl_eating">
+            <select id="s1_adl_eating" onchange="toggleAdlHow('s1_adl_eating')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
+            <input id="s1_adl_eating_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>刷牙/洗臉</label>
-            <select id="s1_adl_groom">
+            <select id="s1_adl_groom" onchange="toggleAdlHow('s1_adl_groom')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
+            <input id="s1_adl_groom_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>洗澡</label>
-            <select id="s1_adl_bathing">
+            <select id="s1_adl_bathing" onchange="toggleAdlHow('s1_adl_bathing')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
+            <input id="s1_adl_bathing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>穿脫衣</label>
-            <select id="s1_adl_dressing">
+            <select id="s1_adl_dressing" onchange="toggleAdlHow('s1_adl_dressing')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
+            <input id="s1_adl_dressing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>白天排尿</label>
@@ -369,9 +374,10 @@
           </div>
           <div>
             <label>如廁後清潔</label>
-            <select id="s1_post_toilet">
+            <select id="s1_post_toilet" onchange="toggleAdlHow('s1_post_toilet')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
+            <input id="s1_post_toilet_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
           </div>
         </div>
 
@@ -393,9 +399,10 @@
           </div>
           <div>
             <label>備餐</label>
-            <select id="s1_meal_prep">
+            <select id="s1_meal_prep" onchange="toggleAdlHow('s1_meal_prep')">
               <option>獨立</option><option selected>部分協助</option><option>完全由家屬</option>
             </select>
+            <input id="s1_meal_prep_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>餐具清洗</label>
@@ -405,15 +412,17 @@
           </div>
           <div>
             <label>家務整理</label>
-            <select id="s1_housework">
+            <select id="s1_housework" onchange="toggleAdlHow('s1_housework')">
               <option>獨立</option><option selected>部分協助</option><option>完全由家屬</option>
             </select>
+            <input id="s1_housework_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>財務管理</label>
-            <select id="s1_finance">
+            <select id="s1_finance" onchange="toggleAdlHow('s1_finance')">
               <option selected>獨立</option><option>部分協助</option><option>他人代辦</option>
             </select>
+            <input id="s1_finance_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
           </div>
         </div>
 
@@ -472,24 +481,19 @@
 
         <div class="hr"></div>
 
-        <!-- 身障（有才顯示） -->
+        <!-- 身障資訊（與經濟收入段落互相連動） -->
         <div class="grid3">
           <div>
-            <label>身心障礙證明</label>
-            <select id="s1_disab_has" onchange="toggleDisab()">
-              <option>無</option><option>有</option><option>未知</option>
-            </select>
-          </div>
-          <div id="s1_disab_grade_wrap" style="display:none;">
             <label>身障等級</label>
-            <select id="s1_disab_grade">
-              <option>輕度</option><option>中度</option><option>重度</option><option>極重度</option><option>未註記</option>
+            <!-- 段一身障等級，變更時同步至段二 -->
+            <select id="s1_dis_level" onchange="toggleS1DisCat(); syncDisab('s1');">
+              <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
             </select>
           </div>
-          <div id="s1_disab_type_wrap" style="display:none;">
-            <label>身障類別</label>
-            <div class="checkcol" id="s1_disab_type_box"></div>
-            <input id="s1_disab_note" type="text" placeholder="補充說明（選填）" style="margin-top:6px;">
+          <div id="s1_dis_cat_wrap" style="display:none;">
+            <label>身障類別（等級≠無才需選）</label>
+            <!-- 段一身障類別，與段二互相同步 -->
+            <select id="s1_dis_cat" onchange="syncDisab('s1');"></select>
           </div>
         </div>
 
@@ -524,13 +528,15 @@
           </div>
           <div>
             <label>身障等級</label>
+            <!-- 段二身障等級，觸發顯示類別與同步至段一 -->
             <select id="s2_dis_level" onchange="toggleDisCategory()">
               <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
             </select>
           </div>
           <div id="disCatBox" style="display:none;">
             <label>身障類別（等級≠無才需選）</label>
-            <select id="s2_dis_cat"></select>
+            <!-- 段二身障類別，變更時同步至段一並重建文字 -->
+            <select id="s2_dis_cat" onchange="syncDisab('s2'); buildS2()"></select>
           </div>
         </div>
         <textarea id="section2_out" style="display:none;"></textarea>
@@ -644,6 +650,7 @@
           <div>
             <label class="inline"><input type="checkbox" id="sp_inf_pt" onchange="toggleInfInput('pt')"> 據點</label>
             <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+            <!-- 據點頻率下拉選單 -->
             <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;">
             <option value="">—請選擇頻率—</option>
             <option>每週</option>
@@ -656,7 +663,8 @@
           <div>
             <label class="inline"><input type="checkbox" id="sp_inf_nb" onchange="toggleInfInput('nb')"> 鄰里</label>
             <input id="sp_inf_nb_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-            <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;">
+            <!-- 鄰里頻率下拉選單 -->
+            <select id="sp_inf_nb_freq" style="display:none; margin-top:6px;">
             <option value="">—請選擇頻率—</option>
             <option>每週</option>
             <option>每月</option>
@@ -668,7 +676,8 @@
           <div>
             <label class="inline"><input type="checkbox" id="sp_inf_rg" onchange="toggleInfInput('rg')"> 宗教/社團</label>
             <input id="sp_inf_rg_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-            <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;">
+            <!-- 宗教/社團頻率下拉選單 -->
+            <select id="sp_inf_rg_freq" style="display:none; margin-top:6px;">
             <option value="">—請選擇頻率—</option>
             <option>每週</option>
             <option>每月</option>
@@ -680,7 +689,8 @@
           <div>
             <label class="inline"><input type="checkbox" id="sp_inf_fw" onchange="toggleInfInput('fw')"> 財團/社會福利</label>
             <input id="sp_inf_fw_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-            <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;">
+            <!-- 財團/社會福利頻率下拉選單 -->
+            <select id="sp_inf_fw_freq" style="display:none; margin-top:6px;">
             <option value="">—請選擇頻率—</option>
             <option>每週</option>
             <option>每月</option>
@@ -893,7 +903,6 @@
     const S1_LESION_SX_LIST = ['疼痛','搔癢','出血','紅腫','滲液','潰瘍','無不適'];
     const S1_DHX_LIST     = ['高血壓','甲狀腺疾病','高膽固醇','焦慮','糖尿病','心臟病','腦血管','骨關節','其他'];
     const S1_MED_CLASSES  = ['降壓藥','甲狀腺藥','降脂藥','抗焦慮藥','其他'];
-    const S1_DISAB_TYPES  = ['視覺','聽覺','肢體','神經','語言','精神','智能','自閉症','多重','其他'];
 
     // 聽力：兩層
     const HEARING_DETAIL = {
@@ -945,15 +954,6 @@
         meds.appendChild(lab);
       });
 
-      // 身障類別
-      const dis=document.getElementById('s1_disab_type_box'); if (dis) {
-        dis.innerHTML='';
-        S1_DISAB_TYPES.forEach(name=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}"> ${name}`;
-          dis.appendChild(lab);
-        });
-      }
     }
 
     function setupLesionSymptomsBox(){
@@ -967,7 +967,12 @@
     }
 
     // 連動
-    function toggleVisionNotes(){ toggleVisionOther(); }
+    function toggleVisionNotes(){
+      const v=document.getElementById('s1_vision').value;
+      const chk=document.querySelector('#s1_vision_note_box input[value="配戴眼鏡"]');
+      if(chk && v==='即使配戴眼鏡，仍難以辨識'){ chk.checked=true; }
+      toggleVisionOther();
+    }
     function toggleVisionOther(){
       const hasOther = document.querySelector('#s1_vision_note_box input[value="其他"]')?.checked;
       document.getElementById('s1_vision_other').style.display = hasOther?'':'none';
@@ -1070,10 +1075,30 @@
       document.getElementById('s1_lesion_layer_wrap').style.display = on?'':'none';
       document.getElementById('s1_lesion_size_wrap').style.display = on?'':'none';
       document.getElementById('s1_lesion_more').style.display = on?'':'none';
+      toggleLesionHospital();
     }
     function toggleLesionLayerOther(){
       const v=document.getElementById('s1_lesion_layer').value;
       document.getElementById('s1_lesion_layer_other').style.display = (v==='其他')?'':'none';
+    }
+
+    function toggleLesionHospital(){
+      const has=document.getElementById('s1_lesion_has').value;
+      const evalv=document.getElementById('s1_lesion_eval').value;
+      const input=document.getElementById('s1_lesion_hospital');
+      if(!input) return;
+      const show = (has==='有' && evalv!=='未評估');
+      input.style.display = show ? '' : 'none';
+      if(!show) input.value='';
+    }
+
+    function toggleAdlHow(id){
+      const sel=document.getElementById(id);
+      const input=document.getElementById(id+'_how');
+      if(!sel||!input) return;
+      const show = sel.value==='部分協助';
+      input.style.display = show? '':'none';
+      if(!show) input.value='';
     }
 
     // 病灶症狀互斥（無不適）
@@ -1101,11 +1126,29 @@
       const on = document.querySelector('#s1_med_classes_box input[value="其他"]')?.checked;
       document.getElementById('s1_med_classes_other').style.display = on?'':'none';
     }
-    function toggleDisab(){
-      const v=document.getElementById('s1_disab_has').value;
-      const on=(v==='有');
-      document.getElementById('s1_disab_grade_wrap').style.display = on?'':'none';
-      document.getElementById('s1_disab_type_wrap').style.display = on?'':'none';
+    // 段一：依等級顯示或隱藏身障類別
+    function toggleS1DisCat(){
+      const lv=document.getElementById('s1_dis_level').value;
+      document.getElementById('s1_dis_cat_wrap').style.display = (lv && lv!=='無') ? '' : 'none';
+    }
+
+    // 段一與段二身障資訊互相同步
+    function syncDisab(from){
+      const s1Level=document.getElementById('s1_dis_level');
+      const s1Cat=document.getElementById('s1_dis_cat');
+      const s2Level=document.getElementById('s2_dis_level');
+      const s2Cat=document.getElementById('s2_dis_cat');
+      if(from==='s1' && s1Level && s2Level){
+        // 從段一同步至段二
+        s2Level.value = s1Level.value;
+        if(s2Cat) s2Cat.value = s1Cat.value;
+        toggleDisCategory();
+      }else if(from==='s2' && s2Level && s1Level){
+        // 從段二同步至段一
+        s1Level.value = s2Level.value;
+        if(s1Cat) s1Cat.value = s2Cat.value;
+        toggleS1DisCat();
+      }
     }
 
     // 蒐集
@@ -1155,7 +1198,9 @@
       s.s1_lesion_layer = layer || '無';
       s.s1_lesion_size  = document.getElementById('s1_lesion_size').value;
       s.s1_lesion_sx    = collectChecks('s1_lesion_sx_box');
+      if(s.s1_lesion_has==='有' && Array.isArray(s.s1_lesion_sx) && s.s1_lesion_sx.length===0){ s.s1_lesion_sx=['無不適']; }
       s.s1_lesion_eval  = document.getElementById('s1_lesion_eval').value;
+      s.s1_lesion_hospital = document.getElementById('s1_lesion_hospital').value;
 
       // 行動/ADL/排泄
       s.s1_transfer = document.getElementById('s1_transfer').value;
@@ -1163,20 +1208,28 @@
       s.s1_walk_outdoor = document.getElementById('s1_walk_outdoor').value;
       s.s1_stairs = document.getElementById('s1_stairs').value;
       s.s1_adl_eating = document.getElementById('s1_adl_eating').value;
+      s.s1_adl_eating_how = document.getElementById('s1_adl_eating_how').value;
       s.s1_adl_groom = document.getElementById('s1_adl_groom').value;
+      s.s1_adl_groom_how = document.getElementById('s1_adl_groom_how').value;
       s.s1_adl_bathing = document.getElementById('s1_adl_bathing').value;
+      s.s1_adl_bathing_how = document.getElementById('s1_adl_bathing_how').value;
       s.s1_adl_dressing = document.getElementById('s1_adl_dressing').value;
+      s.s1_adl_dressing_how = document.getElementById('s1_adl_dressing_how').value;
       s.s1_urine_day = document.getElementById('s1_urine_day').value;
       s.s1_urine_night = document.getElementById('s1_urine_night').value;
       s.s1_post_toilet = document.getElementById('s1_post_toilet').value;
+      s.s1_post_toilet_how = document.getElementById('s1_post_toilet_how').value;
 
       // 生活管理
       s.s1_phone = document.getElementById('s1_phone').value;
       s.s1_shopping = document.getElementById('s1_shopping').value;
       s.s1_meal_prep = document.getElementById('s1_meal_prep').value;
+      s.s1_meal_prep_how = document.getElementById('s1_meal_prep_how').value;
       s.s1_dishwash = document.getElementById('s1_dishwash').value;
       s.s1_housework = document.getElementById('s1_housework').value;
+      s.s1_housework_how = document.getElementById('s1_housework_how').value;
       s.s1_finance = document.getElementById('s1_finance').value;
+      s.s1_finance_how = document.getElementById('s1_finance_how').value;
       s.s1_sleep = document.getElementById('s1_sleep').value;
       s.s1_daytime = document.getElementById('s1_daytime').value;
 
@@ -1194,10 +1247,8 @@
       s.s1_med_classes = collectChecks('s1_med_classes_box','s1_med_classes_other');
 
       // 身障
-      s.s1_disab_has = document.getElementById('s1_disab_has').value;
-      s.s1_disab_grade = document.getElementById('s1_disab_grade').value;
-      s.s1_disab_type = collectChecks('s1_disab_type_box');
-      s.s1_disab_note = document.getElementById('s1_disab_note').value;
+      s.s1_dis_level = document.getElementById('s1_dis_level').value;
+      s.s1_dis_cat = document.getElementById('s1_dis_cat').value;
 
       // 補充
       s.s1_notes = document.getElementById('s1_notes').value;
@@ -1292,6 +1343,9 @@
         lesionBits.push(`大小：${size}`);
         lesionBits.push(`症狀：${sxTxt}`);
         lesionBits.push(`醫療評估：${s.s1_lesion_eval||'未評估'}`);
+        if (has(s.s1_lesion_hospital) && s.s1_lesion_eval && s.s1_lesion_eval!=='未評估') {
+          lesionBits.push(`醫療院所名稱：${s.s1_lesion_hospital}`);
+        }
       }
       const p3 = [painBits.join('，'), lesionBits.join('，')].filter(Boolean).join('；');
 
@@ -1305,17 +1359,37 @@
 
       // ⑤ ADL/排泄
       const adlBits=[];
-      if (has(s.s1_adl_eating)) adlBits.push(`進食${s.s1_adl_eating}`);
-      const adlSub=[
-        has(s.s1_adl_groom)?`刷牙/洗臉${s.s1_adl_groom}`:null,
-        has(s.s1_adl_bathing)?`洗澡${s.s1_adl_bathing}`:null,
-        has(s.s1_adl_dressing)?`穿脫衣${s.s1_adl_dressing}`:null
-      ].filter(Boolean).join("、");
+      if (has(s.s1_adl_eating)){
+        let txt=`進食${s.s1_adl_eating}`;
+        if(s.s1_adl_eating==='部分協助' && has(s.s1_adl_eating_how)) txt+=`（部分協助方式：${s.s1_adl_eating_how}）`;
+        adlBits.push(txt);
+      }
+      const adlSubArr=[];
+      if (has(s.s1_adl_groom)){
+        let txt=`刷牙/洗臉${s.s1_adl_groom}`;
+        if(s.s1_adl_groom==='部分協助' && has(s.s1_adl_groom_how)) txt+=`（部分協助方式：${s.s1_adl_groom_how}）`;
+        adlSubArr.push(txt);
+      }
+      if (has(s.s1_adl_bathing)){
+        let txt=`洗澡${s.s1_adl_bathing}`;
+        if(s.s1_adl_bathing==='部分協助' && has(s.s1_adl_bathing_how)) txt+=`（部分協助方式：${s.s1_adl_bathing_how}）`;
+        adlSubArr.push(txt);
+      }
+      if (has(s.s1_adl_dressing)){
+        let txt=`穿脫衣${s.s1_adl_dressing}`;
+        if(s.s1_adl_dressing==='部分協助' && has(s.s1_adl_dressing_how)) txt+=`（部分協助方式：${s.s1_adl_dressing_how}）`;
+        adlSubArr.push(txt);
+      }
+      const adlSub=adlSubArr.join("、");
       if (adlSub) adlBits.push(adlSub);
       const toiletBits=[];
       if (has(s.s1_urine_day)) toiletBits.push(`白天排尿${s.s1_urine_day}`);
       if (has(s.s1_urine_night)) toiletBits.push(`夜間排尿${s.s1_urine_night}`);
-      if (has(s.s1_post_toilet)) toiletBits.push(`如廁後清潔${s.s1_post_toilet}`);
+      if (has(s.s1_post_toilet)){
+        let txt=`如廁後清潔${s.s1_post_toilet}`;
+        if(s.s1_post_toilet==='部分協助' && has(s.s1_post_toilet_how)) txt+=`（部分協助方式：${s.s1_post_toilet_how}）`;
+        toiletBits.push(txt);
+      }
       const p5 = [adlBits.join("；"), toiletBits.join("，")].filter(Boolean).join("；");
 
       // ⑥ 生活管理/睡眠
@@ -1323,11 +1397,23 @@
       if (has(s.s1_phone)) lifeBits.push(`電話使用${s.s1_phone}`);
       if (has(s.s1_shopping)) lifeBits.push(`外出購物${s.s1_shopping}`);
       const mealBits=[];
-      if (has(s.s1_meal_prep)) mealBits.push(`備餐${s.s1_meal_prep}`);
+      if (has(s.s1_meal_prep)){
+        let txt=`備餐${s.s1_meal_prep}`;
+        if(s.s1_meal_prep==='部分協助' && has(s.s1_meal_prep_how)) txt+=`（部分協助方式：${s.s1_meal_prep_how}）`;
+        mealBits.push(txt);
+      }
       if (has(s.s1_dishwash)) mealBits.push(`餐具清洗${s.s1_dishwash}`);
-      if (has(s.s1_housework)) mealBits.push(`家務整理${s.s1_housework}`);
+      if (has(s.s1_housework)){
+        let txt=`家務整理${s.s1_housework}`;
+        if(s.s1_housework==='部分協助' && has(s.s1_housework_how)) txt+=`（部分協助方式：${s.s1_housework_how}）`;
+        mealBits.push(txt);
+      }
       if (mealBits.length) lifeBits.push(mealBits.join("、"));
-      if (has(s.s1_finance)) lifeBits.push(`具金錢觀念，財務管理${s.s1_finance}`);
+      if (has(s.s1_finance)){
+        let txt=`具金錢觀念，財務管理${s.s1_finance}`;
+        if(s.s1_finance==='部分協助' && has(s.s1_finance_how)) txt+=`（部分協助方式：${s.s1_finance_how}）`;
+        lifeBits.push(txt);
+      }
       if (has(s.s1_sleep)) lifeBits.push(`睡眠${s.s1_sleep}`);
       if (has(s.s1_daytime)) lifeBits.push(`白天多${s.s1_daytime}`);
       const p6 = lifeBits.join("，");
@@ -1344,28 +1430,21 @@
           ? `平時${s.s1_med_manage||""}，並以${s.s1_visit_transport||"既定方式"}就醫` : null
       ]);
 
-      // ⑧ 身障（有才輸出）
-      const p8 = (String(s.s1_disab_has)==="有")
-        ? join([
-            "持有身心障礙證明",
-            (Array.isArray(s.s1_disab_type)&&s.s1_disab_type.length)?`類別：${listCN(s.s1_disab_type)}`:null,
-            has(s.s1_disab_grade)?`等級：${s.s1_disab_grade}`:null,
-            has(s.s1_disab_note)?s.s1_disab_note:null
-          ])
-        : "";
+      // ⑧ 身障資訊移至經濟收入段落，故此不輸出
+      const p8 = "";
 
       // ⑨ 補充（有才輸出）
       const p9 = has(s.s1_notes) ? s.s1_notes : "";
 
-      const segments=[p1,p2,p3,p4,p5,p6,p7,p8,p9].filter(Boolean);
-      return `（一）身心概況：${segments.join("。")}。`;
+      const segments=[p1,p2,p3,p4,p5,p6,p7,p9].filter(Boolean);
+      return `${segments.join("。")}。`;
     }
 
     function buildSection1(){
       const s = collectS1();
       const text = buildSection1Text_v2(s);
       document.getElementById('section1_out').value = text;
-      document.getElementById('section1_preview').textContent = text;
+      document.getElementById('section1_preview').textContent = `（一）身心概況：${text}`;
       return text;
     }
 
@@ -1390,12 +1469,20 @@
         host.appendChild(lab);
       });
       const catSel=document.getElementById('s2_dis_cat'); catSel.innerHTML='';
-      S2_CATS.forEach(c=>{const o=document.createElement('option'); o.textContent=c; catSel.appendChild(o);});
+      S2_CATS.forEach(c=>{ const o=document.createElement('option'); o.textContent=c; catSel.appendChild(o); });
+      // 段一身障類別選單也使用相同選項
+      const s1CatSel=document.getElementById('s1_dis_cat');
+      if(s1CatSel){
+        s1CatSel.innerHTML='';
+        S2_CATS.forEach(c=>{ const o=document.createElement('option'); o.textContent=c; s1CatSel.appendChild(o); });
+      }
     }
     function toggleDisCategory(){
       const lv=document.getElementById('s2_dis_level').value;
       document.getElementById('disCatBox').style.display= (lv && lv!=='無') ? '' : 'none';
       buildS2();
+      // 段二調整時同步回段一
+      syncDisab('s2');
     }
     function buildS2(){
       const srcs=[...document.querySelectorAll('#s2_sources input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
@@ -1489,9 +1576,11 @@
     }
 
     function copyFromH1Primary(){
-      const rel=document.getElementById('primaryRel').value;
-      const name=document.getElementById('primaryName').value;
-      if(!rel||!name){ alert('三、偕同訪視者的主要照顧者尚未完整。'); return; }
+      let rel=document.getElementById('primaryRel').value;
+      let name=(document.getElementById('primaryName').value||'').trim();
+      const caseName=(document.getElementById('caseName').value||'').trim();
+      if(!rel){ rel='本人'; if(!name) name=caseName; }
+      if(!name){ alert('三、偕同訪視者的主要照顧者尚未完整。'); return; }
       document.getElementById('sp_primaryRel').value= rel==='自訂角色'?'自訂角色':rel;
       document.getElementById('sp_primaryName').value= name;
     }
@@ -1525,8 +1614,10 @@
     }
     function buildSection4(){
       // ① 主照者（改讀三、偕同訪視者）
-      const pr = (document.getElementById('primaryRel').value || '').trim();
-      const pn = (document.getElementById('primaryName').value || '').trim();
+      let pr = (document.getElementById('primaryRel').value || '').trim();
+      let pn = (document.getElementById('primaryName').value || '').trim();
+      const caseName=(document.getElementById('caseName').value||'').trim();
+      if(!pr){ pr='本人'; if(!pn) pn=caseName; }
       const ch = (document.getElementById('sp_cohabit').value || '').trim();
 
       // ② 主要聯繫人/決策者（維持原機制）
@@ -1576,8 +1667,10 @@
       document.getElementById('section4_out').value = s;
     }
     function syncSocialPrimary(){
-      const rel  = document.getElementById('primaryRel')?.value || '';
-      const name = (document.getElementById('primaryName')?.value || '').trim();
+      let rel  = document.getElementById('primaryRel')?.value || '';
+      let name = (document.getElementById('primaryName')?.value || '').trim();
+      const caseName = (document.getElementById('caseName')?.value || '').trim();
+      if(!rel){ rel='本人'; if(!name) name=caseName; }
       const relBox  = document.getElementById('sp_primaryRel_text');
       const nameBox = document.getElementById('sp_primaryName_text');
       if(relBox)  relBox.textContent  = rel || '—';
@@ -1592,7 +1685,7 @@
       let s='';
       if(b) s += `介入前：${b}`;
       if(a) s += (s? '；':'') + `介入後：${a}`;
-      if(s) s+='。'; else s='';
+      if(s) s+='。'; else s='此個案為新案，無複評評值。';
       document.getElementById('section6_struct').value = s;
     }
 
@@ -1646,7 +1739,8 @@
       if(key==='section4_out') buildSection4();
       if(key==='section6_struct') buildSection6();
 
-      const text = (document.getElementById(key).value||'').trim();
+      let text = (document.getElementById(key).value||'').trim();
+      if(key==='section1_out') text = text.replace(/^（一）身心概況：/,'');
       const ctx  = {
         age: document.getElementById('s1_age').value,
         gender: document.getElementById('s1_gender').value,
@@ -1655,13 +1749,39 @@
         problems: getSelectedProblems()
       };
       google.script.run.withSuccessHandler(res=>{
-        document.getElementById(key).value = res && res.text ? res.text : text;
-        if(key==='section1_out'){ document.getElementById('section1_preview').textContent = document.getElementById(key).value; }
+        if(key==='section1_out'){
+          const cleaned=(res && res.text ? res.text : text).replace(/^（一）身心概況：/,'');
+          document.getElementById(key).value = cleaned;
+          document.getElementById('section1_preview').textContent = `（一）身心概況：${cleaned}`;
+        }else{
+          document.getElementById(key).value = res && res.text ? res.text : text;
+        }
         alert('AI潤稿完成（已更新於欄位）。');
       }).polishSection(key, text, ctx);
     }
 
     /* ===== 送出 ===== */
+    function validatePartialAssist(msg){
+      const fields=[
+        ['s1_adl_eating','進食'],
+        ['s1_adl_groom','刷牙/洗臉'],
+        ['s1_adl_bathing','洗澡'],
+        ['s1_adl_dressing','穿脫衣'],
+        ['s1_post_toilet','如廁後清潔'],
+        ['s1_meal_prep','備餐'],
+        ['s1_housework','家務整理'],
+        ['s1_finance','財務管理']
+      ];
+      for(const [id,label] of fields){
+        const sel=document.getElementById(id);
+        const how=document.getElementById(id+'_how');
+        if(sel && sel.value==='部分協助'){
+          if(!how || !how.value.trim()){ if(msg) msg.textContent=`請填寫：${label}的部分協助方式`; return false; }
+        }
+      }
+      return true;
+    }
+
     function applyAndSave(){
       const msg=document.getElementById('msg'); msg.textContent='';
       const unitCode=document.getElementById('unitCode').value;
@@ -1670,9 +1790,18 @@
       const consultName=(document.getElementById('consultName').value||'').trim();
       if(!caseName){ msg.textContent='請輸入：個案姓名'; return; }
 
-      const primaryCaregiverRel = (document.getElementById('primaryRel').value||'').trim();
-      const primaryCaregiverName= (document.getElementById('primaryName').value||'').trim();
-      if(!primaryCaregiverRel){ msg.textContent='請選擇：主要照顧者關係'; return; }
+      let primaryCaregiverRel = (document.getElementById('primaryRel').value||'').trim();
+      let primaryCaregiverName= (document.getElementById('primaryName').value||'').trim();
+      if(!primaryCaregiverRel){ primaryCaregiverRel='本人'; if(!primaryCaregiverName) primaryCaregiverName = caseName; }
+
+      if(!validatePartialAssist(msg)) return;
+      if(document.getElementById('s1_lesion_has').value==='有'){
+        const evalv=document.getElementById('s1_lesion_eval').value;
+        if(evalv!=='未評估'){
+          const hosp=(document.getElementById('s1_lesion_hospital').value||'').trim();
+          if(!hosp){ msg.textContent='請填寫：醫療院所名稱'; return; }
+        }
+      }
 
       // 組裝各段
       buildSection1();
@@ -1690,7 +1819,7 @@
         includePrimary: true,              // 固定預設輸出
         extras: collectExtras(),
         // 四、個案概況（已組句）
-        section1: (document.getElementById('section1_out').value || '').trim(),
+        section1: (document.getElementById('section1_out').value || '').trim().replace(/^（一）身心概況：/, ''),
         section2: (document.getElementById('section2_out').value || '').trim(),
         section3: (document.getElementById('section3_out').value || '').trim(),
         section4: (document.getElementById('section4_out').value || '').trim(),
@@ -1725,9 +1854,13 @@
 
     /* ===== 初始化 ===== */
     function initSection1State(){
-      toggleVisionNotes(); toggleTransportOther(); toggleDhxOther(); toggleMedOther(); toggleDisab();
-      toggleLesionCombined(); toggleLesionLayerOther(); togglePainCombined();
+      toggleVisionNotes(); toggleTransportOther(); toggleDhxOther(); toggleMedOther();
+      toggleS1DisCat(); syncDisab('s1');
+      toggleLesionCombined(); toggleLesionLayerOther(); togglePainCombined(); toggleLesionHospital();
       renderHearingDetails(); updateSubregion(); updateLaterality();
+      toggleAdlHow('s1_adl_eating'); toggleAdlHow('s1_adl_groom'); toggleAdlHow('s1_adl_bathing');
+      toggleAdlHow('s1_adl_dressing'); toggleAdlHow('s1_post_toilet'); toggleAdlHow('s1_meal_prep');
+      toggleAdlHow('s1_housework'); toggleAdlHow('s1_finance');
       syncNoDiscomfort('s1_lesion_sx_box'); // 初始化互斥狀態
       buildSection1(); // 初次預覽一次
     }
@@ -1744,7 +1877,7 @@
       // addExtraRow();
 
       // 其它原有初始化
-      renderS2(); toggleDisCategory();
+      renderS2(); toggleDisCategory(); toggleS1DisCat(); syncDisab('s1');
       renderS3(); toggleOtherType(); buildS3();
       renderFormal();
       renderProblems(); limitProblems();
@@ -1758,6 +1891,7 @@
       syncSocialPrimary();
       document.getElementById('primaryRel')?.addEventListener('change', syncSocialPrimary);
       document.getElementById('primaryName')?.addEventListener('input',  syncSocialPrimary);
+      document.getElementById('caseName')?.addEventListener('input', syncSocialPrimary);
 
     });
   </script>
