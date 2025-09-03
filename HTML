@@ -271,7 +271,7 @@
             </select>
           </div>
           <div id="s1_lesion_layer_wrap" style="display:none;">
-            <label>病灶部位</label>
+            <label>病灶層級</label>
             <select id="s1_lesion_layer" onchange="toggleLesionLayerOther()">
               <option>無</option><option>表皮</option><option>皮下</option><option>關節附近</option><option>其他</option>
             </select>
@@ -361,17 +361,19 @@
           </div>
           <div>
             <label>白天排尿</label>
-            <select id="s1_urine_day">
+            <select id="s1_urine_day" onchange="toggleUrineDayOther()">
               <option selected>正常（4–6次）</option><option>偏少（少於3次）</option><option>偏多（7–9次）</option><option>失禁</option><option>其他</option>
 
             </select>
+            <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>夜間排尿</label>
-            <select id="s1_urine_night">
+            <select id="s1_urine_night" onchange="toggleUrineNightOther()">
               <option selected>無夜間排尿</option><option>輕度（1次）</option><option>中度（2–3次）</option><option>失禁</option><option>其他</option>
 
             </select>
+            <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>如廁後清潔</label>
@@ -430,14 +432,25 @@
         <div class="grid3" style="margin-top:8px;">
           <div>
             <label>睡眠品質</label>
-            <select id="s1_sleep">
-              <option>良好</option><option>尚可</option><option selected>不佳（疼痛/頻尿）</option>
+            <select id="s1_sleep" onchange="toggleSleepCauses()">
+              <option>良好</option><option>尚可</option><option selected>不佳</option>
             </select>
           </div>
           <div>
             <label>白天活動（選填）</label>
             <input id="s1_daytime" type="text" placeholder="例：坐後門外看電視，累了打盹">
           </div>
+        </div>
+        <div id="s1_sleep_causes_wrap" style="display:none; margin-top:6px;">
+          <label>睡眠原因</label>
+          <div class="checkcol" id="s1_sleep_causes_box">
+            <label><input type="checkbox" value="疼痛" onchange="toggleSleepCauseOther()"> 疼痛</label>
+            <label><input type="checkbox" value="頻尿" onchange="toggleSleepCauseOther()"> 頻尿</label>
+            <label><input type="checkbox" value="環境干擾" onchange="toggleSleepCauseOther()"> 環境干擾</label>
+            <label><input type="checkbox" value="日夜顛倒" onchange="toggleSleepCauseOther()"> 日夜顛倒</label>
+            <label><input type="checkbox" value="其他" onchange="toggleSleepCauseOther()"> 其他</label>
+          </div>
+          <input id="s1_sleep_cause_other" type="text" placeholder="其他原因" style="display:none; margin-top:6px;">
         </div>
 
         <div class="hr"></div>
@@ -1140,6 +1153,24 @@
       const on = document.querySelector('#s1_med_classes_box input[value="其他"]')?.checked;
       document.getElementById('s1_med_classes_other').style.display = on?'':'none';
     }
+    function toggleUrineDayOther(){
+      const v=document.getElementById('s1_urine_day').value;
+      document.getElementById('s1_urine_day_other').style.display = (v==='其他')?'':'none';
+    }
+    function toggleUrineNightOther(){
+      const v=document.getElementById('s1_urine_night').value;
+      document.getElementById('s1_urine_night_other').style.display = (v==='其他')?'':'none';
+    }
+    function toggleSleepCauses(){
+      const v=document.getElementById('s1_sleep').value;
+      const wrap=document.getElementById('s1_sleep_causes_wrap');
+      wrap.style.display = (v==='良好')?'none':'';
+      toggleSleepCauseOther();
+    }
+    function toggleSleepCauseOther(){
+      const on=document.querySelector('#s1_sleep_causes_box input[value="其他"]')?.checked;
+      document.getElementById('s1_sleep_cause_other').style.display = on?'':'none';
+    }
     function syncDisab(from){
       const lv1=document.getElementById('s1_dis_level'); // 段一身障等級
       const cat1=document.getElementById('s1_dis_cat'); // 段一身障類別
@@ -1220,8 +1251,18 @@
       s.s1_adl_bathing_how = document.getElementById('s1_adl_bathing_how').value;
       s.s1_adl_dressing = document.getElementById('s1_adl_dressing').value;
       s.s1_adl_dressing_how = document.getElementById('s1_adl_dressing_how').value;
-      s.s1_urine_day = document.getElementById('s1_urine_day').value;
-      s.s1_urine_night = document.getElementById('s1_urine_night').value;
+      let urineDay = document.getElementById('s1_urine_day').value;
+      if(urineDay==='其他'){
+        const t=(document.getElementById('s1_urine_day_other').value||'').trim();
+        if(t) urineDay = `其他（${t}）`;
+      }
+      s.s1_urine_day = urineDay;
+      let urineNight = document.getElementById('s1_urine_night').value;
+      if(urineNight==='其他'){
+        const t=(document.getElementById('s1_urine_night_other').value||'').trim();
+        if(t) urineNight = `其他（${t}）`;
+      }
+      s.s1_urine_night = urineNight;
       s.s1_post_toilet = document.getElementById('s1_post_toilet').value;
       s.s1_post_toilet_how = document.getElementById('s1_post_toilet_how').value;
 
@@ -1236,6 +1277,7 @@
       s.s1_finance = document.getElementById('s1_finance').value;
       s.s1_finance_how = document.getElementById('s1_finance_how').value;
       s.s1_sleep = document.getElementById('s1_sleep').value;
+      s.s1_sleep_causes = collectChecks('s1_sleep_causes_box','s1_sleep_cause_other');
       s.s1_daytime = document.getElementById('s1_daytime').value;
 
       // 疾病/用藥/就醫
@@ -1272,7 +1314,7 @@
         if (!has(v)) return "";
         switch (String(v)) {
           case "清楚": return "意識清楚";
-          case "健忘": return "意識健忘";
+          case "健忘": return "意識清楚，但易健忘";
           case "遲鈍": return "意識遲鈍";
           case "混亂": return "意識混亂";
           case "模糊": return "意識模糊";
@@ -1334,7 +1376,7 @@
       }
       const painBits = [];
       if (String(s.s1_pain) === "有") {
-        painBits.push(`${siteBits || '部位'}疼痛`);
+        painBits.push(siteBits ? `${siteBits}出現疼痛` : `出現疼痛`);
         if (has(s.s1_pain_score)) painBits.push(`疼痛強度約 ${s.s1_pain_score}/10`);
       }
       const lesionBits = [];
@@ -1344,21 +1386,29 @@
         const sxArr = Array.isArray(s.s1_lesion_sx) ? s.s1_lesion_sx : [];
         const sxTxt = sxArr.length ? listCN(sxArr) : '無不適';
         lesionBits.push(`${siteBits || '部位'}之皮膚病灶`);
-        lesionBits.push(`病灶部位：${layer}`);
+        lesionBits.push(`病灶層級：${layer}`);
         lesionBits.push(`大小：${size}`);
         lesionBits.push(`症狀：${sxTxt}`);
-        lesionBits.push(`醫療評估：${s.s1_lesion_eval||'未評估'}`);
+        let evalPhrase = `醫療評估：${s.s1_lesion_eval||'未評估'}`;
         if (has(s.s1_lesion_hospital) && s.s1_lesion_eval && s.s1_lesion_eval!=='未評估') {
-          lesionBits.push(`醫療院所名稱：${s.s1_lesion_hospital}`);
+          evalPhrase += `（${s.s1_lesion_hospital}）`;
         }
+        lesionBits.push(evalPhrase);
       }
       const p3 = [painBits.join('，'), lesionBits.join('，')].filter(Boolean).join('；');
 
       // ④ 行動
       const moveBits=[];
       if (has(s.s1_transfer)) moveBits.push(`起身移位${s.s1_transfer}`);
-      if (has(s.s1_walk_indoor)) moveBits.push(`在家${s.s1_walk_indoor}行走`);
-      if (has(s.s1_walk_outdoor)) moveBits.push(`外出${s.s1_walk_outdoor}輔助`);
+      if (has(s.s1_walk_indoor)){
+        if(s.s1_walk_indoor==='無輔具緩慢') moveBits.push('於室內緩慢行走，未使用輔具');
+        else moveBits.push(`於室內以${s.s1_walk_indoor}行走`);
+      }
+      if (has(s.s1_walk_outdoor)){
+        if(s.s1_walk_outdoor==='獨立') moveBits.push('外出可獨立行走');
+        else if(s.s1_walk_outdoor==='無法') moveBits.push('無法外出行走');
+        else moveBits.push(`外出以${s.s1_walk_outdoor}輔助`);
+      }
       if (has(s.s1_stairs)) moveBits.push(`上下樓${s.s1_stairs}`);
       const p4 = moveBits.join("，");
 
@@ -1399,7 +1449,14 @@
 
       // ⑥ 生活管理/睡眠
       const lifeBits=[];
-      if (has(s.s1_phone)) lifeBits.push(`電話使用${s.s1_phone}`);
+      if (has(s.s1_phone)){
+        const phoneMap={
+          '會接聽及撥號':'能獨立撥打及接聽',
+          '只會接聽':'僅能接聽',
+          '不會使用':'不會使用電話'
+        };
+        lifeBits.push(`電話使用：${phoneMap[s.s1_phone]||s.s1_phone}`);
+      }
       if (has(s.s1_shopping)) lifeBits.push(`外出購物${s.s1_shopping}`);
       const mealBits=[];
       if (has(s.s1_meal_prep)){
@@ -1407,7 +1464,10 @@
         if(s.s1_meal_prep==='部分協助' && has(s.s1_meal_prep_how)) txt+=`（部分協助方式：${s.s1_meal_prep_how}）`;
         mealBits.push(txt);
       }
-      if (has(s.s1_dishwash)) mealBits.push(`餐具清洗${s.s1_dishwash}`);
+      if (has(s.s1_dishwash)){
+        const dishMap={'乾淨':'乾淨','尚可或不一定乾淨':'尚可或不穩定'};
+        mealBits.push(`餐具清潔度${dishMap[s.s1_dishwash]||s.s1_dishwash}`);
+      }
       if (has(s.s1_housework)){
         let txt=`家務整理${s.s1_housework}`;
         if(s.s1_housework==='部分協助' && has(s.s1_housework_how)) txt+=`（部分協助方式：${s.s1_housework_how}）`;
@@ -1415,12 +1475,16 @@
       }
       if (mealBits.length) lifeBits.push(mealBits.join("、"));
       if (has(s.s1_finance)){
-        let txt=`具金錢觀念，財務管理${s.s1_finance}`;
+        let txt=`財務管理${s.s1_finance}`;
         if(s.s1_finance==='部分協助' && has(s.s1_finance_how)) txt+=`（部分協助方式：${s.s1_finance_how}）`;
         lifeBits.push(txt);
       }
-      if (has(s.s1_sleep)) lifeBits.push(`睡眠${s.s1_sleep}`);
-      if (has(s.s1_daytime)) lifeBits.push(`白天多${s.s1_daytime}`);
+      if (has(s.s1_sleep)){
+        let txt=`睡眠${s.s1_sleep}`;
+        if(Array.isArray(s.s1_sleep_causes) && s.s1_sleep_causes.length) txt+=`（${listCN(s.s1_sleep_causes)}）`;
+        lifeBits.push(txt);
+      }
+      if (has(s.s1_daytime)) lifeBits.push(`白天以${s.s1_daytime}為主`);
       const p6 = lifeBits.join("，");
 
       // ⑦ 疾病/用藥/就醫
@@ -1945,6 +2009,8 @@
       toggleAdlHow('s1_adl_eating'); toggleAdlHow('s1_adl_groom'); toggleAdlHow('s1_adl_bathing');
       toggleAdlHow('s1_adl_dressing'); toggleAdlHow('s1_post_toilet'); toggleAdlHow('s1_meal_prep');
       toggleAdlHow('s1_housework'); toggleAdlHow('s1_finance');
+      toggleUrineDayOther(); toggleUrineNightOther();
+      toggleSleepCauses();
       syncNoDiscomfort('s1_lesion_sx_box'); // 初始化互斥狀態
       buildSection1(); // 初次預覽一次
     }
