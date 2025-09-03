@@ -45,7 +45,7 @@
     <div class="row">
       <div>
         <label>單位代碼</label>
-        <select id="unitCode" onchange="loadManagers()">
+        <select id="unitCode" onchange="loadManagers(); loadConsultants();">
           <option>FNA1</option><option>FNA2</option><option>FNA3</option>
         </select>
       </div>
@@ -61,7 +61,7 @@
       </div>
       <div>
         <label>照專姓名</label>
-        <input id="consultName" type="text" placeholder="請輸入">
+        <select id="consultName"></select>
       </div>
     </div>
   </div>
@@ -824,6 +824,15 @@
         const sel=document.getElementById('caseManagerName'); sel.innerHTML='';
         (list && list.length? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);});
       }).getCaseManagersByUnit(unit);
+    }
+
+    /* ===== 照專名單 ===== */
+    function loadConsultants(){
+      const unit=document.getElementById('unitCode').value;
+      google.script.run.withSuccessHandler(list=>{
+        const sel=document.getElementById('consultName'); sel.innerHTML='';
+        (list && list.length? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);});
+      }).getConsultantsByUnit(unit);
     }
 
     /* ===== 三、偕同訪視者（下拉＋多筆） ===== */
@@ -1942,6 +1951,7 @@
       setDateBox('callDate', new Date());
       setDateBox('visitDate', new Date());
       loadManagers();
+      loadConsultants();
 
       // S1
       renderS1(); initSection1State();
