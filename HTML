@@ -369,7 +369,7 @@
           <div>
             <label>夜間排尿</label>
             <select id="s1_urine_night">
-              <option selected>無夜間排尿</option><option>輕度（1次）</option><option>中度（2–3次）</option><option>失禁</option><option>其他</option>
+              <option selected>夜間未起夜</option><option>夜間起夜1次</option><option>夜間起夜2–3次</option><option>夜間有尿失禁</option><option>其他</option>
 
             </select>
           </div>
@@ -1389,7 +1389,23 @@
       if (adlSub) adlBits.push(adlSub);
       const toiletBits=[];
       if (has(s.s1_urine_day)) toiletBits.push(`白天排尿${s.s1_urine_day}`);
-      if (has(s.s1_urine_night)) toiletBits.push(`夜間排尿${s.s1_urine_night}`);
+      if (has(s.s1_urine_night)) {
+        let v = s.s1_urine_night;
+        const map = {
+          '無夜間排尿': '夜間未起夜',
+          '輕度（1次）': '夜間起夜1次',
+          '中度（2–3次）': '夜間起夜2–3次',
+          '失禁': '夜間有尿失禁'
+        };
+        if (map[v]) {
+          toiletBits.push(map[v]);
+        } else if (v.startsWith('其他')) {
+          v = v.replace(/^其他/, '');
+          toiletBits.push(`夜間排尿${v}`);
+        } else {
+          toiletBits.push(v);
+        }
+      }
       if (has(s.s1_post_toilet)){
         let txt=`如廁後清潔${s.s1_post_toilet}`;
         if(s.s1_post_toilet==='部分協助' && has(s.s1_post_toilet_how)) txt+=`（部分協助方式：${s.s1_post_toilet_how}）`;
