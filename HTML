@@ -1571,11 +1571,12 @@
       // ⑦ 疾病/用藥/就醫
       const dxArr = Array.isArray(s.s1_dhx)? s.s1_dhx : (has(s.s1_dhx)?[s.s1_dhx]:[]);
       const medArr= Array.isArray(s.s1_med_classes)? s.s1_med_classes : (has(s.s1_med_classes)?[s.s1_med_classes]:[]);
+      const rxBits = [s.s1_rx_type, medArr.length ? listCN(medArr) : null].filter(Boolean);
       const p7 = join([
         dxArr.length ? `慢性病史包含：${listCN(dxArr)}` : null,
         has(s.s1_surgery) ? s.s1_surgery : null,
-        (has(s.s1_follow_clinic)||has(s.s1_rx_type)||medArr.length)
-          ? `固定至${s.s1_follow_clinic||"既定醫療院所"}領${s.s1_rx_type||"處方"}${medArr.length?`（${listCN(medArr)}）`:''}` : null,
+        (has(s.s1_follow_clinic)||rxBits.length)
+          ? `定期於${s.s1_follow_clinic||"既定醫療院所"}就醫${rxBits.length?`（${rxBits.join("、")}）`:''}` : null,
         (has(s.s1_med_manage)||has(s.s1_visit_transport))
           ? `平時${s.s1_med_manage||""}，並以${s.s1_visit_transport||"既定方式"}就醫` : null
       ]);
