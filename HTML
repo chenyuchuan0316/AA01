@@ -750,8 +750,8 @@
           <button class="small" onclick="polishOne('section6_struct')">AI潤稿</button>
         </div>
         <div class="grid2">
-          <div><label>介入前</label><textarea id="s6_before"></textarea></div>
-          <div><label>介入後</label><textarea id="s6_after"></textarea></div>
+          <div><label>介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
+          <div><label>介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
         </div>
         <textarea id="section6_struct" style="display:none;"></textarea>
       </div>
@@ -1739,7 +1739,7 @@
 
     function toggleGoalInputs(){
       const selected=[...document.querySelectorAll('#sp_formal input[type=checkbox]:checked')].map(b=>b.value);
-      const hasCare = selected.includes('居家服務') || selected.includes('日間照顧') || selected.includes('專業服務');
+      const hasCare = selected.includes('居家服務') || selected.includes('日間照顧');
       const hasProf = selected.includes('專業服務');
       const hasCar  = selected.includes('交通服務');
       const hasResp = selected.includes('喘息服務');
