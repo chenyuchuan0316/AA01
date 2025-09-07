@@ -1252,9 +1252,16 @@
     // 蒐集
     function collectChecks(containerId, otherInputId){
       const list=[...document.querySelectorAll(`#${containerId} input[type=checkbox]`)].filter(x=>x.checked).map(x=>x.value);
-      if(otherInputId && list.includes('其他')){
-        const t=(document.getElementById(otherInputId).value||'').trim();
-        if(t) list[list.indexOf('其他')] = `其他（${t}）`;
+      if(otherInputId){
+        const idx = list.indexOf('其他');
+        if(idx !== -1){
+          const t=(document.getElementById(otherInputId).value||'').trim();
+          if(t){
+            list[idx] = t;
+          }else{
+            list.splice(idx,1);
+          }
+        }
       }
       return list;
     }
@@ -1282,7 +1289,7 @@
       let subreg = document.getElementById('s1_subregion').value;
       if(subreg==='其他'){
         const oth=(document.getElementById('s1_subregion_other').value||'').trim();
-        if(oth) subreg = `其他（${oth}）`;
+        subreg = oth;
       }
       s.s1_subregion = subreg;
       s.s1_laterality = document.getElementById('s1_laterality').value || '';
@@ -1291,7 +1298,7 @@
       let layer = document.getElementById('s1_lesion_layer').value;
       if(layer==='其他'){
         const lo=(document.getElementById('s1_lesion_layer_other').value||'').trim();
-        if(lo) layer = `其他（${lo}）`;
+        layer = lo;
       }
       s.s1_lesion_layer = layer || '無';
       s.s1_lesion_size  = document.getElementById('s1_lesion_size').value;
@@ -1347,7 +1354,7 @@
       s.s1_med_manage = document.getElementById('s1_med_manage').value;
       let vt = document.getElementById('s1_visit_transport').value;
       const vtOther = (document.getElementById('s1_visit_transport_other').value||'').trim();
-      if(vt==='其他' && vtOther) vt = `其他（${vtOther}）`;
+      if(vt==='其他') vt = vtOther;
       s.s1_visit_transport = vt;
       s.s1_med_classes = collectChecks('s1_med_classes_box','s1_med_classes_other');
 
