@@ -36,6 +36,18 @@
     .preview { padding:8px; background:#fafafa; border:1px dashed #e0e0e0; border-radius:6px; white-space:pre-wrap; }
     /* 灰色 placeholder（disabled option 額外補強） */
     .placeholder-option { color:#999; }
+    .goal-period { border:1px solid #e5e5e5; border-radius:8px; padding:10px; margin:10px 0; background:#f9fbff; }
+    .goal-period-head { display:flex; flex-direction:column; gap:4px; margin-bottom:8px; }
+    .goal-groups { display:flex; flex-direction:column; gap:8px; }
+    .goal-group { border:1px solid #f1f3f4; border-radius:6px; padding:8px; background:#fff; }
+    .goal-group-title { font-weight:bold; font-size:13px; margin-bottom:6px; }
+    .goal-item { border-top:1px dashed #e0e0e0; padding-top:6px; margin-top:6px; }
+    .goal-item:first-child { border-top:none; padding-top:0; margin-top:0; }
+    .goal-item-line { display:flex; align-items:center; gap:8px; justify-content:space-between; }
+    .goal-item-line label { margin-bottom:0; font-size:13px; }
+    .goal-item-line input.goal-qty { max-width:200px; }
+    .goal-item-note { font-size:12px; color:#666; margin-left:22px; margin-top:2px; }
+    .goal-preview-block { margin-top:8px; }
   </style>
 </head>
 <body>
@@ -770,34 +782,93 @@
       <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
     </div></div>
 
-    <div class="row"><div>
-      <label>(二) 短期目標(0-3個月)</label>
-      <div class="grid2">
-        <div id="short_care_wrap"><label>照顧服務：</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
-        <div id="short_prof_wrap"><label>專業服務：</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
-        <div id="short_car_wrap"><label>交通服務：</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
-        <div id="short_resp_wrap"><label>喘息服務：</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
-        <div id="short_access_wrap"><label>無障礙及輔具：</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
-        <div id="short_meal_wrap"><label>營養送餐：</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
+    <div class="goal-period">
+      <div class="goal-period-head">
+        <label>(二) 短期目標（0-3 個月）</label>
+        <div class="muted">勾選服務後填寫量化資訊，系統會依格式自動產生敘述。</div>
       </div>
-    </div></div>
-
-    <div class="row"><div>
-      <label>(三) 中期目標(3-4個月)</label>
-      <div class="grid2">
-        <div id="mid_care_wrap"><label>照顧服務：</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
-        <div id="mid_prof_wrap"><label>專業服務：</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
-        <div id="mid_car_wrap"><label>交通服務：</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
-        <div id="mid_resp_wrap"><label>喘息服務：</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
-        <div id="mid_access_wrap"><label>無障礙及輔具：</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
-        <div id="mid_meal_wrap"><label>營養送餐：</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
+      <div class="goal-groups">
+        <div id="short_care_wrap" class="goal-group">
+          <div class="goal-group-title">照顧服務</div>
+          <div class="goal-items" id="short_care_items"></div>
+        </div>
+        <div id="short_prof_wrap" class="goal-group">
+          <div class="goal-group-title">專業服務</div>
+          <div class="goal-items" id="short_prof_items"></div>
+        </div>
+        <div id="short_car_wrap" class="goal-group">
+          <div class="goal-group-title">交通服務</div>
+          <div class="goal-items" id="short_car_items"></div>
+        </div>
+        <div id="short_resp_wrap" class="goal-group">
+          <div class="goal-group-title">喘息服務</div>
+          <div class="goal-items" id="short_resp_items"></div>
+        </div>
+        <div id="short_access_wrap" class="goal-group">
+          <div class="goal-group-title">無障礙及輔具</div>
+          <div class="goal-items" id="short_access_items"></div>
+        </div>
+        <div id="short_meal_wrap" class="goal-group">
+          <div class="goal-group-title">營養送餐</div>
+          <div class="goal-items" id="short_meal_items"></div>
+        </div>
       </div>
-    </div></div>
+      <div class="goal-preview-block">
+        <label>預覽</label>
+        <div class="preview" id="short_goal_preview">（尚未選擇服務）</div>
+      </div>
+      <textarea id="short_goal_block" style="display:none;"></textarea>
+    </div>
 
-    <div class="row"><div>
-      <label>(四) 長期目標(4-6個月)</label>
-      <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
-    </div></div>
+    <div class="goal-period">
+      <div class="goal-period-head">
+        <label>(三) 中期目標（3-4 個月）</label>
+        <div class="muted">可設定與短期不同的量化資訊，輸出格式保持一致。</div>
+      </div>
+      <div class="goal-groups">
+        <div id="mid_care_wrap" class="goal-group">
+          <div class="goal-group-title">照顧服務</div>
+          <div class="goal-items" id="mid_care_items"></div>
+        </div>
+        <div id="mid_prof_wrap" class="goal-group">
+          <div class="goal-group-title">專業服務</div>
+          <div class="goal-items" id="mid_prof_items"></div>
+        </div>
+        <div id="mid_car_wrap" class="goal-group">
+          <div class="goal-group-title">交通服務</div>
+          <div class="goal-items" id="mid_car_items"></div>
+        </div>
+        <div id="mid_resp_wrap" class="goal-group">
+          <div class="goal-group-title">喘息服務</div>
+          <div class="goal-items" id="mid_resp_items"></div>
+        </div>
+        <div id="mid_access_wrap" class="goal-group">
+          <div class="goal-group-title">無障礙及輔具</div>
+          <div class="goal-items" id="mid_access_items"></div>
+        </div>
+        <div id="mid_meal_wrap" class="goal-group">
+          <div class="goal-group-title">營養送餐</div>
+          <div class="goal-items" id="mid_meal_items"></div>
+        </div>
+      </div>
+      <div class="goal-preview-block">
+        <label>預覽</label>
+        <div class="preview" id="mid_goal_preview">（尚未選擇服務）</div>
+      </div>
+      <textarea id="mid_goal_block" style="display:none;"></textarea>
+    </div>
+
+    <div class="goal-period">
+      <div class="goal-period-head">
+        <label>(四) 長期目標（4-6 個月）</label>
+        <div class="muted">系統會根據短期與中期已勾選的服務，自動整合長期敘述。</div>
+      </div>
+      <div class="goal-preview-block">
+        <label>預覽</label>
+        <div class="preview" id="long_goal_preview">（尚未選擇服務）</div>
+      </div>
+      <textarea id="long_goal" style="display:none;"></textarea>
+    </div>
   </div>
 
   <!-- 六、與照專…（原功能保留） -->
@@ -1751,8 +1822,14 @@
       setVisible('short_resp_wrap', hasResp); setVisible('mid_resp_wrap', hasResp);
       setVisible('short_access_wrap', hasAcc); setVisible('mid_access_wrap', hasAcc);
       setVisible('short_meal_wrap', hasMeal);  setVisible('mid_meal_wrap', hasMeal);
+      updateGoalBlocks();
     }
-    function setVisible(id,on){ const el=document.getElementById(id); if(el) el.style.display = on? '' : 'none'; }
+    function setVisible(id,on){
+      const el=document.getElementById(id);
+      if(!el) return;
+      el.style.display = on? '' : 'none';
+      if(!on){ clearGoalGroup(el); }
+    }
 
     function bindQuickReasons(){
       ['rq1_no','rq1_alt','rq2_service'].forEach(id=>{
@@ -1948,21 +2025,301 @@
     function getSelectedProblems(){
       return [...document.querySelectorAll('#problemList input[type=checkbox]')].filter(b=>b.checked).map(b=>parseInt(b.value,10));
     }
-    function buildLongGoal(){
-      const parts=[];
-      const short={care: val('short_care'), prof:val('short_prof'), car:val('short_car'), resp:val('short_resp'), access:val('short_access'), meal:val('short_meal')};
-      const mid  ={care: val('mid_care'),   prof:val('mid_prof'),   car:val('mid_car'),   resp:val('mid_resp'), access:val('mid_access'), meal:val('mid_meal')};
-      function val(id){return (document.getElementById(id).value||'').trim();}
-      function push(tag, sc, mc){
-        const arr=[sc, mc].filter(Boolean); if(arr.length) parts.push(`${tag}：${arr.join('；')}`);
+
+    const GOAL_BLOCK_DIVIDER = '======================================';
+    const GOAL_PERIOD_INFO = {
+      short: { title: '(二) 短期目標（0-3 個月）' },
+      mid:   { title: '(三) 中期目標（3-4 個月）' },
+      long:  { title: '(四) 長期目標（4-6 個月）' }
+    };
+    const GOAL_SERVICE_GROUPS = [
+      {
+        key: 'care',
+        label: '照顧服務',
+        items: [
+          { code:'BA01', name:'基本身體清潔', qtyHint:'例如：每週2次，每次60分鐘', text:{
+            short:'協助個案完成基本身體清潔，維持良好衛生狀態，提升個人舒適感與自尊。',
+            mid:'持續安排身體清潔服務，確保個案日常生活中維持清爽與健康，避免感染風險。',
+            long:'建立穩定的清潔照護習慣，確保個案長期維持身體衛生與健康品質。'
+          }},
+          { code:'BA03', name:'餐食照顧', qtyHint:'例如：每日1餐或每週3次', text:{
+            short:'協助個案處理餐食，確保用餐便利與安全。',
+            mid:'持續安排餐食照顧，幫助個案維持飲食規律與營養。',
+            long:'透過餐食支持，協助個案養成健康飲食習慣，長期維持良好營養狀態。'
+          }},
+          { code:'BA05', name:'陪同就醫', qtyHint:'例如：每月2次', text:{
+            short:'協助陪同就醫，確保醫療需求能即時獲得處理。',
+            mid:'持續安排就醫陪伴，協助醫療追蹤與健康管理。',
+            long:'透過長期就醫支持，維持個案健康穩定，減少延誤風險。'
+          }},
+          { code:'BA13', name:'陪同外出', qtyHint:'例如：每月1次', text:{
+            short:'協助陪同外出，確保外出活動安全並增進社區參與。',
+            mid:'持續安排陪同外出服務，幫助個案維持社區參與與外出安全。',
+            long:'建立穩定的外出陪伴支持，讓個案能長期安心參與社區與家庭活動。'
+          }},
+          { code:'BA09', name:'代購／代領／代送（自用）', qtyHint:'例如：每週1次', text:{
+            short:'協助代購與代送個人物品，滿足即時生活需求。',
+            mid:'持續提供代購支持，維持日常便利與穩定。',
+            long:'建立穩定支持系統，確保持續生活便利性。'
+          }},
+          { code:'BA11', name:'人工氣道管內抽吸', qtyHint:'例如：每日2次', text:{
+            short:'協助人工氣道抽吸，改善呼吸道通暢與舒適。',
+            mid:'持續安排抽吸支持，確保呼吸道暢通與健康。',
+            long:'透過長期呼吸支持，維持個案呼吸安全與生活品質。'
+          }},
+          { code:'BA12', name:'口腔分泌物抽吸', qtyHint:'例如：每日3次', text:{
+            short:'協助口腔分泌物抽吸，減輕不適與提升舒適度。',
+            mid:'持續安排口腔照護，維持健康與安全。',
+            long:'建立長期支持，避免併發症，確保生活品質。'
+          }},
+          { code:'BA07', name:'尿管及鼻胃管清潔固定', qtyHint:'例如：每週2次', text:{
+            short:'協助管路清潔與固定，降低感染風險。',
+            mid:'持續安排管路照護，維持穩定使用。',
+            long:'透過長期照護，減少併發症並確保生活品質。'
+          }},
+          { code:'BA08', name:'甘油球通便', qtyHint:'例如：每週1次', text:{
+            short:'協助通便，緩解排便困難。',
+            mid:'持續安排通便支持，維持腸道功能。',
+            long:'透過長期照護，確保腸道健康與生活品質。'
+          }},
+          { code:'BA15', name:'陪伴服務', qtyHint:'例如：每週2次', text:{
+            short:'協助陪伴，減輕孤單感並提供心理支持。',
+            mid:'持續安排陪伴，維持社交互動與情感連結。',
+            long:'建立長期陪伴關係，提升心理健康與生活滿意度。'
+          }}
+        ]
+      },
+      {
+        key: 'prof',
+        label: '專業服務',
+        items: [
+          { code:'PA01', name:'護理訪視', qtyHint:'例如：每週1次', text:{
+            short:'安排護理人員訪視，評估健康狀況並提供專業照護建議。',
+            mid:'持續安排護理訪視，追蹤健康變化並調整照護重點。',
+            long:'建立定期護理訪視模式，確保健康管理與照護品質穩定。'
+          }},
+          { code:'PA02', name:'物理治療', qtyHint:'例如：每週2次', text:{
+            short:'安排物理治療，促進肢體活動能力與肌力。',
+            mid:'持續安排物理治療，強化功能維持與復能。',
+            long:'透過長期物理治療支持，維持移動能力並降低退化速度。'
+          }},
+          { code:'PA03', name:'職能治療', qtyHint:'例如：每週1次', text:{
+            short:'安排職能治療，協助日常活動練習與自理能力。',
+            mid:'持續安排職能治療，強化自理技巧與生活自信。',
+            long:'建立職能治療常規，長期維持自我照顧能力與生活品質。'
+          }},
+          { code:'PA04', name:'語言治療', qtyHint:'例如：每週1次', text:{
+            short:'安排語言治療，改善溝通或吞嚥功能。',
+            mid:'持續安排語言治療，追蹤溝通表現並調整訓練重點。',
+            long:'透過長期語言治療支持，穩定維持溝通與吞嚥安全。'
+          }},
+          { code:'PA05', name:'營養評估', qtyHint:'例如：每月1次', text:{
+            short:'安排營養師評估，調整飲食內容與進食方式。',
+            mid:'持續安排營養追蹤，確保熱量與營養攝取充足。',
+            long:'建立營養評估常規，長期維持均衡飲食與體重穩定。'
+          }}
+        ]
+      },
+      {
+        key: 'car',
+        label: '交通服務',
+        items: [
+          { code:'BB01', name:'交通接送服務', qtyHint:'例如：每週1次', text:{
+            short:'安排交通接送，支援就醫或重要行程往返。',
+            mid:'持續安排交通接送，確保外出行程順利。',
+            long:'建立固定交通接送安排，保障長期外出需求。'
+          }},
+          { code:'BB02', name:'復康巴士', qtyHint:'例如：每週2次', text:{
+            short:'申請復康巴士，協助輪椅外出與安全搭乘。',
+            mid:'持續協助復康巴士預約，維持外出頻率與安全。',
+            long:'建立復康巴士常態安排，確保長期外出與就醫便利。'
+          }},
+          { code:'BB03', name:'醫療接送安排', qtyHint:'例如：每月2次', text:{
+            short:'協調醫療接送服務，降低就醫交通壓力。',
+            mid:'持續追蹤醫療接送使用情況，確保需求即時被滿足。',
+            long:'建立穩定的醫療接送機制，維持定期追蹤與治療。'
+          }}
+        ]
+      },
+      {
+        key: 'resp',
+        label: '喘息服務',
+        items: [
+          { code:'BC01', name:'居家喘息', qtyHint:'例如：每月2次', text:{
+            short:'安排居家喘息服務，讓主要照顧者獲得休息時間。',
+            mid:'持續安排居家喘息，協助照顧者調整作息與壓力。',
+            long:'建立固定居家喘息規劃，維持照顧品質與家庭平衡。'
+          }},
+          { code:'BC02', name:'日間喘息', qtyHint:'例如：每週3次', text:{
+            short:'安排日間喘息據點，提供日間照顧與活動支持。',
+            mid:'持續安排日間喘息，維持個案社會互動與活動參與。',
+            long:'透過固定日間喘息安排，穩定提供社區參與與照顧者支持。'
+          }},
+          { code:'BC03', name:'夜間喘息', qtyHint:'例如：每月4次', text:{
+            short:'安排夜間喘息服務，支援夜間照顧需求。',
+            mid:'持續安排夜間喘息，協助照顧者獲得充分睡眠。',
+            long:'建立夜間喘息輪替機制，降低照顧者長期負荷。'
+          }}
+        ]
+      },
+      {
+        key: 'access',
+        label: '無障礙及輔具',
+        items: [
+          { code:'BD01', name:'居家環境改善', qtyHint:'例如：依工程里程碑敘述', text:{
+            short:'評估居家環境改善需求，規劃無障礙設施。',
+            mid:'持續追蹤環境改善進度，確保施工與使用安全。',
+            long:'完成無障礙環境建置，長期維持安全便利的居住空間。'
+          }},
+          { code:'BD02', name:'輔具租借', qtyHint:'例如：每月檢視', text:{
+            short:'協助租借適用輔具，改善日常活動安全。',
+            mid:'持續追蹤輔具使用狀況，必要時調整或更換。',
+            long:'建立輔具管理機制，確保長期使用安全與適切性。'
+          }},
+          { code:'BD03', name:'輔具購買', qtyHint:'例如：一次性購置', text:{
+            short:'評估並協助購買必要輔具，提升照顧效率。',
+            mid:'追蹤輔具使用與維護情形，確保功能良好。',
+            long:'完成輔具購買與維護計畫，確保長期穩定使用。'
+          }},
+          { code:'BD04', name:'住宅無障礙改善', qtyHint:'例如：依里程碑填寫', text:{
+            short:'啟動住宅無障礙改善評估，確保動線安全。',
+            mid:'持續追蹤改善工程，協調施工與驗收。',
+            long:'完成住宅無障礙改善，建立長期安全生活環境。'
+          }}
+        ]
+      },
+      {
+        key: 'meal',
+        label: '營養送餐',
+        items: [
+          { code:'BE01', name:'營養送餐', qtyHint:'例如：每週5餐', text:{
+            short:'安排營養送餐服務，確保每日餐食供應。',
+            mid:'持續安排營養送餐，依健康狀況調整菜單。',
+            long:'建立固定送餐流程，維持長期營養攝取穩定。'
+          }},
+          { code:'BE02', name:'特殊飲食餐點', qtyHint:'例如：每日軟質餐', text:{
+            short:'安排特殊飲食餐點，符合醫療或吞嚥需求。',
+            mid:'持續追蹤特殊飲食執行情況，確保口感與安全。',
+            long:'建立特殊飲食供餐機制，長期支援健康管理。'
+          }}
+        ]
       }
-      push('照顧服務', short.care, mid.care);
-      push('專業服務', short.prof, mid.prof);
-      push('交通服務', short.car, mid.car);
-      push('喘息服務', short.resp, mid.resp);
-      push('無障礙及輔具', short.access, mid.access);
-      push('營養送餐', short.meal, mid.meal);
-      document.getElementById('long_goal').value = parts.join('。') + (parts.length?'。':'');
+    ];
+    const GOAL_ITEM_LOOKUP = {};
+    GOAL_SERVICE_GROUPS.forEach(group=>{
+      group.items.forEach(item=>{ GOAL_ITEM_LOOKUP[item.code] = item; });
+    });
+
+    function renderGoalGroups(period){
+      GOAL_SERVICE_GROUPS.forEach(group=>{
+        const host=document.getElementById(`${period}_${group.key}_items`);
+        if(!host) return;
+        host.innerHTML='';
+        group.items.forEach(item=>{
+          const row=document.createElement('div');
+          row.className='goal-item';
+          const hint=item.qtyHint || '例如：每週1次';
+          const desc=(item.text && item.text[period]) ? item.text[period] : '請於後端補充敘述。';
+          row.innerHTML=`
+            <div class="goal-item-line">
+              <label><input type="checkbox" class="goal-checkbox" data-period="${period}" data-group="${group.key}" data-code="${item.code}" onchange="onGoalItemToggle(this)"> ${item.code}[${item.name}]</label>
+              <input type="text" class="goal-qty" data-period="${period}" data-group="${group.key}" data-code="${item.code}" placeholder="${hint}" oninput="updateGoalBlocks()" disabled>
+            </div>
+            <div class="goal-item-note">預設敘述：${desc}</div>`;
+          host.appendChild(row);
+        });
+      });
+    }
+    function clearGoalGroup(el){
+      if(!el) return;
+      el.querySelectorAll('input.goal-checkbox').forEach(box=>{ box.checked=false; });
+      el.querySelectorAll('input.goal-qty').forEach(inp=>{ inp.value=''; inp.disabled=true; });
+    }
+    function onGoalItemToggle(box){
+      const period=box.dataset.period;
+      const group=box.dataset.group;
+      const code=box.dataset.code;
+      const qty=document.querySelector(`input.goal-qty[data-period="${period}"][data-group="${group}"][data-code="${code}"]`);
+      if(qty){
+        if(box.checked){
+          qty.disabled=false;
+          qty.focus();
+        }else{
+          qty.value='';
+          qty.disabled=true;
+        }
+      }
+      updateGoalBlocks();
+    }
+    function collectGoalSelections(period){
+      const result=[];
+      GOAL_SERVICE_GROUPS.forEach(group=>{
+        const items=[];
+        group.items.forEach(item=>{
+          const box=document.querySelector(`input.goal-checkbox[data-period="${period}"][data-group="${group.key}"][data-code="${item.code}"]`);
+          if(box && box.checked){
+            const qty=document.querySelector(`input.goal-qty[data-period="${period}"][data-group="${group.key}"][data-code="${item.code}"]`);
+            items.push({ item, qty: qty ? qty.value.trim() : '' });
+          }
+        });
+        if(items.length){ result.push({ group, items }); }
+      });
+      return result;
+    }
+    function collectCombinedGoalSelections(){
+      const map=new Map();
+      ['short','mid'].forEach(period=>{
+        collectGoalSelections(period).forEach(section=>{
+          let set=map.get(section.group.key);
+          if(!set){ set=new Set(); map.set(section.group.key, set); }
+          section.items.forEach(sel=>set.add(sel.item.code));
+        });
+      });
+      const result=[];
+      GOAL_SERVICE_GROUPS.forEach(group=>{
+        const set=map.get(group.key);
+        if(set && set.size){
+          const items=group.items.filter(item=>set.has(item.code)).map(item=>({ item, qty:'' }));
+          result.push({ group, items });
+        }
+      });
+      return result;
+    }
+    function buildGoalBlock(period){
+      const info=GOAL_PERIOD_INFO[period];
+      if(!info) return '';
+      const sections = period==='long' ? collectCombinedGoalSelections() : collectGoalSelections(period);
+      if(!sections.length) return '';
+      const lines=[GOAL_BLOCK_DIVIDER, info.title, GOAL_BLOCK_DIVIDER];
+      sections.forEach((section, idx)=>{
+        lines.push(`${idx+1}.${section.group.label}`);
+        section.items.forEach(sel=>{
+          const item=sel.item;
+          const text=item && item.text ? (item.text[period] || '') : '';
+          const qty=sel.qty ? `${sel.qty}${text ? '，' : ''}` : '';
+          const sentence = `${qty}${text}` || '請填寫服務量與敘述。';
+          lines.push(`- ${item.code}[${item.name}]：${sentence}`);
+        });
+        if(idx < sections.length - 1) lines.push('');
+      });
+      return lines.join('\n');
+    }
+    function updateGoalBlocks(){
+      ['short','mid'].forEach(period=>{
+        const text=buildGoalBlock(period);
+        const field=document.getElementById(`${period}_goal_block`);
+        if(field) field.value=text;
+        const preview=document.getElementById(`${period}_goal_preview`);
+        if(preview) preview.textContent = text || '（尚未選擇服務）';
+      });
+      buildLongGoal();
+    }
+    function buildLongGoal(){
+      const text=buildGoalBlock('long');
+      const field=document.getElementById('long_goal');
+      if(field) field.value=text;
+      const preview=document.getElementById('long_goal_preview');
+      if(preview) preview.textContent = text || '（尚未選擇服務）';
     }
 
     /* ===== AI 潤稿（Stub） ===== */
@@ -2039,7 +2396,7 @@
 
       // 組裝各段
       buildSection1();
-      buildS2(); buildS3(); buildSection4(); buildSection6(); buildLongGoal();
+      buildS2(); buildS3(); buildSection4(); buildSection6(); updateGoalBlocks();
 
       const form = {
         unitCode, caseManagerName, caseName, consultName,
@@ -2062,19 +2419,10 @@
         // 五、照顧目標
         problemKeys: getSelectedProblems(),
         problemNote: (document.getElementById('problemNote').value || '').trim(),
-        short_care: (document.getElementById('short_care').value || '').trim(),
-        short_prof: (document.getElementById('short_prof').value || '').trim(),
-        short_car : (document.getElementById('short_car').value  || '').trim(),
-        short_resp: (document.getElementById('short_resp').value || '').trim(),
-        short_access: (document.getElementById('short_access').value || '').trim(),
-        short_meal: (document.getElementById('short_meal').value || '').trim(),
-        mid_care: (document.getElementById('mid_care').value || '').trim(),
-        mid_prof: (document.getElementById('mid_prof').value || '').trim(),
-        mid_car : (document.getElementById('mid_car').value  || '').trim(),
-        mid_resp: (document.getElementById('mid_resp').value || '').trim(),
-        mid_access: (document.getElementById('mid_access').value || '').trim(),
-        mid_meal: (document.getElementById('mid_meal').value || '').trim(),
+        shortGoalBlock: (document.getElementById('short_goal_block').value || '').trim(),
+        midGoalBlock: (document.getElementById('mid_goal_block').value || '').trim(),
         long_goal: (document.getElementById('long_goal').value || '').trim(),
+        longGoalBlock: (document.getElementById('long_goal').value || '').trim(),
         // 產出前一致性潤稿
         doBatchPolish: document.getElementById('doBatchPolish').checked
       };
@@ -2125,6 +2473,9 @@
       // 其它原有初始化
       renderS2(); toggleDisCategory(); syncDisab('s2');
       renderS3(); toggleOtherType(); buildS3();
+      renderGoalGroups('short');
+      renderGoalGroups('mid');
+      updateGoalBlocks();
       renderFormal();
       renderProblems(); limitProblems();
       // 非正式資源：名稱→頻率 顯示/隱藏
