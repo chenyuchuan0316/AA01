@@ -676,6 +676,14 @@
           <label>正式資源（多選）</label>
           <div class="muted">固定：<span class="badge">社區整合型服務中心為福安</span></div>
           <div class="checkcol" id="sp_formal"></div>
+          <div id="homeCareWrap" style="display:none; margin-top:8px;">
+            <div class="titlebar">
+              <label>居家服務項目（多選）</label>
+              <button class="small" type="button" onclick="resetHomeCarePhrases()">重新套用片語</button>
+            </div>
+            <div class="checkcol" id="homeCareList"></div>
+            <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整，仍可自行調整內容。</div>
+          </div>
         </div>
 
         <div class="hr"></div>
@@ -1756,6 +1764,199 @@
 
     /* ===== 四-(四) 社會支持：原程式 ===== */
     const FORMAL = ['居家服務','專業服務','日間照顧','喘息服務','交通服務','無障礙及輔具','營養送餐'];
+    const HOME_CARE_ITEMS = [
+      {
+        code: 'BA01',
+        name: '基本身體清潔',
+        short: '協助個案完成基本身體清潔，維持良好衛生狀態，提升個人舒適感與自尊。',
+        mid: '持續安排身體清潔服務，確保個案日常生活中維持清爽與健康，避免感染風險。',
+        long: '建立穩定的清潔照護習慣，確保個案長期維持身體衛生與健康品質。'
+      },
+      {
+        code: 'BA02',
+        name: '基本日常照顧',
+        short: '協助個案完成基本日常照顧活動，改善生活便利性。',
+        mid: '持續提供日常照護支持，讓個案逐步形成規律生活，減少依賴與不便。',
+        long: '透過長期支持，協助個案穩定自理能力，提升日常生活品質與安全感。'
+      },
+      {
+        code: 'BA03',
+        name: '測量生命徵象',
+        short: '協助測量生命徵象，掌握個案即時健康狀態。',
+        mid: '持續安排定期測量，讓健康狀況獲得追蹤與管理，及時回應變化。',
+        long: '透過長期監測生命徵象，維持穩定的健康管理，預防突發狀況。'
+      },
+      {
+        code: 'BA04',
+        name: '協助進食或管灌餵食',
+        short: '協助個案進食或管灌餵食，確保營養攝取充足，避免饑餓或體力下降。',
+        mid: '持續安排餵食服務，維持營養平衡與健康狀況。',
+        long: '建立穩定飲食支持機制，確保個案長期營養狀態良好，促進生活品質。'
+      },
+      {
+        code: 'BA05-1',
+        name: '餐食照顧',
+        short: '協助個案處理餐食，確保用餐便利與安全。',
+        mid: '持續安排餐食照顧，幫助個案維持飲食規律與營養。',
+        long: '透過餐食支持，協助個案養成健康飲食習慣，長期維持良好營養狀態。'
+      },
+      {
+        code: 'BA07',
+        name: '協助沐浴及洗頭',
+        short: '協助個案完成沐浴與洗頭，改善個人清潔與舒適度。',
+        mid: '持續提供沐浴服務，協助維持個人衛生與清爽狀態。',
+        long: '透過穩定支持，確保個案長期維持良好的身體清潔與尊嚴。'
+      },
+      {
+        code: 'BA08',
+        name: '足部照護',
+        short: '協助進行足部清潔與照護，改善足部舒適與行動便利。',
+        mid: '持續安排足部照護，預防感染或相關併發症，維持健康。',
+        long: '確保持續照護，讓個案足部健康穩定，提升生活功能與行動力。'
+      },
+      {
+        code: 'BA10',
+        name: '翻身拍背',
+        short: '協助翻身拍背，預防壓瘡與改善呼吸狀況。',
+        mid: '持續提供翻身支持，確保身體循環與舒適度。',
+        long: '建立長期照護機制，減少壓瘡與呼吸道問題，確保健康穩定。'
+      },
+      {
+        code: 'BA11',
+        name: '肢體關節活動',
+        short: '協助個案進行肢體關節活動，促進血液循環並改善活動力。',
+        mid: '持續安排關節活動，維持肢體功能與肌肉力量。',
+        long: '透過長期支持，預防關節僵硬或退化，確保持續活動能力。'
+      },
+      {
+        code: 'BA12',
+        name: '協助上下樓梯',
+        short: '協助個案安全上下樓梯，改善行動便利與生活範圍。',
+        mid: '持續提供上下樓梯支持，讓個案能穩定參與日常活動。',
+        long: '建立穩定照護，確保個案長期安全行動，減少跌倒風險。'
+      },
+      {
+        code: 'BA13',
+        name: '陪同外出',
+        short: '協助陪同外出，增加社會參與與心理支持。',
+        mid: '持續安排外出陪伴，維持社交互動與生活樂趣。',
+        long: '透過長期支持，協助個案保持社交網絡，提升生活品質。'
+      },
+      {
+        code: 'BA14',
+        name: '陪同就醫',
+        short: '協助陪同就醫，確保醫療需求能即時獲得處理。',
+        mid: '持續安排就醫陪伴，協助醫療追蹤與健康管理。',
+        long: '透過長期就醫支持，維持個案健康穩定，減少延誤風險。'
+      },
+      {
+        code: 'BA15-1',
+        name: '家務協助（一般）',
+        short: '協助處理家務，改善生活環境與便利性。',
+        mid: '持續提供家務支持，確保日常生活穩定與整潔。',
+        long: '建立長期家務支持，讓個案生活環境持續舒適與安全。'
+      },
+      {
+        code: 'BA15-2',
+        name: '家務協助（進階）',
+        short: '協助進階家務工作，改善居家生活便利。',
+        mid: '持續安排家務支持，穩定個案生活秩序與舒適度。',
+        long: '透過長期支持，確保持續改善居家環境品質。'
+      },
+      {
+        code: 'BA16-1',
+        name: '代購／代領／代送（自用）',
+        short: '協助代購與代送個人物品，滿足即時生活需求。',
+        mid: '持續提供代購支持，維持日常便利與穩定。',
+        long: '建立穩定支持系統，確保持續生活便利性。'
+      },
+      {
+        code: 'BA16-2',
+        name: '代購／代領／代送（代購）',
+        short: '協助代購物品，減輕個案與家屬負擔。',
+        mid: '持續安排代購服務，確保生活所需穩定供應。',
+        long: '透過長期支持，確保生活品質穩定與便利。'
+      },
+      {
+        code: 'BA17a',
+        name: '人工氣道管內抽吸',
+        short: '協助人工氣道抽吸，改善呼吸道通暢與舒適。',
+        mid: '持續安排抽吸支持，確保呼吸道暢通與健康。',
+        long: '透過長期呼吸支持，維持個案呼吸安全與生活品質。'
+      },
+      {
+        code: 'BA17b',
+        name: '口腔分泌物抽吸',
+        short: '協助口腔分泌物抽吸，減輕不適與提升舒適度。',
+        mid: '持續安排口腔照護，維持健康與安全。',
+        long: '建立長期支持，避免併發症，確保生活品質。'
+      },
+      {
+        code: 'BA17c',
+        name: '尿管及鼻胃管清潔固定',
+        short: '協助管路清潔與固定，降低感染風險。',
+        mid: '持續安排管路照護，維持穩定使用。',
+        long: '透過長期照護，減少併發症並確保生活品質。'
+      },
+      {
+        code: 'BA17d1',
+        name: '血糖機驗血糖',
+        short: '協助血糖測量，掌握健康狀況。',
+        mid: '持續追蹤血糖值，及時調整照護需求。',
+        long: '建立長期監測，維持穩定健康管理。'
+      },
+      {
+        code: 'BA17d2',
+        name: '甘油球通便',
+        short: '協助通便，緩解排便困難。',
+        mid: '持續安排通便支持，維持腸道功能。',
+        long: '透過長期照護，確保腸道健康與生活品質。'
+      },
+      {
+        code: 'BA17e',
+        name: '依指示置入藥盒',
+        short: '協助依指示置入藥盒，改善用藥管理。',
+        mid: '持續安排用藥支持，確保規律服藥。',
+        long: '建立長期用藥管理，提升健康維護品質。'
+      },
+      {
+        code: 'BA18',
+        name: '安全看視',
+        short: '協助安全看視，降低意外風險。',
+        mid: '持續安排看視支持，確保日常安全。',
+        long: '透過長期安全監護，維持穩定生活品質。'
+      },
+      {
+        code: 'BA20',
+        name: '陪伴服務',
+        short: '協助陪伴，減輕孤單感並提供心理支持。',
+        mid: '持續安排陪伴，維持社交互動與情感連結。',
+        long: '建立長期陪伴關係，提升心理健康與生活滿意度。'
+      },
+      {
+        code: 'BA22',
+        name: '巡視服務',
+        short: '協助巡視，關懷生活狀況與安全需求。',
+        mid: '持續安排巡視服務，掌握個案生活穩定性。',
+        long: '透過長期巡視支持，確保個案安全與生活品質。'
+      },
+      {
+        code: 'BA23',
+        name: '協助洗頭',
+        short: '協助個案洗頭，改善清潔與舒適度。',
+        mid: '持續安排洗頭支持，維持衛生與自尊。',
+        long: '透過長期支持，確保持續清潔與健康。'
+      },
+      {
+        code: 'BA24',
+        name: '協助排泄',
+        short: '協助排泄，維持基本生理需求。',
+        mid: '持續安排排泄支持，確保健康與舒適。',
+        long: '建立長期照護，避免併發症，維持生活品質。'
+      }
+    ];
+    const HOME_CARE_MAP = {};
+    HOME_CARE_ITEMS.forEach(item => { HOME_CARE_MAP[item.code] = item; });
     const RISKS = [
       ['被照顧者嚴重情緒/干擾行為','BPSD、自/他傷、攻擊破壞、遊走、妄想、吼叫等'],
       ['高齡照顧者','≥65歲；原住民≥55歲；<18歲應通報'],
@@ -1778,12 +1979,68 @@
         const rHost=document.getElementById('sp_risks'); rHost.innerHTML='';
         RISKS.forEach((it,i)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${it[0]}"> ${i+1}. ${it[0]} <span class="muted">（${it[1]}）</span>`; rHost.appendChild(lab);});
         toggleGoalInputs();
+    }
+    function renderHomeCareServices(){
+      const host=document.getElementById('homeCareList');
+      if(!host) return;
+      host.innerHTML='';
+      HOME_CARE_ITEMS.forEach(item=>{
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${item.code}" onchange="updateHomeCarePhrases()"> ${item.code} ${item.name}`;
+        host.appendChild(lab);
+      });
+    }
+    function applyAutoText(id, text){
+      const el=document.getElementById(id);
+      if(!el) return;
+      const prevAuto = el.dataset.autoValue === undefined ? undefined : el.dataset.autoValue;
+      const userEdited = el.dataset.userEdited === 'true';
+      const current = el.value;
+      if(!userEdited || current === prevAuto){
+        el.value = text;
+        el.dataset.userEdited = 'false';
       }
+      el.dataset.autoValue = text;
+    }
+    function bindAutoGoalField(id){
+      const el=document.getElementById(id);
+      if(!el) return;
+      el.addEventListener('input', ()=>{
+        const auto = el.dataset.autoValue;
+        if(auto === undefined){
+          el.dataset.userEdited = el.value ? 'true' : 'false';
+        }else{
+          el.dataset.userEdited = el.value === auto ? 'false' : 'true';
+        }
+      });
+    }
+    function resetHomeCarePhrases(){
+      ['short_care','mid_care','long_goal'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el) el.dataset.userEdited = 'false';
+      });
+      updateHomeCarePhrases();
+    }
+    function getSelectedHomeCareCodes(){
+      return [...document.querySelectorAll('#homeCareList input[type=checkbox]:checked')].map(b=>b.value);
+    }
+    function isHomeCareSelected(){
+      return !!document.querySelector('#sp_formal input[type=checkbox][value="居家服務"]:checked');
+    }
+    function updateHomeCarePhrases(){
+      const codes = isHomeCareSelected() ? getSelectedHomeCareCodes() : [];
+      const items = codes.map(code=>HOME_CARE_MAP[code]).filter(Boolean);
+      const shortText = items.map(item=>`${item.name}：${item.short}`).join('\n');
+      const midText = items.map(item=>`${item.name}：${item.mid}`).join('\n');
+      applyAutoText('short_care', shortText);
+      applyAutoText('mid_care', midText);
+      buildLongGoal();
+    }
     function toggleInfInput(key){
       const on  = document.getElementById('sp_inf_'+key).checked;
       const name= document.getElementById('sp_inf_'+key+'_name');
       const freq= document.getElementById('sp_inf_'+key+'_freq');
-      if(name){ 
+      if(name){
         name.style.display = on ? '' : 'none'; 
         if(!on) name.value='';
       }
@@ -1811,6 +2068,7 @@
     function toggleGoalInputs(){
       const selected=[...document.querySelectorAll('#sp_formal input[type=checkbox]:checked')].map(b=>b.value);
       const hasCare = selected.includes('居家服務') || selected.includes('日間照顧');
+      const hasHomeCare = selected.includes('居家服務');
       const hasProf = selected.includes('專業服務');
       const hasCar  = selected.includes('交通服務');
       const hasResp = selected.includes('喘息服務');
@@ -1822,6 +2080,7 @@
       setVisible('short_resp_wrap', hasResp); setVisible('mid_resp_wrap', hasResp);
       setVisible('short_access_wrap', hasAcc); setVisible('mid_access_wrap', hasAcc);
       setVisible('short_meal_wrap', hasMeal);  setVisible('mid_meal_wrap', hasMeal);
+
       updateGoalBlocks();
     }
     function setVisible(id,on){
@@ -1829,6 +2088,11 @@
       if(!el) return;
       el.style.display = on? '' : 'none';
       if(!on){ clearGoalGroup(el); }
+      setVisible('homeCareWrap', hasHomeCare);
+      if(!hasHomeCare){
+        [...document.querySelectorAll('#homeCareList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+      }
+      updateHomeCarePhrases();
     }
 
     function bindQuickReasons(){
@@ -2025,6 +2289,7 @@
     function getSelectedProblems(){
       return [...document.querySelectorAll('#problemList input[type=checkbox]')].filter(b=>b.checked).map(b=>parseInt(b.value,10));
     }
+
 
     const GOAL_BLOCK_DIVIDER = '======================================';
     const GOAL_PERIOD_INFO = {
@@ -2320,6 +2585,37 @@
       if(field) field.value=text;
       const preview=document.getElementById('long_goal_preview');
       if(preview) preview.textContent = text || '（尚未選擇服務）';
+
+    function buildLongGoal(){
+      const short={care: val('short_care'), prof:val('short_prof'), car:val('short_car'), resp:val('short_resp'), access:val('short_access'), meal:val('short_meal')};
+      const mid  ={care: val('mid_care'),   prof:val('mid_prof'),   car:val('mid_car'),   resp:val('mid_resp'), access:val('mid_access'), meal:val('mid_meal')};
+      const homeCareItems = getSelectedHomeCareCodes().map(code=>HOME_CARE_MAP[code]).filter(Boolean);
+      function val(id){return (document.getElementById(id).value||'').trim();}
+      function normalizeGoalText(text){
+        return (text || '')
+          .trim()
+          .replace(/[。．\.]+$/,'')
+          .replace(/\s*[\r\n]+\s*/g,'；');
+      }
+      const homeCareLong = homeCareItems.map(item=>normalizeGoalText(`${item.name}：${item.long}`)).filter(Boolean).join('；');
+      const parts=[];
+      function push(tag, sc, mc, lg){
+        const arr=[];
+        if(sc) arr.push(normalizeGoalText(sc));
+        if(mc) arr.push(normalizeGoalText(mc));
+        if(lg) arr.push(normalizeGoalText(lg));
+        if(arr.length) parts.push(`${tag}：${arr.join('；')}`);
+      }
+      push('照顧服務', short.care, mid.care, homeCareLong);
+      push('專業服務', short.prof, mid.prof);
+      push('交通服務', short.car, mid.car);
+      push('喘息服務', short.resp, mid.resp);
+      push('無障礙及輔具', short.access, mid.access);
+      push('營養送餐', short.meal, mid.meal);
+      const text = parts.join('。');
+      const finalText = text ? text + '。' : '';
+      applyAutoText('long_goal', finalText);
+
     }
 
     /* ===== AI 潤稿（Stub） ===== */
@@ -2473,11 +2769,19 @@
       // 其它原有初始化
       renderS2(); toggleDisCategory(); syncDisab('s2');
       renderS3(); toggleOtherType(); buildS3();
+
       renderGoalGroups('short');
       renderGoalGroups('mid');
       updateGoalBlocks();
+
+      bindAutoGoalField('short_care');
+      bindAutoGoalField('mid_care');
+      bindAutoGoalField('long_goal');
+
       renderFormal();
+      renderHomeCareServices();
       renderProblems(); limitProblems();
+      updateHomeCarePhrases();
       // 非正式資源：名稱→頻率 顯示/隱藏
       bindInfNameToFreq('pt');
       bindInfNameToFreq('nb');

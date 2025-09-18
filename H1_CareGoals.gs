@@ -17,6 +17,59 @@ const PROBLEM_DICT = {
   31:'照顧負荷過重',32:'輔具使用問題',33:'感染問題',34:'其他問題'
 };
 
+const PROBLEM_HEADING_VARIANTS = (function(){
+  const bases = ['(一)照顧問題','(一) 照顧問題','（一）照顧問題','（一） 照顧問題'];
+  const marks = ['：',':'];
+  const prefixes = ['', '五、照顧目標', '五、照顧目標 ', '五、 照顧目標', '五、 照顧目標 '];
+  const joiners = ['', '：', ':', '： ', ': ', ' '];
+  const variants = [];
+  prefixes.forEach(prefix => {
+    bases.forEach(base => {
+      marks.forEach(mark => {
+        if (!prefix) {
+          variants.push(base + mark);
+        } else {
+          joiners.forEach(joiner => {
+            variants.push(`${prefix}${joiner}${base}${mark}`);
+          });
+        }
+      });
+    });
+  });
+  return Array.from(new Set(variants));
+})();
+
+function normalizeProblemKeys(raw){
+  if (raw === undefined || raw === null) return [];
+  let arr;
+  if (Array.isArray(raw)) {
+    arr = raw.slice();
+  } else if (typeof raw === 'string') {
+    arr = raw.split(/[,，、\s]+/);
+  } else if (typeof raw === 'object') {
+    try {
+      arr = Array.prototype.slice.call(raw);
+    } catch (err) {
+      arr = [];
+      for (var key in raw) {
+        if (Object.prototype.hasOwnProperty.call(raw, key) && /^\d+$/.test(key)) {
+          arr.push(raw[key]);
+        }
+      }
+    }
+  } else {
+    arr = [raw];
+  }
+  return arr
+    .map(function(val){
+      const str = String(val).trim();
+      if (!str) return '';
+      const match = str.match(/\d+/);
+      return match ? String(parseInt(match[0], 10)) : str;
+    })
+    .filter(function(val){ return !!val; });
+}
+
 function applyH1_CareGoals(body, form){
   applyH1_CG_Problems(body, form);
   applyH1_CG_ShortMid(body, form);
@@ -25,13 +78,23 @@ function applyH1_CareGoals(body, form){
 
 /** (一) 照顧問題＋補充說明 */
 function applyH1_CG_Problems(body, form){
-  const keys = Array.isArray(form.problemKeys)? form.problemKeys.slice(0,5) : [];
-  const items = keys.map(k=> `${k}.${PROBLEM_DICT[k]}`).join('.');
+  const rawKeys = normalizeProblemKeys(form && form.problemKeys);
+  const uniqueKeys = [];
+  const seen = {};
+  for (let i=0;i<rawKeys.length;i++){
+    const key = rawKeys[i];
+    if (PROBLEM_DICT[key] && !seen[key]) {
+      seen[key] = true;
+      uniqueKeys.push(key);
+      if (uniqueKeys.length >= 5) break;
+    }
+  }
+  const items = uniqueKeys.map(k => `${k}.${PROBLEM_DICT[k]}`).join('、');
   const titleLine = items ? `(${items})` : '';
-  replaceAfterHeadingColon(body, ['(一)照顧問題：','(一) 照顧問題：','（一）照顧問題：'], titleLine);
-  const note = (form.problemNote || '').trim();
+  replaceAfterHeadingColon(body, PROBLEM_HEADING_VARIANTS, titleLine);
+  const note = (form && form.problemNote ? form.problemNote : '').trim();
   if (note) {
-    upsertSingleLineUnderHeading(body, ['(一)照顧問題：','(一) 照顧問題：','（一）照顧問題：'], `補充說明：${note}`);
+    upsertSingleLineUnderHeading(body, PROBLEM_HEADING_VARIANTS, `補充說明：${note}`);
   }
 }
 
