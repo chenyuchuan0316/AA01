@@ -195,6 +195,28 @@
     /* 提示／狀態色與區隔線 */
     .hint{ font-size:.95rem; color:#4b5563; }
     .danger{ color:#b00020; }
+    .error-messages{
+      display:none;
+      margin:10px 0;
+      padding:12px 14px;
+      border:1px solid #fca5a5;
+      border-radius:var(--radius);
+      background:#fef2f2;
+      color:#b91c1c;
+      font-size:.95rem;
+    }
+    .error-messages ul{ margin:0; padding-left:20px; }
+    .error-messages li{ margin-bottom:4px; }
+    .input-invalid{
+      border-color:#d92d20 !important;
+      box-shadow:0 0 0 2px rgba(217,45,32,.2) !important;
+    }
+    .checkcol.input-invalid{
+      border:1px solid #fca5a5;
+      border-radius:var(--radius);
+      padding:12px 14px;
+      background:#fef2f2;
+    }
     .hr{ border-top:1px dashed #d8dce3; margin:14px 0; }
 
     /* Placeholder 選項（select 的置放字） */
@@ -459,6 +481,30 @@
           </div>
         </div>
 
+        <div id="s1_lesion_location" class="grid3" style="display:none;">
+          <div>
+            <label>病灶部位大分類</label>
+            <select id="s1_lesion_region" onchange="updateLesionSubregion();">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option>頭頸部</option><option>上肢</option><option>軀幹</option><option>下肢</option><option>全身性</option>
+            </select>
+          </div>
+          <div>
+            <label>病灶細部分位</label>
+            <select id="s1_lesion_subregion" onchange="updateLaterality('lesion')">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+            </select>
+            <input id="s1_lesion_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:6px;">
+          </div>
+          <div>
+            <label>病灶側別</label>
+            <select id="s1_lesion_laterality">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option>左側</option><option>右側</option><option>雙側</option>
+            </select>
+          </div>
+        </div>
+
         <div class="grid3">
           <div>
             <label>皮膚病灶</label>
@@ -474,8 +520,8 @@
             <input id="s1_lesion_layer_other" type="text" placeholder="請填寫" style="display:none; margin-top:6px;">
           </div>
           <div id="s1_lesion_size_wrap" style="display:none;">
-            <label>病灶大小（cm）</label>
-            <input id="s1_lesion_size" type="number" min="0" step="0.1" placeholder="無">
+            <label>病灶大小（長×寬，cm）</label>
+            <input id="s1_lesion_size" type="text" placeholder="例如：2.0×1.5">
           </div>
         </div>
 
@@ -557,17 +603,17 @@
           </div>
           <div>
             <label>白天排尿</label>
-            <select id="s1_urine_day">
+            <select id="s1_urine_day" onchange="toggleUrineOther('day')">
               <option selected>正常（4–6次）</option><option>偏少（少於3次）</option><option>偏多（7–9次）</option><option>失禁</option><option>其他</option>
-
             </select>
+            <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>夜間排尿</label>
-            <select id="s1_urine_night">
+            <select id="s1_urine_night" onchange="toggleUrineOther('night')">
               <option selected>夜間未起夜</option><option>夜間起夜1次</option><option>夜間起夜2–3次</option><option>夜間有尿失禁</option><option>其他</option>
-
             </select>
+            <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
           <div>
             <label>如廁後清潔</label>
@@ -724,6 +770,7 @@
         <label>補充內容（選填）</label>
         <textarea id="s1_notes" placeholder="其他未涵蓋重點（限簡要）；將附加於段落末端。"></textarea>
         <textarea id="section1_out" style="display:none;"></textarea>
+        <div id="section1_errors" class="error-messages"></div>
         <div class="hint" style="margin-top:6px;">預覽（重組後）：</div>
         <div id="section1_preview" class="preview"></div>
       </div>
@@ -1174,6 +1221,12 @@
 
     // 字典
     const S1_VISION_NOTES = ['白內障術後','配戴眼鏡','其他'];
+    const VISION_NOTE_SUGGESTION = {
+      '靠近才能辨識': ['配戴眼鏡'],
+      '即使配戴眼鏡，仍難以辨識': ['配戴眼鏡'],
+      '僅能分辨明暗，無法辨識人臉或物體輪廓': ['其他'],
+      '完全失去視覺功能，無法感知光線': ['其他']
+    };
     const S1_LESION_SX_LIST = ['疼痛','搔癢','出血','紅腫','滲液','潰瘍','無不適'];
     const S1_DHX_LIST     = ['高血壓','糖尿病','高脂血症','心臟病','腦中風','失智症','慢性腎臟病','慢性阻塞性肺病','退化性關節炎','其他'];
     const S1_MED_CLASSES  = ['降壓藥','甲狀腺藥','降脂藥','抗焦慮藥','其他'];
@@ -1214,7 +1267,7 @@
       S1_VISION_NOTES.forEach(name=>{
         const id='vnote_'+name;
         const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${name}" id="${id}" onchange="toggleVisionOther()"> ${name}`;
+        lab.innerHTML=`<input type="checkbox" value="${name}" id="${id}" onchange="onVisionNoteChange(event)"> ${name}`;
         vbox.appendChild(lab);
       });
 
@@ -1252,8 +1305,28 @@
     // 連動
     function toggleVisionNotes(){
       const v=document.getElementById('s1_vision').value;
-      const chk=document.querySelector('#s1_vision_note_box input[value="配戴眼鏡"]');
-      if(chk && v==='即使配戴眼鏡，仍難以辨識'){ chk.checked=true; }
+      const box=document.getElementById('s1_vision_note_box');
+      if(box){
+        box.querySelectorAll('input[data-auto="1"]').forEach(inp=>{
+          inp.checked=false;
+          inp.removeAttribute('data-auto');
+        });
+        const suggest = VISION_NOTE_SUGGESTION[v] || [];
+        suggest.forEach(label=>{
+          const chk=box.querySelector(`input[value="${label}"]`);
+          if(chk){
+            chk.checked=true;
+            chk.dataset.auto='1';
+          }
+        });
+      }
+      toggleVisionOther();
+    }
+    function onVisionNoteChange(event){
+      const target=event && event.target;
+      if(target && target.matches('input[type=checkbox]')){
+        target.removeAttribute('data-auto');
+      }
       toggleVisionOther();
     }
     function toggleVisionOther(){
@@ -1320,49 +1393,95 @@
       const region = document.getElementById('s1_body_region').value;
       const subSel = document.getElementById('s1_subregion');
       const other  = document.getElementById('s1_subregion_other');
-      subSel.innerHTML = '<option value="" class="placeholder-option" disabled selected>請選擇</option>';
-      other.style.display='none';
-      if(!region) return;
-      (REGION_MAP[region] || []).forEach(name=>{
-        const o=document.createElement('option'); o.textContent=name; subSel.appendChild(o);
-      });
+      if(subSel){
+        subSel.innerHTML = '<option value="" class="placeholder-option" disabled selected>請選擇</option>';
+        if(region){
+          (REGION_MAP[region] || []).forEach(name=>{
+            const o=document.createElement('option'); o.textContent=name; subSel.appendChild(o);
+          });
+        }
+      }
+      if(other){ other.style.display='none'; if(!region){ other.value=''; } }
+      updateLaterality('pain');
     }
-    /* === 細部分位→側別：改為「無需求就不出現」，並受 疼痛=有 條件限制 === */
-    function updateLaterality(){
-      const sub = document.getElementById('s1_subregion').value;
-      const subOtherInput = document.getElementById('s1_subregion_other');
-      const latSel = document.getElementById('s1_laterality');
+    function updateLesionSubregion(){
+      const region = document.getElementById('s1_lesion_region').value;
+      const subSel = document.getElementById('s1_lesion_subregion');
+      const other  = document.getElementById('s1_lesion_subregion_other');
+      if(subSel){
+        subSel.innerHTML = '<option value="" class="placeholder-option" disabled selected>請選擇</option>';
+        if(region){
+          (REGION_MAP[region] || []).forEach(name=>{
+            const o=document.createElement('option'); o.textContent=name; subSel.appendChild(o);
+          });
+        }
+      }
+      if(other){ other.style.display='none'; if(!region){ other.value=''; } }
+      updateLaterality('lesion');
+    }
+    /* === 細部分位→側別：依情境顯示，支援疼痛與病灶 === */
+    function updateLaterality(context){
+      const isLesion = context === 'lesion';
+      const subSel = document.getElementById(isLesion ? 's1_lesion_subregion' : 's1_subregion');
+      const otherInput = document.getElementById(isLesion ? 's1_lesion_subregion_other' : 's1_subregion_other');
+      const latSel = document.getElementById(isLesion ? 's1_lesion_laterality' : 's1_laterality');
       const latWrap = latSel ? latSel.parentElement : null;
+      const subValue = subSel ? subSel.value : '';
 
-      // 維持原邏輯：細部分位=其他 時出現自填框
-      if(sub === '其他'){ subOtherInput.style.display = ''; }
-      else { subOtherInput.style.display = 'none'; }
+      if(otherInput){
+        if(subValue === '其他'){ otherInput.style.display=''; }
+        else { otherInput.style.display='none'; otherInput.value=''; }
+      }
 
-      // 是否需要側別：仍沿用既有對稱部位集合
-      const needLat = SYMMETRIC_PARTS.has(sub);  // 眼睛/肩膀/手臂/手部/大腿/膝蓋/小腿/足部…等
-      const painOn  = (document.getElementById('s1_pain').value === '有');
+      const needLat = SYMMETRIC_PARTS.has(subValue);
+      const painOn = (document.getElementById('s1_pain').value === '有');
+      const lesionOn = (document.getElementById('s1_lesion_has').value === '有');
+      const showLat = ((isLesion ? lesionOn : (painOn || lesionOn)) && needLat);
 
-      // **新規則**：只有在「疼痛=有 且 需要側別」時才顯示側別欄位；否則不出現
-      const showLat = painOn && needLat;
       if(latWrap) latWrap.style.display = showLat ? '' : 'none';
-
-      // 無需求時清空值並鎖定
-      latSel.disabled = !showLat;
-      if(!showLat){ latSel.value = ''; }
+      if(latSel){
+        latSel.disabled = !showLat;
+        if(!showLat){ latSel.value=''; }
+      }
     }
 
     // 皮膚病灶顯示
     function toggleLesionCombined(){
       const v=document.getElementById('s1_lesion_has').value;
       const on=(v==='有');
+      const loc=document.getElementById('s1_lesion_location');
+      if(loc){
+        loc.style.display = on?'':'none';
+      }
+      if(on){
+        updateLesionSubregion();
+      }else{
+        ['s1_lesion_region','s1_lesion_subregion','s1_lesion_laterality'].forEach(id=>{
+          const el=document.getElementById(id);
+          if(el){
+            el.value='';
+            if(id==='s1_lesion_laterality'){ el.disabled=true; }
+          }
+        });
+        const other=document.getElementById('s1_lesion_subregion_other');
+        if(other){ other.value=''; other.style.display='none'; }
+      }
       document.getElementById('s1_lesion_layer_wrap').style.display = on?'':'none';
       document.getElementById('s1_lesion_size_wrap').style.display = on?'':'none';
       document.getElementById('s1_lesion_more').style.display = on?'':'none';
       toggleLesionHospital();
+      if(!on){
+        const hosp=document.getElementById('s1_lesion_hospital');
+        if(hosp){ hosp.value=''; }
+      }
     }
     function toggleLesionLayerOther(){
       const v=document.getElementById('s1_lesion_layer').value;
-      document.getElementById('s1_lesion_layer_other').style.display = (v==='其他')?'':'none';
+      const other=document.getElementById('s1_lesion_layer_other');
+      if(!other) return;
+      const show=(v==='其他');
+      other.style.display = show?'':'none';
+      if(!show) other.value='';
     }
 
     function toggleLesionHospital(){
@@ -1400,6 +1519,16 @@
     function toggleTransportOther(){
       const v=document.getElementById('s1_visit_transport').value;
       document.getElementById('s1_visit_transport_other').style.display = (v==='其他')?'':'none';
+    }
+    function toggleUrineOther(type){
+      const selId = type === 'night' ? 's1_urine_night' : 's1_urine_day';
+      const inputId = type === 'night' ? 's1_urine_night_other' : 's1_urine_day_other';
+      const sel=document.getElementById(selId);
+      const input=document.getElementById(inputId);
+      if(!sel||!input) return;
+      const show = sel.value==='其他';
+      input.style.display = show?'':'none';
+      if(!show) input.value='';
     }
     function toggleDhxOther(){
       const on = document.querySelector('#s1_dhx_box input[value="其他"]')?.checked;
@@ -1504,6 +1633,17 @@
       return [...document.querySelectorAll('#s1_hearing_detail_box input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
     }
 
+    function resetSection1Validation(){
+      document.querySelectorAll('#section1_block .input-invalid').forEach(el=>el.classList.remove('input-invalid'));
+      const box=document.getElementById('section1_errors');
+      if(box){ box.innerHTML=''; box.style.display='none'; }
+    }
+    function markSection1Invalid(id){
+      const el=document.getElementById(id);
+      if(!el) return;
+      el.classList.add('input-invalid');
+    }
+
     function collectS1(){
       const s = {};
       // 基本
@@ -1520,22 +1660,28 @@
       s.s1_pain = document.getElementById('s1_pain').value;
       s.s1_pain_score = document.getElementById('s1_pain_score').value;
       s.s1_body_region = document.getElementById('s1_body_region').value;
-      let subreg = document.getElementById('s1_subregion').value;
-      if(subreg==='其他'){
-        const oth=(document.getElementById('s1_subregion_other').value||'').trim();
-        subreg = oth;
-      }
-      s.s1_subregion = subreg;
+      const subChoice = document.getElementById('s1_subregion').value;
+      const subOtherTxt = (document.getElementById('s1_subregion_other').value||'').trim();
+      s.s1_subregion_choice = subChoice;
+      s.s1_subregion_other = subChoice === '其他' ? subOtherTxt : '';
+      s.s1_subregion = (subChoice === '其他') ? (subOtherTxt || '') : subChoice;
       s.s1_laterality = document.getElementById('s1_laterality').value || '';
 
       s.s1_lesion_has = document.getElementById('s1_lesion_has').value;
+      s.s1_lesion_region = document.getElementById('s1_lesion_region').value;
+      const lesionSubChoice = document.getElementById('s1_lesion_subregion').value;
+      const lesionSubOther = (document.getElementById('s1_lesion_subregion_other').value||'').trim();
+      s.s1_lesion_subregion_choice = lesionSubChoice;
+      s.s1_lesion_subregion_other = lesionSubChoice === '其他' ? lesionSubOther : '';
+      s.s1_lesion_subregion = (lesionSubChoice === '其他') ? (lesionSubOther || '') : lesionSubChoice;
+      s.s1_lesion_laterality = document.getElementById('s1_lesion_laterality').value || '';
       let layer = document.getElementById('s1_lesion_layer').value;
       if(layer==='其他'){
         const lo=(document.getElementById('s1_lesion_layer_other').value||'').trim();
         layer = lo;
       }
       s.s1_lesion_layer = layer || '無';
-      s.s1_lesion_size  = document.getElementById('s1_lesion_size').value;
+      s.s1_lesion_size  = (document.getElementById('s1_lesion_size').value||'').trim();
       s.s1_lesion_sx    = collectChecks('s1_lesion_sx_box');
       if(s.s1_lesion_has==='有' && Array.isArray(s.s1_lesion_sx) && s.s1_lesion_sx.length===0){ s.s1_lesion_sx=['無不適']; }
       s.s1_lesion_eval  = document.getElementById('s1_lesion_eval').value;
@@ -1554,8 +1700,19 @@
       s.s1_adl_bathing_how = document.getElementById('s1_adl_bathing_how').value;
       s.s1_adl_dressing = document.getElementById('s1_adl_dressing').value;
       s.s1_adl_dressing_how = document.getElementById('s1_adl_dressing_how').value;
-      s.s1_urine_day = document.getElementById('s1_urine_day').value;
-      s.s1_urine_night = document.getElementById('s1_urine_night').value;
+      const urineDaySel = document.getElementById('s1_urine_day').value;
+      const urineDayOther = (document.getElementById('s1_urine_day_other').value||'').trim();
+      s.s1_urine_day_choice = urineDaySel;
+      s.s1_urine_day_is_other = (urineDaySel==='其他' && !!urineDayOther);
+      s.s1_urine_day_other = s.s1_urine_day_is_other ? urineDayOther : '';
+      s.s1_urine_day = s.s1_urine_day_is_other ? urineDayOther : urineDaySel;
+
+      const urineNightSel = document.getElementById('s1_urine_night').value;
+      const urineNightOther = (document.getElementById('s1_urine_night_other').value||'').trim();
+      s.s1_urine_night_choice = urineNightSel;
+      s.s1_urine_night_is_other = (urineNightSel==='其他' && !!urineNightOther);
+      s.s1_urine_night_other = s.s1_urine_night_is_other ? urineNightOther : '';
+      s.s1_urine_night = s.s1_urine_night_is_other ? urineNightOther : urineNightSel;
       s.s1_post_toilet = document.getElementById('s1_post_toilet').value;
       s.s1_post_toilet_how = document.getElementById('s1_post_toilet_how').value;
 
@@ -1602,12 +1759,95 @@
       return s;
     }
 
+    function validateSection1(){
+      resetSection1Validation();
+      const messages=[];
+
+      const painOn = document.getElementById('s1_pain').value === '有';
+      if(painOn){
+        const score = document.getElementById('s1_pain_score').value;
+        const scoreNum = Number(score);
+        if(!score || Number.isNaN(scoreNum) || scoreNum < 1 || scoreNum > 10){
+          messages.push('請填寫疼痛強度（1-10）');
+          markSection1Invalid('s1_pain_score');
+        }
+        const region = document.getElementById('s1_body_region').value;
+        if(!region){ messages.push('請選擇疼痛部位大分類'); markSection1Invalid('s1_body_region'); }
+        const subSel = document.getElementById('s1_subregion').value;
+        const subOther = (document.getElementById('s1_subregion_other').value||'').trim();
+        if(!subSel){ messages.push('請選擇疼痛細部分位'); markSection1Invalid('s1_subregion'); }
+        else if(subSel==='其他' && !subOther){ messages.push('請填寫疼痛細部分位（其他）'); markSection1Invalid('s1_subregion_other'); }
+        if(SYMMETRIC_PARTS.has(subSel)){ const lat = document.getElementById('s1_laterality').value; if(!lat){ messages.push('請選擇疼痛側別'); markSection1Invalid('s1_laterality'); } }
+      }
+
+      const lesionOn = document.getElementById('s1_lesion_has').value === '有';
+      if(lesionOn){
+        const region = document.getElementById('s1_lesion_region').value;
+        if(!region){ messages.push('請選擇病灶部位大分類'); markSection1Invalid('s1_lesion_region'); }
+        const subSel = document.getElementById('s1_lesion_subregion').value;
+        const subOther = (document.getElementById('s1_lesion_subregion_other').value||'').trim();
+        if(!subSel){ messages.push('請選擇病灶細部分位'); markSection1Invalid('s1_lesion_subregion'); }
+        else if(subSel==='其他' && !subOther){ messages.push('請填寫病灶細部分位（其他）'); markSection1Invalid('s1_lesion_subregion_other'); }
+        if(SYMMETRIC_PARTS.has(subSel)){ const lat = document.getElementById('s1_lesion_laterality').value; if(!lat){ messages.push('請選擇病灶側別'); markSection1Invalid('s1_lesion_laterality'); } }
+
+        const layerSel = document.getElementById('s1_lesion_layer').value;
+        const layerOther = (document.getElementById('s1_lesion_layer_other').value||'').trim();
+        if(!layerSel){ messages.push('請選擇病灶層次'); markSection1Invalid('s1_lesion_layer'); }
+        else if(layerSel==='其他' && !layerOther){ messages.push('請填寫病灶層次（其他）'); markSection1Invalid('s1_lesion_layer_other'); }
+
+        const size = (document.getElementById('s1_lesion_size').value||'').trim();
+        if(!size){ messages.push('請填寫病灶大小'); markSection1Invalid('s1_lesion_size'); }
+
+        const sx = collectChecks('s1_lesion_sx_box');
+        if(!Array.isArray(sx) || !sx.length){ messages.push('請勾選至少一項病灶症狀'); markSection1Invalid('s1_lesion_sx_box'); }
+
+        const evalSel = document.getElementById('s1_lesion_eval').value;
+        if(evalSel && evalSel!=='未評估'){
+          const hosp = (document.getElementById('s1_lesion_hospital').value||'').trim();
+          if(!hosp){ messages.push('請填寫醫療院所名稱'); markSection1Invalid('s1_lesion_hospital'); }
+        }
+      }
+
+      const box=document.getElementById('section1_errors');
+      if(box){
+        if(messages.length){
+          box.innerHTML = `<ul>${messages.map(msg=>`<li>${msg}</li>`).join('')}</ul>`;
+          box.style.display='';
+        }else{
+          box.innerHTML='';
+          box.style.display='none';
+        }
+      }
+
+      return { ok: messages.length===0, messages };
+    }
+
     // 產文（新版）
     function buildSection1Text_v2(s) {
       const has = v => v !== undefined && v !== null && String(v).trim() !== "";
       const join = arr => arr.filter(Boolean).join("，");
       const listCN = arr => arr.filter(Boolean).join("、");
       const sexWord = g => g === "男" ? "男性" : g === "女" ? "女性" : (g || "");
+      function formatLocation(region, subChoice, subValue, subOther, laterality) {
+        const parts = [];
+        if (has(region)) parts.push(region);
+        let subText = '';
+        if (subChoice === '其他') {
+          subText = has(subOther) ? `其他（${subOther}）` : '其他';
+        } else {
+          subText = subValue;
+        }
+        if (has(subText)) parts.push(subText);
+        let text = parts.join('－');
+        if (has(laterality)) text += `（${laterality}）`;
+        return text;
+      }
+      function formatUrination(choice, isOther, value) {
+        if (isOther) {
+          return has(value) ? `其他（${value}）` : '其他';
+        }
+        return choice || value || '';
+      }
 
       function phraseAwareness(v) {
         if (!has(v)) return "";
@@ -1667,25 +1907,33 @@
       const p2 = [visionPhrase, hearingPhrase].filter(Boolean).join("，");
 
       // ③ 疼痛/皮膚（合併）
-      // 部位描述：大分類 → 細部分位 → 側別
-      let siteBits = '';
-      if (has(s.s1_body_region) || has(s.s1_subregion)){
-        const lat = s.s1_laterality ? `（${s.s1_laterality}）` : '';
-        siteBits = `${s.s1_body_region||''}${s.s1_subregion? '－'+s.s1_subregion: ''}${lat}`;
-      }
       const painBits = [];
       if (String(s.s1_pain) === "有") {
-        painBits.push(`${siteBits || '部位'}疼痛`);
+        const painSite = formatLocation(
+          s.s1_body_region,
+          s.s1_subregion_choice,
+          s.s1_subregion,
+          s.s1_subregion_other,
+          s.s1_laterality
+        );
+        painBits.push(`${painSite || '部位'}疼痛`);
         if (has(s.s1_pain_score)) painBits.push(`疼痛強度約 ${s.s1_pain_score}/10`);
       }
       const lesionBits = [];
       if (String(s.s1_lesion_has) === "有") {
+        const lesionSite = formatLocation(
+          s.s1_lesion_region,
+          s.s1_lesion_subregion_choice,
+          s.s1_lesion_subregion,
+          s.s1_lesion_subregion_other,
+          s.s1_lesion_laterality
+        );
         const layer = has(s.s1_lesion_layer) ? s.s1_lesion_layer : '無';
-        const size  = has(s.s1_lesion_size) ? `${s.s1_lesion_size}cm` : '無';
+        const size  = has(s.s1_lesion_size) ? s.s1_lesion_size : '無';
         const sxArr = Array.isArray(s.s1_lesion_sx) ? s.s1_lesion_sx : [];
         const sxTxt = sxArr.length ? listCN(sxArr) : '無不適';
-        lesionBits.push(`${siteBits || '部位'}之皮膚病灶`);
-        lesionBits.push(`病灶部位：${layer}`);
+        if (lesionSite) lesionBits.push(`病灶位於${lesionSite}`);
+        lesionBits.push(`病灶層次：${layer}`);
         lesionBits.push(`大小：${size}`);
         lesionBits.push(`症狀：${sxTxt}`);
         lesionBits.push(`醫療評估：${s.s1_lesion_eval||'未評估'}`);
@@ -1729,24 +1977,10 @@
       const adlSub=adlSubArr.join("、");
       if (adlSub) adlBits.push(adlSub);
       const toiletBits=[];
-      if (has(s.s1_urine_day)) toiletBits.push(`白天排尿${s.s1_urine_day}`);
-      if (has(s.s1_urine_night)) {
-        let v = s.s1_urine_night;
-        const map = {
-          '無夜間排尿': '夜間未起夜',
-          '輕度（1次）': '夜間起夜1次',
-          '中度（2–3次）': '夜間起夜2–3次',
-          '失禁': '夜間有尿失禁'
-        };
-        if (map[v]) {
-          toiletBits.push(map[v]);
-        } else if (v.startsWith('其他')) {
-          v = v.replace(/^其他/, '');
-          toiletBits.push(`夜間排尿${v}`);
-        } else {
-          toiletBits.push(v);
-        }
-      }
+      const dayUrine = formatUrination(s.s1_urine_day_choice, s.s1_urine_day_is_other, s.s1_urine_day);
+      if (has(dayUrine)) toiletBits.push(`白天排尿${dayUrine}`);
+      const nightUrine = formatUrination(s.s1_urine_night_choice, s.s1_urine_night_is_other, s.s1_urine_night);
+      if (has(nightUrine)) toiletBits.push(`夜間排尿${nightUrine}`);
       if (has(s.s1_post_toilet)){
         let txt=`如廁後清潔${s.s1_post_toilet}`;
         if(s.s1_post_toilet==='部分協助' && has(s.s1_post_toilet_how)) txt+=`（部分協助方式：${s.s1_post_toilet_how}）`;
@@ -1806,7 +2040,7 @@
         }
         lifeBits.push(`睡眠${sleep}`);
       }
-      if (has(s.s1_daytime)) lifeBits.push(`白天多${s.s1_daytime}`);
+      if (has(s.s1_daytime)) lifeBits.push(`白天活動以${s.s1_daytime}為主`);
       const p6 = lifeBits.join("，");
 
       // ⑦ 疾病/用藥/就醫
@@ -1832,7 +2066,14 @@
       return `${segments.join("。")}。`;
     }
 
-    function buildSection1(){
+    function buildSection1(presetValidation){
+      const validation = presetValidation || validateSection1();
+      if(!validation.ok){
+        document.getElementById('section1_out').value = '';
+        const msg = validation.messages.length ? validation.messages.join('、') : '請補齊必填欄位';
+        document.getElementById('section1_preview').textContent = `（一）身心概況：${msg}`;
+        return '';
+      }
       const s = collectS1();
       const text = buildSection1Text_v2(s);
       document.getElementById('section1_out').value = text;
@@ -2699,16 +2940,14 @@
       if(!primaryCaregiverRel){ primaryCaregiverRel='本人'; if(!primaryCaregiverName) primaryCaregiverName = caseName; }
 
       if(!validatePartialAssist(msg)) return;
-      if(document.getElementById('s1_lesion_has').value==='有'){
-        const evalv=document.getElementById('s1_lesion_eval').value;
-        if(evalv!=='未評估'){
-          const hosp=(document.getElementById('s1_lesion_hospital').value||'').trim();
-          if(!hosp){ msg.textContent='請填寫：醫療院所名稱'; return; }
-        }
+      const section1Validation = validateSection1();
+      if(!section1Validation.ok){
+        msg.textContent = '請先完成身心概況：' + section1Validation.messages.join('、');
+        return;
       }
 
       // 組裝各段
-      buildSection1();
+      buildSection1(section1Validation);
       buildS2(); buildS3(); buildSection4(); buildSection6(); buildLongGoal();
 
       const form = {
@@ -2764,8 +3003,9 @@
     /* ===== 初始化 ===== */
     function initSection1State(){
       toggleVisionNotes(); toggleTransportOther(); toggleDhxOther(); toggleMedOther();
+      toggleUrineOther('day'); toggleUrineOther('night');
       toggleLesionCombined(); toggleLesionLayerOther(); togglePainCombined(); toggleLesionHospital();
-      renderHearingDetails(); updateSubregion(); updateLaterality();
+      renderHearingDetails(); updateSubregion(); updateLaterality('pain'); updateLesionSubregion(); updateLaterality('lesion');
       toggleAdlHow('s1_adl_eating'); toggleAdlHow('s1_adl_groom'); toggleAdlHow('s1_adl_bathing');
       toggleAdlHow('s1_adl_dressing'); toggleAdlHow('s1_post_toilet'); toggleAdlHow('s1_meal_prep');
       toggleAdlHow('s1_housework'); toggleAdlHow('s1_finance');
