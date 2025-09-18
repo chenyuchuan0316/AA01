@@ -2,53 +2,236 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>AA01計畫助手</title>
+  <title>AA01計畫助手（快速填寫）</title>
+
+  <!-- 行動端視窗與 iOS 安全區域 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <!-- 避免 iOS 自動辨識電話/Email 造成版面跳動 -->
+  <meta name="format-detection" content="telephone=no, email=no, address=no" />
+  <!-- 目前採用亮色；若未來要支援暗色可改為 "light dark" -->
+  <meta name="color-scheme" content="light" />
+
   <style>
-    body { font-family: Arial, "Noto Sans TC", sans-serif; margin: 12px; }
-    .group { border:1px solid #e5e5e5; border-radius:8px; padding:12px; margin-bottom:12px; }
-    .row { display:flex; gap:8px; margin-bottom:8px; }
-    .row > div { flex:1; }
-    label { display:block; font-size:12px; margin-bottom:4px; color:#333; }
-    input[type="text"], input[type="number"], select, textarea {
-      width:100%; box-sizing:border-box; padding:8px; font-size:13px;
-      border:1px solid #ccc; border-radius:6px;
+    /* ===== AA01 表單 — 放大字級、強對比、兩欄桌機、單欄手機、觸控友善 =====
+       尺寸基準（依需求可再調）：
+       - 根字級（html）：桌機 18→19→20px（視寬度），手機 clamp(18px, 4.8vw, 20px)
+       - 內文/標籤：≥16–18px（隨根字級等比）
+       - 控制元件字級：固定 20px（避免 iOS 聚焦放大）
+       - 輸入框高度：≥56px；主按鈕：56px；小按鈕：48px；核取方塊：28→32px（觸控）
+    */
+
+    :root{
+      /* 色彩（提高對比） */
+      --bg:#ffffff;
+      --card:#ffffff;
+      --card-alt:#f9fbff;            /* 淺藍區隔不同 group（交錯使用） */
+      --border:#dfe3ea;              /* 較實邊框 */
+      --border-strong:#c7cfdb;
+      --text:#111111;
+      --label:#333333;               /* Label 由 #6a6a6a 提升為 #333 */
+      --placeholder:#555555;         /* Placeholder 加深，避免與 disabled 混淆 */
+      --title:#0B57D0;               /* 區塊標題與主色（可改為 #222 深灰） */
+      --accent:#0B57D0;              /* 主要行為色（按鈕/Focus） */
+      --accent-weak:rgba(11,87,208,.12); /* Focus ring */
+
+      /* 尺寸系統 */
+      --gap:14px;
+      --radius:12px;
+      --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
+
+      --fs-base:1rem;                               /* 由 html 根字級決定（18–20px） */
+      --fs-title:clamp(1.25rem, 1.1rem + .35vw, 1.5rem);
+      --fs-label:1rem;                              /* label ≥16–18px */
+      --fs-ctrl:20px;                               /* input/select/textarea 固定 20px */
+      --h-input:56px;                               /* 輸入框高度 */
+      --h-button:56px;                              /* 主按鈕高度 */
+      --h-button-sm:48px;                           /* 小按鈕（±1天/±5天等） */
+      --checkbox:28px;                              /* 核取方塊 */
     }
-    textarea { resize: vertical; min-height: 70px; }
-    .btnbar { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-    button { padding:6px 10px; border:1px solid #ccc; background:#fff; border-radius:6px; cursor:pointer; }
-    button.primary { background:#0b57d0; color:#fff; border-color:#0b57d0; }
-    .small { font-size:12px; padding:4px 6px; }
-    .datebox { display:flex; align-items:center; gap:6px; }
-    .dateval { padding:6px 8px; border:1px solid #ccc; border-radius:6px; min-width:120px; text-align:center; background:#f9f9f9; }
-    .hint { font-size:12px; color:#666; }
-    .danger { color:#b00020; }
-    .hr { border-top:1px dashed #ddd; margin:10px 0; }
-    .grid2 { display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; }
-    .grid3 { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
-    .checkcol { columns:2; column-gap:16px; }
-    .checkcol label { display:block; break-inside:avoid; margin-bottom:6px; }
-    .count { font-size:12px; color:#444; }
-    .inline { display:flex; align-items:center; gap:6px; }
-    .muted { color:#999; font-size:12px; }
-    .subtle { color:#555; font-size:12px; }
-    .badge { display:inline-block; font-size:11px; background:#f1f3f4; border:1px solid #e0e0e0; padding:1px 6px; border-radius:10px; }
-    .titlebar { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-    .preview { padding:8px; background:#fafafa; border:1px dashed #e0e0e0; border-radius:6px; white-space:pre-wrap; }
-    .home-care-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:8px; }
-    .home-care-item { display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid #e5e5e5; border-radius:6px; background:#fff; }
-    .home-care-label { display:flex; align-items:center; gap:6px; flex:1; font-size:13px; }
-    .home-care-code { font-weight:600; color:#444; }
-    .home-care-name { color:#333; }
-    .home-care-qty { width:72px; padding:4px 6px; font-size:12px; border:1px solid #ccc; border-radius:6px; display:none; box-sizing:border-box; }
-    .goal-preview-empty { color:#999; }
-    /* 灰色 placeholder（disabled option 額外補強） */
-    .placeholder-option { color:#999; }
+
+    /* 根字級：桌機 18→19→20；手機 clamp(18–20) */
+    html { font-size:18px; -webkit-text-size-adjust:100%; }
+    @media (min-width:1440px){ html{ font-size:19px; } }
+    @media (min-width:1920px){ html{ font-size:20px; } }
+    @media (max-width:480px){ html{ font-size:clamp(18px, 4.8vw, 20px); } }
+
+    html, body{ background:var(--bg); color:var(--text); }
+    body{
+      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", Arial, sans-serif;
+      font-size:var(--fs-base);
+      line-height:1.75;
+      letter-spacing:.2px;
+      margin:16px;
+      -webkit-tap-highlight-color:transparent;
+      text-rendering:optimizeLegibility;
+    }
+
+    /* 卡片 */
+    .group{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:22px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow);
+    }
+    /* 交錯輕底以分區（不改 HTML 的情況下給予溫和導引） */
+    .group:nth-of-type(odd){ background:var(--card-alt); }
+
+    /* 標題列與標題字（加粗 + 底線 + 顏色導引） */
+    .titlebar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .group > label:first-child, .titlebar > label:first-child{
+      display:block; font-weight:800; font-size:var(--fs-title); color:var(--title);
+      margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-strong);
+    }
+
+    /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
+    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:10px; }
+    .row > div{ flex:1 1 360px; min-width:360px; }      /* ⬅️ 360px 下限，確保不會出現三欄 */
+    .grid2, .grid3{ display:grid; gap:var(--gap); align-items:start; }
+    .grid2{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .grid3{ grid-template-columns:repeat(2, minmax(0,1fr)); } /* ⬅️ 將原本三欄統一限制為兩欄 */
+    @media (max-width:1024px){
+      .row > div{ flex:1 1 100%; min-width:100%; }
+      .grid2, .grid3{ grid-template-columns:1fr; }
+    }
+
+    /* 標籤與 Placeholder（加大字、提升對比） */
+    label{ display:block; font-size:var(--fs-label); margin-bottom:8px; color:var(--label); }
+    :where(input,select,textarea)::placeholder{ color:var(--placeholder); opacity:1; }
+
+    /* 表單元件：20px 字級，56px 高度（iOS 聚焦不縮放） */
+    input[type="text"], input[type="number"], input[type="tel"], input[type="email"],
+    input[type="search"], input[type="date"], input[type="time"],
+    select, textarea{
+      width:100%; box-sizing:border-box;
+      min-height:var(--h-input);
+      padding:12px 16px;
+      font-size:var(--fs-ctrl); line-height:1.4;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+      appearance:none;
+    }
+    textarea{ min-height:132px; height:auto; resize:vertical; }
+
+    /* Focus 樣式：清楚但不刺眼 */
+    input:focus, select:focus, textarea:focus{
+      outline:none;
+      border-color:var(--title);
+      box-shadow:0 0 0 3px var(--accent-weak);
+    }
+
+    /* 禁用狀態：底色與字色明顯區隔 */
+    input:disabled, select:disabled, textarea:disabled{
+      background:#f3f5f7; color:#777; border-color:#e1e5ea;
+    }
+
+    /* 日期顯示盒（更清楚） */
+    .datebox{ display:flex; align-items:center; gap:10px; }
+    .dateval{
+      padding:10px 12px; min-width:160px; text-align:center;
+      border:1px solid var(--border); border-radius:12px; background:#f7f9fc; color:#1a1c1e; font-weight:700; font-size:18px;
+    }
+
+    /* 按鈕與操作面積（主按鈕 56px，小按鈕 48px） */
+    .btnbar{ display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
+    button{
+      height:var(--h-button);
+      padding:0 18px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#fff; color:#111; font-weight:700; cursor:pointer;
+      line-height:1; touch-action:manipulation; font-size:18px;
+    }
+    button:hover{ background:#f7f7f7; }
+    button.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
+    button.small{ height:var(--h-button-sm); padding:0 14px; font-size:18px; }
+    /* 可選：若於按鈕加入 data-ic="plus"/"minus"，會自動加上 + / - 圖示 */
+    button[data-ic="plus"]::before{ content:"+"; margin-right:.25em; font-weight:900; }
+    button[data-ic="minus"]::before{ content:"–"; margin-right:.25em; font-weight:900; }
+
+    /* 黏底主要動作列（避開 iOS 底部工具列） */
+    .group:last-of-type .btnbar{
+      position:sticky; bottom:max(18px, env(safe-area-inset-bottom));
+      padding:12px; background:rgba(255,255,255,.92);
+      border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow);
+    }
+
+    /* 勾選清單（點擊面積提升） */
+    .checkcol{ columns:auto; column-gap:0; }
+    .checkcol label{
+      display:flex; align-items:center; gap:12px; padding:12px 14px;
+      border:1px solid var(--border); border-radius:12px; margin-bottom:12px; background:#fff; color:#222; font-size:var(--fs-base);
+    }
+    .checkcol input[type=checkbox]{ width:var(--checkbox); height:var(--checkbox); }
+    @media (pointer:coarse){ :root{ --checkbox:32px; } } /* 觸控設備放大到 32px */
+
+    /* Home care 卡式清單（維持放大字與輸入） */
+    .home-care-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; }
+    .home-care-item{
+      display:flex; align-items:center; gap:12px; padding:12px 14px;
+      border:1px solid var(--border); border-radius:12px; background:#fff; box-shadow:var(--shadow);
+    }
+    .home-care-label{ display:flex; align-items:center; gap:8px; flex:1; font-size:var(--fs-base); color:#222; }
+    .home-care-code{ font-weight:800; color:#333; }
+    .home-care-name{ color:#111; }
+    .home-care-qty{
+      width:120px; height:46px; padding:8px 10px; font-size:var(--fs-ctrl);
+      border:1px solid var(--border); border-radius:12px; display:none; box-sizing:border-box;
+    }
+    .home-care-item:has(input[type=checkbox]:checked) .home-care-qty{ display:block !important; }
+
+    /* 預覽框：顏色加深以凸顯區塊 */
+    .preview{
+      padding:14px 16px; background:#eef4ff;
+      border:1px solid #cdd9ff; border-radius:12px;
+      white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      color:#0f172a; max-height:55vh; overflow:auto; font-size:17px;
+    }
+    #goalPreview.goal-preview-empty{ color:#6b7280; }
+
+    /* 提示／狀態色與區隔線 */
+    .hint{ font-size:.95rem; color:#4b5563; }
+    .danger{ color:#b00020; }
+    .hr{ border-top:1px dashed #d8dce3; margin:14px 0; }
+
+    /* Placeholder 選項（select 的置放字） */
+    .placeholder-option{ color:#555; font-size:var(--fs-ctrl); }
+
+    /* Tooltip：於元素加 data-tooltip="說明..." 即會顯示 */
+    [data-tooltip]{ position:relative; }
+    [data-tooltip]:hover::after{
+      content:attr(data-tooltip);
+      position:absolute; left:50%; transform:translateX(-50%); bottom:calc(100% + 8px);
+      white-space:normal; width:max-content; max-width:260px;
+      padding:8px 10px; background:#111; color:#fff; border-radius:8px; font-size:.9rem; line-height:1.4;
+      box-shadow:0 4px 12px rgba(0,0,0,.15);
+    }
+    [data-tooltip]:hover::before{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:calc(100% + 4px);
+      border:6px solid transparent; border-top-color:#111;
+    }
+
+    /* 行動端微調 */
+    @media (max-width:480px){
+      body{ margin:12px; }
+      .group{ padding:18px; margin-bottom:14px; }
+      .row, .grid2, .grid3{ gap:12px; }
+      .dateval{ min-width:150px; font-size:18px; }
+      .preview{ font-size:1rem; }
+    }
   </style>
 </head>
+
+
+
 <body>
 
   <!-- 基本資訊 -->
   <div class="group">
+    <label>★基本資訊</label>
     <div class="row">
       <div>
         <label>單位代碼</label>
