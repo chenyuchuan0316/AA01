@@ -1,8 +1,8 @@
 /** ============== H1_CareGoals.gs =============
  * 五、照顧目標：
  * - (一) 照顧問題（最多 5 項）→ 直寫在標題行冒號後，補「補充說明」行
- * - (二)(三) 短/中期：前端產出結構化段落（含碼別、數量、敘述），以整段覆寫
- * - (四) 長期：彙整短/中期所選服務，採相同格式覆寫
+ * - (二)(三) 短/中期：四格（照顧／專業／交通車／喘息）— 留白不寫
+ * - (四) 長期：僅彙整已填之短/中期欄位
  * ============================================ */
 
 /** ===== H1_CareGoals.gs ===== */
@@ -100,45 +100,31 @@ function applyH1_CG_Problems(body, form){
 
 /** (二)(三) 短/中期四格：有值才輸出各行 */
 function applyH1_CG_ShortMid(body, form){
-  const shortBlock = (form.shortGoalBlock || form.short_goal_block || '').trim();
-  const midBlock   = (form.midGoalBlock   || form.mid_goal_block   || '').trim();
+  const short = [
+    ['照顧服務', form.short_care],
+    ['專業服務', form.short_prof],
+    ['交通車服務', form.short_car],
+    ['喘息服務', form.short_resp]
+  ].filter(x=> (x[1]||'').trim()).map(x=> `${x[0]}：${x[1].trim()}`);
 
-  if (shortBlock){
-    replaceBlockUnderHeading(body, ['(二)短期目標','(二) 短期目標'], shortBlock);
-  }else{
-    const short = [
-      ['照顧服務', form.short_care],
-      ['專業服務', form.short_prof],
-      ['交通車服務', form.short_car],
-      ['喘息服務', form.short_resp]
-    ].filter(x=> (x[1]||'').trim()).map(x=> `${x[0]}：${x[1].trim()}`);
-    if (short.length){
-      upsertContentUnderHeading(body, ['(二)短期目標','(二) 短期目標'], short.join('\n'));
-    }else{
-      replaceBlockUnderHeading(body, ['(二)短期目標','(二) 短期目標'], '');
-    }
+  const mid = [
+    ['照顧服務', form.mid_care],
+    ['專業服務', form.mid_prof],
+    ['交通車服務', form.mid_car],
+    ['喘息服務', form.mid_resp]
+  ].filter(x=> (x[1]||'').trim()).map(x=> `${x[0]}：${x[1].trim()}`);
+
+  if (short.length){
+    upsertContentUnderHeading(body, ['(二)短期目標','(二) 短期目標'], short.join('\n'));
   }
-
-  if (midBlock){
-    replaceBlockUnderHeading(body, ['(三)中期目標','(三) 中期目標'], midBlock);
-  }else{
-    const mid = [
-      ['照顧服務', form.mid_care],
-      ['專業服務', form.mid_prof],
-      ['交通車服務', form.mid_car],
-      ['喘息服務', form.mid_resp]
-    ].filter(x=> (x[1]||'').trim()).map(x=> `${x[0]}：${x[1].trim()}`);
-    if (mid.length){
-      upsertContentUnderHeading(body, ['(三)中期目標','(三) 中期目標'], mid.join('\n'));
-    }else{
-      replaceBlockUnderHeading(body, ['(三)中期目標','(三) 中期目標'], '');
-    }
+  if (mid.length){
+    upsertContentUnderHeading(body, ['(三)中期目標','(三) 中期目標'], mid.join('\n'));
   }
 }
 
 /** (四) 長期目標（直接寫入前端彙整後之文字） */
 function applyH1_CG_Long(body, form){
-  const text = (form.longGoalBlock || form.long_goal || '').trim();
-  replaceBlockUnderHeading(body, ['(四)長期目標','(四) 長期目標'], text);
+  const text = (form.long_goal || '').trim();
+  upsertContentUnderHeading(body, ['(四)長期目標','(四) 長期目標'], text);
 }
 
