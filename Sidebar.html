@@ -34,6 +34,13 @@
     .badge { display:inline-block; font-size:11px; background:#f1f3f4; border:1px solid #e0e0e0; padding:1px 6px; border-radius:10px; }
     .titlebar { display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .preview { padding:8px; background:#fafafa; border:1px dashed #e0e0e0; border-radius:6px; white-space:pre-wrap; }
+    .home-care-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:8px; }
+    .home-care-item { display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid #e5e5e5; border-radius:6px; background:#fff; }
+    .home-care-label { display:flex; align-items:center; gap:6px; flex:1; font-size:13px; }
+    .home-care-code { font-weight:600; color:#444; }
+    .home-care-name { color:#333; }
+    .home-care-qty { width:72px; padding:4px 6px; font-size:12px; border:1px solid #ccc; border-radius:6px; display:none; box-sizing:border-box; }
+    .goal-preview-empty { color:#999; }
     /* 灰色 placeholder（disabled option 額外補強） */
     .placeholder-option { color:#999; }
   </style>
@@ -669,8 +676,8 @@
               <label>居家服務項目（多選）</label>
               <button class="small" type="button" onclick="resetHomeCarePhrases()">重新套用片語</button>
             </div>
-            <div class="checkcol" id="homeCareList"></div>
-            <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整，仍可自行調整內容。</div>
+            <div id="homeCareList" class="home-care-grid"></div>
+            <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整；如需記錄用量，請於右側欄位輸入數量。</div>
           </div>
         </div>
 
@@ -805,6 +812,9 @@
     <div class="row"><div>
       <label>(四) 長期目標(4-6個月)</label>
       <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
+      <div class="hr"></div>
+      <label>目標文字預覽（含碼別與各期結構）</label>
+      <div id="goalPreview" class="preview goal-preview-empty">（尚未選擇服務或填寫內容）</div>
     </div></div>
   </div>
 
@@ -1914,10 +1924,47 @@
       if(!host) return;
       host.innerHTML='';
       HOME_CARE_ITEMS.forEach(item=>{
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${item.code}" onchange="updateHomeCarePhrases()"> ${item.code} ${item.name}`;
-        host.appendChild(lab);
+        const row=document.createElement('div');
+        row.className='home-care-item';
+        row.innerHTML = `
+          <label class="home-care-label">
+            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onHomeCareToggle(this)">
+            <span class="home-care-code">${item.code}</span>
+            <span class="home-care-name">[${item.name}]</span>
+          </label>
+          <input type="number" class="home-care-qty" data-code="${item.code}" min="0" placeholder="數量" oninput="onHomeCareQuantityChange(this)">
+        `;
+        host.appendChild(row);
       });
+    }
+
+    function onHomeCareToggle(box){
+      const code = box && box.dataset ? box.dataset.code : '';
+      toggleHomeCareQuantity(code);
+      updateHomeCarePhrases();
+    }
+
+    function onHomeCareQuantityChange(input){
+      if(!input) return;
+      const code = input.dataset ? input.dataset.code : '';
+      if(!code) return;
+      const checkbox = document.querySelector(`#homeCareList input[type=checkbox][data-code="${code}"]`);
+      if(checkbox && checkbox.checked){
+        updateHomeCarePhrases();
+      }
+    }
+
+    function toggleHomeCareQuantity(code){
+      if(!code) return;
+      const checkbox = document.querySelector(`#homeCareList input[type=checkbox][data-code="${code}"]`);
+      const input = document.querySelector(`#homeCareList .home-care-qty[data-code="${code}"]`);
+      if(!input) return;
+      if(checkbox && checkbox.checked){
+        input.style.display='';
+      }else{
+        input.value='';
+        input.style.display='none';
+      }
     }
     function applyAutoText(id, text){
       const el=document.getElementById(id);
@@ -1950,17 +1997,30 @@
       });
       updateHomeCarePhrases();
     }
+    function getSelectedHomeCareEntries(){
+      const rows=[...document.querySelectorAll('#homeCareList .home-care-item')];
+      const entries=[];
+      rows.forEach(row=>{
+        const box=row.querySelector('input[type=checkbox]');
+        if(!box || !box.checked) return;
+        const item=HOME_CARE_MAP[box.value];
+        if(!item) return;
+        const qtyInput=row.querySelector('.home-care-qty');
+        const quantity = qtyInput ? qtyInput.value.trim() : '';
+        entries.push({ code: box.value, item, quantity });
+      });
+      return entries;
+    }
     function getSelectedHomeCareCodes(){
-      return [...document.querySelectorAll('#homeCareList input[type=checkbox]:checked')].map(b=>b.value);
+      return getSelectedHomeCareEntries().map(entry=>entry.code);
     }
     function isHomeCareSelected(){
       return !!document.querySelector('#sp_formal input[type=checkbox][value="居家服務"]:checked');
     }
     function updateHomeCarePhrases(){
-      const codes = isHomeCareSelected() ? getSelectedHomeCareCodes() : [];
-      const items = codes.map(code=>HOME_CARE_MAP[code]).filter(Boolean);
-      const shortText = items.map(item=>`${item.name}：${item.short}`).join('\n');
-      const midText = items.map(item=>`${item.name}：${item.mid}`).join('\n');
+      const entries = isHomeCareSelected() ? getSelectedHomeCareEntries() : [];
+      const shortText = entries.map(entry=>formatHomeCareSentence(entry, 'short')).filter(Boolean).join('\n');
+      const midText = entries.map(entry=>formatHomeCareSentence(entry, 'mid')).filter(Boolean).join('\n');
       applyAutoText('short_care', shortText);
       applyAutoText('mid_care', midText);
       buildLongGoal();
@@ -2012,6 +2072,7 @@
       setVisible('homeCareWrap', hasHomeCare);
       if(!hasHomeCare){
         [...document.querySelectorAll('#homeCareList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+        [...document.querySelectorAll('#homeCareList .home-care-qty')].forEach(inp=>{ inp.value=''; inp.style.display='none'; });
       }
       updateHomeCarePhrases();
     }
@@ -2212,34 +2273,150 @@
       return [...document.querySelectorAll('#problemList input[type=checkbox]')].filter(b=>b.checked).map(b=>parseInt(b.value,10));
     }
     function buildLongGoal(){
-      const short={care: val('short_care'), prof:val('short_prof'), car:val('short_car'), resp:val('short_resp'), access:val('short_access'), meal:val('short_meal')};
-      const mid  ={care: val('mid_care'),   prof:val('mid_prof'),   car:val('mid_car'),   resp:val('mid_resp'), access:val('mid_access'), meal:val('mid_meal')};
-      const homeCareItems = getSelectedHomeCareCodes().map(code=>HOME_CARE_MAP[code]).filter(Boolean);
-      function val(id){return (document.getElementById(id).value||'').trim();}
-      function normalizeGoalText(text){
-        return (text || '')
-          .trim()
-          .replace(/[。．\.]+$/,'')
-          .replace(/\s*[\r\n]+\s*/g,'；');
+      const entries = isHomeCareSelected() ? getSelectedHomeCareEntries() : [];
+      const sections = [];
+
+      const careLines = entries.map(entry=>formatHomeCareSentence(entry, 'long')).filter(Boolean);
+      if(careLines.length){
+        sections.push('照顧服務：');
+        careLines.forEach(line=>sections.push(`- ${line}`));
       }
-      const homeCareLong = homeCareItems.map(item=>normalizeGoalText(`${item.name}：${item.long}`)).filter(Boolean).join('；');
-      const parts=[];
-      function push(tag, sc, mc, lg){
-        const arr=[];
-        if(sc) arr.push(normalizeGoalText(sc));
-        if(mc) arr.push(normalizeGoalText(mc));
-        if(lg) arr.push(normalizeGoalText(lg));
-        if(arr.length) parts.push(`${tag}：${arr.join('；')}`);
-      }
-      push('照顧服務', short.care, mid.care, homeCareLong);
-      push('專業服務', short.prof, mid.prof);
-      push('交通服務', short.car, mid.car);
-      push('喘息服務', short.resp, mid.resp);
-      push('無障礙及輔具', short.access, mid.access);
-      push('營養送餐', short.meal, mid.meal);
-      const text = parts.join('。');
-      const finalText = text ? text + '。' : '';
+
+      [
+        ['專業服務','short_prof','mid_prof'],
+        ['交通服務','short_car','mid_car'],
+        ['喘息服務','short_resp','mid_resp'],
+        ['無障礙及輔具','short_access','mid_access'],
+        ['營養送餐','short_meal','mid_meal']
+      ].forEach(([label, shortId, midId])=>{
+        const merged = gatherLongSummary(shortId, midId);
+        if(merged.length){
+          sections.push(`${label}：`);
+          merged.forEach(line=>sections.push(`- ${line}`));
+        }
+      });
+
+      const finalText = sections.join('\n');
       applyAutoText('long_goal', finalText);
+      buildGoalPreview();
+    }
+
+    function formatHomeCareSentence(entry, key){
+      if(!entry || !entry.item) return '';
+      const item = entry.item;
+      const desc = item[key] || '';
+      if(!desc.trim()) return '';
+      const quantity = entry.quantity ? entry.quantity.trim() : '';
+      const qtyText = quantity ? `（數量：${quantity}）` : '';
+      return `${item.code}[${item.name}]${qtyText}：${desc}`;
+    }
+
+    function normalizeBulletLine(line){
+      return (line || '').replace(/^[\-\u2022\u2023\u25E6．\s]+/, '').trim();
+    }
+
+    function extractLines(text){
+      if(!text) return [];
+      return text
+        .split(/\r?\n/)
+        .map(normalizeBulletLine)
+        .filter(Boolean);
+    }
+
+    function gatherLongSummary(shortId, midId){
+      const shortLines = extractLines(document.getElementById(shortId)?.value || '');
+      const midLines = extractLines(document.getElementById(midId)?.value || '');
+      const result=[];
+      if(shortLines.length){
+        result.push(`短期：${shortLines.join('；')}`);
+      }
+      if(midLines.length){
+        result.push(`中期：${midLines.join('；')}`);
+      }
+      return result;
+    }
+
+    function parseLongGoalForPreview(){
+      const map={};
+      const text=(document.getElementById('long_goal')?.value || '').trim();
+      if(!text) return map;
+      const lines=text.split(/\r?\n/);
+      let current='';
+      lines.forEach(line=>{
+        const trimmed=line.trim();
+        if(!trimmed) return;
+        const headingMatch=trimmed.match(/^(.+?)：$/);
+        if(headingMatch){
+          current=headingMatch[1].trim();
+          if(!map[current]) map[current]=[];
+          return;
+        }
+        if(current){
+          const normalized=normalizeBulletLine(trimmed);
+          if(normalized) map[current].push(normalized);
+        }
+      });
+      return map;
+    }
+
+    function buildPreviewSection(period){
+      let heading='';
+      const categories=[];
+      if(period==='short'){
+        heading='(二) 短期目標（0–3 個月）';
+        [
+          ['照顧服務','short_care'],
+          ['專業服務','short_prof'],
+          ['交通服務','short_car'],
+          ['喘息服務','short_resp'],
+          ['無障礙及輔具','short_access'],
+          ['營養送餐','short_meal']
+        ].forEach(([label, field])=>{
+          const lines = extractLines(document.getElementById(field)?.value || '');
+          if(lines.length) categories.push({label, lines});
+        });
+      }else if(period==='mid'){
+        heading='(三) 中期目標（3–4 個月）';
+        [
+          ['照顧服務','mid_care'],
+          ['專業服務','mid_prof'],
+          ['交通服務','mid_car'],
+          ['喘息服務','mid_resp'],
+          ['無障礙及輔具','mid_access'],
+          ['營養送餐','mid_meal']
+        ].forEach(([label, field])=>{
+          const lines = extractLines(document.getElementById(field)?.value || '');
+          if(lines.length) categories.push({label, lines});
+        });
+      }else if(period==='long'){
+        heading='(四) 長期目標（4–6 個月）';
+        const longMap = parseLongGoalForPreview();
+        ['照顧服務','專業服務','交通服務','喘息服務','無障礙及輔具','營養送餐'].forEach(label=>{
+          const lines = longMap[label] || [];
+          if(lines.length) categories.push({label, lines});
+        });
+      }
+
+      if(!categories.length) return '';
+      const lines=['======================================', heading, '======================================'];
+      categories.forEach((cat, idx)=>{
+        lines.push(`${idx+1}.${cat.label}`);
+        cat.lines.forEach(text=>{ lines.push(` - ${text}`); });
+      });
+      return lines.join('\n');
+    }
+
+    function buildGoalPreview(){
+      const box=document.getElementById('goalPreview');
+      if(!box) return;
+      const sections=['short','mid','long'].map(buildPreviewSection).filter(Boolean);
+      if(sections.length){
+        box.textContent = sections.join('\n\n');
+        box.classList.remove('goal-preview-empty');
+      }else{
+        box.textContent = '（尚未選擇服務或填寫內容）';
+        box.classList.add('goal-preview-empty');
+      }
     }
 
     /* ===== AI 潤稿（Stub） ===== */
@@ -2405,6 +2582,12 @@
       bindAutoGoalField('short_care');
       bindAutoGoalField('mid_care');
       bindAutoGoalField('long_goal');
+      const goalFields=['short_care','short_prof','short_car','short_resp','short_access','short_meal','mid_care','mid_prof','mid_car','mid_resp','mid_access','mid_meal'];
+      goalFields.forEach(id=>{
+        const el=document.getElementById(id);
+        if(el){ el.addEventListener('input', ()=>{ buildLongGoal(); }); }
+      });
+      document.getElementById('long_goal')?.addEventListener('input', buildGoalPreview);
       renderFormal();
       renderHomeCareServices();
       renderProblems(); limitProblems();
