@@ -13,9 +13,9 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 ## 系統架構概覽
 
 ```
-Google Docs (使用者文件)
-   ├── 自訂功能表：計畫助手 → showSidebar()
-   └── HtmlService 側欄：Sidebar.html
+HtmlService：Sidebar.html
+   ├── showSidebar()（Google Docs 側欄模式）
+   └── doGet()（Apps Script Web App 模式）
           ├── 收集輸入、組句、基本驗證
           └── 呼叫 google.script.run.applyAndSave(form)
                   └── Main.gs / applyAndSave(form)
@@ -67,6 +67,10 @@ AA01 需在 Google Workspace 環境執行，並取得下列服務權限：
 
 ## 部署與初始化流程
 
+AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設計），或是將相同介面部署成獨立 Web App。無論哪種模式，請先在 `Constants.gs` 設定正確的資源 ID。
+
+### 方式一：Google 文件側欄（預設）
+
 1. **建立 Google 文件專案**
    - 在目標 Google 文件中開啟 `Extensions → Apps Script`，建立專案。
    - 將此儲存庫中的所有檔案（`.gs` 與 `Sidebar.html`）貼入 Apps Script IDE。
@@ -81,6 +85,23 @@ AA01 需在 Google Workspace 環境執行，並取得下列服務權限：
 4. **測試**
    - 於模板文件中重新載入頁面，應看到「計畫助手」功能表。
    - 開啟側欄、填入測試資料並點選「產出」，確認能成功建立新檔。
+
+### 方式二：Apps Script Web App
+
+1. **建立獨立 Apps Script 專案**
+   - 前往 [script.google.com](https://script.google.com) 建立新的（未綁定任何文件的）專案。
+   - 將本儲存庫的所有檔案貼入專案；`Main.gs` 內的 `doGet()` 會回傳與側欄相同的 HtmlService 介面。
+
+2. **設定常數**
+   - 仍需依實際資源填入 `Constants.gs`，並確認模板/資料夾/試算表授權正確。
+
+3. **部署**
+   - 在 Apps Script 中選擇 `Deploy → New deployment → Web app`（或 `Test deployments` 進行預覽）。
+   - 設定執行身份與分享範圍，例如「Only myself」或「Anyone within domain」。
+
+4. **授權與使用**
+   - 第一次開啟 Web App URL 時授權所需的 Docs/Drive/Sheets 權限。
+   - 授權後即可在瀏覽器中全頁使用同一套表單流程，產出結果與側欄模式相同。
 
 ### 選用：使用 `clasp` 本地開發
 
