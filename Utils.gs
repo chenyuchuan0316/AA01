@@ -87,3 +87,26 @@ function upsertSingleLineUnderHeading(body, headingVariants, content){
   }
   return true;
 }
+
+/** 取代指定標題下的整段內容（允許多行文字） */
+function replaceBlockUnderHeading(body, headingVariants, text){
+  const found = findHeadingParagraph(body, headingVariants);
+  if(!found) return false;
+  let insertIdx = found.index + 1;
+  while (insertIdx < body.getNumChildren()){
+    const child = body.getChild(insertIdx);
+    if (child.getType() === DocumentApp.ElementType.PARAGRAPH){
+      const txt = child.asParagraph().getText().trim();
+      if (isNextHeadingLine_(txt)) break;
+    }else{
+      break;
+    }
+    body.removeChild(child);
+  }
+  if(!text) return true;
+  const lines = text.split('\n');
+  lines.forEach(line=>{
+    body.insertParagraph(insertIdx++, line);
+  });
+  return true;
+}
