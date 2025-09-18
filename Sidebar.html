@@ -77,7 +77,7 @@
   <!-- 一、電聯日期 -->
   <div class="group">
     <label>一、電聯日期</label>
-    <div class="datebox">
+    <div id="callDateControls" class="datebox">
       <div id="callDate" class="dateval"></div>
       <div class="btnbar">
         <button class="small" onclick="shiftDate('callDate', -5)">-5天</button>
@@ -86,6 +86,12 @@
         <button class="small" onclick="shiftDate('callDate',  1)">+1天</button>
       </div>
     </div>
+    <div class="row" style="margin-top:8px;">
+      <div>
+        <label><input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪</label>
+      </div>
+    </div>
+    <div id="consultVisitText" class="subtle" style="display:none; margin-top:4px;"></div>
   </div>
 
   <!-- 二、家訪日期 + 出院 -->
@@ -861,6 +867,31 @@
     function getDateBox(id){return document.getElementById(id).textContent;}
     function shiftDate(id,delta){const cur=getDateBox(id), base=cur?new Date(cur):new Date(); base.setDate(base.getDate()+delta); setDateBox(id,base);}
     function toggleDischarge(){const on=document.getElementById('isDischarge').checked; document.getElementById('dischargeBox').style.display=on?'':'none'; if(on&&!getDateBox('dischargeDate')) setDateBox('dischargeDate', new Date());}
+    function updateConsultVisitText(){
+      const box=document.getElementById('consultVisitText');
+      if(!box) return;
+      const caseName=(document.getElementById('caseName').value||'').trim();
+      const consultName=(document.getElementById('consultName').value||'').trim();
+      const caseDisplay=caseName||'未填個案姓名';
+      const consultDisplay=consultName||'未選擇照專';
+      box.textContent=`本案(${caseDisplay}) 由照顧專員(${consultDisplay})進行約訪`;
+    }
+    function toggleCallDateByConsultVisit(){
+      const input=document.getElementById('isConsultVisit');
+      const controls=document.getElementById('callDateControls');
+      const box=document.getElementById('consultVisitText');
+      if(!input) return;
+      const on=input.checked;
+      if(controls) controls.style.display=on?'none':'';
+      if(box){
+        if(on){
+          updateConsultVisitText();
+          box.style.display='';
+        }else{
+          box.style.display='none';
+        }
+      }
+    }
 
     /* ===== 個管師名單 ===== */
     function loadManagers(){
@@ -878,6 +909,8 @@
         const sel = document.getElementById('consultName');
         sel.innerHTML='';
         (list && list.length ? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);}); sel.selectedIndex=0;
+        updateConsultVisitText();
+        toggleCallDateByConsultVisit();
       }).getConsultantsByUnit(unit);
     }
 
@@ -2498,6 +2531,7 @@
       const form = {
         unitCode, caseManagerName, caseName, consultName,
         callDate: getDateBox('callDate'),
+        isConsultVisit: document.getElementById('isConsultVisit').checked,
         visitDate: getDateBox('visitDate'),
         isDischarge: document.getElementById('isDischarge').checked,
         dischargeDate: getDateBox('dischargeDate'),
@@ -2604,7 +2638,18 @@
       syncSocialPrimary();
       document.getElementById('primaryRel')?.addEventListener('change', syncSocialPrimary);
       document.getElementById('primaryName')?.addEventListener('input',  syncSocialPrimary);
-      document.getElementById('caseName')?.addEventListener('input', syncSocialPrimary);
+      const caseNameInput=document.getElementById('caseName');
+      if(caseNameInput){
+        caseNameInput.addEventListener('input', syncSocialPrimary);
+        caseNameInput.addEventListener('input', updateConsultVisitText);
+      }
+      const consultSelect=document.getElementById('consultName');
+      if(consultSelect){
+        consultSelect.addEventListener('change', updateConsultVisitText);
+      }
+
+      toggleCallDateByConsultVisit();
+      updateConsultVisitText();
 
     });
   </script>
