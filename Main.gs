@@ -1,5 +1,5 @@
 /** ================= Main.gs ==================
- * 進入點：openSidebar、applyAndSave
+ * 進入點：showSidebar/doGet、applyAndSave
  * - 若在公版：複製新檔 → 對新檔寫入 → 開新檔
  * - 若在個案檔：同檔寫入 → 同檔改名（日期與版本 +1）
  * ============================================ */
@@ -13,12 +13,21 @@ function onOpen(){
     .addToUi();
 }
 
+/** 建立 HtmlService 介面（供側欄或 Web App 共用） */
+function buildAppHtmlOutput(){
+  return HtmlService.createHtmlOutputFromFile('Sidebar')
+    .setTitle('計畫助手（快速填寫）');
+}
+
 /** 顯示 Sidebar.html */
 function showSidebar(){
-  const html = HtmlService.createHtmlOutputFromFile('Sidebar')
-    .setTitle('計畫助手（快速填寫）')
-    .setWidth(420);
+  const html = buildAppHtmlOutput().setWidth(420);
   DocumentApp.getUi().showSidebar(html);
+}
+
+/** Web App 入口：回傳完整頁面（無寬度限制） */
+function doGet(){
+  return buildAppHtmlOutput();
 }
 
 /** AI 潤稿（目前 Stub：原文返回；後續可改為串接實際模型） */
