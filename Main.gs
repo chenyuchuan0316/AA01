@@ -39,6 +39,7 @@ function polishSection(key, text, context){
 /**
  * 依序處理文件寫入的函式。
  * 使用 Object.freeze 避免部署時遭到意外改動順序。
+ * H1 相關段落已整併於 H1_Sections.gs，便於維護。
  */
 const DOCUMENT_WRITERS = Object.freeze([
   applyH1_CallDate,
