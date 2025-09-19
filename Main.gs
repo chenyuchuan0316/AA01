@@ -36,6 +36,54 @@ function polishSection(key, text, context){
   return { text: text };
 }
 
+/**
+ * 依序處理文件寫入的函式。
+ * 使用 Object.freeze 避免部署時遭到意外改動順序。
+ */
+const DOCUMENT_WRITERS = Object.freeze([
+  applyH1_CallDate,
+  applyH1_VisitDate,
+  applyH1_Attendees,
+  applyH1_CaseProfile,
+  applyH1_CareGoals,
+  applyH1_MismatchPlan,
+  applyPlanExecutionPage,
+  applyPlanServiceSummaryPage
+]);
+
+function buildDocumentNaming(form){
+  const unitCode = (form && form.unitCode) || '';
+  const visitYmd = ((form && form.visitDate) || '').replace(/-/g, '');
+  const caseName = (form && form.caseName) || '';
+  let baseName = `${unitCode}_${visitYmd}_${caseName}`;
+  if (!unitCode && !visitYmd && !caseName) {
+    baseName = 'AA01_計畫';
+  }
+  const nextVersion = computeNextVersion(baseName);
+  return {
+    baseName: baseName,
+    version: nextVersion,
+    fileName: `${baseName}_V${nextVersion}`
+  };
+}
+
+function createDocumentFromTemplate(fileName){
+  const folder = DriveApp.getFolderById(OUTPUT_FOLDER_ID);
+  const templateFile = DriveApp.getFileById(TEMPLATE_DOC_ID);
+  const copy = templateFile.makeCopy(fileName, folder);
+  const docId = copy.getId();
+  const doc = DocumentApp.openById(docId);
+  return { docId: docId, doc: doc, body: doc.getBody() };
+}
+
+function runDocumentWriters(body, form){
+  DOCUMENT_WRITERS.forEach(function(writer){
+    if (typeof writer === 'function') {
+      writer(body, form);
+    }
+  });
+}
+
 /** 主要流程：複製公版 → 依表單寫入 → 依規則命名 → 開啟 */
 function applyAndSave(form){
   // 一致性潤稿（預留掛鉤；目前不修改 form）
@@ -43,42 +91,15 @@ function applyAndSave(form){
     // TODO: 批次潤稿策略（雜湊比對僅處理有變動段落）
   }
 
-  // 命名規則：單位代碼_家訪日期_個案名稱_Vn
-  const ymd = (form.visitDate || '').replace(/-/g,''); // YYYYMMDD
-  const baseName = `${form.unitCode}_${ymd}_${form.caseName}`;
-  const nextVer = computeNextVersion(baseName);
-  const fileName = `${baseName}_V${nextVer}`;
+  const naming = buildDocumentNaming(form);
+  const docContext = createDocumentFromTemplate(naming.fileName);
 
-  // 從公版複製新檔
-  const folder = DriveApp.getFolderById(OUTPUT_FOLDER_ID);
-  const tpl = DriveApp.getFileById(TEMPLATE_DOC_ID);
-  const copy = tpl.makeCopy(fileName, folder);
-  const docId = copy.getId();
-  const doc = DocumentApp.openById(docId);
-  const body = doc.getBody();
+  runDocumentWriters(docContext.body, form);
 
-  // === H1-1 ~ H1-3 ===
-  applyH1_CallDate(body, form);
-  applyH1_VisitDate(body, form);
-  applyH1_Attendees(body, form);
-
-  // === H1-4 ：四、個案概況 ===
-  applyH1_CaseProfile(body, form);
-
-  // === H1-5 ：五、照顧目標 ===
-  applyH1_CareGoals(body, form);
-
-  // === H1-6 ：六、與照專… ===
-  applyH1_MismatchPlan(body, form);
-
-  // === 附件頁 ===
-  applyPlanExecutionPage(body, form);
-  applyPlanServiceSummaryPage(body, form);
-
-  doc.saveAndClose();
+  docContext.doc.saveAndClose();
 
   return {
     message: '已建立新檔並寫入內容',
-    file: { id: docId, name: fileName, url: 'https://docs.google.com/document/d/'+docId+'/edit' }
+    file: { id: docContext.docId, name: naming.fileName, url: 'https://docs.google.com/document/d/' + docContext.docId + '/edit' }
   };
 }
