@@ -20,7 +20,7 @@ HtmlService：Sidebar.html
           └── 呼叫 google.script.run.applyAndSave(form)
                   └── Main.gs / applyAndSave(form)
                         ├── 依資料夾檔名計算版號 (FilesVersion.gs)
-                        ├── 依段落寫入內容 (H1_*.gs)
+                        ├── 依段落寫入內容 (H1_Sections.gs)
                         └── 通用工具 (Utils.gs)
 ```
 
@@ -37,9 +37,9 @@ HtmlService：Sidebar.html
 | `Main.gs` | 建立「計畫助手」選單、顯示側欄、接收前端表單並驅動整體流程。|
 | `Constants.gs` | 集中管理外部資源 ID（模板文件、輸出資料夾、個管師/照專試算表）。部署前需依實際環境調整。|
 | `FilesVersion.gs` | 依現有檔案命名計算下一版號 (`baseName_Vn` → `n+1`)。|
-| `Utils.gs` | 共用函式：尋找標題段落、插入或取代段落內容、日期格式轉換等。所有 H1_* 模組皆仰賴這些工具。|
+| `Utils.gs` | 共用函式：尋找標題段落、插入或取代段落內容、日期格式轉換等。所有 `applyH1_*` 函式與附件處理均仰賴這些工具。|
 | `LTCServiceData.gs` | 桃園市長照給付資料庫（v1）靜態資料表，提供 `getTaoyuanLtcData()` 與 `getTaoyuanLtcTable()` 供前端載入。|
-| `H1_CallDate.gs`~`H1_MismatchPlan.gs` | 各段落的寫入邏輯，將表單資料轉換為正式文字並寫入 Document Body。|
+| `H1_Sections.gs` | 第一部分（H1）所有段落的寫入邏輯，集中於單一檔案並附詳細註解。|
 | `PlanAttachments.gs` | 產出附件頁：計畫執行規劃與服務明細（頁 2、頁 3）。|
 | `HRLookup.gs` | 透過 `SpreadsheetApp` 讀取 Google 試算表，依單位代碼抓取個管師/照專名單供前端下拉選單使用。|
 | `Sidebar.html` | 側欄 UI 與邏輯。負責收集使用者輸入、產生描述文字、基本驗證與呼叫後端函式。|
@@ -123,15 +123,15 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
    - 送出前執行驗證：必填欄位、部分協助的說明文字、皮膚病灶醫療院所等。
    - 將所有欄位整合成 `form` 物件，呼叫 `applyAndSave(form)`。
 
-3. **後端寫入** (`Main.gs` + `H1_*.gs`)
+3. **後端寫入** (`Main.gs` + `H1_Sections.gs`)
    - `applyAndSave` 先計算新檔名稱（`單位代碼_家訪日期_個案姓名_V{版號}`）。
    - 於 `OUTPUT_FOLDER_ID` 指定的資料夾中，以 `TEMPLATE_DOC_ID` 為模板建立副本並開啟 Body。
-  - 依序呼叫 `applyH1_*` 函式處理各段落：
-    - `H1_CallDate` / `H1_VisitDate`：更新標題列文字或插入出院日期。
-    - `H1_Attendees`：組出偕同訪視者句子（包含主照者、照專、其他參與者）。
-    - `H1_CaseProfile`：分段處理個案概況六大小節，必要時補上預設文字。
-    - `H1_CareGoals`：寫入照顧問題、短/中期四格、長期目標。
-    - `H1_MismatchPlan`：整合不一致原因與常用快捷語句。
+   - `DOCUMENT_WRITERS` 依序呼叫 `applyH1_*` 函式處理各段落（皆集中於 `H1_Sections.gs`）：
+    - `applyH1_CallDate` / `applyH1_VisitDate`：更新標題列文字或插入出院日期。
+    - `applyH1_Attendees`：組出偕同訪視者句子（包含主照者、照專、其他參與者）。
+    - `applyH1_CaseProfile`：分段處理個案概況六大小節，必要時補上預設文字。
+    - `applyH1_CareGoals`：寫入照顧問題、短/中期四格、長期目標。
+    - `applyH1_MismatchPlan`：整合不一致原因與常用快捷語句。
    - 接著透過 `applyPlanExecutionPage` 與 `applyPlanServiceSummaryPage` 在文件結尾加入頁 2（計畫執行規劃）與頁 3（服務明細），自動插入分頁。
    - 完成後儲存關閉文件，回傳新檔資訊給前端。
 
@@ -158,12 +158,12 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
 
 ## 常見維護與擴充建議
 
-* 新增段落：建立 `H1_NewSection.gs`，撰寫 `applyH1_NewSection(body, form)`，並在 `Main.gs` 中按段落順序呼叫。
-* 調整輸出格式：優先修改對應的 `H1_*` 模組，必要時更新 `Utils.gs` 的輔助函式。
+* 新增段落：在 `H1_Sections.gs` 中新增對應的 `applyH1_NewSection(body, form)`，並在 `Main.gs` 的 `DOCUMENT_WRITERS` 中按段落順序呼叫。
+* 調整輸出格式：優先修改 `H1_Sections.gs` 內的對應段落，必要時更新 `Utils.gs` 的輔助函式。
 * 新增欄位：
   1. 在 `Sidebar.html` 新增 UI 與資料整合邏輯。
   2. 調整 `applyAndSave` 的 `form` 組裝。
-  3. 在適當的 `H1_*` 函式使用新欄位。
+  3. 在 `H1_Sections.gs` 中對應的 `applyH1_*` 函式使用新欄位。
 * 更新給付資料：若桃園市長照給付標準調整，請同步更新 `桃園市_長照給付資料庫_v1.xlsx` 並重新產出 `LTCServiceData.gs`，同時檢視 `Sidebar.html` 內的服務代碼敘述是否對應。
 * 對接真實 AI 潤稿：在 `Main.gs` 的 `polishSection` 實作串接外部 API，並遵守資料隱私規範。
 
