@@ -104,14 +104,18 @@ function applyH1_CG_ShortMid(body, form){
     ['照顧服務', form.short_care],
     ['專業服務', form.short_prof],
     ['交通車服務', form.short_car],
-    ['喘息服務', form.short_resp]
+    ['喘息服務', form.short_resp],
+    ['無障礙及輔具', form.short_access],
+    ['營養送餐', form.short_meal]
   ].filter(x=> (x[1]||'').trim()).map(x=> `${x[0]}：${x[1].trim()}`);
 
   const mid = [
     ['照顧服務', form.mid_care],
     ['專業服務', form.mid_prof],
     ['交通車服務', form.mid_car],
-    ['喘息服務', form.mid_resp]
+    ['喘息服務', form.mid_resp],
+    ['無障礙及輔具', form.mid_access],
+    ['營養送餐', form.mid_meal]
   ].filter(x=> (x[1]||'').trim()).map(x=> `${x[0]}：${x[1].trim()}`);
 
   if (short.length){
