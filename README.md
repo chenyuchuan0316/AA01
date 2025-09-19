@@ -38,6 +38,7 @@ HtmlService：Sidebar.html
 | `Constants.gs` | 集中管理外部資源 ID（模板文件、輸出資料夾、個管師/照專試算表）。部署前需依實際環境調整。|
 | `FilesVersion.gs` | 依現有檔案命名計算下一版號 (`baseName_Vn` → `n+1`)。|
 | `Utils.gs` | 共用函式：尋找標題段落、插入或取代段落內容、日期格式轉換等。所有 H1_* 模組皆仰賴這些工具。|
+| `LTCServiceData.gs` | 桃園市長照給付資料庫（v1）靜態資料表，提供 `getTaoyuanLtcData()` 與 `getTaoyuanLtcTable()` 供前端載入。|
 | `H1_CallDate.gs`~`H1_MismatchPlan.gs` | 各段落的寫入邏輯，將表單資料轉換為正式文字並寫入 Document Body。|
 | `HRLookup.gs` | 透過 `SpreadsheetApp` 讀取 Google 試算表，依單位代碼抓取個管師/照專名單供前端下拉選單使用。|
 | `Sidebar.html` | 側欄 UI 與邏輯。負責收集使用者輸入、產生描述文字、基本驗證與呼叫後端函式。|
@@ -159,6 +160,7 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
   1. 在 `Sidebar.html` 新增 UI 與資料整合邏輯。
   2. 調整 `applyAndSave` 的 `form` 組裝。
   3. 在適當的 `H1_*` 函式使用新欄位。
+* 更新給付資料：若桃園市長照給付標準調整，請同步更新 `桃園市_長照給付資料庫_v1.xlsx` 並重新產出 `LTCServiceData.gs`，同時檢視 `Sidebar.html` 內的服務代碼敘述是否對應。
 * 對接真實 AI 潤稿：在 `Main.gs` 的 `polishSection` 實作串接外部 API，並遵守資料隱私規範。
 
 ---
