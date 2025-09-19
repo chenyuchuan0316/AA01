@@ -1101,6 +1101,38 @@
             <div id="dayCareList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
+          <div id="profServiceWrap" style="display:none; margin-top:8px;">
+            <div class="titlebar">
+              <label>專業服務項目（多選）</label>
+              <button class="small" type="button" onclick="resetProfessionalPhrases()">重新套用片語</button>
+            </div>
+            <div id="profServiceList" class="home-care-grid"></div>
+            <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
+          </div>
+          <div id="transportServiceWrap" style="display:none; margin-top:8px;">
+            <div class="titlebar">
+              <label>交通服務項目（多選）</label>
+              <button class="small" type="button" onclick="resetTransportPhrases()">重新套用片語</button>
+            </div>
+            <div id="transportServiceList" class="home-care-grid"></div>
+            <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
+          </div>
+          <div id="respServiceWrap" style="display:none; margin-top:8px;">
+            <div class="titlebar">
+              <label>喘息服務項目（多選）</label>
+              <button class="small" type="button" onclick="resetRespitePhrases()">重新套用片語</button>
+            </div>
+            <div id="respServiceList" class="home-care-grid"></div>
+            <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
+          </div>
+          <div id="mealServiceWrap" style="display:none; margin-top:8px;">
+            <div class="titlebar">
+              <label>營養送餐項目（多選）</label>
+              <button class="small" type="button" onclick="resetMealPhrases()">重新套用片語</button>
+            </div>
+            <div id="mealServiceList" class="home-care-grid"></div>
+            <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
+          </div>
         </div>
 
         <div class="hr"></div>
@@ -3163,6 +3195,134 @@
     ];
     const DAY_CARE_MAP = {};
     DAY_CARE_ITEMS.forEach(item => { DAY_CARE_MAP[item.code] = item; });
+    const PROFESSIONAL_SERVICE_ITEMS = [
+      {
+        code: 'CA07',
+        name: 'IADLs／ADLs 復能照護',
+        short: '完成功能與生活能力初評，並與個案及家屬討論復能重點，擬定個別化計畫。安排基本日常活動訓練（如穿衣、如廁、進食、移位），由專業人員示範並記錄進展，協助個案建立參與信心。',
+        mid: '持續執行復能計畫，逐步增加活動強度與複雜度，並透過專業人員監測功能變化。個案能在協助下完成部分日常活動，並透過重複練習提升耐力與技巧。家屬將接受照護技巧指導，以在居家情境中延續復能訓練。',
+        long: '個案能穩定完成復能計畫中多數的日常生活活動，並逐步減少協助需求。透過規律性訓練維持自理能力，避免退化；服務單位定期檢核成果，將改善情況與困難處回饋家屬，並滾動修正計畫內容。'
+      },
+      {
+        code: 'CA08',
+        name: '個別化服務計畫（ISP）',
+        short: '完成個案功能與心理社交評估，並與家屬討論需求。擬定個別化服務計畫，涵蓋生活自理、人際互動、社交技巧、休閒與健康促進等面向，設定近期可達成之行為與生活目標。',
+        mid: '穩定執行 ISP，逐步提升個案生活自理能力，並參與社交與休閒活動。由專業人員持續追蹤效果，針對退化或困難項目調整策略，並提供家屬支持與訓練，使家庭能共同配合服務計畫。',
+        long: '透過持續執行 ISP，協助個案維持並強化自理功能與社會參與，延緩退化。服務單位將依據評估結果與家屬回饋，定期修正與優化計畫，確保個案在生活、健康與社交等層面均獲得持續支持。'
+      },
+      {
+        code: 'CB01',
+        name: '營養照護',
+        short: '完成營養狀況初評（包含體重、飲食習慣、吞嚥能力），並提出飲食改善建議。提供家屬與個案飲食衛教，建立飲食紀錄，以利後續追蹤。',
+        mid: '持續監測個案營養狀態，並依實際情況調整餐食內容或質地。透過專業人員指導，改善營養攝取不足或偏差的情況。必要時轉介醫師或營養師進一步評估。',
+        long: '維持均衡飲食與營養良好狀態，避免體重異常變化與營養不良。服務單位定期檢視營養紀錄，持續提供衛教，協助個案及家屬養成健康飲食習慣。'
+      },
+      {
+        code: 'CB02',
+        name: '進食與吞嚥照護',
+        short: '完成吞嚥與進食功能評估，確認風險並給予初步指導。安排合適的飲食質地（如軟質、泥狀），並透過姿勢與口腔運動訓練，降低嗆咳風險。',
+        mid: '持續進行吞嚥訓練與飲食調整，提升個案口腔與吞嚥肌群功能。專業人員追蹤進食過程，必要時指導家屬協助，減少誤吸與嗆咳事件。',
+        long: '維持進食與吞嚥安全，確保個案能長期攝取足夠營養。持續監測進食過程，避免併發症（如吸入性肺炎），並建立穩定的照護模式，支持個案生活品質。'
+      },
+      {
+        code: 'CB03',
+        name: '困擾行為照護',
+        short: '完成困擾行為評估，記錄發生頻率與情境，並給予初步安撫策略。與家屬討論行為誘因，建立紀錄基準。',
+        mid: '持續執行行為介入策略，降低困擾行為發生率。透過正向強化與環境調整，協助個案改善行為模式，並提供家屬因應技巧，提升家庭照護能力。',
+        long: '建立穩定行為管理模式，使困擾行為大幅減少或控制在可接受範圍。服務單位將定期回饋成效，並持續調整介入策略，以確保個案生活品質與家庭照護負擔的改善。'
+      },
+      {
+        code: 'CB04',
+        name: '臥床或長期活動受限照護',
+        short: '完成全面性評估，確認臥床或活動受限相關風險（如壓瘡、肌肉萎縮）。提供翻身、肢體關節活動與皮膚護理的初步指導。',
+        mid: '持續執行翻身與肢體活動，並監測皮膚完整性與關節活動度。專業人員指導家屬日常照護技巧，降低壓瘡及感染風險。',
+        long: '建立長期臥床照護模式，確保翻身與護理規律執行。透過持續追蹤與紀錄，預防併發症，並維持個案在可行範圍內的活動與生活品質。'
+      },
+      {
+        code: 'CC01',
+        name: '居家環境安全或無障礙空間規劃',
+        short: '完成居家環境與動線安全評估，提出優先改善建議，並提供家屬基本安全指導。',
+        mid: '執行居家環境改善（如增設扶手、防滑設施），並安排輔具使用。由專業人員示範正確操作方式，確保日常生活動線更安全。',
+        long: '維持環境安全，避免跌倒與意外事件。服務單位定期檢視改善效果與輔具使用狀況，並持續提供調整建議，以符合個案長期需求。'
+      },
+      {
+        code: 'CD02',
+        name: '居家護理指導與諮詢',
+        short: '進行居家護理需求與家庭功能評估，擬定初步護理計畫，並提供基本照護技巧指導。',
+        mid: '執行居家護理計畫，持續指導個案與家屬進行正確照護（如傷口處理、管路照護）。進行跨專業轉介與社區資源連結，並持續追蹤成效。',
+        long: '建立長期護理支持系統，提升個案與家屬的自我照護能力。透過定期成效評估，持續改善照護策略，確保生活品質與健康狀態獲得提升。'
+      }
+    ];
+    const PROFESSIONAL_SERVICE_MAP = {};
+    PROFESSIONAL_SERVICE_ITEMS.forEach(item => { PROFESSIONAL_SERVICE_MAP[item.code] = item; });
+    const TRANSPORT_SERVICE_ITEMS = [
+      {
+        code: 'DA01',
+        name: '交通接送服務',
+        short: '個案將開始使用交通接送服務，協助往返居家與醫療院所、復健中心或透析治療地點。服務提供單位安排具職業駕照之駕駛，並於上車及下車過程給予必要的協助，確保安全。透過此服務，個案能準時參與治療與檢查，減少因交通不便而影響就醫之情況，並協助家屬減輕接送壓力。',
+        mid: '個案已能穩定使用交通接送服務完成定期就醫與復健治療，行程安排逐步固定化。服務單位將持續追蹤準點率與安全性，並在必要時進行路線或時間調整，以符合醫療需求。服務人員在接送過程中同時觀察個案身體狀況，如發現異常將即時回報，確保醫療銜接不中斷。',
+        long: '個案能長期規律地透過交通接送服務完成就醫、復健或透析，維持治療連續性。服務單位建立完善的交通排程與紀錄制度，確保安全、準時並提升使用滿意度。藉由穩定的接送服務，降低家屬長期負擔，並支持個案健康狀態維持與醫療成效之落實。'
+      }
+    ];
+    const TRANSPORT_SERVICE_MAP = {};
+    TRANSPORT_SERVICE_ITEMS.forEach(item => { TRANSPORT_SERVICE_MAP[item.code] = item; });
+    const RESPITE_SERVICE_ITEMS = [
+      {
+        code: 'GA03',
+        name: '日間照顧中心喘息服務－全日',
+        short: '個案將開始使用日間照顧中心全日喘息服務，服務內容包含生活起居協助（更衣、如廁、移位）、護理照護（服藥管理、健康監測）、協助沐浴、餐食供應與進食協助，以及文康休閒活動的參與。服務期間含交通接送，確保個案能準時到達與返家。此階段的重點在於協助個案熟悉中心環境與人員，建立規律的日間生活型態，並讓主要照顧者獲得整日的休息與喘息機會。',
+        mid: '個案能穩定出席全日喘息服務，並逐步建立參與日間活動的習慣。服務單位將持續監測健康狀況（如血壓、血糖、營養狀態），確保進食與服藥安全，並透過規律的文康休閒活動提升認知與情緒狀態。同時，服務團隊將定期與家屬溝通，提供健康與生活回饋，幫助家屬在居家時延續照護品質。',
+        long: '個案能長期規律使用全日喘息服務，並在安全環境中維持生活自理功能與社交參與。服務單位會建立完整的照顧紀錄（出席率、健康檢視、活動參與度），定期檢討照顧成果並回饋給家屬。透過長期喘息支持，不僅能延緩個案退化，也能有效降低家庭主要照顧者的負荷，達到長期穩定的支持系統。'
+      },
+      {
+        code: 'GA04',
+        name: '日間照顧中心喘息服務－半日',
+        short: '個案將使用日間照顧中心半日喘息服務，接受生活照顧（移位、如廁、整潔協助）、護理照護、餐食供應與進食協助，以及文康休閒活動參與。含交通接送，以減少家屬接送負擔，並提供主要照顧者半日的休息時段。',
+        mid: '個案能穩定參與半日服務，保持生活照顧品質與日常活動參與。服務單位持續觀察健康狀況，確保餐食與用藥安全，並透過適當的活動安排維持社交互動與認知參與。家屬能獲得固定的喘息時間，以緩解長期照護壓力。',
+        long: '個案能長期規律參與半日喘息服務，並在此環境中維持身體健康與社交參與，避免因長期居家而產生孤立或退化。服務單位將定期提供參與紀錄與健康追蹤，確保計畫成效，並與家屬保持溝通，共同支持長期照護安排。'
+      },
+      {
+        code: 'GA05',
+        name: '機構住宿式喘息服務',
+        short: '個案將入住住宿式長照機構，接受 24 小時照顧與護理，內容涵蓋生活起居協助、護理照護（用藥管理、健康監測）、沐浴、餐食與進食協助，以及規律活動安排。含交通接送，確保入住與返家過程順利。主要照顧者可因此獲得完整休養時間。',
+        mid: '個案能穩定適應機構住宿環境，並接受完整的生活與健康照護。服務團隊將建立規律的日夜間照護模式，持續追蹤營養狀態、睡眠品質與皮膚健康，避免壓瘡與感染。家屬可透過喘息獲得生活調整的空間，並透過服務單位回饋掌握個案狀況。',
+        long: '長期使用住宿式喘息服務，個案在專業照護下維持穩定健康與生活品質，避免功能快速退化。服務單位會建立完整的住宿照顧紀錄，包含健康監測與活動參與情況，並定期回饋給家屬，確保家庭與機構照護銜接順暢，減輕長期照顧壓力。'
+      },
+      {
+        code: 'GA06',
+        name: '小規模多機能服務夜間喘息',
+        short: '個案於夜間（18:00–08:00）至小規模多機能中心接受喘息服務，由工作人員提供夜間生活照顧（如如廁、翻身、進食）、服藥管理、沐浴及住宿。此安排讓主要照顧者能獲得夜間睡眠與休息，減少長期疲憊。',
+        mid: '個案能穩定參與夜間喘息，服務單位將持續監測夜間睡眠品質、排泄與行動安全，避免跌倒或夜間意外事件。主要照顧者能透過固定的夜間休息，改善身心狀態並提升白天照護品質。',
+        long: '長期使用夜間喘息服務，個案能維持規律作息，健康狀態穩定，並避免夜間失能惡化或安全事件發生。服務單位將建立夜間照護紀錄，並定期與家屬檢討，確保照護策略與家庭需求一致。'
+      },
+      {
+        code: 'GA07',
+        name: '巷弄長照站喘息服務',
+        short: '個案將至巷弄長照站接受短時段喘息服務，內容包含進食、服藥協助及簡單活動安排。此服務能讓主要照顧者獲得暫時喘息，減輕即時負擔。',
+        mid: '個案能穩定參與巷弄長照站活動，維持基本社交互動與日常生活規律。照顧者可在此期間獲得喘息，並透過服務紀錄了解個案狀況，增進家庭照護信心。',
+        long: '長期規律使用巷弄長照站喘息，個案能透過社區互動維持身心功能，避免孤立與退化。服務單位會定期提供健康與參與回饋，協助家屬規劃長期照顧。'
+      },
+      {
+        code: 'GA09',
+        name: '居家喘息服務',
+        short: '由受過專業訓練之照顧服務員至個案家中，提供如廁、沐浴、更衣、進食、服藥、翻身拍背、肢體活動與上下床協助等照顧。此安排能讓主要照顧者即時獲得休息，並確保個案於熟悉環境中獲得基本生活支持。',
+        mid: '穩定使用居家喘息，服務員能熟悉個案需求並提供規律照顧，確保衛生、營養及安全。服務過程中觀察並記錄個案狀況，若有異常立即回報，讓家屬在喘息同時也能掌握健康狀況。',
+        long: '長期規律安排居家喘息，個案能在熟悉環境中獲得持續照顧，維持生活品質並避免功能退化或照護缺口。服務單位將建立完整紀錄，定期與家屬討論成效，確保家庭照護與喘息服務能長期銜接與互補。'
+      }
+    ];
+    const RESPITE_SERVICE_MAP = {};
+    RESPITE_SERVICE_ITEMS.forEach(item => { RESPITE_SERVICE_MAP[item.code] = item; });
+    const MEAL_SERVICE_ITEMS = [
+      {
+        code: 'OT01',
+        name: '營養送餐',
+        short: '個案經本市長照管理中心評估後，將開始接受營養送餐服務，每日提供午餐與晚餐共二餐。餐點依個案吞嚥能力與身體狀況調整質地與份量，配送同時完成飲食衛教與保存加熱說明，並建立固定送餐時段與交付簽收紀錄。針對列冊低收入戶、中低收入戶及符合長照低收入戶、中低收補助者，全額或部分補助餐費，其他一般戶則由服務單位依規收取餐費。',
+        mid: '個案持續接受每日二餐送餐，餐點內容隨季節與健康需求調整，涵蓋均衡營養、低油鹽飲食及高蛋白質攝取。服務團隊定期檢核個案的體重變化、食量與用餐狀況，並落實餐後回收紀錄。補助資格定期檢視並持續套用正確身分類別，確保餐食供應不中斷。',
+        long: '個案長期維持每日二餐送餐服務，確保在居家情境中穩定獲得營養支持。服務單位建立長期的送餐追蹤紀錄，包括出餐準時率、餐食品質檢驗與個案身體狀況回報。定期向家屬提供完整用餐紀錄與健康狀態摘要，確保營養供應、生活品質與家庭照護三方面穩定銜接。'
+      }
+    ];
+    const MEAL_SERVICE_MAP = {};
+    MEAL_SERVICE_ITEMS.forEach(item => { MEAL_SERVICE_MAP[item.code] = item; });
     const RISKS = [
       ['被照顧者嚴重情緒/干擾行為','BPSD、自/他傷、攻擊破壞、遊走、妄想、吼叫等'],
       ['高齡照顧者','≥65歲；原住民≥55歲；<18歲應通報'],
@@ -3215,6 +3375,74 @@
         row.innerHTML = `
           <label class="home-care-label">
             <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onDayCareToggle(this)">
+            <span class="home-care-code">${item.code}</span>
+            <span class="home-care-name">[${item.name}]</span>
+          </label>
+        `;
+        host.appendChild(row);
+      });
+    }
+    function renderProfessionalServices(){
+      const host=document.getElementById('profServiceList');
+      if(!host) return;
+      host.innerHTML='';
+      PROFESSIONAL_SERVICE_ITEMS.forEach(item=>{
+        const row=document.createElement('div');
+        row.className='home-care-item';
+        row.innerHTML = `
+          <label class="home-care-label">
+            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onProfessionalToggle(this)">
+            <span class="home-care-code">${item.code}</span>
+            <span class="home-care-name">[${item.name}]</span>
+          </label>
+        `;
+        host.appendChild(row);
+      });
+    }
+    function renderTransportServices(){
+      const host=document.getElementById('transportServiceList');
+      if(!host) return;
+      host.innerHTML='';
+      TRANSPORT_SERVICE_ITEMS.forEach(item=>{
+        const row=document.createElement('div');
+        row.className='home-care-item';
+        row.innerHTML = `
+          <label class="home-care-label">
+            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onTransportToggle(this)">
+            <span class="home-care-code">${item.code}</span>
+            <span class="home-care-name">[${item.name}]</span>
+          </label>
+        `;
+        host.appendChild(row);
+      });
+    }
+    function renderRespiteServices(){
+      const host=document.getElementById('respServiceList');
+      if(!host) return;
+      host.innerHTML='';
+      RESPITE_SERVICE_ITEMS.forEach(item=>{
+        const row=document.createElement('div');
+        row.className='home-care-item';
+        row.innerHTML = `
+          <label class="home-care-label">
+            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onRespiteToggle(this)">
+            <span class="home-care-code">${item.code}</span>
+            <span class="home-care-name">[${item.name}]</span>
+          </label>
+        `;
+        host.appendChild(row);
+      });
+    }
+    function renderMealServices(){
+      const host=document.getElementById('mealServiceList');
+      if(!host) return;
+      host.innerHTML='';
+      MEAL_SERVICE_ITEMS.forEach(item=>{
+        const row=document.createElement('div');
+        row.className='home-care-item';
+        row.innerHTML = `
+          <label class="home-care-label">
+            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onMealToggle(this)">
             <span class="home-care-code">${item.code}</span>
             <span class="home-care-name">[${item.name}]</span>
           </label>
@@ -3279,12 +3507,31 @@
         }
       });
     }
-    function resetCareServicePhrases(){
-      ['short_care','mid_care','long_goal'].forEach(id=>{
+    function resetGoalAutoState(ids){
+      ids.forEach(id=>{
         const el=document.getElementById(id);
         if(el) el.dataset.userEdited = 'false';
       });
+    }
+    function resetCareServicePhrases(){
+      resetGoalAutoState(['short_care','mid_care','long_goal']);
       updateCareServicePhrases();
+    }
+    function resetProfessionalPhrases(){
+      resetGoalAutoState(['short_prof','mid_prof','long_goal']);
+      updateProfessionalServicePhrases();
+    }
+    function resetTransportPhrases(){
+      resetGoalAutoState(['short_car','mid_car','long_goal']);
+      updateTransportServicePhrases();
+    }
+    function resetRespitePhrases(){
+      resetGoalAutoState(['short_resp','mid_resp','long_goal']);
+      updateRespiteServicePhrases();
+    }
+    function resetMealPhrases(){
+      resetGoalAutoState(['short_meal','mid_meal','long_goal']);
+      updateMealServicePhrases();
     }
     function getSelectedHomeCareEntries(){
       const rows=[...document.querySelectorAll('#homeCareList .home-care-item')];
@@ -3312,6 +3559,66 @@
       });
       return entries;
     }
+    function onProfessionalToggle(box){
+      updateProfessionalServicePhrases();
+    }
+    function onTransportToggle(box){
+      updateTransportServicePhrases();
+    }
+    function onRespiteToggle(box){
+      updateRespiteServicePhrases();
+    }
+    function onMealToggle(box){
+      updateMealServicePhrases();
+    }
+    function getSelectedProfessionalEntries(){
+      const rows=[...document.querySelectorAll('#profServiceList .home-care-item')];
+      const entries=[];
+      rows.forEach(row=>{
+        const box=row.querySelector('input[type=checkbox]');
+        if(!box || !box.checked) return;
+        const item=PROFESSIONAL_SERVICE_MAP[box.value];
+        if(!item) return;
+        entries.push({ code: box.value, item });
+      });
+      return entries;
+    }
+    function getSelectedTransportEntries(){
+      const rows=[...document.querySelectorAll('#transportServiceList .home-care-item')];
+      const entries=[];
+      rows.forEach(row=>{
+        const box=row.querySelector('input[type=checkbox]');
+        if(!box || !box.checked) return;
+        const item=TRANSPORT_SERVICE_MAP[box.value];
+        if(!item) return;
+        entries.push({ code: box.value, item });
+      });
+      return entries;
+    }
+    function getSelectedRespiteEntries(){
+      const rows=[...document.querySelectorAll('#respServiceList .home-care-item')];
+      const entries=[];
+      rows.forEach(row=>{
+        const box=row.querySelector('input[type=checkbox]');
+        if(!box || !box.checked) return;
+        const item=RESPITE_SERVICE_MAP[box.value];
+        if(!item) return;
+        entries.push({ code: box.value, item });
+      });
+      return entries;
+    }
+    function getSelectedMealEntries(){
+      const rows=[...document.querySelectorAll('#mealServiceList .home-care-item')];
+      const entries=[];
+      rows.forEach(row=>{
+        const box=row.querySelector('input[type=checkbox]');
+        if(!box || !box.checked) return;
+        const item=MEAL_SERVICE_MAP[box.value];
+        if(!item) return;
+        entries.push({ code: box.value, item });
+      });
+      return entries;
+    }
     function getSelectedHomeCareCodes(){
       return getSelectedHomeCareEntries().map(entry=>entry.code);
     }
@@ -3333,6 +3640,38 @@
       const midText = entries.map(entry=>formatCareServiceSentence(entry, 'mid')).filter(Boolean).join('\n');
       applyAutoText('short_care', shortText);
       applyAutoText('mid_care', midText);
+      buildLongGoal();
+    }
+    function updateProfessionalServicePhrases(){
+      const entries = getSelectedProfessionalEntries();
+      const shortText = entries.map(entry=>formatGoalServiceSentence(entry, 'short')).filter(Boolean).join('\n');
+      const midText = entries.map(entry=>formatGoalServiceSentence(entry, 'mid')).filter(Boolean).join('\n');
+      applyAutoText('short_prof', shortText);
+      applyAutoText('mid_prof', midText);
+      buildLongGoal();
+    }
+    function updateTransportServicePhrases(){
+      const entries = getSelectedTransportEntries();
+      const shortText = entries.map(entry=>formatGoalServiceSentence(entry, 'short')).filter(Boolean).join('\n');
+      const midText = entries.map(entry=>formatGoalServiceSentence(entry, 'mid')).filter(Boolean).join('\n');
+      applyAutoText('short_car', shortText);
+      applyAutoText('mid_car', midText);
+      buildLongGoal();
+    }
+    function updateRespiteServicePhrases(){
+      const entries = getSelectedRespiteEntries();
+      const shortText = entries.map(entry=>formatGoalServiceSentence(entry, 'short')).filter(Boolean).join('\n');
+      const midText = entries.map(entry=>formatGoalServiceSentence(entry, 'mid')).filter(Boolean).join('\n');
+      applyAutoText('short_resp', shortText);
+      applyAutoText('mid_resp', midText);
+      buildLongGoal();
+    }
+    function updateMealServicePhrases(){
+      const entries = getSelectedMealEntries();
+      const shortText = entries.map(entry=>formatGoalServiceSentence(entry, 'short')).filter(Boolean).join('\n');
+      const midText = entries.map(entry=>formatGoalServiceSentence(entry, 'mid')).filter(Boolean).join('\n');
+      applyAutoText('short_meal', shortText);
+      applyAutoText('mid_meal', midText);
       buildLongGoal();
     }
     function toggleInfInput(key){
@@ -3382,6 +3721,10 @@
       setVisible('short_meal_wrap', hasMeal);  setVisible('mid_meal_wrap', hasMeal);
       setVisible('homeCareWrap', hasHomeCare);
       setVisible('dayCareWrap', hasDayCare);
+      setVisible('profServiceWrap', hasProf);
+      setVisible('transportServiceWrap', hasCar);
+      setVisible('respServiceWrap', hasResp);
+      setVisible('mealServiceWrap', hasMeal);
       if(!hasHomeCare){
         [...document.querySelectorAll('#homeCareList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
         [...document.querySelectorAll('#homeCareList .home-care-qty')].forEach(inp=>{ inp.value=''; inp.style.display='none'; });
@@ -3389,7 +3732,23 @@
       if(!hasDayCare){
         [...document.querySelectorAll('#dayCareList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
       }
+      if(!hasProf){
+        [...document.querySelectorAll('#profServiceList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+      }
+      if(!hasCar){
+        [...document.querySelectorAll('#transportServiceList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+      }
+      if(!hasResp){
+        [...document.querySelectorAll('#respServiceList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+      }
+      if(!hasMeal){
+        [...document.querySelectorAll('#mealServiceList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+      }
       updateCareServicePhrases();
+      if(!hasProf) updateProfessionalServicePhrases();
+      if(!hasCar)  updateTransportServicePhrases();
+      if(!hasResp) updateRespiteServicePhrases();
+      if(!hasMeal) updateMealServicePhrases();
     }
     function setVisible(id,on){ const el=document.getElementById(id); if(el) el.style.display = on? '' : 'none'; }
 
@@ -3588,28 +3947,64 @@
       return [...document.querySelectorAll('#problemList input[type=checkbox]')].filter(b=>b.checked).map(b=>parseInt(b.value,10));
     }
     function buildLongGoal(){
-      const entries = getSelectedCareEntries();
+      const careEntries = getSelectedCareEntries();
+      const profEntries = getSelectedProfessionalEntries();
+      const carEntries  = getSelectedTransportEntries();
+      const respEntries = getSelectedRespiteEntries();
+      const mealEntries = getSelectedMealEntries();
       const sections = [];
 
-      const careLines = entries.map(entry=>formatCareServiceSentence(entry, 'long')).filter(Boolean);
+      const careLines = careEntries.map(entry=>formatCareServiceSentence(entry, 'long')).filter(Boolean);
       if(careLines.length){
         sections.push('照顧服務：');
         careLines.forEach(line=>sections.push(`- ${line}`));
       }
 
-      [
-        ['專業服務','short_prof','mid_prof'],
-        ['交通服務','short_car','mid_car'],
-        ['喘息服務','short_resp','mid_resp'],
-        ['無障礙及輔具','short_access','mid_access'],
-        ['營養送餐','short_meal','mid_meal']
-      ].forEach(([label, shortId, midId])=>{
-        const merged = gatherLongSummary(shortId, midId);
-        if(merged.length){
-          sections.push(`${label}：`);
-          merged.forEach(line=>sections.push(`- ${line}`));
-        }
-      });
+      const profSummary = gatherLongSummary('short_prof','mid_prof');
+      const profLong = profEntries.map(entry=>formatGoalServiceSentence(entry, 'long')).filter(Boolean);
+      if(profLong.length){
+        profLong.forEach(line=>profSummary.push(`長期：${line}`));
+      }
+      if(profSummary.length){
+        sections.push('專業服務：');
+        profSummary.forEach(line=>sections.push(`- ${line}`));
+      }
+
+      const carSummary = gatherLongSummary('short_car','mid_car');
+      const carLong = carEntries.map(entry=>formatGoalServiceSentence(entry, 'long')).filter(Boolean);
+      if(carLong.length){
+        carLong.forEach(line=>carSummary.push(`長期：${line}`));
+      }
+      if(carSummary.length){
+        sections.push('交通服務：');
+        carSummary.forEach(line=>sections.push(`- ${line}`));
+      }
+
+      const respSummary = gatherLongSummary('short_resp','mid_resp');
+      const respLong = respEntries.map(entry=>formatGoalServiceSentence(entry, 'long')).filter(Boolean);
+      if(respLong.length){
+        respLong.forEach(line=>respSummary.push(`長期：${line}`));
+      }
+      if(respSummary.length){
+        sections.push('喘息服務：');
+        respSummary.forEach(line=>sections.push(`- ${line}`));
+      }
+
+      const accessSummary = gatherLongSummary('short_access','mid_access');
+      if(accessSummary.length){
+        sections.push('無障礙及輔具：');
+        accessSummary.forEach(line=>sections.push(`- ${line}`));
+      }
+
+      const mealSummary = gatherLongSummary('short_meal','mid_meal');
+      const mealLong = mealEntries.map(entry=>formatGoalServiceSentence(entry, 'long')).filter(Boolean);
+      if(mealLong.length){
+        mealLong.forEach(line=>mealSummary.push(`長期：${line}`));
+      }
+      if(mealSummary.length){
+        sections.push('營養送餐：');
+        mealSummary.forEach(line=>sections.push(`- ${line}`));
+      }
 
       const finalText = sections.join('\n');
       applyAutoText('long_goal', finalText);
@@ -3624,6 +4019,13 @@
       const quantity = entry.quantity ? entry.quantity.trim() : '';
       const qtyText = quantity ? `（數量：${quantity}）` : '';
       return `${item.code}[${item.name}]${qtyText}：${desc}`;
+    }
+    function formatGoalServiceSentence(entry, key){
+      if(!entry || !entry.item) return '';
+      const item = entry.item;
+      const desc = item[key] || '';
+      if(!desc.trim()) return '';
+      return `${item.code}[${item.name}]：${desc}`;
     }
 
     function normalizeBulletLine(line){
@@ -3898,20 +4300,27 @@
       // 其它原有初始化
       renderS2(); syncDisab();
       renderS3(); toggleOtherType(); buildS3();
-      bindAutoGoalField('short_care');
-      bindAutoGoalField('mid_care');
-      bindAutoGoalField('long_goal');
       const goalFields=['short_care','short_prof','short_car','short_resp','short_access','short_meal','mid_care','mid_prof','mid_car','mid_resp','mid_access','mid_meal'];
       goalFields.forEach(id=>{
+        bindAutoGoalField(id);
         const el=document.getElementById(id);
         if(el){ el.addEventListener('input', ()=>{ buildLongGoal(); }); }
       });
+      bindAutoGoalField('long_goal');
       document.getElementById('long_goal')?.addEventListener('input', buildGoalPreview);
       renderFormal();
       renderHomeCareServices();
       renderDayCareServices();
+      renderProfessionalServices();
+      renderTransportServices();
+      renderRespiteServices();
+      renderMealServices();
       renderProblems(); limitProblems();
       updateCareServicePhrases();
+      updateProfessionalServicePhrases();
+      updateTransportServicePhrases();
+      updateRespiteServicePhrases();
+      updateMealServicePhrases();
       // 非正式資源：名稱→頻率 顯示/隱藏
       bindInfNameToFreq('pt');
       bindInfNameToFreq('nb');
