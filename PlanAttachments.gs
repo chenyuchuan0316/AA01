@@ -2,6 +2,8 @@
  * 處理附件頁面：計畫執行規劃與服務明細
  * ============================================== */
 
+const PLAN_CATEGORY_ORDER = Object.freeze(['B','C','D','EF','G','SC','MEAL','OTHER']);
+
 function applyPlanExecutionPage(body, form){
   ensurePageBreak(body);
   appendHeading(body, '附件一：計畫執行規劃', DocumentApp.ParagraphHeading.HEADING1);
@@ -48,8 +50,7 @@ function applyPlanServiceSummaryPage(body, form){
     return;
   }
   const grouped = groupServicePlanEntries(entries);
-  const order = ['B','C','D','EF','G','SC','MEAL','OTHER'];
-  order.forEach(function(cat){
+  PLAN_CATEGORY_ORDER.forEach(function(cat){
     const list = grouped[cat];
     if (!list || !list.length) return;
     appendHeading(body, planCategoryDisplay(cat), DocumentApp.ParagraphHeading.HEADING2);

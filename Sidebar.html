@@ -404,12 +404,12 @@
 <body>
 
   <div class="page-tabs" id="pageTabs">
-    <button type="button" data-page="page1" class="active">頁面一：計畫書</button>
-    <button type="button" data-page="page2">頁面二：附件一（計畫執行規劃）</button>
-    <button type="button" data-page="page3">頁面三：附件二（服務明細）</button>
+    <button type="button" data-page="goals" class="active">計畫目標</button>
+    <button type="button" data-page="execution">計畫執行規劃</button>
+    <button type="button" data-page="notes">其他備註</button>
   </div>
 
-  <div class="page-section" data-page="page1" data-active="1">
+  <div class="page-section" data-page="goals" data-active="1">
   <!-- 基本資訊 -->
   <div class="group">
     <label>★基本資訊</label>
@@ -1431,7 +1431,7 @@
 
   </div>
 
-  <div class="page-section" data-page="page2">
+  <div class="page-section" data-page="execution">
   <div class="group">
     <label>計畫執行規劃</label>
     <div class="hint">請針對核定之服務填寫頻率、使用方式或案主期待，系統將依格式預覽全文。</div>
@@ -1461,7 +1461,7 @@
   </div>
   </div>
 
-  <div class="page-section" data-page="page3">
+  <div class="page-section" data-page="notes">
   <div class="group">
     <label>附件預覽</label>
     <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
@@ -5439,6 +5439,7 @@
 
     /* ===== 初始化 ===== */
     function setActivePage(pageId){
+      if(!pageId) return;
       const sections=document.querySelectorAll('.page-section');
       sections.forEach(section=>{
         const active = section.dataset.page === pageId ? '1' : '0';
@@ -5451,12 +5452,15 @@
     }
 
     function initPageTabs(){
-      const tabs=document.querySelectorAll('.page-tabs button');
+      const tabs=[...document.querySelectorAll('.page-tabs button')];
       if(!tabs.length) return;
       tabs.forEach(btn=>{
         btn.addEventListener('click', ()=>setActivePage(btn.dataset.page));
       });
-      setActivePage('page1');
+      const initial = tabs.find(btn=>btn.classList.contains('active')) || tabs[0];
+      if(initial){
+        setActivePage(initial.dataset.page);
+      }
     }
 
     function initSection1State(){
