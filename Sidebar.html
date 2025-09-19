@@ -207,9 +207,12 @@
       justify-content:space-between;
       margin:12px 0 8px;
       gap:12px;
+      flex-wrap:wrap;
     }
     .location-toolbar .location-current{ font-weight:600; color:var(--label); }
-    .location-switch button[data-active="1"]{
+    .location-toolbar .location-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .location-switch button[data-active="1"],
+    .location-actions button[data-active="1"]{
       background:var(--accent);
       color:#fff;
       border-color:var(--accent);
@@ -241,6 +244,25 @@
       font-weight:600;
     }
     @media (pointer:coarse){ :root{ --checkbox:32px; } } /* 觸控設備放大到 32px */
+
+    .lesion-mode{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+    .lesion-mode button.small{ min-width:112px; }
+    .lesion-mode button[data-active="1"]{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+    .lesion-size-grid{ display:flex; gap:12px; flex-wrap:wrap; }
+    .lesion-size-field{ flex:1 1 140px; position:relative; }
+    .lesion-size-field input{ padding-right:42px; }
+    .lesion-size-field .unit{ position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--label); font-weight:600; pointer-events:none; }
+    .lesion-area{ margin-top:6px; font-weight:600; color:var(--label); }
+    .field-error{ color:#b3261e; font-size:0.95rem; margin-top:6px; display:none; }
+    .field-error[data-show="1"]{ display:block; }
+
+    @media (pointer:coarse){
+      select{ min-height:64px; padding-top:14px; padding-bottom:14px; }
+    }
 
     .plan-editor{
       display:flex;
@@ -294,6 +316,71 @@
       font-weight:500;
       background:#f8fafc;
       border-style:dashed;
+    }
+    .plan-qty-toolbar{
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:8px;
+    }
+    .plan-qty-hint{
+      font-weight:600;
+      color:var(--label);
+      font-size:0.95rem;
+      margin-right:4px;
+    }
+    button.tiny{
+      height:44px;
+      padding:0 12px;
+      font-size:17px;
+      border-radius:10px;
+    }
+    .plan-qty-toolbar button[data-variant="ghost"]{
+      background:#f7f9fc;
+      border-color:var(--border);
+      color:#3f3f46;
+    }
+    .plan-qty-toolbar button[data-variant="ghost"]:hover{
+      background:#edf1ff;
+    }
+    .plan-summary-totals{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .plan-summary-total-card{
+      flex:1 1 220px;
+      min-width:200px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px 16px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .plan-summary-total-label{
+      font-size:0.95rem;
+      color:#475569;
+      margin-bottom:6px;
+      font-weight:600;
+    }
+    .plan-summary-total-value{
+      font-size:1.35rem;
+      font-weight:800;
+      color:#0b1d4d;
+    }
+    .plan-summary-total-value.negative{
+      color:#b3261e;
+    }
+    .plan-summary-totals-hint{
+      font-size:0.95rem;
+      color:#b3261e;
+      margin-bottom:12px;
+      display:none;
+    }
+    .plan-summary-totals-hint[data-show="1"]{
+      display:block;
     }
     .plan-meta{
       display:grid;
@@ -474,6 +561,7 @@
     <label>一、電聯日期</label>
     <div id="callDateControls" class="datebox">
       <div id="callDate" class="dateval"></div>
+      <input id="callDate_input" type="date" onchange="onDatePickerChange('callDate', this.value)">
       <div class="btnbar">
         <button class="small" onclick="shiftDate('callDate', -5)">-5天</button>
         <button class="small" onclick="shiftDate('callDate',  5)">+5天</button>
@@ -494,6 +582,7 @@
     <label>二、家訪日期</label>
     <div class="datebox">
       <div id="visitDate" class="dateval"></div>
+      <input id="visitDate_input" type="date" onchange="onDatePickerChange('visitDate', this.value)">
       <div class="btnbar">
         <button class="small" onclick="shiftDate('visitDate', -5)">-5天</button>
         <button class="small" onclick="shiftDate('visitDate',  5)">+5天</button>
@@ -509,6 +598,7 @@
     <div id="dischargeBox" style="display:none;">
       <div class="datebox">
         <div id="dischargeDate" class="dateval"></div>
+        <input id="dischargeDate_input" type="date" onchange="onDatePickerChange('dischargeDate', this.value)">
         <div class="btnbar">
           <button class="small" onclick="shiftDate('dischargeDate', -5)">-5天</button>
           <button class="small" onclick="shiftDate('dischargeDate',  5)">+5天</button>
@@ -548,6 +638,7 @@
     <div class="hr"></div>
     <label>其他參與者</label>
     <div id="extras"></div>
+    <div class="field-error" id="extras_conflict"></div>
     <div class="btnbar">
       <button class="small" onclick="addExtraRow()">新增參與者</button>
     </div>
@@ -558,7 +649,7 @@
   <div class="group">
     <div class="titlebar">
       <label>四、個案概況</label>
-      <label class="inline"><input type="checkbox" id="doBatchPolish"> 產出前做「一致性潤稿」</label>
+      <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
     </div>
 
     <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
@@ -566,9 +657,6 @@
       <div id="section1_block">
         <div class="titlebar">
           <label>(一) 身心概況</label>
-          <div class="btnbar">
-            <button class="small" onclick="buildSection1();polishOne('section1_out')">AI潤稿</button>
-          </div>
         </div>
 
         <!-- 基本＋意識/認知 -->
@@ -704,15 +792,19 @@
           <div id="s1_pain_score_wrap" style="display:none;">
             <label>疼痛強度（1-10）</label>
             <input id="s1_pain_score" type="number" min="1" max="10" step="1">
+            <div class="field-error" id="s1_pain_score_error"></div>
           </div>
         </div>
 
         <div id="s1_location_block" style="display:none;">
           <div class="location-toolbar" id="s1_location_toolbar" style="display:none;">
             <span class="location-current">目前編輯：<span id="s1_location_active_label">疼痛部位</span></span>
-            <div class="btnbar location-switch">
+            <div class="location-switch btnbar">
               <button type="button" class="small" data-context="pain" onclick="switchLocationContext('pain')">編輯疼痛部位</button>
               <button type="button" class="small" data-context="lesion" onclick="switchLocationContext('lesion')">編輯病灶部位</button>
+            </div>
+            <div class="location-actions btnbar">
+              <button type="button" class="small" id="location_copy_btn" onclick="copyLocationFromOther()">同疼痛部位</button>
             </div>
           </div>
           <div class="grid3">
@@ -740,9 +832,9 @@
           </div>
         </div>
 
-        <div class="grid3">
-          <div>
-            <label>皮膚病灶</label>
+          <div class="grid3">
+            <div>
+              <label>皮膚病灶</label>
             <select id="s1_lesion_has" onchange="toggleLesionCombined()">
               <option selected>無</option><option>有</option><option>未知</option>
             </select>
@@ -755,15 +847,32 @@
             <input id="s1_lesion_layer_other" type="text" placeholder="請填寫" style="display:none; margin-top:6px;">
           </div>
           <div id="s1_lesion_size_wrap" style="display:none;">
-            <label>病灶大小（長×寬，cm）</label>
-            <input id="s1_lesion_size" type="text" placeholder="例如：2.0×1.5">
+            <label>病灶大小</label>
+            <div class="lesion-size-grid">
+              <div class="lesion-size-field">
+                <input id="s1_lesion_length" type="number" min="0" step="0.1" placeholder="長" oninput="updateLesionAreaDisplay()">
+                <span class="unit">cm</span>
+              </div>
+              <div class="lesion-size-field">
+                <input id="s1_lesion_width" type="number" min="0" step="0.1" placeholder="寬" oninput="updateLesionAreaDisplay()">
+                <span class="unit">cm</span>
+              </div>
+            </div>
+            <div class="hint" id="s1_lesion_size_hint">請輸入長與寬，系統將即時計算面積。</div>
+            <div class="lesion-area" id="s1_lesion_area_display">面積：— cm²</div>
+            <div class="field-error" id="s1_lesion_size_error"></div>
           </div>
+          <div class="field-error" id="s1_pain_location_error"></div>
         </div>
 
         <div id="s1_lesion_more" style="display:none;">
           <div class="row">
             <div>
               <label>病灶症狀</label>
+              <div class="lesion-mode" id="s1_lesion_mode">
+                <button type="button" class="small" data-mode="none" onclick="setLesionSymptomMode('none')">無不適</button>
+                <button type="button" class="small" data-mode="symptom" onclick="setLesionSymptomMode('symptom')">有症狀</button>
+              </div>
               <div class="checkcol" id="s1_lesion_sx_box"></div>
             </div>
             <div>
@@ -867,28 +976,28 @@
             <select id="s1_adl_eating" onchange="toggleAdlHow('s1_adl_eating')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_adl_eating_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+            <input id="s1_adl_eating_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_adl_eating" data-required-label="進食的部分協助方式">
           </div>
           <div>
             <label>刷牙/洗臉</label>
             <select id="s1_adl_groom" onchange="toggleAdlHow('s1_adl_groom')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_adl_groom_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+            <input id="s1_adl_groom_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_adl_groom" data-required-label="刷牙/洗臉的部分協助方式">
           </div>
           <div>
             <label>洗澡</label>
             <select id="s1_adl_bathing" onchange="toggleAdlHow('s1_adl_bathing')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_adl_bathing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+            <input id="s1_adl_bathing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_adl_bathing" data-required-label="洗澡的部分協助方式">
           </div>
           <div>
             <label>穿脫衣</label>
             <select id="s1_adl_dressing" onchange="toggleAdlHow('s1_adl_dressing')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_adl_dressing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+            <input id="s1_adl_dressing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_adl_dressing" data-required-label="穿脫衣的部分協助方式">
           </div>
           <div>
             <label>白天排尿</label>
@@ -914,7 +1023,7 @@
             <select id="s1_post_toilet" onchange="toggleAdlHow('s1_post_toilet')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_post_toilet_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+            <input id="s1_post_toilet_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_post_toilet" data-required-label="如廁後清潔的部分協助方式">
           </div>
         </div>
 
@@ -948,7 +1057,7 @@
             <select id="s1_meal_prep" onchange="toggleAdlHow('s1_meal_prep')">
               <option>獨立</option><option selected>部分協助</option><option>完全由家屬</option>
             </select>
-            <input id="s1_meal_prep_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+            <input id="s1_meal_prep_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_meal_prep" data-required-label="備餐的部分協助方式">
           </div>
           <div>
             <label>餐具清洗</label>
@@ -965,14 +1074,14 @@
             <select id="s1_housework" onchange="toggleAdlHow('s1_housework')">
               <option>獨立</option><option selected>部分協助</option><option>完全由家屬</option>
             </select>
-            <input id="s1_housework_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+            <input id="s1_housework_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_housework" data-required-label="家務整理的部分協助方式">
           </div>
           <div>
             <label>財務管理</label>
             <select id="s1_finance" onchange="toggleAdlHow('s1_finance')">
               <option selected>獨立</option><option>部分協助</option><option>他人代辦</option>
             </select>
-            <input id="s1_finance_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+            <input id="s1_finance_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_finance" data-required-label="財務管理的部分協助方式">
           </div>
         </div>
 
@@ -1104,7 +1213,6 @@
       <div>
         <div class="titlebar">
           <label>(二) 經濟收入</label>
-          <button class="small" onclick="polishOne('section2_out')">AI潤稿</button>
         </div>
         <div class="grid2">
           <div>
@@ -1137,7 +1245,6 @@
       <div>
         <div class="titlebar">
           <label>(三) 居住環境</label>
-          <button class="small" onclick="polishOne('section3_out')">AI潤稿</button>
         </div>
         <div class="grid3">
           <div>
@@ -1177,7 +1284,6 @@
       <div>
         <div class="titlebar">
           <label>(四) 社會支持</label>
-          <button class="small" onclick="polishOne('section4_out')">AI潤稿</button>
         </div>
 
         <div class="grid2">
@@ -1350,7 +1456,6 @@
       <div>
         <div class="titlebar">
           <label>(五) 其他</label>
-          <button class="small" onclick="polishOne('section5')">AI潤稿</button>
         </div>
         <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
       </div>
@@ -1361,7 +1466,6 @@
       <div>
         <div class="titlebar">
           <label>(六) 複評評值</label>
-          <button class="small" onclick="polishOne('section6_struct')">AI潤稿</button>
         </div>
         <div class="grid2">
           <div><label>介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
@@ -1483,12 +1587,27 @@
     <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
     <textarea id="plan_text" class="plan-preview" readonly></textarea>
     <div class="hr"></div>
-    <div class="summary-section">
-      <div class="summary-title">服務計畫明細預覽（附件二）</div>
-      <div id="planSummaryPreview" class="summary-table-wrapper">
-        <div class="hint">尚未選擇服務項目。</div>
+      <div class="summary-section">
+        <div class="summary-title">服務計畫明細預覽（附件二）</div>
+        <div id="planSummaryTotals" class="plan-summary-totals">
+          <div class="plan-summary-total-card">
+            <div class="plan-summary-total-label">CMS 等級月額度</div>
+            <div class="plan-summary-total-value" id="planSummaryCap">—</div>
+          </div>
+          <div class="plan-summary-total-card">
+            <div class="plan-summary-total-label">B/C 預估耗用</div>
+            <div class="plan-summary-total-value" id="planSummaryUsage">—</div>
+          </div>
+          <div class="plan-summary-total-card">
+            <div class="plan-summary-total-label">預估餘額</div>
+            <div class="plan-summary-total-value" id="planSummaryRemaining">—</div>
+          </div>
+        </div>
+        <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
+        <div id="planSummaryPreview" class="summary-table-wrapper">
+          <div class="hint">尚未選擇服務項目。</div>
+        </div>
       </div>
-    </div>
   </div>
 
   <!-- 動作 -->
@@ -1503,9 +1622,41 @@
   <script>
     /* ===== 日期工具 ===== */
     function toYMD(d){const y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),da=('0'+d.getDate()).slice(-2);return `${y}-${m}-${da}`;}
-    function setDateBox(id,d){document.getElementById(id).textContent=toYMD(d);}
-    function getDateBox(id){return document.getElementById(id).textContent;}
-    function shiftDate(id,delta){const cur=getDateBox(id), base=cur?new Date(cur):new Date(); base.setDate(base.getDate()+delta); setDateBox(id,base);}
+    function parseDateInput(value){
+      if(!value) return null;
+      const parts=String(value).split('-');
+      if(parts.length!==3) return null;
+      const y=Number(parts[0]), m=Number(parts[1]), da=Number(parts[2]);
+      if(!y || !m || !da) return null;
+      const date=new Date(y, m-1, da);
+      if(Number.isNaN(date.getTime())) return null;
+      return date;
+    }
+    function setDateBox(id,d){
+      if(!(d instanceof Date) || Number.isNaN(d.getTime())) return;
+      const text=toYMD(d);
+      const display=document.getElementById(id);
+      if(display) display.textContent=text;
+      const input=document.getElementById(id+'_input');
+      if(input) input.value=text;
+    }
+    function getDateBox(id){
+      const input=document.getElementById(id+'_input');
+      if(input && input.value) return input.value;
+      const box=document.getElementById(id);
+      return box ? box.textContent : '';
+    }
+    function shiftDate(id,delta){
+      const cur=getDateBox(id);
+      const base=cur?parseDateInput(cur):new Date();
+      if(!base) return;
+      base.setDate(base.getDate()+delta);
+      setDateBox(id,base);
+    }
+    function onDatePickerChange(id,value){
+      const parsed=parseDateInput(value);
+      if(parsed) setDateBox(id, parsed);
+    }
     function toggleDischarge(){const on=document.getElementById('isDischarge').checked; document.getElementById('dischargeBox').style.display=on?'':'none'; if(on&&!getDateBox('dischargeDate')) setDateBox('dischargeDate', new Date());}
     function updateConsultVisitText(){
       const box=document.getElementById('consultVisitText');
@@ -1596,14 +1747,20 @@
           <input id="ex-name-${idx}" type="text" placeholder="姓名，例如：李○○">
         </div>
         <div style="flex:0; align-self:flex-end;">
-          <button class="small" onclick="document.getElementById('extra-${idx}').remove()">移除</button>
+          <button class="small" onclick="removeExtraRow(${idx})">移除</button>
         </div>`;
       host.appendChild(wrap);
       enforcePrimaryExclusionOnSelect(document.getElementById(`ex-role-${idx}`));
+      updateParticipantConflictHint();
     }
     function toggleCustomRole(idx, prefix){
       const sel=document.getElementById(`${prefix}-role-${idx}`), custom=document.getElementById(`${prefix}-custom-${idx}`);
       const isCustom= sel && sel.value==='自訂角色'; if(custom) custom.style.display= isCustom?'':'none';
+    }
+    function removeExtraRow(idx){
+      const el=document.getElementById(`extra-${idx}`);
+      if(el) el.remove();
+      updateParticipantConflictHint();
     }
     function enforcePrimaryExclusionOnSelect(sel){
       if(!sel) return;
@@ -1619,6 +1776,44 @@
     }
     function enforcePrimaryExclusionOnExtras(){
       document.querySelectorAll('[id^="ex-role-"]').forEach(enforcePrimaryExclusionOnSelect);
+      updateParticipantConflictHint();
+    }
+    function computeParticipantConflicts(){
+      const primary=(document.getElementById('primaryRel').value||'').trim();
+      if(!primary) return {hasConflict:false, roles:[]};
+      const roles=new Set();
+      document.querySelectorAll('[id^="ex-role-"]').forEach(sel=>{
+        if(!sel) return;
+        const idx=sel.id.split('-')[2];
+        let role=(sel.value||'').trim();
+        if(role==='自訂角色'){
+          const custom=document.getElementById(`ex-custom-${idx}`);
+          role=(custom?custom.value:'').trim();
+        }
+        if(role && role===primary){ roles.add(role); }
+      });
+      return {hasConflict: roles.size>0, roles:[...roles]};
+    }
+    function updateParticipantConflictHint(){
+      const box=document.getElementById('extras_conflict');
+      if(!box) return {hasConflict:false, roles:[]};
+      const result=computeParticipantConflicts();
+      if(result.hasConflict){
+        box.textContent=`其他參與者不可與主要照顧者角色重覆（重覆角色：${result.roles.join('、')}）`;
+        box.dataset.show='1';
+      }else{
+        box.textContent='';
+        box.dataset.show='0';
+      }
+      return result;
+    }
+    function validateParticipantConflicts(msg){
+      const result=updateParticipantConflictHint();
+      if(result.hasConflict){
+        if(msg) msg.textContent='請調整參與者角色，避免與主要照顧者重覆。';
+        return false;
+      }
+      return true;
     }
     function collectExtras(){
       const reserved=new Set(['個案','福安個管','照專']);
@@ -1698,6 +1893,7 @@
       lesion:{ region:'', subChoice:'', subOther:'', laterality:'' }
     };
     let activeLocationContext = 'pain';
+    let lesionSymptomMode = 'none';
 
     // 渲染
     function renderS1() {
@@ -1843,13 +2039,17 @@
     }
 
     function setupLesionSymptomsBox(){
-      const box = document.getElementById('s1_lesion_sx_box'); box.innerHTML='';
+      const box = document.getElementById('s1_lesion_sx_box');
+      if(!box) return;
+      box.innerHTML='';
       S1_LESION_SX_LIST.forEach(name=>{
         const id = 'lsx_'+name;
         const lab=document.createElement('label');
         lab.innerHTML=`<input type="checkbox" value="${name}" id="${id}" onchange="syncNoDiscomfort('s1_lesion_sx_box')"> ${name}`;
         box.appendChild(lab);
       });
+      box.dataset.mode = lesionSymptomMode;
+      setLesionSymptomMode(lesionSymptomMode);
     }
 
     // 連動
@@ -2088,7 +2288,40 @@
         const painOn = document.getElementById('s1_pain').value === '有';
         const lesionOn = document.getElementById('s1_lesion_has').value === '有';
         toolbar.style.display = (painOn && lesionOn) ? '' : 'none';
+        const copyBtn=document.getElementById('location_copy_btn');
+        if(copyBtn){
+          if(painOn && lesionOn){
+            copyBtn.style.display='';
+            const target = activeLocationContext;
+            const source = target === 'lesion' ? 'pain' : 'lesion';
+            copyBtn.textContent = target === 'lesion' ? '同疼痛部位' : '同病灶部位';
+            const hasSource = !isLocationStateEmpty(locationState[source]);
+            copyBtn.disabled = !hasSource;
+            copyBtn.dataset.source = source;
+            copyBtn.dataset.active = hasSource ? '1' : '0';
+            copyBtn.title = hasSource ? '' : '來源尚未設定';
+          }else{
+            copyBtn.style.display='none';
+          }
+        }
       }
+    }
+
+    function copyLocationFromOther(){
+      const painOn = document.getElementById('s1_pain').value === '有';
+      const lesionOn = document.getElementById('s1_lesion_has').value === '有';
+      if(!(painOn && lesionOn)) return;
+      const target = activeLocationContext;
+      const source = target === 'lesion' ? 'pain' : 'lesion';
+      const sourceState = locationState[source];
+      const targetState = locationState[target];
+      if(!sourceState || !targetState || isLocationStateEmpty(sourceState)) return;
+      targetState.region = sourceState.region || '';
+      targetState.subChoice = sourceState.subChoice || '';
+      targetState.subOther = sourceState.subOther || '';
+      targetState.laterality = sourceState.laterality || '';
+      applyLocationStateToUI();
+      updateLocationToolbar();
     }
 
     function switchLocationContext(context, opts={}){
@@ -2190,10 +2423,19 @@
         }else{
           switchLocationContext('lesion');
         }
+        setLesionSymptomMode(lesionSymptomMode === 'symptom' ? 'symptom' : 'none');
+      }else{
+        lesionSymptomMode = 'none';
+        setLesionSymptomMode('none');
+        const lenInput=document.getElementById('s1_lesion_length');
+        const widInput=document.getElementById('s1_lesion_width');
+        if(lenInput) lenInput.value='';
+        if(widInput) widInput.value='';
       }
       document.getElementById('s1_lesion_layer_wrap').style.display = on?'':'none';
       document.getElementById('s1_lesion_size_wrap').style.display = on?'':'none';
       document.getElementById('s1_lesion_more').style.display = on?'':'none';
+      updateLesionAreaDisplay();
       updateLocationVisibility();
       toggleLesionHospital();
     }
@@ -2331,20 +2573,101 @@
       if(!sel||!input) return;
       const show = sel.value==='部分協助';
       input.style.display = show? '':'none';
-      if(!show) input.value='';
+      if(!show){
+        input.value='';
+        input.classList.remove('input-invalid');
+      }
     }
 
     // 病灶症狀互斥（無不適）
     function syncNoDiscomfort(containerId){
       const box = document.getElementById(containerId);
+      if(!box) return;
+      const mode = box.dataset.mode || 'symptom';
       const checks = [...box.querySelectorAll('input[type=checkbox]')];
       const none = checks.find(c=>c.value==='無不適');
-      if(!none) return;
-      if(none.checked){
-        checks.forEach(c=>{ if(c!==none){ c.checked=false; c.disabled=true; }});
-      }else{
-        checks.forEach(c=>{ if(c!==none){ c.disabled=false; }});
+      const others = checks.filter(c=>c!==none);
+      if(mode === 'none'){
+        if(none) none.checked = true;
+        others.forEach(c=>{ c.checked=false; c.disabled=true; });
+        return;
       }
+      others.forEach(c=>{ c.disabled=false; });
+      if(none && none.checked){
+        others.forEach(c=>{ c.checked=false; });
+      }
+    }
+
+    function updateLesionModeControls(){
+      const group=document.getElementById('s1_lesion_mode');
+      if(group){
+        const mode=lesionSymptomMode;
+        group.querySelectorAll('button').forEach(btn=>{
+          const active = btn.dataset.mode === mode;
+          btn.dataset.active = active ? '1' : '0';
+        });
+      }
+      const box=document.getElementById('s1_lesion_sx_box');
+      if(box) box.dataset.mode = lesionSymptomMode;
+    }
+
+    function setLesionSymptomMode(mode){
+      const normalized = mode === 'symptom' ? 'symptom' : 'none';
+      lesionSymptomMode = normalized;
+      const box=document.getElementById('s1_lesion_sx_box');
+      if(!box) return;
+      box.dataset.mode = normalized;
+      const checks=[...box.querySelectorAll('input[type=checkbox]')];
+      const none=checks.find(c=>c.value==='無不適');
+      const others=checks.filter(c=>c!==none);
+      if(normalized==='none'){
+        if(none) none.checked=true;
+        others.forEach(c=>{ c.checked=false; c.disabled=true; });
+      }else{
+        others.forEach(c=>{ c.disabled=false; });
+        if(none) none.checked=false;
+      }
+      syncNoDiscomfort('s1_lesion_sx_box');
+      updateLesionModeControls();
+    }
+
+    function getLesionSizeState(){
+      const lengthInput=document.getElementById('s1_lesion_length');
+      const widthInput=document.getElementById('s1_lesion_width');
+      const lengthRaw=lengthInput ? lengthInput.value : '';
+      const widthRaw=widthInput ? widthInput.value : '';
+      const lenNum=parseFloat(lengthRaw);
+      const widNum=parseFloat(widthRaw);
+      const validLen=!Number.isNaN(lenNum) && lenNum>0;
+      const validWid=!Number.isNaN(widNum) && widNum>0;
+      const area = (validLen && validWid) ? Number((lenNum*widNum).toFixed(2)) : null;
+      return { lengthRaw, widthRaw, lenNum: validLen?lenNum:null, widNum: validWid?widNum:null, area };
+    }
+
+    function updateLesionAreaDisplay(){
+      const state=getLesionSizeState();
+      const display=document.getElementById('s1_lesion_area_display');
+      if(display){
+        if(state.area!==null){
+          display.textContent=`面積：${state.area.toFixed(2)} cm²`;
+        }else{
+          display.textContent='面積：— cm²';
+        }
+      }
+      const hint=document.getElementById('s1_lesion_size_hint');
+      if(hint){
+        hint.style.display = (state.lenNum!==null && state.widNum!==null) ? 'none' : '';
+      }
+    }
+
+    function buildLesionSizeText(state){
+      if(!state || state.lenNum===null || state.widNum===null) return '';
+      const lenText=state.lenNum.toFixed(1);
+      const widText=state.widNum.toFixed(1);
+      if(state.area!==null){
+        return `${lenText}×${widText} cm（面積 ${state.area.toFixed(2)} cm²）`;
+      }
+      return `${lenText}×${widText} cm`;
     }
 
     function toggleTransportOther(){
@@ -2456,6 +2779,7 @@
 
     function resetSection1Validation(){
       document.querySelectorAll('#section1_block .input-invalid').forEach(el=>el.classList.remove('input-invalid'));
+      document.querySelectorAll('#section1_block .field-error').forEach(el=>{ el.textContent=''; el.dataset.show='0'; });
       const box=document.getElementById('section1_errors');
       if(box){ box.innerHTML=''; box.style.display='none'; }
     }
@@ -2463,6 +2787,18 @@
       const el=document.getElementById(id);
       if(!el) return;
       el.classList.add('input-invalid');
+    }
+
+    function setFieldError(id, message){
+      const el=document.getElementById(id);
+      if(!el) return;
+      if(message){
+        el.textContent = message;
+        el.dataset.show='1';
+      }else{
+        el.textContent='';
+        el.dataset.show='0';
+      }
     }
 
     function collectS1(){
@@ -2511,9 +2847,14 @@
         layer = lo;
       }
       s.s1_lesion_layer = layer || '無';
-      s.s1_lesion_size  = (document.getElementById('s1_lesion_size').value||'').trim();
+      const lesionSizeState=getLesionSizeState();
+      s.s1_lesion_length_cm = lesionSizeState.lengthRaw;
+      s.s1_lesion_width_cm  = lesionSizeState.widthRaw;
+      s.s1_lesion_area_cm2  = lesionSizeState.area!==null ? lesionSizeState.area.toFixed(2) : '';
+      s.s1_lesion_size_text = buildLesionSizeText(lesionSizeState);
+      s.s1_lesion_symptom_mode = lesionSymptomMode;
       s.s1_lesion_sx    = collectChecks('s1_lesion_sx_box');
-      if(s.s1_lesion_has==='有' && Array.isArray(s.s1_lesion_sx) && s.s1_lesion_sx.length===0){ s.s1_lesion_sx=['無不適']; }
+      if(s.s1_lesion_has==='有' && Array.isArray(s.s1_lesion_sx) && s.s1_lesion_sx.length===0 && s.s1_lesion_symptom_mode !== 'symptom'){ s.s1_lesion_sx=['無不適']; }
       s.s1_lesion_eval  = document.getElementById('s1_lesion_eval').value;
       s.s1_lesion_hospital = document.getElementById('s1_lesion_hospital').value;
 
@@ -2643,39 +2984,62 @@
         }
       }
 
+      const nocturiaInput=document.getElementById('s1_nocturia_count');
+      const nocturiaCount=nocturiaInput ? Number(nocturiaInput.value) : 0;
+      const hasNightBag=!!document.querySelector('#s1_excretion_aids_box input[value="夜間集尿袋"]:checked');
+      if(!Number.isNaN(nocturiaCount) && nocturiaCount >= 1 && hasNightBag){
+        messages.push('夜間記錄排尿次數時不可同時勾選夜間集尿袋');
+        markSection1Invalid('s1_nocturia_count');
+        markSection1Invalid('s1_excretion_aids_box');
+      }
+
       const painOn = document.getElementById('s1_pain').value === '有';
+      let painScoreError='';
+      let painLocationError='';
       if(painOn){
         const score = document.getElementById('s1_pain_score').value;
         const scoreNum = Number(score);
         if(!score || Number.isNaN(scoreNum) || scoreNum < 1 || scoreNum > 10){
           messages.push('請填寫疼痛強度（1-10）');
           markSection1Invalid('s1_pain_score');
+          painScoreError='請輸入 1–10 分的疼痛強度';
         }
         const painLoc = getLocationData('pain');
+        let missingLocation=false;
         if(!painLoc.region){
           messages.push('請選擇疼痛部位大分類');
           switchLocationContext('pain');
           markSection1Invalid('s1_location_region');
+          missingLocation=true;
         }
         if(!painLoc.subChoice){
           messages.push('請選擇疼痛細部分位');
           switchLocationContext('pain');
           markSection1Invalid('s1_location_subregion');
+          missingLocation=true;
         }else if(painLoc.subChoice==='其他' && !painLoc.subOther){
           messages.push('請填寫疼痛細部分位（其他）');
           switchLocationContext('pain');
           markSection1Invalid('s1_location_subregion_other');
+          missingLocation=true;
         }
         if(SYMMETRIC_PARTS.has(getLocationSubregionText(painLoc))){
           if(!painLoc.laterality){
             messages.push('請選擇疼痛側別');
             switchLocationContext('pain');
             markSection1Invalid('s1_location_laterality');
+            missingLocation=true;
           }
         }
+        if(missingLocation){
+          painLocationError='請完整填寫疼痛部位';
+        }
       }
+      setFieldError('s1_pain_score_error', painOn ? painScoreError : '');
+      setFieldError('s1_pain_location_error', painOn ? painLocationError : '');
 
       const lesionOn = document.getElementById('s1_lesion_has').value === '有';
+      let lesionSizeError='';
       if(lesionOn){
         const lesionLoc = getLocationData('lesion');
         if(!lesionLoc.region){
@@ -2705,8 +3069,13 @@
         if(!layerSel){ messages.push('請選擇病灶層次'); markSection1Invalid('s1_lesion_layer'); }
         else if(layerSel==='其他' && !layerOther){ messages.push('請填寫病灶層次（其他）'); markSection1Invalid('s1_lesion_layer_other'); }
 
-        const size = (document.getElementById('s1_lesion_size').value||'').trim();
-        if(!size){ messages.push('請填寫病灶大小'); markSection1Invalid('s1_lesion_size'); }
+        const sizeState=getLesionSizeState();
+        if(sizeState.lenNum===null || sizeState.widNum===null){
+          messages.push('請填寫病灶大小（長、寬）');
+          if(sizeState.lenNum===null) markSection1Invalid('s1_lesion_length');
+          if(sizeState.widNum===null) markSection1Invalid('s1_lesion_width');
+          lesionSizeError='請輸入長度與寬度（需大於 0 cm）';
+        }
 
         const sx = collectChecks('s1_lesion_sx_box');
         if(!Array.isArray(sx) || !sx.length){ messages.push('請勾選至少一項病灶症狀'); markSection1Invalid('s1_lesion_sx_box'); }
@@ -2717,6 +3086,7 @@
           if(!hosp){ messages.push('請填寫醫療院所名稱'); markSection1Invalid('s1_lesion_hospital'); }
         }
       }
+      setFieldError('s1_lesion_size_error', lesionOn ? lesionSizeError : '');
 
       const box=document.getElementById('section1_errors');
       if(box){
@@ -2941,7 +3311,7 @@
           s.s1_lesion_laterality
         );
         const layer = has(s.s1_lesion_layer) ? s.s1_lesion_layer : '無';
-        const size  = has(s.s1_lesion_size) ? s.s1_lesion_size : '無';
+        const size  = has(s.s1_lesion_size_text) ? s.s1_lesion_size_text : '無';
         const sxArr = Array.isArray(s.s1_lesion_sx) ? s.s1_lesion_sx : [];
         const sxTxt = sxArr.length ? listCN(sxArr) : '無不適';
         if (lesionSite) lesionBits.push(`病灶位於${lesionSite}`);
@@ -4211,6 +4581,36 @@
       input.dataset.planField = field;
       input.addEventListener(opts.as === 'select' ? 'change' : 'input', onPlanFieldChange);
       wrap.appendChild(input);
+      if(field === 'monthlyUnits'){
+        const toolbar=document.createElement('div');
+        toolbar.className='plan-qty-toolbar';
+        const hint=document.createElement('span');
+        hint.className='plan-qty-hint';
+        hint.textContent='快速調整';
+        toolbar.appendChild(hint);
+        const steps=[
+          {label:'－1', delta:-1},
+          {label:'＋1', delta:1},
+          {label:'＋5', delta:5},
+          {label:'＋10', delta:10}
+        ];
+        steps.forEach(step=>{
+          const btn=document.createElement('button');
+          btn.type='button';
+          btn.className='tiny';
+          btn.textContent=step.label;
+          btn.addEventListener('click', ()=>{ adjustMonthlyUnits(entry.code, step.delta); });
+          toolbar.appendChild(btn);
+        });
+        const clearBtn=document.createElement('button');
+        clearBtn.type='button';
+        clearBtn.className='tiny';
+        clearBtn.dataset.variant='ghost';
+        clearBtn.textContent='清除';
+        clearBtn.addEventListener('click', ()=>{ setMonthlyUnitsValue(entry.code, 0); });
+        toolbar.appendChild(clearBtn);
+        wrap.appendChild(toolbar);
+      }
       return {wrap, input};
     }
 
@@ -4352,6 +4752,32 @@
       }
     }
 
+    function setMonthlyUnitsValue(code, value){
+      if(!code) return;
+      const input = getPlanFieldElement(code, 'monthlyUnits');
+      if(!input) return;
+      let numeric = 0;
+      if(typeof value === 'number' && isFinite(value)){
+        numeric = value;
+      }else if(typeof value === 'string' && value.trim()){
+        numeric = parsePlanNumber(value);
+      }
+      const str = numeric > 0 ? formatPlanNumber(numeric) : '';
+      input.value = str;
+      input.dispatchEvent(new Event('input', { bubbles:true }));
+    }
+
+    function adjustMonthlyUnits(code, delta){
+      if(!code) return;
+      const numericDelta = (typeof delta === 'number' && isFinite(delta)) ? delta : parsePlanNumber(delta);
+      if(!isFinite(numericDelta)) return;
+      const input = getPlanFieldElement(code, 'monthlyUnits');
+      if(!input) return;
+      const current = parsePlanNumber(input.value);
+      const next = Math.max(0, current + numericDelta);
+      setMonthlyUnitsValue(code, next);
+    }
+
     function updatePlanVendorVisibility(code){
       const entry = servicePlanState[code];
       const show = entry && entry.vendorMode === '指定';
@@ -4442,7 +4868,169 @@
       return lines.join('\n');
     }
 
+    function getEntryMonthlyUnits(entry){
+      if(!entry) return {units:0, hasValue:false};
+      const fields=['monthlyUnits','monthlyUnitsComputed','autoMonthlyUnits'];
+      for(let i=0;i<fields.length;i++){
+        const field=fields[i];
+        if(entry[field] !== undefined && entry[field] !== null){
+          const raw=String(entry[field]).trim();
+          if(raw){
+            return {units:parsePlanNumber(raw), hasValue:true};
+          }
+        }
+      }
+      return {units:0, hasValue:false};
+    }
+
+    function getEntryUsagePoints(entry){
+      if(!entry) return {points:0, computed:false, missing:false};
+      if(isFiniteNumber(entry.autoPlanMonthlyUnits)){
+        const points=Math.max(0, entry.autoPlanMonthlyUnits);
+        return {points:points, computed:true, missing:false};
+      }
+      const unitInfo=getEntryMonthlyUnits(entry);
+      if(!unitInfo.hasValue){
+        return {points:0, computed:false, missing:false};
+      }
+      if(unitInfo.units <= 0){
+        return {points:0, computed:true, missing:false};
+      }
+      const rate=getServiceRate(entry.code);
+      if(rate && rate.price !== undefined && rate.price !== null){
+        const price=Number(rate.price);
+        if(!isNaN(price) && isFinite(price)){
+          const points=unitInfo.units * price;
+          return {points:points, computed:true, missing:false};
+        }
+      }
+      return {points:0, computed:false, missing:true};
+    }
+
+    function calculatePlanPointTotals(){
+      const level=getCmsLevel();
+      let capValue=null;
+      if(level){
+        const capNum=getCmsMonthlyCap(level);
+        if(isFiniteNumber(capNum) && capNum > 0){
+          capValue = capNum;
+        }else{
+          capValue = null;
+        }
+      }
+      let totalPoints=0;
+      let computedEntries=0;
+      let totalEntries=0;
+      const missingRates=[];
+      Object.values(servicePlanState).forEach(entry=>{
+        if(!entry) return;
+        const category=(entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
+        if(category !== 'B' && category !== 'C') return;
+        totalEntries++;
+        const usageInfo=getEntryUsagePoints(entry);
+        if(usageInfo.missing){
+          missingRates.push(entry.code);
+          return;
+        }
+        if(usageInfo.computed){
+          computedEntries++;
+          if(usageInfo.points > 0){
+            totalPoints += usageInfo.points;
+          }
+        }
+      });
+      const uniqueMissing=Array.from(new Set(missingRates));
+      const remaining=(capValue !== null && computedEntries > 0)
+        ? capValue - totalPoints
+        : null;
+      return {
+        level:level,
+        cap:capValue,
+        usage:totalPoints,
+        computedEntries:computedEntries,
+        totalEntries:totalEntries,
+        missingRates:uniqueMissing,
+        remaining:remaining
+      };
+    }
+
+    function formatPointValue(value){
+      if(!isFiniteNumber(value)) return '—';
+      const roundedInt=Math.round(value);
+      if(Math.abs(value - roundedInt) < 1e-4){
+        return `${formatAutoInteger(roundedInt)} 點`;
+      }
+      const rounded=Math.round(value * 10) / 10;
+      if(Math.abs(rounded - Math.round(rounded)) < 1e-6){
+        return `${formatAutoInteger(Math.round(rounded))} 點`;
+      }
+      const fixed=rounded.toFixed(1);
+      const sign=fixed.startsWith('-') ? '-' : '';
+      const abs=sign ? fixed.slice(1) : fixed;
+      const parts=abs.split('.');
+      const intPart=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      const decimal=parts[1] ? `.${parts[1].replace(/0+$/, '')}` : '';
+      return `${sign}${intPart}${decimal} 點`;
+    }
+
+    function updatePlanSummaryTotals(){
+      const totals=calculatePlanPointTotals();
+      const capBox=document.getElementById('planSummaryCap');
+      if(capBox){
+        if(totals.level){
+          const levelText=`第${totals.level}級`;
+          if(isFiniteNumber(totals.cap)){
+            capBox.textContent=`${levelText}｜${formatAutoInteger(totals.cap)} 點`;
+          }else{
+            capBox.textContent=`${levelText}｜—`;
+          }
+        }else{
+          capBox.textContent='—';
+        }
+      }
+      const usageBox=document.getElementById('planSummaryUsage');
+      if(usageBox){
+        if(totals.computedEntries > 0){
+          usageBox.textContent=formatPointValue(totals.usage);
+        }else if(totals.totalEntries > 0){
+          usageBox.textContent='—';
+        }else{
+          usageBox.textContent='—';
+        }
+      }
+      const remainBox=document.getElementById('planSummaryRemaining');
+      if(remainBox){
+        if(totals.remaining !== null && totals.computedEntries > 0){
+          remainBox.textContent=formatPointValue(totals.remaining);
+          remainBox.classList.toggle('negative', totals.remaining < 0);
+        }else{
+          remainBox.textContent='—';
+          remainBox.classList.remove('negative');
+        }
+      }
+      const hintBox=document.getElementById('planSummaryTotalsHint');
+      if(hintBox){
+        const hints=[];
+        if(!totals.level){
+          hints.push('請設定 CMS 等級以計算月額度與餘額。');
+        }else if(totals.cap === null){
+          hints.push('查無對應的 CMS 月額度，請確認服務資料設定。');
+        }
+        if(totals.missingRates.length){
+          hints.push(`缺少單價：${totals.missingRates.join('、')}，無法納入點數預估。`);
+        }
+        if(hints.length){
+          hintBox.textContent=hints.join(' ');
+          hintBox.dataset.show='1';
+        }else{
+          hintBox.textContent='';
+          hintBox.dataset.show='0';
+        }
+      }
+    }
+
     function buildPlanSummaryPreview(){
+      updatePlanSummaryTotals();
       const host=document.getElementById('planSummaryPreview');
       if(!host) return;
       const entries=Object.values(servicePlanState);
@@ -5696,52 +6284,28 @@
       }
     }
 
-    /* ===== AI 潤稿（Stub） ===== */
-    function polishOne(key){
-      if(key==='section1_out') buildSection1();
-      if(key==='section2_out') buildS2();
-      if(key==='section3_out') buildS3();
-      if(key==='section4_out') buildSection4();
-      if(key==='section6_struct') buildSection6();
-
-      let text = (document.getElementById(key).value||'').trim();
-      if(key==='section1_out') text = text.replace(/^（一）身心概況：/,'');
-      const ctx  = {
-        age: document.getElementById('s1_age').value,
-        gender: document.getElementById('s1_gender').value,
-        disLevel: document.getElementById('s2_dis_level').value,
-        disCat: document.getElementById('s2_dis_cat') ? document.getElementById('s2_dis_cat').value : '',
-        problems: getSelectedProblems()
-      };
-      google.script.run.withSuccessHandler(res=>{
-        if(key==='section1_out'){
-          const cleaned=(res && res.text ? res.text : text).replace(/^（一）身心概況：/,'');
-          document.getElementById(key).value = cleaned;
-          document.getElementById('section1_preview').textContent = `（一）身心概況：${cleaned}`;
-        }else{
-          document.getElementById(key).value = res && res.text ? res.text : text;
-        }
-        alert('AI潤稿完成（已更新於欄位）。');
-      }).polishSection(key, text, ctx);
-    }
-
     /* ===== 送出 ===== */
-    function validatePartialAssist(msg){
-      const fields=[
-        ['s1_adl_eating','進食'],
-        ['s1_adl_groom','刷牙/洗臉'],
-        ['s1_adl_bathing','洗澡'],
-        ['s1_adl_dressing','穿脫衣'],
-        ['s1_post_toilet','如廁後清潔'],
-        ['s1_meal_prep','備餐'],
-        ['s1_housework','家務整理'],
-        ['s1_finance','財務管理']
-      ];
-      for(const [id,label] of fields){
-        const sel=document.getElementById(id);
-        const how=document.getElementById(id+'_how');
-        if(sel && sel.value==='部分協助'){
-          if(!how || !how.value.trim()){ if(msg) msg.textContent=`請填寫：${label}的部分協助方式`; return false; }
+    function validateConditionalRequired(msg){
+      const items=[...document.querySelectorAll('[data-required-when]')];
+      for(const field of items){
+        const rule=field.dataset.requiredWhen;
+        const sourceId=field.dataset.requiredSource;
+        let required=false;
+        if(rule==='partial' && sourceId){
+          const source=document.getElementById(sourceId);
+          required = source && source.value === '部分協助';
+        }
+        if(required){
+          if(!field.value || !String(field.value).trim()){
+            field.classList.add('input-invalid');
+            const label=field.dataset.requiredLabel || '';
+            if(msg) msg.textContent = label ? `請填寫：${label}` : '請補齊必要欄位';
+            field.focus();
+            return false;
+          }
+        }
+        if(!required){
+          field.classList.remove('input-invalid');
         }
       }
       return true;
@@ -5765,7 +6329,8 @@
       let primaryCaregiverName= (document.getElementById('primaryName').value||'').trim();
       if(!primaryCaregiverRel){ primaryCaregiverRel='本人'; if(!primaryCaregiverName) primaryCaregiverName = caseName; }
 
-      if(!validatePartialAssist(msg)) return;
+      if(!validateConditionalRequired(msg)) return;
+      if(!validateParticipantConflicts(msg)) return;
       const section1Validation = validateSection1();
       if(!section1Validation.ok){
         msg.textContent = '請先完成身心概況：' + section1Validation.messages.join('、');
@@ -5814,8 +6379,6 @@
         mid_access: (document.getElementById('mid_access').value || '').trim(),
         mid_meal: (document.getElementById('mid_meal').value || '').trim(),
         long_goal: (document.getElementById('long_goal').value || '').trim(),
-        // 產出前一致性潤稿
-        doBatchPolish: document.getElementById('doBatchPolish').checked,
         servicePlan: serializeServicePlan(),
         planMeta: Object.assign({}, planMetaState),
         planText: (document.getElementById('plan_text').value || '').trim()
@@ -5872,6 +6435,7 @@
       toggleSwallow(); toggleFallDetail(); toggleSittingSupports(); togglePhoneNotes();
       updateExcretionAidEffects(); toggleGlassesAdherence(); toggleHearingDeviceAdherence();
       syncNoDiscomfort('s1_lesion_sx_box'); // 初始化互斥狀態
+      updateLesionAreaDisplay();
 
       const s1block = document.getElementById('section1_block');
       if(s1block){
@@ -5893,6 +6457,13 @@
 
       // S1
       renderS1(); initSection1State();
+
+      const extrasBox=document.getElementById('extras');
+      if(extrasBox){
+        extrasBox.addEventListener('input', updateParticipantConflictHint);
+        extrasBox.addEventListener('change', updateParticipantConflictHint);
+      }
+      updateParticipantConflictHint();
 
       // 偕同訪視者：初次建立一筆空白行以利輸入（選配）
       // addExtraRow();
