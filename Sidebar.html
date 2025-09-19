@@ -279,6 +279,22 @@
     }
     .plan-entry-grid textarea,
     .plan-entry-grid .full{ grid-column:1/-1; }
+    .plan-field.auto-summary .auto-summary-box{
+      padding:12px 16px;
+      border:1px solid var(--border-strong);
+      border-radius:10px;
+      background:#f0f4ff;
+      color:#0b1d4d;
+      font-weight:600;
+      line-height:1.6;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .plan-field.auto-summary .auto-summary-box.empty{
+      color:#4b5563;
+      font-weight:500;
+      background:#f8fafc;
+      border-style:dashed;
+    }
     .plan-meta{
       display:grid;
       gap:12px;
@@ -3235,6 +3251,22 @@
 
     /* ===== 四-(四) 社會支持：原程式 ===== */
     const FORMAL = ['居家服務','專業服務','日間照顧','喘息服務','交通接送','無障礙及輔具','營養送餐'];
+    const DEFAULT_SERVICE_CATALOG = {
+      needLevelCaps: {
+        '2': 10020,
+        '3': 15460,
+        '4': 18580,
+        '5': 24100,
+        '6': 28070,
+        '7': 32090,
+        '8': 36180
+      },
+      dayCareRequirements: {},
+      dayCareLevels: {},
+      serviceRates: {},
+      transportRoundTrips: 2
+    };
+    let SERVICE_CATALOG = JSON.parse(JSON.stringify(DEFAULT_SERVICE_CATALOG));
     const HOME_CARE_ITEMS = [
       {
         code: 'BA01',
@@ -3738,6 +3770,39 @@
         host.appendChild(row);
       });
     }
+
+    function ensureSingleDayCareSelection(activeBox){
+      if(!activeBox || !activeBox.checked) return;
+      const code = activeBox.value || '';
+      // 只有真正的「日間照顧」代碼（BB 開頭）需要互斥，
+      // 社區式服務（如 BD03 交通車）可以與日間照顧併行使用。
+      if(code.indexOf('BB') !== 0) return;
+      document.querySelectorAll('#dayCareList input[type=checkbox]').forEach(box=>{
+        if(box === activeBox) return;
+        if((box.value || '').indexOf('BB') === 0){
+          box.checked = false;
+        }
+      });
+    }
+
+    function refreshDayCareAvailability(){
+      const level = getCmsLevel();
+      const requirementMap = SERVICE_CATALOG && SERVICE_CATALOG.dayCareRequirements ? SERVICE_CATALOG.dayCareRequirements : {};
+      const levelStr = level ? String(level) : '';
+      document.querySelectorAll('#dayCareList .home-care-item').forEach(row=>{
+        const box = row.querySelector('input[type=checkbox]');
+        if(!box) return;
+        const code = box.value;
+        const required = requirementMap && Object.prototype.hasOwnProperty.call(requirementMap, code)
+          ? String(requirementMap[code])
+          : '';
+        const allow = !levelStr || !required || required === levelStr;
+        row.style.display = allow ? '' : 'none';
+        if(!allow && box.checked){
+          box.checked = false;
+        }
+      });
+    }
     function renderProfessionalServices(){
       const host=document.getElementById('profServiceList');
       if(!host) return;
@@ -3837,8 +3902,8 @@
 
     function ensurePlanEntry(code, initialMonthlyUnits){
       if(!code) return null;
+      const item = lookupServiceItem(code);
       if(!servicePlanState[code]){
-        const item = lookupServiceItem(code);
         servicePlanState[code] = {
           code: code,
           name: item ? (item.name || '') : '',
@@ -3864,8 +3929,23 @@
           remaining: '',
           original: '',
           mealsPerDay: '',
-          mealType: ''
+          mealType: '',
+          autoPlanMonthlyVisits: null,
+          autoPlanWeeklyVisits: null,
+          autoPlanMonthlyUnits: null,
+          autoPlanRemainingCap: null,
+          autoPlanUnitLabel: '',
+          autoUsageText: '',
+          usageManual: false
         };
+      }else if(item && !servicePlanState[code].name){
+        servicePlanState[code].name = item.name || '';
+      }
+      if(item){
+        // 由預設詞庫提供基本的「使用方式」描述，
+        // 讓填寫者僅需微調即可完成內容；若使用者之後手動覆寫，
+        // onPlanFieldChange 會將 usageManual 標記為 true，避免再被自動更新。
+        applyAutoUsage(servicePlanState[code], item.short || '');
       }
       if(initialMonthlyUnits && !servicePlanState[code].monthlyUnits){
         servicePlanState[code].monthlyUnits = initialMonthlyUnits;
@@ -3903,8 +3983,199 @@
         }
         ensurePlanEntry(code, initial);
       });
+      applyAutomaticPlanning();
       renderServicePlanEditor();
+      buildPlanSummaryPreview();
       buildApprovalPlanPreview();
+    }
+
+    function isFiniteNumber(value){
+      return typeof value === 'number' && isFinite(value);
+    }
+
+    function formatAutoInteger(value){
+      if(!isFiniteNumber(value)) return '';
+      return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function formatAutoDecimal(value){
+      if(!isFiniteNumber(value)) return '';
+      const rounded = Math.round(value * 10) / 10;
+      if(Math.abs(rounded - Math.round(rounded)) < 1e-6) return String(Math.round(rounded));
+      return rounded.toFixed(1).replace(/\.0$/, '');
+    }
+
+    function getCmsMonthlyCap(level){
+      if(!level) return 0;
+      const catalogCaps = SERVICE_CATALOG && SERVICE_CATALOG.needLevelCaps ? SERVICE_CATALOG.needLevelCaps : {};
+      if(catalogCaps && Object.prototype.hasOwnProperty.call(catalogCaps, level)){
+        const cap = Number(catalogCaps[level]);
+        if(!isNaN(cap)) return cap;
+      }
+      const fallback = DEFAULT_SERVICE_CATALOG.needLevelCaps[level];
+      return fallback ? Number(fallback) : 0;
+    }
+
+    function getServiceRate(code){
+      if(!code) return null;
+      const rates = SERVICE_CATALOG && SERVICE_CATALOG.serviceRates ? SERVICE_CATALOG.serviceRates : null;
+      if(rates && rates[code]) return rates[code];
+      return null;
+    }
+
+    function applyAutoUsage(entry, text){
+      if(!entry) return;
+      const content = (text || '').trim();
+      entry.autoUsageText = content;
+      if(!content) return;
+      if(!entry.usageManual || !entry.usage || entry.usage === content){
+        entry.usage = content;
+        entry.usageManual = false;
+      }
+    }
+
+    function clearAutoPlan(entry){
+      if(!entry) return;
+      entry.autoPlanMonthlyVisits = null;
+      entry.autoPlanWeeklyVisits = null;
+      entry.autoPlanMonthlyUnits = null;
+      entry.autoPlanRemainingCap = null;
+      entry.autoPlanUnitLabel = '';
+      entry.autoFrequencyText = '';
+    }
+
+    function updateEntryAutoValues(entry, info){
+      if(!entry || !info) return;
+      if(typeof info.monthlyVisits === 'number' && isFinite(info.monthlyVisits)){
+        entry.autoPlanMonthlyVisits = Math.max(0, Math.floor(info.monthlyVisits));
+      }else{
+        entry.autoPlanMonthlyVisits = null;
+      }
+      if(typeof info.weeklyVisits === 'number' && isFinite(info.weeklyVisits)){
+        entry.autoPlanWeeklyVisits = Math.max(0, info.weeklyVisits);
+      }else{
+        entry.autoPlanWeeklyVisits = null;
+      }
+      if(typeof info.monthlyUnits === 'number' && isFinite(info.monthlyUnits)){
+        entry.autoPlanMonthlyUnits = Math.max(0, info.monthlyUnits);
+      }else{
+        entry.autoPlanMonthlyUnits = null;
+      }
+      if(typeof info.remaining === 'number' && isFinite(info.remaining)){
+        entry.autoPlanRemainingCap = Math.max(0, info.remaining);
+      }else{
+        entry.autoPlanRemainingCap = null;
+      }
+      if(info.unitLabel){
+        entry.autoPlanUnitLabel = info.unitLabel;
+      }
+    }
+
+    function buildAutoSummaryText(entry){
+      if(!entry) return '';
+      const unitLabel = entry.autoPlanUnitLabel || (entry.code === 'BD03' ? '趟' : '次');
+      const parts=[];
+      if(isFiniteNumber(entry.autoPlanMonthlyVisits)){
+        const monthly = formatAutoInteger(entry.autoPlanMonthlyVisits);
+        const weekly = formatAutoDecimal(entry.autoPlanWeeklyVisits);
+        if(weekly){
+          const weekUnit = unitLabel === '趟' ? '趟' : '次';
+          parts.push(`每月約${monthly}${unitLabel}（每週約${weekly}${weekUnit}）`);
+        }else{
+          parts.push(`每月約${monthly}${unitLabel}`);
+        }
+      }
+      if(isFiniteNumber(entry.autoPlanMonthlyUnits)){
+        parts.push(`預估耗用${formatAutoInteger(entry.autoPlanMonthlyUnits)}點`);
+      }
+      if(isFiniteNumber(entry.autoPlanRemainingCap)){
+        parts.push(`預估餘額${formatAutoInteger(entry.autoPlanRemainingCap)}點`);
+      }
+      const freq = (entry.autoFrequencyText || '').trim();
+      if(freq && parts.indexOf(freq) === -1){
+        parts.push(freq);
+      }
+      return parts.join('，');
+    }
+
+    function applyAutomaticPlanning(){
+      updateDayCareAutoPlan();
+    }
+
+    function updateDayCareAutoPlan(){
+      const cmsLevel = getCmsLevel();
+      const cap = getCmsMonthlyCap(cmsLevel);
+      const dayCareEntries = getSelectedDayCareEntries();
+      const dayCareCode = dayCareEntries
+        .map(entry => entry && entry.code ? entry.code : '')
+        .find(code => code.indexOf('BB') === 0);
+      const dayCareEntry = dayCareCode ? ensurePlanEntry(dayCareCode) : null;
+      const transportEntry = servicePlanState['BD03'] ? servicePlanState['BD03'] : null;
+      const dayCareItem = dayCareEntry ? DAY_CARE_MAP[dayCareEntry.code] : null;
+      const dayCareRate = dayCareEntry ? getServiceRate(dayCareEntry.code) : null;
+      const transportRate = transportEntry ? getServiceRate('BD03') : null;
+      const roundTrips = SERVICE_CATALOG && SERVICE_CATALOG.transportRoundTrips ? SERVICE_CATALOG.transportRoundTrips : 2;
+      const transportItem = transportEntry ? lookupServiceItem('BD03') : null;
+      const weeksPerMonth = 4.5; // 依據長照給付計算基準，平均每月約 4.5 週。
+
+      if(dayCareEntry){
+        applyAutoUsage(dayCareEntry, dayCareItem ? dayCareItem.short : '');
+      }
+      if(transportEntry){
+        applyAutoUsage(transportEntry, transportItem ? transportItem.short : '');
+      }
+
+      if(!dayCareEntry || !dayCareItem || !dayCareRate){
+        if(dayCareEntry) clearAutoPlan(dayCareEntry);
+        if(transportEntry) clearAutoPlan(transportEntry);
+        return;
+      }
+
+      const basePerVisit = Number(dayCareRate.price) || 0;
+      const transportPerVisit = transportEntry && transportRate ? (Number(transportRate.price) || 0) * roundTrips : 0;
+      const totalPerVisit = basePerVisit + transportPerVisit;
+
+      if(cap <= 0 || totalPerVisit <= 0){
+        clearAutoPlan(dayCareEntry);
+        if(transportEntry) clearAutoPlan(transportEntry);
+        dayCareEntry.autoFrequencyText = '請先設定 CMS 等級與可用額度。';
+        if(transportEntry) transportEntry.autoFrequencyText = '待日間照顧額度確認後再安排交通。';
+        return;
+      }
+
+      const monthlyVisits = Math.max(0, Math.floor(cap / totalPerVisit));
+      const weeklyVisits = monthlyVisits > 0 ? (monthlyVisits / weeksPerMonth) : 0;
+      const dayCareUsage = basePerVisit * monthlyVisits;
+      const transportUsage = transportPerVisit * monthlyVisits;
+      const remaining = cap - dayCareUsage - transportUsage;
+
+      updateEntryAutoValues(dayCareEntry, {
+        monthlyVisits: monthlyVisits,
+        weeklyVisits: weeklyVisits,
+        monthlyUnits: dayCareUsage,
+        remaining: remaining,
+        unitLabel: '次'
+      });
+      dayCareEntry.autoFrequencyText = monthlyVisits > 0
+        ? `預估每月${monthlyVisits}次（約每週${formatAutoDecimal(weeklyVisits)}次）`
+        : '額度不足以安排日間照顧，請調整服務組合。';
+
+      if(transportEntry){
+        const transportMonthly = monthlyVisits * roundTrips;
+        const transportWeekly = monthlyVisits > 0 ? (transportMonthly / weeksPerMonth) : 0;
+        updateEntryAutoValues(transportEntry, {
+          monthlyVisits: transportMonthly,
+          weeklyVisits: transportWeekly,
+          monthlyUnits: transportUsage,
+          remaining: remaining,
+          unitLabel: '趟'
+        });
+        transportEntry.autoFrequencyText = monthlyVisits > 0
+          ? `搭配日間照顧往返${roundTrips}趟／次，月計約${formatAutoInteger(transportEntry.autoPlanMonthlyVisits)}趟（每週約${formatAutoDecimal(transportWeekly)}趟）`
+          : '待日間照顧額度確認後再安排交通。';
+      }else if(monthlyVisits > 0 && transportRate){
+        dayCareEntry.autoFrequencyText += '（如需交通接送，請勾選 BD03 以納入額度）';
+      }
     }
 
     function createPlanInput(entry, field, label, opts){
@@ -3975,6 +4246,8 @@
       }else if(field === 'weeklyFreq' || field === 'unitPerVisit' || field === 'monthlyExtraVisits' || field === 'monthlyExtraUnit' || field === 'monthlyExtraDesc'){
         updatePlanMonthlyComputation(code);
         skipPreview=true;
+      }else if(field === 'usage'){
+        entry.usageManual = !!((entry.usage || '').trim() && entry.usage !== entry.autoUsageText);
       }
       if(!skipPreview) buildApprovalPlanPreview();
     }
@@ -4113,6 +4386,28 @@
       if(!entry) return '';
       const category = (entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
       const lines = [];
+      if(category === 'B'){
+        const hasAuto = isFiniteNumber(entry.autoPlanMonthlyVisits) || isFiniteNumber(entry.autoPlanMonthlyUnits);
+        if(hasAuto){
+          if(isFiniteNumber(entry.autoPlanMonthlyVisits)){
+            const unitLabel = entry.autoPlanUnitLabel || (entry.code === 'BD03' ? '趟' : '次');
+            const monthly = formatAutoInteger(entry.autoPlanMonthlyVisits);
+            if(isFiniteNumber(entry.autoPlanWeeklyVisits)){
+              const weeklyUnit = unitLabel === '趟' ? '趟' : '次';
+              lines.push(`每月約${monthly}${unitLabel}（每週約${formatAutoDecimal(entry.autoPlanWeeklyVisits)}${weeklyUnit}）`);
+            }else{
+              lines.push(`每月約${monthly}${unitLabel}`);
+            }
+          }
+          if(isFiniteNumber(entry.autoPlanMonthlyUnits)){
+            lines.push(`預估耗用${formatAutoInteger(entry.autoPlanMonthlyUnits)}點`);
+          }
+          if(isFiniteNumber(entry.autoPlanRemainingCap)){
+            lines.push(`預估餘額${formatAutoInteger(entry.autoPlanRemainingCap)}點`);
+          }
+          if(lines.length) return lines.join('\n');
+        }
+      }
       if(category === 'EF'){
         if(entry.original) lines.push(`原額度：${entry.original}`);
         if(entry.planned)  lines.push(`核定：${entry.planned}`);
@@ -4136,9 +4431,13 @@
       if(!entry) return '';
       const lines = [];
       if(entry.period) lines.push(`期間：${entry.period}`);
-      const freq = entry.frequency || entry.autoFrequencyText;
+      const freq = entry.frequencyManual ? entry.frequency : (entry.autoFrequencyText || entry.frequency);
       if(freq) lines.push(freq);
-      if(entry.usage) lines.push(entry.usage);
+      if(entry.usage){
+        lines.push(entry.usage);
+      }else if(entry.autoUsageText){
+        lines.push(entry.autoUsageText);
+      }
       if(entry.extra) lines.push(entry.extra);
       return lines.join('\n');
     }
@@ -4231,7 +4530,50 @@
           entryBox.appendChild(header);
           const grid=document.createElement('div');
           grid.className='plan-entry-grid';
-          if(cat==='B' || cat==='D'){
+          if(cat==='B'){
+            if(entry.code && entry.code.indexOf('BB') === 0){
+              const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+              grid.appendChild(vendorField.wrap);
+              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○日照中心'});
+              vendorNameField.wrap.dataset.planVendorName=entry.code;
+              grid.appendChild(vendorNameField.wrap);
+              appendAutoSummaryField(grid, entry, '預估使用概況');
+              const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'系統已提供建議內容，可依個案調整',className:'full'});
+              grid.appendChild(usageField.wrap);
+            }else if(entry.code === 'BD03'){
+              const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+              grid.appendChild(vendorField.wrap);
+              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○交通車'});
+              vendorNameField.wrap.dataset.planVendorName=entry.code;
+              grid.appendChild(vendorNameField.wrap);
+              appendAutoSummaryField(grid, entry, '預估交通安排');
+              const usageField=createPlanInput(entry,'usage','交通使用方式',{as:'textarea',placeholder:'系統已提供建議內容，可再補充乘車安排',className:'full'});
+              grid.appendChild(usageField.wrap);
+            }else{
+              const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+              grid.appendChild(vendorField.wrap);
+              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
+              vendorNameField.wrap.dataset.planVendorName=entry.code;
+              grid.appendChild(vendorNameField.wrap);
+              const weeklyField=createPlanInput(entry,'weeklyFreq','每週次數',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+              grid.appendChild(weeklyField.wrap);
+              const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+              grid.appendChild(unitVisitField.wrap);
+              const extraVisitField=createPlanInput(entry,'monthlyExtraVisits','每月額外次數',{type:'number',attrs:{step:'1',min:'0',inputmode:'decimal'}});
+              grid.appendChild(extraVisitField.wrap);
+              const extraUnitField=createPlanInput(entry,'monthlyExtraUnit','額外每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+              grid.appendChild(extraUnitField.wrap);
+              const extraDescField=createPlanInput(entry,'monthlyExtraDesc','額外使用說明',{placeholder:'例：搭配陪同就醫使用'});
+              extraDescField.wrap.classList.add('full');
+              grid.appendChild(extraDescField.wrap);
+              const unitField=createPlanInput(entry,'monthlyUnits','月單位',{placeholder:'例：32',attrs:{inputmode:'decimal'}});
+              grid.appendChild(unitField.wrap);
+              const freqField=createPlanInput(entry,'frequency','頻率／計算說明',{as:'textarea',placeholder:'系統依數值自動產生，可再補充',className:'full'});
+              grid.appendChild(freqField.wrap);
+              const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+              grid.appendChild(usageField.wrap);
+            }
+          }else if(cat==='D'){
             const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
             grid.appendChild(vendorField.wrap);
             const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
@@ -4305,10 +4647,31 @@
           entryBox.appendChild(grid);
           section.appendChild(entryBox);
           updatePlanVendorVisibility(entry.code);
-          updatePlanMonthlyComputation(entry.code, {skipPreview:true});
+          if(!(entry.code && entry.code.indexOf('BB') === 0) && entry.code !== 'BD03'){
+            updatePlanMonthlyComputation(entry.code, {skipPreview:true});
+          }
         });
         host.appendChild(section);
       });
+    }
+
+    function appendAutoSummaryField(grid, entry, label){
+      const wrap=document.createElement('div');
+      wrap.className='plan-field full auto-summary';
+      const lab=document.createElement('label');
+      lab.textContent=label;
+      wrap.appendChild(lab);
+      const box=document.createElement('div');
+      box.className='auto-summary-box';
+      const summary = buildAutoSummaryText(entry);
+      if(summary){
+        box.textContent=summary;
+      }else{
+        box.textContent='尚未計算，請確認已設定 CMS 等級與服務項目。';
+        box.classList.add('empty');
+      }
+      wrap.appendChild(box);
+      grid.appendChild(wrap);
     }
 
     function getPlanEntriesByCategory(cat){
@@ -4329,15 +4692,27 @@
       }else{
         vendor = '（請填輪派或指定單位）';
       }
-      const monthly = entry.monthlyUnits ? `*${entry.monthlyUnits}` : '*（請填月單位）';
-      const parts=[];
-      if(entry.frequency) parts.push(entry.frequency);
-      if(entry.usage) parts.push(entry.usage);
-      let text=`${idx}.${entry.code}[${entry.name || ''}]${monthly}${vendor}`;
-      if(parts.length){
-        text += `，${parts.join('；')}`;
+      const summary = buildAutoSummaryText(entry);
+      const usageText = (entry.usage || entry.autoUsageText || '').trim();
+      let text=`${idx}.${entry.code}[${entry.name || ''}]${vendor}`;
+      if(summary){
+        text += `，${summary}`;
+        if(usageText){
+          text += `；${usageText}`;
+        }else{
+          text += '；請補充使用方式或案主期待。';
+        }
       }else{
-        text += '，請補充頻率、計算說明及使用方式。';
+        const monthly = entry.monthlyUnits ? `*${entry.monthlyUnits}` : '*（請填月單位）';
+        const parts=[];
+        if(entry.frequency) parts.push(entry.frequency);
+        if(usageText) parts.push(usageText);
+        text=`${idx}.${entry.code}[${entry.name || ''}]${monthly}${vendor}`;
+        if(parts.length){
+          text += `，${parts.join('；')}`;
+        }else{
+          text += '，請補充頻率、計算說明及使用方式。';
+        }
       }
       if(!text.endsWith('。')) text += '。';
       return text;
@@ -4575,7 +4950,8 @@
       document.querySelectorAll('#cmsLevelGroup button').forEach(btn=>{
         btn.dataset.active = btn.dataset.level === value ? '1' : '0';
       });
-      buildApprovalPlanPreview();
+      refreshDayCareAvailability();
+      syncPlanStateWithSelections();
     }
 
     function getCmsLevel(){
@@ -4590,6 +4966,22 @@
       });
       const current = (document.getElementById('cmsLevelValue')?.value || '').trim();
       if(current) setCmsLevel(current);
+    }
+
+    function loadServiceCatalog(){
+      google.script.run.withSuccessHandler(data=>{
+        const nextCatalog = JSON.parse(JSON.stringify(DEFAULT_SERVICE_CATALOG));
+        if(data && typeof data === 'object'){
+          if(data.needLevelCaps) nextCatalog.needLevelCaps = data.needLevelCaps;
+          if(data.dayCareRequirements) nextCatalog.dayCareRequirements = data.dayCareRequirements;
+          if(data.dayCareLevels) nextCatalog.dayCareLevels = data.dayCareLevels;
+          if(data.serviceRates) nextCatalog.serviceRates = data.serviceRates;
+          if(typeof data.transportRoundTrips === 'number') nextCatalog.transportRoundTrips = data.transportRoundTrips;
+        }
+        SERVICE_CATALOG = nextCatalog;
+        refreshDayCareAvailability();
+        syncPlanStateWithSelections();
+      }).getServiceCatalog();
     }
 
     function onHomeCareToggle(box){
@@ -4621,7 +5013,10 @@
       }
     }
 
-    function onDayCareToggle(){
+    function onDayCareToggle(box){
+      if(box && box.checked){
+        ensureSingleDayCareSelection(box);
+      }
       updateCareServicePhrases();
       syncPlanStateWithSelections();
     }
@@ -5494,6 +5889,7 @@
       loadManagers();
       loadConsultants();
       initCmsLevelButtons();
+      loadServiceCatalog();
 
       // S1
       renderS1(); initSection1State();
