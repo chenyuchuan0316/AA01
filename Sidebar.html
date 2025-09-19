@@ -152,6 +152,38 @@
     button[data-ic="plus"]::before{ content:"+"; margin-right:.25em; font-weight:900; }
     button[data-ic="minus"]::before{ content:"–"; margin-right:.25em; font-weight:900; }
 
+    .page-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+    .page-tabs button{
+      height:44px;
+      padding:0 18px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--label);
+      font-weight:600;
+      cursor:pointer;
+      transition:background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .page-tabs button.active{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+    .page-section{ display:none; }
+    .page-section[data-active="1"]{ display:block; }
+
+    .summary-section{ margin-bottom:20px; }
+    .summary-title{ font-weight:700; color:var(--title); margin-bottom:8px; }
+    .summary-table-wrapper{ overflow-x:auto; }
+    .summary-table{ width:100%; border-collapse:collapse; min-width:600px; }
+    .summary-table th, .summary-table td{
+      border:1px solid var(--border);
+      padding:8px 10px;
+      text-align:left;
+      vertical-align:top;
+    }
+    .summary-table th{ background:#eef2ff; color:#1f2937; font-weight:700; }
+
     .cms-level-group{
       display:flex;
       gap:8px;
@@ -371,6 +403,13 @@
 
 <body>
 
+  <div class="page-tabs" id="pageTabs">
+    <button type="button" data-page="page1" class="active">頁面一：計畫書</button>
+    <button type="button" data-page="page2">頁面二：附件一（計畫執行規劃）</button>
+    <button type="button" data-page="page3">頁面三：附件二（服務明細）</button>
+  </div>
+
+  <div class="page-section" data-page="page1" data-active="1">
   <!-- 基本資訊 -->
   <div class="group">
     <label>★基本資訊</label>
@@ -1390,6 +1429,9 @@
     </div></div>
   </div>
 
+  </div>
+
+  <div class="page-section" data-page="page2">
   <div class="group">
     <label>計畫執行規劃</label>
     <div class="hint">請針對核定之服務填寫頻率、使用方式或案主期待，系統將依格式預覽全文。</div>
@@ -1416,9 +1458,21 @@
         <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
       </div>
     </div>
-    <div class="hr"></div>
+  </div>
+  </div>
+
+  <div class="page-section" data-page="page3">
+  <div class="group">
+    <label>附件預覽</label>
     <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
     <textarea id="plan_text" class="plan-preview" readonly></textarea>
+    <div class="hr"></div>
+    <div class="summary-section">
+      <div class="summary-title">服務計畫明細預覽（附件二）</div>
+      <div id="planSummaryPreview" class="summary-table-wrapper">
+        <div class="hint">尚未選擇服務項目。</div>
+      </div>
+    </div>
   </div>
 
   <!-- 動作 -->
@@ -1427,6 +1481,7 @@
       <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
     </div>
     <div id="msg" class="hint" style="margin-top:8px;"></div>
+  </div>
   </div>
 
   <script>
@@ -1460,6 +1515,16 @@
           box.style.display='none';
         }
       }
+    }
+
+    function escapeHtml(str){
+      return String(str || '').replace(/[&<>"']/g, function(ch){
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch] || ch;
+      });
+    }
+    function nl2br(str){
+      if(!str) return '';
+      return escapeHtml(str).replace(/\n/g,'<br>');
     }
 
     /* ===== 個管師名單 ===== */
@@ -4035,6 +4100,99 @@
       }
     }
 
+    function formatSummaryVendorName(entry){
+      if(!entry) return '';
+      const mode = (entry.vendorMode || '').trim();
+      if(mode === '指定'){
+        return entry.vendorName || '（請填單位）';
+      }
+      return entry.vendorName || '';
+    }
+
+    function formatSummaryAmount(entry){
+      if(!entry) return '';
+      const category = (entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
+      const lines = [];
+      if(category === 'EF'){
+        if(entry.original) lines.push(`原額度：${entry.original}`);
+        if(entry.planned)  lines.push(`核定：${entry.planned}`);
+        if(entry.remaining) lines.push(`餘額：${entry.remaining}`);
+      }else if(category === 'G' || category === 'SC'){
+        if(entry.planned)  lines.push(`規劃：${entry.planned}`);
+        if(entry.remaining) lines.push(`餘額：${entry.remaining}`);
+      }else if(category === 'MEAL'){
+        if(entry.mealsPerDay) lines.push(`每日${entry.mealsPerDay}餐`);
+        if(entry.mealType) lines.push(entry.mealType);
+      }else{
+        const monthly = entry.monthlyUnits || entry.monthlyUnitsComputed;
+        if(monthly) lines.push(`${monthly} 單位/月`);
+        if(entry.monthlyExtraDesc) lines.push(entry.monthlyExtraDesc);
+      }
+      if(!lines.length && entry.planned) lines.push(entry.planned);
+      return lines.join('\n');
+    }
+
+    function formatSummaryUsage(entry){
+      if(!entry) return '';
+      const lines = [];
+      if(entry.period) lines.push(`期間：${entry.period}`);
+      const freq = entry.frequency || entry.autoFrequencyText;
+      if(freq) lines.push(freq);
+      if(entry.usage) lines.push(entry.usage);
+      if(entry.extra) lines.push(entry.extra);
+      return lines.join('\n');
+    }
+
+    function buildPlanSummaryPreview(){
+      const host=document.getElementById('planSummaryPreview');
+      if(!host) return;
+      const entries=Object.values(servicePlanState);
+      if(!entries.length){
+        host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
+        return;
+      }
+      const grouped={};
+      entries.forEach(entry=>{
+        if(!entry) return;
+        const cat=(entry.category || determineServiceCategory(entry.code) || 'OTHER').toUpperCase();
+        if(!grouped[cat]) grouped[cat]=[];
+        grouped[cat].push(entry);
+      });
+      const order=['B','C','D','EF','G','SC','MEAL','OTHER'];
+      let html='';
+      order.forEach(cat=>{
+        const list=grouped[cat];
+        if(!list || !list.length) return;
+        html += `<div class="summary-section"><div class="summary-title">${escapeHtml(planCategoryLabel(cat))}</div>`;
+        html += '<table class="summary-table"><thead><tr><th>服務代碼</th><th>服務名稱</th><th>承接</th><th>指定單位</th><th>額度／單位</th><th>使用頻率／說明</th></tr></thead><tbody>';
+        list.sort((a,b)=>{
+          const ac=(a && a.code) ? a.code : '';
+          const bc=(b && b.code) ? b.code : '';
+          return ac.localeCompare(bc);
+        });
+        list.forEach(entry=>{
+          const vendorMode = entry && entry.vendorMode ? entry.vendorMode : '輪派';
+          const vendorName = formatSummaryVendorName(entry);
+          const amount = formatSummaryAmount(entry);
+          const usage = formatSummaryUsage(entry);
+          html += '<tr>';
+          html += `<td>${escapeHtml(entry && entry.code ? entry.code : '')}</td>`;
+          html += `<td>${escapeHtml(entry && entry.name ? entry.name : '')}</td>`;
+          html += `<td>${escapeHtml(vendorMode)}</td>`;
+          html += `<td>${escapeHtml(vendorName)}</td>`;
+          html += `<td>${amount ? nl2br(amount) : '—'}</td>`;
+          html += `<td>${usage ? nl2br(usage) : '—'}</td>`;
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+      });
+      if(!html){
+        host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
+        return;
+      }
+      host.innerHTML = html;
+    }
+
     function renderServicePlanEditor(){
       const host=document.getElementById('planEditor');
       if(!host) return;
@@ -4392,6 +4550,7 @@
       const manager=(document.getElementById('caseManagerName')?.value || '').trim() || '（請填寫個管師姓名）';
       lines.push(`個案管理員：${manager}`);
       box.value = lines.join('\n');
+      buildPlanSummaryPreview();
     }
 
     function serializeServicePlan(){
@@ -5279,6 +5438,27 @@
     }
 
     /* ===== 初始化 ===== */
+    function setActivePage(pageId){
+      const sections=document.querySelectorAll('.page-section');
+      sections.forEach(section=>{
+        const active = section.dataset.page === pageId ? '1' : '0';
+        section.dataset.active = active;
+        section.style.display = active === '1' ? '' : 'none';
+      });
+      document.querySelectorAll('.page-tabs button').forEach(btn=>{
+        btn.classList.toggle('active', btn.dataset.page === pageId);
+      });
+    }
+
+    function initPageTabs(){
+      const tabs=document.querySelectorAll('.page-tabs button');
+      if(!tabs.length) return;
+      tabs.forEach(btn=>{
+        btn.addEventListener('click', ()=>setActivePage(btn.dataset.page));
+      });
+      setActivePage('page1');
+    }
+
     function initSection1State(){
       toggleVisionNotes(); toggleTransportOther(); toggleDhxOther(); toggleMedOther();
       toggleUrineOther('day'); toggleUrineOther('night');
@@ -5304,6 +5484,7 @@
     }
 
     window.addEventListener('load', ()=>{
+      initPageTabs();
       setDateBox('callDate', new Date());
       setDateBox('visitDate', new Date());
       loadManagers();

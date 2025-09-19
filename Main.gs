@@ -71,6 +71,10 @@ function applyAndSave(form){
   // === H1-6 ：六、與照專… ===
   applyH1_MismatchPlan(body, form);
 
+  // === 附件頁 ===
+  applyPlanExecutionPage(body, form);
+  applyPlanServiceSummaryPage(body, form);
+
   doc.saveAndClose();
 
   return {
