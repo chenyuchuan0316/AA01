@@ -35,12 +35,6 @@ function doGet(){
   return buildAppHtmlOutput();
 }
 
-/** AI 潤稿（目前 Stub：原文返回；後續可改為串接實際模型） */
-function polishSection(key, text, context){
-  // 僅允許語句順化（請於串接模型時遵守不得新增事實）
-  return { text: text };
-}
-
 /**
  * 依序處理文件寫入的函式。
  * 使用 Object.freeze 避免部署時遭到意外改動順序。
@@ -92,11 +86,6 @@ function runDocumentWriters(body, form){
 
 /** 主要流程：複製公版 → 依表單寫入 → 依規則命名 → 開啟 */
 function applyAndSave(form){
-  // 一致性潤稿（預留掛鉤；目前不修改 form）
-  if (form.doBatchPolish) {
-    // TODO: 批次潤稿策略（雜湊比對僅處理有變動段落）
-  }
-
   const naming = buildDocumentNaming(form);
   const docContext = createDocumentFromTemplate(naming.fileName);
 
