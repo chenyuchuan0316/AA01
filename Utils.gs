@@ -107,3 +107,11 @@ function appendHeading(body, text, heading){
   }
   return paragraph;
 }
+
+/** 取得表單欄位並轉為去除前後空白的字串 */
+function getTrimmed(form, key){
+  if (!form || typeof key === 'undefined' || key === null) return '';
+  const value = form[key];
+  if (value === undefined || value === null) return '';
+  return String(value).trim();
+}
