@@ -1088,10 +1088,18 @@
           <div id="homeCareWrap" style="display:none; margin-top:8px;">
             <div class="titlebar">
               <label>居家服務項目（多選）</label>
-              <button class="small" type="button" onclick="resetHomeCarePhrases()">重新套用片語</button>
+              <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
             </div>
             <div id="homeCareList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整；如需記錄用量，請於右側欄位輸入數量。</div>
+          </div>
+          <div id="dayCareWrap" style="display:none; margin-top:8px;">
+            <div class="titlebar">
+              <label>日間照顧服務項目（多選）</label>
+              <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
+            </div>
+            <div id="dayCareList" class="home-care-grid"></div>
+            <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
         </div>
 
@@ -3116,6 +3124,45 @@
     ];
     const HOME_CARE_MAP = {};
     HOME_CARE_ITEMS.forEach(item => { HOME_CARE_MAP[item.code] = item; });
+    const DAY_CARE_ITEMS = [
+      {
+        code: 'BD00A',
+        name: '日間照顧（全日）',
+        short: '個案將參與全日型日間照顧服務，接受生活照顧（如更衣、如廁、整潔協助）、健康促進活動（伸展、肌力及平衡訓練）、以及文康休閒（團體遊戲、藝能活動）。同時提供午餐與餐後口腔清潔，協助其建立規律出席習慣，逐步適應團體生活，並減輕主要照顧者的即時照顧壓力。',
+        mid: '個案已能穩定參與全日型日間照顧，每日完成生活照顧與健康促進活動，持續參與社交及文康休閒，促進人際互動與認知參與。服務單位專業人員將定期追蹤健康狀況（如體重、血壓、情緒狀態），適度調整活動內容，並提供家屬諮詢與照護指導。',
+        long: '個案長期持續參加全日型日間照顧，維持生活自理功能與情緒穩定。透過規律健康促進活動延緩功能退化，並藉文康活動支持認知與社交能力。服務單位將建立固定出席與健康追蹤紀錄，並定期提供照護成果報告與家屬回饋，確保服務品質並減輕主要照顧者長期負擔。'
+      },
+      {
+        code: 'BD00B',
+        name: '日間照顧（半日）',
+        short: '個案將參與半日型日間照顧服務，接受生活照顧（如移位、如廁、整潔協助）、基本健康促進（伸展、平衡訓練）、及文康休閒活動。若包含餐食，將協助進食並完成餐後口腔清潔，幫助個案逐步適應半日型服務，並建立基本出席與參與模式。',
+        mid: '個案已能穩定出席半日型日間照顧，持續完成生活照顧與健康促進訓練，並參與社交及文康休閒活動。透過專業人員的陪伴與指導，提升生活節奏感與情緒穩定性，並協助家屬理解日常照護重點。',
+        long: '個案長期持續使用半日型日間照顧，維持生活自理度並延緩功能退化。透過規律健康促進與文康活動，保持身心健康與社交參與。服務單位將定期提供健康與活動參與紀錄，並持續與家屬溝通，支持其長期照護安排。'
+      },
+      {
+        code: 'BD01',
+        name: '社區式協助沐浴',
+        short: '個案將於日間照顧中心或托顧家庭接受協助沐浴服務，包含引導至浴間、協助穿脫衣物、全身淋浴或坐浴（含洗頭）、口腔及臉部清潔，並於沐浴後完成環境整理，以確保基本衛生與安全。',
+        mid: '穩定使用社區式協助沐浴服務，維持規律清潔習慣。服務過程除執行洗浴與頭部清潔外，並持續監測皮膚狀況（如紅腫、壓痕），透過照護人員操作協助減少跌倒風險，同時提升舒適度與自我形象。',
+        long: '長期持續於社區據點完成規律沐浴，保持身體清潔與皮膚健康，並建立穩定的清潔照護流程。透過專業協助降低感染及跌倒風險，提升生活品質與尊嚴，並減輕主要照顧者的負擔。'
+      },
+      {
+        code: 'BD02',
+        name: '社區式晚餐',
+        short: '個案將於日間照顧中心或托顧家庭接受社區式晚餐服務，包括準備適合個別需求的餐點、協助進食或餵食，以及餐後口腔清潔，確保基本營養攝取。',
+        mid: '穩定使用社區式晚餐服務，確保營養攝取均衡並維持適當進食量。餐食提供將依照個案狀況調整（如軟質、低鹽、糖尿病飲食），並落實餐後口腔清潔，以降低嗆咳與感染風險。',
+        long: '長期維持晚餐服務使用，透過專業規劃與協助，確保個案獲得持續且均衡的營養，進而支持身體健康與活動參與。餐食紀錄與口腔清潔紀錄將定期檢核，確保飲食衛教與習慣養成。'
+      },
+      {
+        code: 'BD03',
+        name: '社區式服務交通接送',
+        short: '個案將使用社區式交通接送服務，安全往返住家與日間照顧中心、托顧家庭或小規模多機能據點，以確保能順利參與日間照顧或其他社區服務。',
+        mid: '穩定使用交通接送，確保每次行程安全準點。服務人員將提供上下車協助與必要保護，並持續觀察個案上下車動作與身體狀況，確保安全無跌倒或不適事件。',
+        long: '長期規律使用交通接送，確保個案能穩定參與社區服務，減少因交通不便而放棄活動的情況。透過持續追蹤與紀錄，建立固定路線與服務流程，確保安全率與準點率，並協助家屬降低接送壓力。'
+      }
+    ];
+    const DAY_CARE_MAP = {};
+    DAY_CARE_ITEMS.forEach(item => { DAY_CARE_MAP[item.code] = item; });
     const RISKS = [
       ['被照顧者嚴重情緒/干擾行為','BPSD、自/他傷、攻擊破壞、遊走、妄想、吼叫等'],
       ['高齡照顧者','≥65歲；原住民≥55歲；<18歲應通報'],
@@ -3158,10 +3205,28 @@
       });
     }
 
+    function renderDayCareServices(){
+      const host=document.getElementById('dayCareList');
+      if(!host) return;
+      host.innerHTML='';
+      DAY_CARE_ITEMS.forEach(item=>{
+        const row=document.createElement('div');
+        row.className='home-care-item';
+        row.innerHTML = `
+          <label class="home-care-label">
+            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onDayCareToggle(this)">
+            <span class="home-care-code">${item.code}</span>
+            <span class="home-care-name">[${item.name}]</span>
+          </label>
+        `;
+        host.appendChild(row);
+      });
+    }
+
     function onHomeCareToggle(box){
       const code = box && box.dataset ? box.dataset.code : '';
       toggleHomeCareQuantity(code);
-      updateHomeCarePhrases();
+      updateCareServicePhrases();
     }
 
     function onHomeCareQuantityChange(input){
@@ -3170,8 +3235,12 @@
       if(!code) return;
       const checkbox = document.querySelector(`#homeCareList input[type=checkbox][data-code="${code}"]`);
       if(checkbox && checkbox.checked){
-        updateHomeCarePhrases();
+        updateCareServicePhrases();
       }
+    }
+
+    function onDayCareToggle(){
+      updateCareServicePhrases();
     }
 
     function toggleHomeCareQuantity(code){
@@ -3210,12 +3279,12 @@
         }
       });
     }
-    function resetHomeCarePhrases(){
+    function resetCareServicePhrases(){
       ['short_care','mid_care','long_goal'].forEach(id=>{
         const el=document.getElementById(id);
         if(el) el.dataset.userEdited = 'false';
       });
-      updateHomeCarePhrases();
+      updateCareServicePhrases();
     }
     function getSelectedHomeCareEntries(){
       const rows=[...document.querySelectorAll('#homeCareList .home-care-item')];
@@ -3231,16 +3300,37 @@
       });
       return entries;
     }
+    function getSelectedDayCareEntries(){
+      const rows=[...document.querySelectorAll('#dayCareList .home-care-item')];
+      const entries=[];
+      rows.forEach(row=>{
+        const box=row.querySelector('input[type=checkbox]');
+        if(!box || !box.checked) return;
+        const item=DAY_CARE_MAP[box.value];
+        if(!item) return;
+        entries.push({ code: box.value, item });
+      });
+      return entries;
+    }
     function getSelectedHomeCareCodes(){
       return getSelectedHomeCareEntries().map(entry=>entry.code);
     }
     function isHomeCareSelected(){
       return !!document.querySelector('#sp_formal input[type=checkbox][value="居家服務"]:checked');
     }
-    function updateHomeCarePhrases(){
-      const entries = isHomeCareSelected() ? getSelectedHomeCareEntries() : [];
-      const shortText = entries.map(entry=>formatHomeCareSentence(entry, 'short')).filter(Boolean).join('\n');
-      const midText = entries.map(entry=>formatHomeCareSentence(entry, 'mid')).filter(Boolean).join('\n');
+    function isDayCareSelected(){
+      return !!document.querySelector('#sp_formal input[type=checkbox][value="日間照顧"]:checked');
+    }
+    function getSelectedCareEntries(){
+      let entries=[];
+      if(isHomeCareSelected()) entries = entries.concat(getSelectedHomeCareEntries());
+      if(isDayCareSelected()) entries = entries.concat(getSelectedDayCareEntries());
+      return entries;
+    }
+    function updateCareServicePhrases(){
+      const entries = getSelectedCareEntries();
+      const shortText = entries.map(entry=>formatCareServiceSentence(entry, 'short')).filter(Boolean).join('\n');
+      const midText = entries.map(entry=>formatCareServiceSentence(entry, 'mid')).filter(Boolean).join('\n');
       applyAutoText('short_care', shortText);
       applyAutoText('mid_care', midText);
       buildLongGoal();
@@ -3278,6 +3368,7 @@
       const selected=[...document.querySelectorAll('#sp_formal input[type=checkbox]:checked')].map(b=>b.value);
       const hasCare = selected.includes('居家服務') || selected.includes('日間照顧');
       const hasHomeCare = selected.includes('居家服務');
+      const hasDayCare = selected.includes('日間照顧');
       const hasProf = selected.includes('專業服務');
       const hasCar  = selected.includes('交通服務');
       const hasResp = selected.includes('喘息服務');
@@ -3290,11 +3381,15 @@
       setVisible('short_access_wrap', hasAcc); setVisible('mid_access_wrap', hasAcc);
       setVisible('short_meal_wrap', hasMeal);  setVisible('mid_meal_wrap', hasMeal);
       setVisible('homeCareWrap', hasHomeCare);
+      setVisible('dayCareWrap', hasDayCare);
       if(!hasHomeCare){
         [...document.querySelectorAll('#homeCareList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
         [...document.querySelectorAll('#homeCareList .home-care-qty')].forEach(inp=>{ inp.value=''; inp.style.display='none'; });
       }
-      updateHomeCarePhrases();
+      if(!hasDayCare){
+        [...document.querySelectorAll('#dayCareList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+      }
+      updateCareServicePhrases();
     }
     function setVisible(id,on){ const el=document.getElementById(id); if(el) el.style.display = on? '' : 'none'; }
 
@@ -3493,10 +3588,10 @@
       return [...document.querySelectorAll('#problemList input[type=checkbox]')].filter(b=>b.checked).map(b=>parseInt(b.value,10));
     }
     function buildLongGoal(){
-      const entries = isHomeCareSelected() ? getSelectedHomeCareEntries() : [];
+      const entries = getSelectedCareEntries();
       const sections = [];
 
-      const careLines = entries.map(entry=>formatHomeCareSentence(entry, 'long')).filter(Boolean);
+      const careLines = entries.map(entry=>formatCareServiceSentence(entry, 'long')).filter(Boolean);
       if(careLines.length){
         sections.push('照顧服務：');
         careLines.forEach(line=>sections.push(`- ${line}`));
@@ -3521,7 +3616,7 @@
       buildGoalPreview();
     }
 
-    function formatHomeCareSentence(entry, key){
+    function formatCareServiceSentence(entry, key){
       if(!entry || !entry.item) return '';
       const item = entry.item;
       const desc = item[key] || '';
@@ -3814,8 +3909,9 @@
       document.getElementById('long_goal')?.addEventListener('input', buildGoalPreview);
       renderFormal();
       renderHomeCareServices();
+      renderDayCareServices();
       renderProblems(); limitProblems();
-      updateHomeCarePhrases();
+      updateCareServicePhrases();
       // 非正式資源：名稱→頻率 顯示/隱藏
       bindInfNameToFreq('pt');
       bindInfNameToFreq('nb');
