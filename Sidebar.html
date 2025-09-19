@@ -152,6 +152,23 @@
     button[data-ic="plus"]::before{ content:"+"; margin-right:.25em; font-weight:900; }
     button[data-ic="minus"]::before{ content:"–"; margin-right:.25em; font-weight:900; }
 
+    .cms-level-group{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .cms-level-group button{
+      min-width:54px;
+      height:var(--h-button-sm);
+      padding:0 16px;
+      border-radius:999px;
+    }
+    .cms-level-group button[data-active="1"]{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+
     .location-toolbar{
       display:flex;
       align-items:center;
@@ -192,6 +209,62 @@
       font-weight:600;
     }
     @media (pointer:coarse){ :root{ --checkbox:32px; } } /* 觸控設備放大到 32px */
+
+    .plan-editor{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      margin-top:12px;
+    }
+    .plan-category{
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      background:#fff;
+      padding:16px;
+    }
+    .plan-category-title{
+      font-weight:700;
+      font-size:1.05rem;
+      color:var(--title);
+      margin-bottom:12px;
+    }
+    .plan-entry{
+      border:1px dashed var(--border);
+      border-radius:var(--radius);
+      padding:12px;
+      background:var(--card-alt);
+    }
+    .plan-entry + .plan-entry{ margin-top:12px; }
+    .plan-entry-header{
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    .plan-entry-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+      gap:12px;
+      align-items:start;
+    }
+    .plan-entry-grid textarea,
+    .plan-entry-grid .full{ grid-column:1/-1; }
+    .plan-meta{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+    .plan-meta textarea{ min-height:96px; }
+    .plan-preview{
+      width:100%;
+      min-height:220px;
+      padding:16px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#f7f9fc;
+      font-size:.95rem;
+      line-height:1.6;
+      box-sizing:border-box;
+      white-space:pre-wrap;
+    }
 
     .auto-hint{
       display:flex;
@@ -322,6 +395,21 @@
         <label>照專姓名</label>
         <select id="consultName">
         </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>CMS 等級</label>
+        <div id="cmsLevelGroup" class="cms-level-group">
+          <button type="button" data-level="2">2</button>
+          <button type="button" data-level="3">3</button>
+          <button type="button" data-level="4">4</button>
+          <button type="button" data-level="5">5</button>
+          <button type="button" data-level="6">6</button>
+          <button type="button" data-level="7">7</button>
+          <button type="button" data-level="8">8</button>
+        </div>
+        <input type="hidden" id="cmsLevelValue" value="">
       </div>
     </div>
   </div>
@@ -1302,6 +1390,37 @@
     </div></div>
   </div>
 
+  <div class="group">
+    <label>計畫執行規劃</label>
+    <div class="hint">請針對核定之服務填寫頻率、使用方式或案主期待，系統將依格式預覽全文。</div>
+    <div id="planEditor" class="plan-editor"></div>
+    <div class="plan-meta">
+      <div>
+        <label>轉介資源補充（選填）</label>
+        <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
+      </div>
+      <div>
+        <label>巷弄長照站資訊（例：站名／地址／電話／距離）</label>
+        <textarea id="plan_station_info" placeholder="例：○○巷弄長照站（地址，距離1.2公里，電話0000-000000）"></textarea>
+      </div>
+      <div>
+        <label>巷弄長照站意願</label>
+        <select id="plan_station_willingness">
+          <option value="">—請選擇—</option>
+          <option value="有意願">有意願</option>
+          <option value="無意願">無意願</option>
+        </select>
+      </div>
+      <div>
+        <label>緊急救援服務說明</label>
+        <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
+    <textarea id="plan_text" class="plan-preview" readonly></textarea>
+  </div>
+
   <!-- 動作 -->
   <div class="group">
     <div class="btnbar">
@@ -1349,6 +1468,7 @@
       google.script.run.withSuccessHandler(list=>{
         const sel=document.getElementById('caseManagerName'); sel.innerHTML='';
         (list && list.length? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);});
+        buildApprovalPlanPreview();
       }).getCaseManagersByUnit(unit);
     }
 
@@ -3536,12 +3656,704 @@
         `;
         host.appendChild(row);
       });
+
+
+    const servicePlanState = {};
+    const planMetaState = {
+      referralExtra: '',
+      stationInfo: '',
+      stationWillingness: '',
+      emergencyNote: ''
+    };
+
+    function determineServiceCategory(code){
+      if(!code) return '';
+      if(code.startsWith('SC')) return 'SC';
+      if(code.startsWith('OT')) return 'MEAL';
+      if(code.startsWith('DA')) return 'D';
+      const first = code.charAt(0);
+      if(first === 'B') return 'B';
+      if(first === 'C') return 'C';
+      if(first === 'D') return 'D';
+      if(first === 'E' || first === 'F') return 'EF';
+      if(first === 'G') return 'G';
+      return '';
+    }
+
+    function lookupServiceItem(code){
+      return HOME_CARE_MAP[code] || DAY_CARE_MAP[code] || PROFESSIONAL_SERVICE_MAP[code] ||
+        TRANSPORT_SERVICE_MAP[code] || RESPITE_SERVICE_MAP[code] || MEAL_SERVICE_MAP[code] || null;
+    }
+
+    function ensurePlanEntry(code, initialMonthlyUnits){
+      if(!code) return null;
+      if(!servicePlanState[code]){
+        const item = lookupServiceItem(code);
+        servicePlanState[code] = {
+          code: code,
+          name: item ? (item.name || '') : '',
+          category: determineServiceCategory(code),
+          vendorMode: '輪派',
+          vendorName: '',
+          monthlyUnits: '',
+          monthlyUnitsComputed: '',
+          autoMonthlyUnits: '',
+          monthlyUnitsManual: false,
+          weeklyFreq: '',
+          unitPerVisit: '',
+          monthlyExtraVisits: '',
+          monthlyExtraUnit: '',
+          monthlyExtraDesc: '',
+          frequency: '',
+          autoFrequencyText: '',
+          frequencyManual: false,
+          usage: '',
+          extra: '',
+          period: '',
+          planned: '',
+          remaining: '',
+          original: '',
+          mealsPerDay: '',
+          mealType: ''
+        };
+      }
+      if(initialMonthlyUnits && !servicePlanState[code].monthlyUnits){
+        servicePlanState[code].monthlyUnits = initialMonthlyUnits;
+        servicePlanState[code].monthlyUnitsManual = true;
+        servicePlanState[code].autoMonthlyUnits = null;
+      }
+      return servicePlanState[code];
+    }
+
+    function removePlanEntry(code){
+      if(servicePlanState[code]) delete servicePlanState[code];
+    }
+
+    function getAllSelectedServiceCodes(){
+      const codes = new Set();
+      document.querySelectorAll('#homeCareList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
+      document.querySelectorAll('#dayCareList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
+      document.querySelectorAll('#profServiceList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
+      document.querySelectorAll('#transportServiceList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
+      document.querySelectorAll('#respServiceList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
+      document.querySelectorAll('#mealServiceList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
+      return Array.from(codes);
+    }
+
+    function syncPlanStateWithSelections(){
+      const selected = new Set(getAllSelectedServiceCodes());
+      Object.keys(servicePlanState).forEach(code=>{
+        if(!selected.has(code)) delete servicePlanState[code];
+      });
+      selected.forEach(code=>{
+        let initial='';
+        if(code.startsWith('BA') || code.startsWith('BD')){
+          const qtyInput=document.querySelector(`#homeCareList .home-care-qty[data-code="${code}"]`);
+          if(qtyInput && qtyInput.value.trim()) initial = qtyInput.value.trim();
+        }
+        ensurePlanEntry(code, initial);
+      });
+      renderServicePlanEditor();
+      buildApprovalPlanPreview();
+    }
+
+    function createPlanInput(entry, field, label, opts){
+      opts = opts || {};
+      const wrap=document.createElement('div');
+      wrap.className='plan-field' + (opts.className ? ' '+opts.className : '');
+      const lab=document.createElement('label');
+      lab.textContent=label;
+      wrap.appendChild(lab);
+      let input;
+      if(opts.as === 'textarea'){
+        input=document.createElement('textarea');
+        input.value = entry[field] || '';
+      }else if(opts.as === 'select'){
+        input=document.createElement('select');
+        (opts.options || []).forEach(opt=>{
+          const option=document.createElement('option');
+          option.value = opt.value;
+          option.textContent = opt.label;
+          input.appendChild(option);
+        });
+        input.value = entry[field] || (opts.defaultValue || (opts.options && opts.options[0] ? opts.options[0].value : ''));
+      }else{
+        input=document.createElement('input');
+        input.type = opts.type || 'text';
+        if(opts.attrs){
+          Object.keys(opts.attrs).forEach(key=> input.setAttribute(key, opts.attrs[key]));
+        }
+        input.value = entry[field] || '';
+      }
+      if(opts.placeholder) input.placeholder = opts.placeholder;
+      input.dataset.planCode = entry.code;
+      input.dataset.planField = field;
+      input.addEventListener(opts.as === 'select' ? 'change' : 'input', onPlanFieldChange);
+      wrap.appendChild(input);
+      return {wrap, input};
+    }
+
+    function onPlanFieldChange(evt){
+      const field = evt.target.dataset.planField;
+      const code = evt.target.dataset.planCode;
+      if(!field || !code) return;
+      const entry = servicePlanState[code];
+      if(!entry) return;
+      entry[field] = evt.target.value;
+      let skipPreview=false;
+      if(field === 'vendorMode'){
+        updatePlanVendorVisibility(code);
+      }else if(field === 'monthlyUnits'){
+        if((entry[field]||'').trim()){
+          entry.monthlyUnitsManual = true;
+          entry.autoMonthlyUnits = null;
+        }else{
+          entry.monthlyUnitsManual = false;
+          entry.autoMonthlyUnits = '';
+          updatePlanMonthlyComputation(code);
+          skipPreview=true;
+        }
+      }else if(field === 'frequency'){
+        if((entry[field]||'').trim()){
+          entry.frequencyManual = true;
+        }else{
+          entry.frequencyManual = false;
+          entry.autoFrequencyText = '';
+          updatePlanMonthlyComputation(code);
+          skipPreview=true;
+        }
+      }else if(field === 'weeklyFreq' || field === 'unitPerVisit' || field === 'monthlyExtraVisits' || field === 'monthlyExtraUnit' || field === 'monthlyExtraDesc'){
+        updatePlanMonthlyComputation(code);
+        skipPreview=true;
+      }
+      if(!skipPreview) buildApprovalPlanPreview();
+    }
+
+    function getPlanFieldElement(code, field){
+      return document.querySelector(`[data-plan-code="${code}"][data-plan-field="${field}"]`);
+    }
+
+    function parsePlanNumber(value){
+      if(value === undefined || value === null) return 0;
+      const num=parseFloat(String(value).replace(/[^0-9\-\.]/g,''));
+      return isNaN(num) ? 0 : num;
+    }
+
+    function formatPlanNumber(value){
+      if(value === undefined || value === null) return '';
+      const num = typeof value === 'number' ? value : parseFloat(value);
+      if(!isFinite(num)) return '';
+      const fixed = Math.round(num * 100) / 100;
+      if(Math.abs(fixed - Math.round(fixed)) < 1e-6) return String(Math.round(fixed));
+      return fixed.toFixed(2).replace(/\.00$/, '').replace(/0$/, '');
+    }
+
+    function updatePlanMonthlyComputation(code, opts){
+      const entry = servicePlanState[code];
+      if(!entry) return;
+      const weekly = parsePlanNumber(entry.weeklyFreq);
+      const perVisit = parsePlanNumber(entry.unitPerVisit);
+      const extraVisits = parsePlanNumber(entry.monthlyExtraVisits);
+      let extraUnit = parsePlanNumber(entry.monthlyExtraUnit);
+      if(extraVisits > 0 && (!entry.monthlyExtraUnit || !entry.monthlyExtraUnit.trim()) && perVisit > 0){
+        extraUnit = perVisit;
+        entry.monthlyExtraUnit = formatPlanNumber(perVisit);
+        const extraUnitInput = getPlanFieldElement(code, 'monthlyExtraUnit');
+        if(extraUnitInput && extraUnitInput !== document.activeElement){
+          extraUnitInput.value = formatPlanNumber(perVisit);
+        }
+      }
+      const baseUnits = weekly > 0 && perVisit > 0 ? weekly * perVisit * 4.5 : 0;
+      const extraUnits = extraVisits > 0 && extraUnit > 0 ? extraVisits * extraUnit : 0;
+      const total = baseUnits + extraUnits;
+      const computed = total > 0 ? String(Math.ceil(total)) : '';
+      entry.monthlyUnitsComputed = computed;
+      if(computed && entry.autoMonthlyUnits !== null){
+        if(!entry.monthlyUnitsManual || !entry.monthlyUnits || entry.monthlyUnits === entry.autoMonthlyUnits || entry.autoMonthlyUnits === ''){
+          entry.monthlyUnits = computed;
+          entry.autoMonthlyUnits = computed;
+          const monthlyInput = getPlanFieldElement(code, 'monthlyUnits');
+          if(monthlyInput && monthlyInput !== document.activeElement){
+            monthlyInput.value = computed;
+          }
+        }else{
+          entry.autoMonthlyUnits = computed;
+        }
+      }
+      if(!computed && entry.autoMonthlyUnits !== null && !entry.monthlyUnitsManual){
+        entry.autoMonthlyUnits = '';
+      }
+
+      const freqParts=[];
+      if(weekly > 0 && perVisit > 0){
+        const baseText = `${formatPlanNumber(weekly)}×${formatPlanNumber(perVisit)}×4.5=${formatPlanNumber(baseUnits)}`;
+        freqParts.push(`每週${formatPlanNumber(weekly)}次，每次${formatPlanNumber(perVisit)}單位（${baseText}）`);
+      }
+      if(extraVisits > 0){
+        const unitEach = extraUnit > 0 ? formatPlanNumber(extraUnit) : '';
+        const extraCalc = extraUnit > 0 ? `（${formatPlanNumber(extraVisits)}×${unitEach}=${formatPlanNumber(extraUnits)}）` : '';
+        let extraDesc = `另每月${formatPlanNumber(extraVisits)}次`;
+        if(unitEach) extraDesc += `，每次${unitEach}單位`;
+        extraDesc += extraCalc;
+        if(entry.monthlyExtraDesc){
+          extraDesc += `，${entry.monthlyExtraDesc}`;
+        }
+        freqParts.push(extraDesc);
+      }else if(entry.monthlyExtraDesc){
+        freqParts.push(entry.monthlyExtraDesc);
+      }
+      if(total > 0){
+        const baseText = formatPlanNumber(baseUnits);
+        const extraText = formatPlanNumber(extraUnits);
+        if(extraUnits > 0){
+          freqParts.push(`共計${baseText}+${extraText}=${computed}（單位/月）`);
+        }else{
+          freqParts.push(`共計${computed || baseText}（單位/月）`);
+        }
+      }
+      const freqText = freqParts.join('，');
+      if(freqText){
+        if(!entry.frequencyManual || !entry.frequency || entry.frequency === entry.autoFrequencyText){
+          entry.frequency = freqText;
+          entry.autoFrequencyText = freqText;
+          const freqInput = getPlanFieldElement(code, 'frequency');
+          if(freqInput && freqInput !== document.activeElement){
+            freqInput.value = freqText;
+          }
+        }else{
+          entry.autoFrequencyText = freqText;
+        }
+      }
+      if(!(opts && opts.skipPreview)){
+        buildApprovalPlanPreview();
+      }
+    }
+
+    function updatePlanVendorVisibility(code){
+      const entry = servicePlanState[code];
+      const show = entry && entry.vendorMode === '指定';
+      document.querySelectorAll(`[data-plan-vendor-name="${code}"]`).forEach(el=>{
+        el.style.display = show ? '' : 'none';
+      });
+    }
+
+    function planCategoryLabel(cat){
+      switch(cat){
+        case 'B': return 'B碼服務（居家／日照）';
+        case 'C': return 'C碼專業服務';
+        case 'D': return 'D碼／交通服務';
+        case 'EF': return 'E.F碼（輔具與無障礙補助）';
+        case 'G': return 'G碼（喘息服務）';
+        case 'SC': return 'SC碼（短期照顧）';
+        case 'MEAL': return '營養餐飲服務（OT碼）';
+        default: return '其他服務';
+      }
+    }
+
+    function renderServicePlanEditor(){
+      const host=document.getElementById('planEditor');
+      if(!host) return;
+      host.innerHTML='';
+      const entries=Object.values(servicePlanState);
+      if(!entries.length){
+        const empty=document.createElement('div');
+        empty.className='hint';
+        empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
+        host.appendChild(empty);
+        return;
+      }
+      const grouped={};
+      entries.forEach(entry=>{
+        const cat=entry.category || 'OTHER';
+        if(!grouped[cat]) grouped[cat]=[];
+        grouped[cat].push(entry);
+      });
+      const order=['B','C','D','EF','G','SC','MEAL','OTHER'];
+      order.forEach(cat=>{
+        const list=grouped[cat];
+        if(!list || !list.length) return;
+        list.sort((a,b)=>a.code.localeCompare(b.code));
+        const section=document.createElement('div');
+        section.className='plan-category';
+        const title=document.createElement('div');
+        title.className='plan-category-title';
+        title.textContent=planCategoryLabel(cat);
+        section.appendChild(title);
+        list.forEach(entry=>{
+          const entryBox=document.createElement('div');
+          entryBox.className='plan-entry';
+          const header=document.createElement('div');
+          header.className='plan-entry-header';
+          header.textContent=`${entry.code}［${entry.name || ''}］`;
+          entryBox.appendChild(header);
+          const grid=document.createElement('div');
+          grid.className='plan-entry-grid';
+          if(cat==='B' || cat==='D'){
+            const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+            grid.appendChild(vendorField.wrap);
+            const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
+            vendorNameField.wrap.dataset.planVendorName=entry.code;
+            grid.appendChild(vendorNameField.wrap);
+            const weeklyField=createPlanInput(entry,'weeklyFreq','每週次數',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+            grid.appendChild(weeklyField.wrap);
+            const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+            grid.appendChild(unitVisitField.wrap);
+            const extraVisitField=createPlanInput(entry,'monthlyExtraVisits','每月額外次數',{type:'number',attrs:{step:'1',min:'0',inputmode:'decimal'}});
+            grid.appendChild(extraVisitField.wrap);
+            const extraUnitField=createPlanInput(entry,'monthlyExtraUnit','額外每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+            grid.appendChild(extraUnitField.wrap);
+            const extraDescField=createPlanInput(entry,'monthlyExtraDesc','額外使用說明',{placeholder:'例：搭配陪同就醫使用'});
+            extraDescField.wrap.classList.add('full');
+            grid.appendChild(extraDescField.wrap);
+            const unitField=createPlanInput(entry,'monthlyUnits','月單位',{placeholder:'例：32',attrs:{inputmode:'decimal'}});
+            grid.appendChild(unitField.wrap);
+            const freqField=createPlanInput(entry,'frequency','頻率／計算說明',{as:'textarea',placeholder:'系統依數值自動產生，可再補充',className:'full'});
+            grid.appendChild(freqField.wrap);
+            const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+            grid.appendChild(usageField.wrap);
+          }else if(cat==='C'){
+            const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+            grid.appendChild(vendorField.wrap);
+            const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○專業服務單位'});
+            vendorNameField.wrap.dataset.planVendorName=entry.code;
+            grid.appendChild(vendorNameField.wrap);
+            const unitField=createPlanInput(entry,'monthlyUnits','月單位（如適用）',{placeholder:'例：8',attrs:{inputmode:'decimal'}});
+            grid.appendChild(unitField.wrap);
+            const freqField=createPlanInput(entry,'frequency','服務頻率／方式',{placeholder:'例：每月2次專業評估與指導'});
+            grid.appendChild(freqField.wrap);
+            const usageField=createPlanInput(entry,'usage','案主期待或配合狀況',{as:'textarea',placeholder:'請描述欲改善之ADL/IADL項目、家屬配合情況'});
+            grid.appendChild(usageField.wrap);
+          }else if(cat==='EF'){
+            const periodField=createPlanInput(entry,'period','補助額度期間',{placeholder:'例：113年01月~113年12月'});
+            grid.appendChild(periodField.wrap);
+            const originalField=createPlanInput(entry,'original','原有額度（元）',{placeholder:'例：20000',attrs:{inputmode:'decimal'}});
+            grid.appendChild(originalField.wrap);
+            const approveField=createPlanInput(entry,'planned','本次核定（元）',{placeholder:'例：12000',attrs:{inputmode:'decimal'}});
+            grid.appendChild(approveField.wrap);
+            const remainField=createPlanInput(entry,'remaining','剩餘額度（元）',{placeholder:'例：8000',attrs:{inputmode:'decimal'}});
+            grid.appendChild(remainField.wrap);
+            const usageField=createPlanInput(entry,'usage','輔具／無障礙重點（選填）',{as:'textarea',placeholder:'例：浴室增設扶手、防滑墊；家屬可配合施工時程。'});
+            grid.appendChild(usageField.wrap);
+          }else if(cat==='G'){
+            const periodField=createPlanInput(entry,'period','喘息額度期間',{placeholder:'例：113年01月~113年12月'});
+            grid.appendChild(periodField.wrap);
+            const plannedField=createPlanInput(entry,'planned','本次規劃（時數／單位）',{placeholder:'例：40單位',attrs:{inputmode:'decimal'}});
+            grid.appendChild(plannedField.wrap);
+            const remainField=createPlanInput(entry,'remaining','餘額',{placeholder:'例：剩餘20單位'});
+            grid.appendChild(remainField.wrap);
+            const usageField=createPlanInput(entry,'usage','喘息安排與配合狀況',{as:'textarea',placeholder:'例：安排週三全日喘息，主要照顧者於此時段休息並處理家務。'});
+            grid.appendChild(usageField.wrap);
+          }else if(cat==='SC'){
+            const periodField=createPlanInput(entry,'period','短照額度期間',{placeholder:'例：113年01月~113年12月'});
+            grid.appendChild(periodField.wrap);
+            const noteField=createPlanInput(entry,'usage','比例或使用說明',{as:'textarea',placeholder:'例：本月短照占比18%，符合政策規範（≦20%）。'});
+            grid.appendChild(noteField.wrap);
+          }else if(cat==='MEAL'){
+            const mealsField=createPlanInput(entry,'mealsPerDay','1日核定餐數',{placeholder:'例：2（午、晚餐）'});
+            grid.appendChild(mealsField.wrap);
+            const mealTypeField=createPlanInput(entry,'mealType','餐別／質地',{placeholder:'例：午餐、晚餐；軟質餐'});
+            grid.appendChild(mealTypeField.wrap);
+            const usageField=createPlanInput(entry,'usage','送餐備註',{as:'textarea',placeholder:'例：含到宅關懷與餐點保溫指導；列冊中低收入戶享有補助。'});
+            grid.appendChild(usageField.wrap);
+          }else{
+            const usageField=createPlanInput(entry,'usage','服務說明',{as:'textarea',placeholder:'請填寫此服務之使用方式或補充說明'});
+            grid.appendChild(usageField.wrap);
+          }
+          entryBox.appendChild(grid);
+          section.appendChild(entryBox);
+          updatePlanVendorVisibility(entry.code);
+          updatePlanMonthlyComputation(entry.code, {skipPreview:true});
+        });
+        host.appendChild(section);
+      });
+    }
+
+    function getPlanEntriesByCategory(cat){
+      return Object.values(servicePlanState)
+        .filter(entry => (entry.category || '') === cat)
+        .sort((a,b)=>a.code.localeCompare(b.code));
+    }
+
+    function formatPlanEntryB(entry, idx){
+      if(!entry) return '';
+      let vendor='';
+      if(entry.vendorMode === '指定'){
+        vendor = `（指定${entry.vendorName || '○○○單位'}）`;
+      }else if(entry.vendorMode === '輪派'){
+        vendor = '（輪派）';
+      }else if(entry.vendorMode){
+        vendor = `（${entry.vendorMode}）`;
+      }else{
+        vendor = '（請填輪派或指定單位）';
+      }
+      const monthly = entry.monthlyUnits ? `*${entry.monthlyUnits}` : '*（請填月單位）';
+      const parts=[];
+      if(entry.frequency) parts.push(entry.frequency);
+      if(entry.usage) parts.push(entry.usage);
+      let text=`${idx}.${entry.code}[${entry.name || ''}]${monthly}${vendor}`;
+      if(parts.length){
+        text += `，${parts.join('；')}`;
+      }else{
+        text += '，請補充頻率、計算說明及使用方式。';
+      }
+      if(!text.endsWith('。')) text += '。';
+      return text;
+    }
+
+    function formatPlanEntryC(entry, idx){
+      if(!entry) return '';
+      let vendor='';
+      if(entry.vendorMode === '指定'){
+        vendor = `（指定${entry.vendorName || '○○○單位'}）`;
+      }else if(entry.vendorMode === '輪派'){
+        vendor = '（輪派）';
+      }else if(entry.vendorMode){
+        vendor = `（${entry.vendorMode}）`;
+      }
+      const monthly = entry.monthlyUnits ? `*${entry.monthlyUnits}` : '*（請填月單位）';
+      const parts=[];
+      if(entry.frequency) parts.push(entry.frequency);
+      if(entry.usage){
+        parts.push(entry.usage);
+      }else{
+        parts.push('請補充案主最希望改善之ADL/IADL項目及配合情況');
+      }
+      let text=`${idx}.${entry.code}[${entry.name || ''}]${monthly}${vendor}`;
+      text += `：${parts.join('；')}`;
+      if(!text.endsWith('。')) text += '。';
+      return text;
+    }
+
+    function formatPlanEntryD(entry, idx){
+      if(!entry) return '';
+      const vendor = entry.vendorMode === '指定'
+        ? `指定${entry.vendorName || '○○○單位'}`
+        : '輪派照會3家服務單位';
+      const monthly = entry.monthlyUnits ? `*${entry.monthlyUnits}` : '';
+      const parts=[];
+      if(entry.frequency) parts.push(entry.frequency);
+      if(entry.usage) parts.push(entry.usage);
+      let text=`${idx}.${vendor} ${entry.code}[${entry.name || ''}]${monthly}`;
+      if(parts.length){
+        text += `，${parts.join('；')}`;
+      }else{
+        text += '，請補充頻率與使用方式。';
+      }
+      if(!text.endsWith('。')) text += '。';
+      return text;
+    }
+
+    function gatherPlanReferrals(){
+      const lines=[];
+      const mapping=[
+        {key:'pt', label:'據點'},
+        {key:'nb', label:'鄰里'},
+        {key:'rg', label:'宗教/社團'},
+        {key:'fw', label:'財團/社會福利'}
+      ];
+      mapping.forEach(item=>{
+        const chk=document.getElementById('sp_inf_'+item.key);
+        if(chk && chk.checked){
+          const name=(document.getElementById('sp_inf_'+item.key+'_name')?.value || '').trim();
+          const freq=(document.getElementById('sp_inf_'+item.key+'_freq')?.value || '').trim();
+          let text=item.label;
+          if(name) text += `-${name}`;
+          if(freq) text += `-${freq}`;
+          lines.push(text);
+        }
+      });
+      const extra=(planMetaState.referralExtra || '').trim();
+      if(extra){
+        extra.split(/\r?\n/).map(line=>line.trim()).filter(Boolean).forEach(line=>lines.push(line));
+      }
+      return lines;
+    }
+
+    function getSelectedProblemTexts(){
+      if(typeof getSelectedProblems !== 'function') return [];
+      const codes=getSelectedProblems();
+      if(!codes || !codes.length) return [];
+      return codes.map(code=>{
+        const label = PROBLEMS && PROBLEMS[code] ? PROBLEMS[code] : '';
+        return label ? `${code}.${label}` : `${code}`;
+      });
+    }
+
+    function formatCaseDisplay(){
+      const gender=(document.getElementById('s1_gender')?.value || '').trim();
+      const caseName=(document.getElementById('caseName')?.value || '').trim();
+      let prefix='案主';
+      if(gender==='男') prefix='案男';
+      else if(gender==='女') prefix='案女';
+      return caseName ? `${prefix}-${caseName}` : prefix;
+    }
+
+    function buildApprovalPlanPreview(){
+      const box=document.getElementById('plan_text');
+      if(!box) return;
+      const lines=[];
+      lines.push('一、長照服務核定項目、頻率：');
+      const bEntries=getPlanEntriesByCategory('B');
+      if(bEntries.length){
+        lines.push('（一）B碼（輪派/指定○○○單位）');
+        lines.push('服務代碼*核定數量+使用頻率及方式');
+        bEntries.forEach((entry,idx)=>{ const text=formatPlanEntryB(entry, idx+1); if(text) lines.push(text); });
+      }else{
+        lines.push('（一）B碼：暫無設定。');
+      }
+      const cEntries=getPlanEntriesByCategory('C');
+      if(cEntries.length){
+        lines.push('（二）C碼（輪派/指定○○○單位）');
+        lines.push('服務代碼+案主最希望改善之項目及配合狀況');
+        cEntries.forEach((entry,idx)=>{ const text=formatPlanEntryC(entry, idx+1); if(text) lines.push(text); });
+      }else{
+        lines.push('（二）C碼：暫無規劃。');
+      }
+      const dEntries=getPlanEntriesByCategory('D');
+      if(dEntries.length){
+        lines.push('（三）D碼：輪派照會3家服務單位／指定○○○單位（代碼＋名稱）');
+        dEntries.forEach((entry,idx)=>{ const text=formatPlanEntryD(entry, idx+1); if(text) lines.push(text); });
+      }else{
+        lines.push('（三）D碼：暫無規劃。');
+      }
+      const efEntries=getPlanEntriesByCategory('EF');
+      if(efEntries.length){
+        lines.push('（四）E.F碼：');
+        efEntries.forEach(entry=>{
+          const period=entry.period || '（請填期間）';
+          const original=entry.original || '（請填原額度）';
+          const approved=entry.planned || '（請填本次核定）';
+          const remaining=entry.remaining || '（請填剩餘額度）';
+          let text=`期間${period}；原有額度${original}元，本次核定${approved}元，剩餘${remaining}元。`;
+          if(entry.usage){
+            text += entry.usage.endsWith('。') ? entry.usage : ` ${entry.usage}`;
+          }
+          lines.push(text);
+        });
+      }else{
+        lines.push('（四）E.F碼：暫無申請。');
+      }
+      const gEntries=getPlanEntriesByCategory('G');
+      if(gEntries.length){
+        lines.push('（五）G碼：');
+        gEntries.forEach(entry=>{
+          const period=entry.period || '（請填期間）';
+          const planned=entry.planned || '（請填規劃）';
+          const remaining=entry.remaining || '（請填餘額）';
+          let text=`喘息額度期間${period}；本次規劃${planned}，餘額${remaining}。`;
+          if(entry.usage){
+            text += entry.usage.endsWith('。') ? entry.usage : entry.usage + '。';
+          }
+          lines.push(text);
+        });
+      }else{
+        lines.push('（五）G碼：暫無規劃。');
+      }
+      const scEntries=getPlanEntriesByCategory('SC');
+      if(scEntries.length){
+        lines.push('（六）SC碼：');
+        scEntries.forEach(entry=>{
+          const period=entry.period || '（請填期間）';
+          const note=entry.usage || '（請敘明比例或使用狀況）';
+          lines.push(`短照額度期間${period}；${note}`);
+        });
+      }else{
+        lines.push('（六）SC碼：暫無規劃。');
+      }
+      const mealEntries=getPlanEntriesByCategory('MEAL');
+      if(mealEntries.length){
+        lines.push('（七）營養餐飲服務：');
+        mealEntries.forEach(entry=>{
+          const meals=entry.mealsPerDay || '（請填餐數）';
+          const mealType=entry.mealType || '（請填午／晚餐）';
+          let text=`1日核定${meals}餐（${mealType}）`;
+          if(entry.usage){
+            text += entry.usage.endsWith('。') ? entry.usage : `。${entry.usage}`;
+          }else{
+            text += '。';
+          }
+          lines.push(text);
+        });
+      }else{
+        lines.push('（七）營養餐飲服務：尚未設定。');
+      }
+      const emergencyNote=(planMetaState.emergencyNote || '').trim();
+      lines.push(`（八）緊急救援服務：${emergencyNote || '（請說明是否申請及啟用原因）'}`);
+      lines.push('二、轉介其他服務資源：');
+      const referralLines=gatherPlanReferrals();
+      if(referralLines.length){
+        referralLines.forEach(line=>{
+          const trimmed=line.trim();
+          if(!trimmed) return;
+          if(/^[-•\u2022]/.test(trimmed)){ lines.push(trimmed); }
+          else{ lines.push(`- ${trimmed}`); }
+        });
+      }else{
+        lines.push('- （尚未填寫）');
+      }
+      const cmsLevel=getCmsLevel();
+      if(cmsLevel==='2' || cmsLevel==='3'){
+        const stationInfo=(planMetaState.stationInfo || '').trim() || '請補充鄰近巷弄長照站資訊';
+        const willing=(planMetaState.stationWillingness || '').trim() || '請確認意願';
+        lines.push(`- 鄰近巷弄長照站：${stationInfo}；意願：${willing}。將於AA02服務紀錄持續追蹤。`);
+        lines.push('※另針對長照需要等級第2~3級長照服務使用者，請提供鄰近巷弄長照站資訊，並確認個案有／無意願，將於AA02服務紀錄持續追蹤。');
+      }
+      const problemTexts=getSelectedProblemTexts();
+      if(problemTexts.length){
+        lines.push(`（服務對應問題：${problemTexts.join('、')}）`);
+      }
+      lines.push('告知與同意：');
+      lines.push(`上述計畫，均告知${formatCaseDisplay()}其了解計畫內容並同意服務使用，並簽訂服務使用確認單。（請單位留存確認單備查）`);
+      const manager=(document.getElementById('caseManagerName')?.value || '').trim() || '（請填寫個管師姓名）';
+      lines.push(`個案管理員：${manager}`);
+      box.value = lines.join('
+');
+    }
+
+    function serializeServicePlan(){
+      return Object.values(servicePlanState).map(entry=>Object.assign({}, entry));
+    }
+
+    function initPlanMetaFields(){
+      const ref=document.getElementById('plan_referral_extra');
+      if(ref){ ref.addEventListener('input', evt=>{ planMetaState.referralExtra = evt.target.value; buildApprovalPlanPreview(); }); }
+      const stationInfo=document.getElementById('plan_station_info');
+      if(stationInfo){ stationInfo.addEventListener('input', evt=>{ planMetaState.stationInfo = evt.target.value; buildApprovalPlanPreview(); }); }
+      const stationWill=document.getElementById('plan_station_willingness');
+      if(stationWill){ stationWill.addEventListener('change', evt=>{ planMetaState.stationWillingness = evt.target.value; buildApprovalPlanPreview(); }); }
+      const emergency=document.getElementById('plan_emergency_note');
+      if(emergency){ emergency.addEventListener('input', evt=>{ planMetaState.emergencyNote = evt.target.value; buildApprovalPlanPreview(); }); }
+    }
+
+    function setCmsLevel(level){
+      const value = level ? String(level) : '';
+      const hidden=document.getElementById('cmsLevelValue');
+      if(hidden) hidden.value = value;
+      document.querySelectorAll('#cmsLevelGroup button').forEach(btn=>{
+        btn.dataset.active = btn.dataset.level === value ? '1' : '0';
+      });
+      buildApprovalPlanPreview();
+    }
+
+    function getCmsLevel(){
+      return (document.getElementById('cmsLevelValue')?.value || '').trim();
+    }
+
+    function initCmsLevelButtons(){
+      const group=document.getElementById('cmsLevelGroup');
+      if(!group) return;
+      group.querySelectorAll('button').forEach(btn=>{
+        btn.addEventListener('click', ()=>{ setCmsLevel(btn.dataset.level); });
+      });
+      const current = (document.getElementById('cmsLevelValue')?.value || '').trim();
+      if(current) setCmsLevel(current);
     }
 
     function onHomeCareToggle(box){
       const code = box && box.dataset ? box.dataset.code : '';
       toggleHomeCareQuantity(code);
       updateCareServicePhrases();
+      syncPlanStateWithSelections();
     }
 
     function onHomeCareQuantityChange(input){
@@ -3551,11 +4363,24 @@
       const checkbox = document.querySelector(`#homeCareList input[type=checkbox][data-code="${code}"]`);
       if(checkbox && checkbox.checked){
         updateCareServicePhrases();
+        const value = input.value ? input.value.trim() : '';
+        if(value){
+          const entry = servicePlanState[code];
+          if(entry && !entry.monthlyUnits){
+            entry.monthlyUnits = value;
+            const planInput=document.querySelector(`[data-plan-code="${code}"][data-plan-field="monthlyUnits"]`);
+            if(planInput && planInput !== document.activeElement){ planInput.value = value; }
+          }
+        }
+        buildApprovalPlanPreview();
+      }else{
+        buildApprovalPlanPreview();
       }
     }
 
     function onDayCareToggle(){
       updateCareServicePhrases();
+      syncPlanStateWithSelections();
     }
 
     function toggleHomeCareQuantity(code){
@@ -3648,15 +4473,19 @@
     }
     function onProfessionalToggle(box){
       updateProfessionalServicePhrases();
+      syncPlanStateWithSelections();
     }
     function onTransportToggle(box){
       updateTransportServicePhrases();
+      syncPlanStateWithSelections();
     }
     function onRespiteToggle(box){
       updateRespiteServicePhrases();
+      syncPlanStateWithSelections();
     }
     function onMealToggle(box){
       updateMealServicePhrases();
+      syncPlanStateWithSelections();
     }
     function getSelectedProfessionalEntries(){
       const rows=[...document.querySelectorAll('#profServiceList .home-care-item')];
@@ -3775,20 +4604,24 @@
         freq.style.display = showFreq ? '' : 'none';
         if(!showFreq) freq.value='';
       }
+      buildApprovalPlanPreview();
     }
     function bindInfNameToFreq(key){
       const name = document.getElementById('sp_inf_'+key+'_name');
       const freq = document.getElementById('sp_inf_'+key+'_freq');
       if(!name || !freq) return;
       name.addEventListener('input', ()=>{
-        if(name.value.trim()){
-          freq.style.display='';
-        }else{
-          freq.style.display='none';
-          freq.value='';
-        }
-      });
-    }
+      if(name.value.trim()){
+        freq.style.display='';
+      }else{
+        freq.style.display='none';
+        freq.value='';
+      }
+      buildApprovalPlanPreview();
+    });
+    freq.addEventListener('change', buildApprovalPlanPreview);
+    freq.addEventListener('input', buildApprovalPlanPreview);
+  }
 
     function toggleGoalInputs(){
       const selected=[...document.querySelectorAll('#sp_formal input[type=checkbox]:checked')].map(b=>b.value);
@@ -3836,6 +4669,7 @@
       if(!hasCar)  updateTransportServicePhrases();
       if(!hasResp) updateRespiteServicePhrases();
       if(!hasMeal) updateMealServicePhrases();
+      syncPlanStateWithSelections();
     }
     function setVisible(id,on){ const el=document.getElementById(id); if(el) el.style.display = on? '' : 'none'; }
 
@@ -4029,6 +4863,7 @@
       const selected=boxes.filter(b=>b.checked);
       document.getElementById('problemCount').textContent=`已選 ${selected.length} / 5`;
       if (selected.length>=5){ boxes.forEach(b=>{ if(!b.checked) b.disabled=true; }); } else { boxes.forEach(b=>b.disabled=false); }
+      buildApprovalPlanPreview();
     }
     function getSelectedProblems(){
       return [...document.querySelectorAll('#problemList input[type=checkbox]')].filter(b=>b.checked).map(b=>parseInt(b.value,10));
@@ -4303,8 +5138,11 @@
       buildSection1(section1Validation);
       buildS2(); buildS3(); buildSection4(); buildSection6(); buildLongGoal();
 
+      buildApprovalPlanPreview();
+
       const form = {
         unitCode, caseManagerName, caseName, consultName,
+        cmsLevel: getCmsLevel(),
         callDate: getDateBox('callDate'),
         isConsultVisit: document.getElementById('isConsultVisit').checked,
         visitDate: getDateBox('visitDate'),
@@ -4339,7 +5177,10 @@
         mid_meal: (document.getElementById('mid_meal').value || '').trim(),
         long_goal: (document.getElementById('long_goal').value || '').trim(),
         // 產出前一致性潤稿
-        doBatchPolish: document.getElementById('doBatchPolish').checked
+        doBatchPolish: document.getElementById('doBatchPolish').checked,
+        servicePlan: serializeServicePlan(),
+        planMeta: Object.assign({}, planMetaState),
+        planText: (document.getElementById('plan_text').value || '').trim()
       };
 
       google.script.run
@@ -4383,6 +5224,7 @@
       setDateBox('visitDate', new Date());
       loadManagers();
       loadConsultants();
+      initCmsLevelButtons();
 
       // S1
       renderS1(); initSection1State();
@@ -4408,6 +5250,13 @@
       renderTransportServices();
       renderRespiteServices();
       renderMealServices();
+      initPlanMetaFields();
+      planMetaState.referralExtra = document.getElementById('plan_referral_extra')?.value || '';
+      planMetaState.stationInfo = document.getElementById('plan_station_info')?.value || '';
+      planMetaState.stationWillingness = document.getElementById('plan_station_willingness')?.value || '';
+      planMetaState.emergencyNote = document.getElementById('plan_emergency_note')?.value || '';
+      syncPlanStateWithSelections();
+      buildApprovalPlanPreview();
       renderProblems(); limitProblems();
       updateCareServicePhrases();
       updateProfessionalServicePhrases();
@@ -4431,14 +5280,18 @@
         caseNameInput.addEventListener('input', ()=>{ caseNameInput.classList.remove('input-invalid'); });
         caseNameInput.addEventListener('input', syncSocialPrimary);
         caseNameInput.addEventListener('input', updateConsultVisitText);
+        caseNameInput.addEventListener('input', buildApprovalPlanPreview);
       }
       const consultSelect=document.getElementById('consultName');
       if(consultSelect){
         consultSelect.addEventListener('change', updateConsultVisitText);
       }
+      document.getElementById('s1_gender')?.addEventListener('change', buildApprovalPlanPreview);
+      document.getElementById('caseManagerName')?.addEventListener('change', buildApprovalPlanPreview);
 
       toggleCallDateByConsultVisit();
       updateConsultVisitText();
+      buildApprovalPlanPreview();
 
     });
   </script>
