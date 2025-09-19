@@ -152,6 +152,20 @@
     button[data-ic="plus"]::before{ content:"+"; margin-right:.25em; font-weight:900; }
     button[data-ic="minus"]::before{ content:"–"; margin-right:.25em; font-weight:900; }
 
+    .location-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin:12px 0 8px;
+      gap:12px;
+    }
+    .location-toolbar .location-current{ font-weight:600; color:var(--label); }
+    .location-switch button[data-active="1"]{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+
     /* 黏底主要動作列（避開 iOS 底部工具列） */
     .group:last-of-type .btnbar{
       position:sticky; bottom:max(18px, env(safe-area-inset-bottom));
@@ -166,7 +180,30 @@
       border:1px solid var(--border); border-radius:12px; margin-bottom:12px; background:#fff; color:#222; font-size:var(--fs-base);
     }
     .checkcol input[type=checkbox]{ width:var(--checkbox); height:var(--checkbox); }
+    .checkcol label[data-auto="1"]{
+      border-color:rgba(11,87,208,.4);
+      background:rgba(11,87,208,.08);
+    }
+    .checkcol label[data-auto="1"]::after{
+      content:'（系統預選）';
+      margin-left:8px;
+      color:var(--accent);
+      font-size:.9rem;
+      font-weight:600;
+    }
     @media (pointer:coarse){ :root{ --checkbox:32px; } } /* 觸控設備放大到 32px */
+
+    .auto-hint{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .auto-hint button.small{
+      height:auto;
+      padding:6px 12px;
+      font-size:.95rem;
+    }
 
     /* Home care 卡式清單（維持放大字與輸入） */
     .home-care-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; }
@@ -194,6 +231,16 @@
 
     /* 提示／狀態色與區隔線 */
     .hint{ font-size:.95rem; color:#4b5563; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 12px;
+      border-radius:999px;
+      background:rgba(11,87,208,.08);
+      color:var(--accent);
+      font-weight:600;
+      min-height:38px;
+    }
     .danger{ color:#b00020; }
     .error-messages{
       display:none;
@@ -430,6 +477,10 @@
                 <option>不配戴</option>
               </select>
             </div>
+            <div id="s1_vision_auto_hint" class="hint auto-hint" style="display:none; margin-top:6px;">
+              <span>已依視力狀態預選建議補充（標記為「系統預選」）。</span>
+              <button type="button" class="small" onclick="resetVisionSuggestions()">還原為預設</button>
+            </div>
           </div>
 
           <!-- 聽力（新版：兩層） -->
@@ -478,20 +529,13 @@
           </div>
           <div id="s1_swallow_sx_wrap" style="display:none;">
             <label>吞嚥症狀</label>
+            <div id="s1_swallow_sx_hint" class="hint" style="display:none;">例：嗆咳、殘留、口水外漏等，勾選可快速完成紀錄。</div>
             <div class="checkcol" id="s1_swallow_sx_box"></div>
           </div>
           <div id="s1_diet_wrap" style="display:none;">
-            <label>飲食質地</label>
-            <select id="s1_diet_texture">
-              <option value="" class="placeholder-option" disabled selected>請選擇</option>
-              <option>一般</option>
-              <option>軟質</option>
-              <option>碎食</option>
-              <option>泥狀</option>
-              <option>蜂蜜稠</option>
-              <option>布丁稠</option>
-            </select>
-            <label style="margin-top:6px; display:block;">管灌</label>
+            <label>飲食質地（可複選）</label>
+            <div class="checkcol" id="s1_diet_texture_box"></div>
+            <label style="margin-top:12px; display:block;">管灌方式（可複選）</label>
             <div class="checkcol" id="s1_feeding_tube_box"></div>
           </div>
         </div>
@@ -520,51 +564,36 @@
           </div>
         </div>
 
-        <div class="grid3">
-          <div>
-            <label>部位大分類</label>
-            <select id="s1_body_region" onchange="updateSubregion(); updateLaterality();">
-              <option value="" class="placeholder-option" disabled selected>請選擇</option>
-              <option>頭頸部</option><option>上肢</option><option>軀幹</option><option>下肢</option><option>全身性</option>
-            </select>
+        <div id="s1_location_block" style="display:none;">
+          <div class="location-toolbar" id="s1_location_toolbar" style="display:none;">
+            <span class="location-current">目前編輯：<span id="s1_location_active_label">疼痛部位</span></span>
+            <div class="btnbar location-switch">
+              <button type="button" class="small" data-context="pain" onclick="switchLocationContext('pain')">編輯疼痛部位</button>
+              <button type="button" class="small" data-context="lesion" onclick="switchLocationContext('lesion')">編輯病灶部位</button>
+            </div>
           </div>
-          <div>
-            <label>細部分位</label>
-            <select id="s1_subregion" onchange="updateLaterality()">
-              <option value="" class="placeholder-option" disabled selected>請選擇</option>
-            </select>
-            <input id="s1_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:6px;">
-          </div>
-          <div>
-            <label>側別</label>
-            <select id="s1_laterality">
-              <option value="" class="placeholder-option" disabled selected>請選擇</option>
-              <option>左側</option><option>右側</option><option>雙側</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="s1_lesion_location" class="grid3" style="display:none;">
-          <div>
-            <label>病灶部位大分類</label>
-            <select id="s1_lesion_region" onchange="updateLesionSubregion();">
-              <option value="" class="placeholder-option" disabled selected>請選擇</option>
-              <option>頭頸部</option><option>上肢</option><option>軀幹</option><option>下肢</option><option>全身性</option>
-            </select>
-          </div>
-          <div>
-            <label>病灶細部分位</label>
-            <select id="s1_lesion_subregion" onchange="updateLaterality('lesion')">
-              <option value="" class="placeholder-option" disabled selected>請選擇</option>
-            </select>
-            <input id="s1_lesion_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:6px;">
-          </div>
-          <div>
-            <label>病灶側別</label>
-            <select id="s1_lesion_laterality">
-              <option value="" class="placeholder-option" disabled selected>請選擇</option>
-              <option>左側</option><option>右側</option><option>雙側</option>
-            </select>
+          <div class="grid3">
+            <div>
+              <label>部位大分類</label>
+              <select id="s1_location_region" onchange="onSharedRegionChange()">
+                <option value="" class="placeholder-option" disabled selected>請選擇</option>
+                <option>頭頸部</option><option>上肢</option><option>軀幹</option><option>下肢</option><option>全身性</option>
+              </select>
+            </div>
+            <div>
+              <label>細部分位</label>
+              <select id="s1_location_subregion" onchange="onSharedSubregionChange()">
+                <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              </select>
+              <input id="s1_location_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:6px;" oninput="onSharedSubregionOtherInput()">
+            </div>
+            <div>
+              <label>側別</label>
+              <select id="s1_location_laterality" onchange="onSharedLateralityChange()">
+                <option value="" class="placeholder-option" disabled selected>請選擇</option>
+                <option>左側</option><option>右側</option><option>雙側</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -904,15 +933,14 @@
         <div class="grid2"><!-- 兩欄排版 -->
           <div><!-- 等級欄位 -->
             <label>身障等級</label>
-            <select id="s1_dis_level" onchange="syncDisab('s1')"><!-- 選擇身障等級 -->
-              <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
-            </select>
+            <div id="s1_dis_level_text" class="badge">—</div>
           </div>
           <div id="s1_dis_cat_box" style="display:none;"><!-- 類別欄位，預設隱藏 -->
-            <label>身障類別（等級≠無才需選）</label>
-            <select id="s1_dis_cat" onchange="syncDisab('s1')"><!-- 選擇身障類別 --></select>
+            <label>身障類別</label>
+            <div id="s1_dis_cat_text" class="badge">—</div>
           </div>
         </div>
+        <div class="hint" style="margin-top:6px;">身障資訊同步自(二)經濟收入，此處為唯讀顯示。</div>
 
         <div class="hr"></div>
 
@@ -946,13 +974,13 @@
           </div>
           <div><!-- 等級欄位 -->
             <label>身障等級</label>
-            <select id="s2_dis_level" onchange="syncDisab('s2')"><!-- 選擇身障等級 -->
+            <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身障等級 -->
               <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
             </select>
           </div>
           <div id="disCatBox" style="display:none;"><!-- 類別欄位，預設隱藏 -->
             <label>身障類別（等級≠無才需選）</label>
-            <select id="s2_dis_cat" onchange="syncDisab('s2')"><!-- 選擇身障類別 --></select>
+            <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身障類別 --></select>
           </div>
         </div>
         <textarea id="section2_out" style="display:none;"></textarea>
@@ -1382,6 +1410,7 @@
     const S1_MED_CLASSES  = ['降壓藥','甲狀腺藥','降脂藥','抗焦慮／鎮定','睡眠用藥','精神科用藥','抗血栓／抗凝','利尿劑','胃腸用藥','止痛藥','止咳化痰','降血糖／胰島素','攝護腺用藥','其他'];
     const S1_LANG_OPTIONS = ['國語','台語','客語','原住民語','英語','手勢／書寫','讀唇','溝通板／App'];
     const S1_SWALLOW_SX_OPTIONS = ['嗆咳','殘留','口水外漏','吞嚥延遲','需要吞嚥訓練'];
+    const S1_DIET_TEXTURE_OPTIONS = ['一般','軟質','碎食','泥狀','蜂蜜稠','布丁稠'];
     const S1_FEEDING_TUBE_OPTIONS = ['鼻胃管（NGT）','胃造口（PEG）'];
     const S1_ORAL_OPTIONS = ['自然牙完整','缺牙','口腔衛生不佳','口乾','口臭','活動假牙（上）','活動假牙（下）','假牙不合／鬆動'];
     const S1_EXCRETION_AID_OPTIONS = ['紙尿褲／尿墊','便盆椅','尿壺','導尿管（留置）','導尿管（間歇）','尿造口袋','糞造口袋','夜間集尿袋'];
@@ -1419,6 +1448,13 @@
       '全身性': ['全身痠痛','多處關節','其他']
     };
     const SYMMETRIC_PARTS = new Set(['眼睛','肩膀','手臂','手部','大腿','膝蓋','小腿','足部']);
+
+    const LOCATION_CONTEXTS = ['pain','lesion'];
+    const locationState = {
+      pain:  { region:'', subChoice:'', subOther:'', laterality:'' },
+      lesion:{ region:'', subChoice:'', subOther:'', laterality:'' }
+    };
+    let activeLocationContext = 'pain';
 
     // 渲染
     function renderS1() {
@@ -1467,6 +1503,16 @@
           const lab=document.createElement('label');
           lab.innerHTML=`<input type="checkbox" value="${name}" id="swallow_${i}"> ${name}`;
           swallowBox.appendChild(lab);
+        });
+      }
+
+      const dietBox=document.getElementById('s1_diet_texture_box');
+      if(dietBox){
+        dietBox.innerHTML='';
+        S1_DIET_TEXTURE_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="diet_${i}"> ${name}`;
+          dietBox.appendChild(lab);
         });
       }
 
@@ -1571,26 +1617,35 @@
         box.querySelectorAll('input[data-auto="1"]').forEach(inp=>{
           inp.checked=false;
           inp.removeAttribute('data-auto');
+          const lab=inp.closest('label');
+          if(lab) lab.removeAttribute('data-auto');
         });
+        box.querySelectorAll('label[data-auto="1"]').forEach(lab=>lab.removeAttribute('data-auto'));
         const suggest = VISION_NOTE_SUGGESTION[v] || [];
         suggest.forEach(label=>{
           const chk=box.querySelector(`input[value="${label}"]`);
           if(chk){
             chk.checked=true;
             chk.dataset.auto='1';
+            const lab=chk.closest('label');
+            if(lab) lab.dataset.auto='1';
           }
         });
       }
       toggleVisionOther();
       toggleGlassesAdherence();
+      updateVisionAutoHint();
     }
     function onVisionNoteChange(event){
       const target=event && event.target;
       if(target && target.matches('input[type=checkbox]')){
         target.removeAttribute('data-auto');
+        const lab=target.closest('label');
+        if(lab) lab.removeAttribute('data-auto');
       }
       toggleVisionOther();
       toggleGlassesAdherence();
+      updateVisionAutoHint();
     }
     function toggleVisionOther(){
       const hasOther = document.querySelector('#s1_vision_note_box input[value="其他"]')?.checked;
@@ -1606,6 +1661,25 @@
         const sel=document.getElementById('s1_glasses_adherence');
         if(sel) sel.value='';
       }
+    }
+    function updateVisionAutoHint(){
+      const hint=document.getElementById('s1_vision_auto_hint');
+      if(!hint) return;
+      const hasAuto = !!document.querySelector('#s1_vision_note_box input[data-auto="1"]');
+      hint.style.display = hasAuto ? '' : 'none';
+    }
+    function resetVisionSuggestions(){
+      const box=document.getElementById('s1_vision_note_box');
+      if(box){
+        box.querySelectorAll('input[type=checkbox]').forEach(inp=>{
+          inp.checked=false;
+          inp.removeAttribute('data-auto');
+        });
+        box.querySelectorAll('label[data-auto]').forEach(lab=>lab.removeAttribute('data-auto'));
+      }
+      const otherInput=document.getElementById('s1_vision_other');
+      if(otherInput) otherInput.value='';
+      toggleVisionNotes();
     }
 
     // 聽力兩層渲染
@@ -1640,129 +1714,245 @@
       }
     }
 
-    // 疼痛預設無；有→顯示 1-10
-    /* === 共用：以控制項 ID 隱藏/顯示其外層欄位容器（含 label+input） === */
-    function setRowVisibleByControlId(ctrlId, visible){
-      const ctrl = document.getElementById(ctrlId);
-      if(!ctrl) return;
-      const wrap = ctrl.parentElement; // 當前結構下，label 與 input 同在此 div 內
-      if(wrap) wrap.style.display = visible ? '' : 'none';
-    }
-
-    /* === 疼痛：擴充為同時控制 部位/側別/皮膚病灶 的出現 === */
-    /* === 疼痛：擴充為同時控制 部位/側別 的出現（已取消對皮膚病灶的控制） === */
     function togglePainCombined(){
       const v  = document.getElementById('s1_pain').value;
       const on = (v === '有');
 
-      // 疼痛強度顯示（維持原邏輯）
       document.getElementById('s1_pain_score_wrap').style.display = on ? '' : 'none';
 
-      // 若切到「有」，且目前強度尚未填寫，自動帶入 5（維持原邏輯）
       if(on){
         const ps = document.getElementById('s1_pain_score');
         if(ps && !ps.value) ps.value = 5;
+        switchLocationContext('pain');
       }
 
-      // 疼痛＝有 才顯示：部位大分類、細部分位、側別（側別是否顯示交由 updateLaterality 判斷）
-      setRowVisibleByControlId('s1_body_region', on);
-      setRowVisibleByControlId('s1_subregion',    on);
-      setRowVisibleByControlId('s1_laterality',   on);
-
-      // 重要：取消對「皮膚病灶」主選單與其細節的任何顯示控制
-      // （皮膚病灶細節顯示改由 toggleLesionCombined() 依 s1_lesion_has 自主決定）
-
-      // 依目前規則重算一次側別顯示（其內部仍會判斷 pain 是否為「有」）
-      updateLaterality();
+      updateLocationVisibility();
     }
 
+    function resetLocationState(context){
+      if(locationState[context]){
+        locationState[context].region='';
+        locationState[context].subChoice='';
+        locationState[context].subOther='';
+        locationState[context].laterality='';
+      }
+    }
 
-    // 細部分位與側別
-    function updateSubregion(){
-      const region = document.getElementById('s1_body_region').value;
-      const subSel = document.getElementById('s1_subregion');
-      const other  = document.getElementById('s1_subregion_other');
-      if(subSel){
-        subSel.innerHTML = '<option value="" class="placeholder-option" disabled selected>請選擇</option>';
-        if(region){
-          (REGION_MAP[region] || []).forEach(name=>{
-            const o=document.createElement('option'); o.textContent=name; subSel.appendChild(o);
-          });
+    function getLocationSubregionText(state){
+      if(!state) return '';
+      if(state.subChoice === '其他'){
+        return state.subOther || '';
+      }
+      return state.subChoice || '';
+    }
+
+    function needsLaterality(state){
+      return SYMMETRIC_PARTS.has(getLocationSubregionText(state));
+    }
+
+    function populateSubregionOptions(region, selected){
+      const subSel=document.getElementById('s1_location_subregion');
+      if(!subSel) return;
+      subSel.innerHTML='<option value="" class="placeholder-option" disabled selected>請選擇</option>';
+      if(region){
+        (REGION_MAP[region] || []).forEach(name=>{
+          const o=document.createElement('option'); o.textContent=name; subSel.appendChild(o);
+        });
+      }
+      if(selected && [...subSel.options].some(opt=>opt.value===selected)){
+        subSel.value = selected;
+      }else{
+        subSel.value='';
+      }
+    }
+
+    function saveLocationFromUI(){
+      const block=document.getElementById('s1_location_block');
+      if(!block || block.style.display==='none') return;
+      const state=locationState[activeLocationContext];
+      if(!state) return;
+      const regionSel=document.getElementById('s1_location_region');
+      const subSel=document.getElementById('s1_location_subregion');
+      const other=document.getElementById('s1_location_subregion_other');
+      const latSel=document.getElementById('s1_location_laterality');
+      if(regionSel) state.region = regionSel.value || '';
+      if(subSel) state.subChoice = subSel.value || '';
+      if(other && state.subChoice === '其他'){
+        state.subOther = other.value || '';
+      }else if(state.subChoice !== '其他'){
+        state.subOther = '';
+      }
+      if(latSel && !latSel.disabled){
+        state.laterality = latSel.value || '';
+      }else{
+        state.laterality = '';
+      }
+    }
+
+    function isLocationStateEmpty(state){
+      return !state || (!state.region && !state.subChoice && !state.subOther && !state.laterality);
+    }
+
+    function applyLocationStateToUI(){
+      const state=locationState[activeLocationContext];
+      const regionSel=document.getElementById('s1_location_region');
+      const subSel=document.getElementById('s1_location_subregion');
+      const other=document.getElementById('s1_location_subregion_other');
+      const latSel=document.getElementById('s1_location_laterality');
+      if(!state || !regionSel || !subSel || !other || !latSel) return;
+      regionSel.value = state.region || '';
+      populateSubregionOptions(state.region, state.subChoice);
+      if(state.subChoice){
+        const hasOption=[...subSel.options].some(opt=>opt.value===state.subChoice);
+        subSel.value = hasOption ? state.subChoice : '';
+        if(!hasOption){
+          state.subChoice='';
+          state.subOther='';
+        }
+      }else{
+        subSel.value='';
+      }
+      if(state.subChoice === '其他'){
+        other.style.display='';
+        other.value = state.subOther || '';
+      }else{
+        other.style.display='none';
+        other.value='';
+      }
+      const needLat = needsLaterality(state);
+      latSel.parentElement.style.display = needLat ? '' : 'none';
+      latSel.disabled = !needLat;
+      if(needLat){
+        latSel.value = state.laterality || '';
+      }else{
+        latSel.value='';
+        state.laterality='';
+      }
+    }
+
+    function updateLocationToolbar(){
+      const label=document.getElementById('s1_location_active_label');
+      if(label){
+        label.textContent = activeLocationContext === 'lesion' ? '病灶部位' : '疼痛部位';
+      }
+      document.querySelectorAll('.location-switch button').forEach(btn=>{
+        if(btn.dataset && btn.dataset.context){
+          btn.dataset.active = (btn.dataset.context === activeLocationContext) ? '1' : '0';
+        }
+      });
+      const toolbar=document.getElementById('s1_location_toolbar');
+      if(toolbar){
+        const painOn = document.getElementById('s1_pain').value === '有';
+        const lesionOn = document.getElementById('s1_lesion_has').value === '有';
+        toolbar.style.display = (painOn && lesionOn) ? '' : 'none';
+      }
+    }
+
+    function switchLocationContext(context, opts={}){
+      if(!LOCATION_CONTEXTS.includes(context)) return;
+      if(activeLocationContext !== context){
+        saveLocationFromUI();
+      }
+      const target=locationState[context];
+      if(opts.copyFrom && isLocationStateEmpty(target)){
+        const src=locationState[opts.copyFrom];
+        if(src){
+          target.region = src.region || '';
+          target.subChoice = src.subChoice || '';
+          target.subOther = src.subOther || '';
+          target.laterality = src.laterality || '';
         }
       }
-      if(other){ other.style.display='none'; if(!region){ other.value=''; } }
-      updateLaterality('pain');
+      activeLocationContext = context;
+      applyLocationStateToUI();
+      updateLocationToolbar();
     }
-    function updateLesionSubregion(){
-      const region = document.getElementById('s1_lesion_region').value;
-      const subSel = document.getElementById('s1_lesion_subregion');
-      const other  = document.getElementById('s1_lesion_subregion_other');
-      if(subSel){
-        subSel.innerHTML = '<option value="" class="placeholder-option" disabled selected>請選擇</option>';
-        if(region){
-          (REGION_MAP[region] || []).forEach(name=>{
-            const o=document.createElement('option'); o.textContent=name; subSel.appendChild(o);
-          });
-        }
+
+    function updateLocationVisibility(){
+      const block=document.getElementById('s1_location_block');
+      const painOn = document.getElementById('s1_pain').value === '有';
+      const lesionOn = document.getElementById('s1_lesion_has').value === '有';
+      if(block){
+        block.style.display = (painOn || lesionOn) ? '' : 'none';
       }
-      if(other){ other.style.display='none'; if(!region){ other.value=''; } }
-      updateLaterality('lesion');
+      if(!painOn && !lesionOn){
+        saveLocationFromUI();
+        updateLocationToolbar();
+        return;
+      }
+      if(painOn && activeLocationContext !== 'pain'){
+        switchLocationContext('pain');
+      }else if(!painOn && lesionOn && activeLocationContext !== 'lesion'){
+        switchLocationContext('lesion');
+      }else{
+        applyLocationStateToUI();
+        updateLocationToolbar();
+      }
     }
-    /* === 細部分位→側別：依情境顯示，支援疼痛與病灶 === */
-    function updateLaterality(context){
-      const isLesion = context === 'lesion';
-      const subSel = document.getElementById(isLesion ? 's1_lesion_subregion' : 's1_subregion');
-      const otherInput = document.getElementById(isLesion ? 's1_lesion_subregion_other' : 's1_subregion_other');
-      const latSel = document.getElementById(isLesion ? 's1_lesion_laterality' : 's1_laterality');
-      const latWrap = latSel ? latSel.parentElement : null;
-      const subValue = subSel ? subSel.value : '';
 
-      if(otherInput){
-        if(subValue === '其他'){ otherInput.style.display=''; }
-        else { otherInput.style.display='none'; otherInput.value=''; }
-      }
+    function onSharedRegionChange(){
+      const regionSel=document.getElementById('s1_location_region');
+      const state=locationState[activeLocationContext];
+      if(!regionSel || !state) return;
+      state.region = regionSel.value || '';
+      state.subChoice='';
+      state.subOther='';
+      state.laterality='';
+      applyLocationStateToUI();
+      updateLocationToolbar();
+    }
 
-      const needLat = SYMMETRIC_PARTS.has(subValue);
-      const painOn = (document.getElementById('s1_pain').value === '有');
-      const lesionOn = (document.getElementById('s1_lesion_has').value === '有');
-      const showLat = ((isLesion ? lesionOn : (painOn || lesionOn)) && needLat);
+    function onSharedSubregionChange(){
+      const subSel=document.getElementById('s1_location_subregion');
+      const state=locationState[activeLocationContext];
+      if(!subSel || !state) return;
+      state.subChoice = subSel.value || '';
+      if(state.subChoice !== '其他'){ state.subOther=''; }
+      applyLocationStateToUI();
+      updateLocationToolbar();
+    }
 
-      if(latWrap) latWrap.style.display = showLat ? '' : 'none';
-      if(latSel){
-        latSel.disabled = !showLat;
-        if(!showLat){ latSel.value=''; }
-      }
+    function onSharedSubregionOtherInput(){
+      const other=document.getElementById('s1_location_subregion_other');
+      const state=locationState[activeLocationContext];
+      if(!other || !state) return;
+      state.subOther = other.value || '';
+    }
+
+    function onSharedLateralityChange(){
+      const latSel=document.getElementById('s1_location_laterality');
+      const state=locationState[activeLocationContext];
+      if(!latSel || !state) return;
+      if(latSel.disabled){ state.laterality=''; }
+      else { state.laterality = latSel.value || ''; }
+    }
+
+    function getLocationData(context){
+      const state = locationState[context] || { region:'', subChoice:'', subOther:'', laterality:'' };
+      const region = state.region || '';
+      const subChoice = state.subChoice || '';
+      const subOther = subChoice === '其他' ? (state.subOther || '') : '';
+      const subValue = subChoice === '其他' ? (state.subOther || '') : subChoice;
+      const laterality = state.laterality || '';
+      return { region, subChoice, subOther, subValue, laterality };
     }
 
     // 皮膚病灶顯示
     function toggleLesionCombined(){
       const v=document.getElementById('s1_lesion_has').value;
       const on=(v==='有');
-      const loc=document.getElementById('s1_lesion_location');
-      if(loc){
-        loc.style.display = on?'':'none';
-      }
       if(on){
-        updateLesionSubregion();
-      }else{
-        ['s1_lesion_region','s1_lesion_subregion','s1_lesion_laterality'].forEach(id=>{
-          const el=document.getElementById(id);
-          if(el){
-            el.value='';
-            if(id==='s1_lesion_laterality'){ el.disabled=true; }
-          }
-        });
-        const other=document.getElementById('s1_lesion_subregion_other');
-        if(other){ other.value=''; other.style.display='none'; }
+        if(document.getElementById('s1_pain').value === '有'){
+          switchLocationContext('lesion', { copyFrom: 'pain' });
+        }else{
+          switchLocationContext('lesion');
+        }
       }
       document.getElementById('s1_lesion_layer_wrap').style.display = on?'':'none';
       document.getElementById('s1_lesion_size_wrap').style.display = on?'':'none';
       document.getElementById('s1_lesion_more').style.display = on?'':'none';
+      updateLocationVisibility();
       toggleLesionHospital();
-      if(!on){
-        const hosp=document.getElementById('s1_lesion_hospital');
-        if(hosp){ hosp.value=''; }
-      }
     }
     function toggleLesionLayerOther(){
       const v=document.getElementById('s1_lesion_layer').value;
@@ -1788,8 +1978,10 @@
       const level=sel ? sel.value : '';
       const detailOn = level && level !== '無困難';
       const sxWrap=document.getElementById('s1_swallow_sx_wrap');
+      const sxHint=document.getElementById('s1_swallow_sx_hint');
       if(sxWrap){
         sxWrap.style.display = detailOn ? '' : 'none';
+        if(sxHint) sxHint.style.display = detailOn ? '' : 'none';
         if(!detailOn){
           sxWrap.querySelectorAll('input[type=checkbox]').forEach(c=>{ c.checked=false; });
         }
@@ -1798,8 +1990,7 @@
       if(dietWrap){
         dietWrap.style.display = detailOn ? '' : 'none';
         if(!detailOn){
-          const dietSel=document.getElementById('s1_diet_texture');
-          if(dietSel) dietSel.value='';
+          document.querySelectorAll('#s1_diet_texture_box input[type=checkbox]').forEach(c=>{ c.checked=false; });
           document.querySelectorAll('#s1_feeding_tube_box input[type=checkbox]').forEach(c=>{ c.checked=false; });
         }
       }
@@ -1994,20 +2185,9 @@
         else { other.style.display='none'; other.value=''; }
       }
     }
-    function syncDisab(from){
-      const lv1=document.getElementById('s1_dis_level'); // 段一身障等級
-      const cat1=document.getElementById('s1_dis_cat'); // 段一身障類別
-      const lv2=document.getElementById('s2_dis_level'); // 段二身障等級
-      const cat2=document.getElementById('s2_dis_cat'); // 段二身障類別
-      if(!lv1 || !cat1 || !lv2 || !cat2) return; // 若元素缺少則不處理
-      if(from==='s1'){ // 由段一同步至段二
-        lv2.value=lv1.value;
-        cat2.value=cat1.value;
-      }else{ // 由段二同步至段一
-        lv1.value=lv2.value;
-        cat1.value=cat2.value;
-      }
-      toggleDisCategory(); // 更新類別顯示與產文
+    function syncDisab(){
+      if(!document.getElementById('s2_dis_level')) return;
+      toggleDisCategory();
     }
 
     // 蒐集
@@ -2061,29 +2241,27 @@
       // 吞嚥與口腔
       s.s1_swallow = document.getElementById('s1_swallow').value;
       s.s1_swallow_sx = collectChecks('s1_swallow_sx_box');
-      s.s1_diet_texture = document.getElementById('s1_diet_texture').value;
+      s.s1_diet_texture = collectChecks('s1_diet_texture_box');
       s.s1_feeding_tubes = collectChecks('s1_feeding_tube_box');
       s.s1_oral = collectChecks('s1_oral_box');
       s.s1_oral_note = document.getElementById('s1_oral_note').value;
       // 疼痛/皮膚 + 部位
       s.s1_pain = document.getElementById('s1_pain').value;
       s.s1_pain_score = document.getElementById('s1_pain_score').value;
-      s.s1_body_region = document.getElementById('s1_body_region').value;
-      const subChoice = document.getElementById('s1_subregion').value;
-      const subOtherTxt = (document.getElementById('s1_subregion_other').value||'').trim();
-      s.s1_subregion_choice = subChoice;
-      s.s1_subregion_other = subChoice === '其他' ? subOtherTxt : '';
-      s.s1_subregion = (subChoice === '其他') ? (subOtherTxt || '') : subChoice;
-      s.s1_laterality = document.getElementById('s1_laterality').value || '';
+      const painLoc = getLocationData('pain');
+      s.s1_body_region = painLoc.region;
+      s.s1_subregion_choice = painLoc.subChoice;
+      s.s1_subregion_other = painLoc.subOther;
+      s.s1_subregion = painLoc.subValue;
+      s.s1_laterality = painLoc.laterality;
 
       s.s1_lesion_has = document.getElementById('s1_lesion_has').value;
-      s.s1_lesion_region = document.getElementById('s1_lesion_region').value;
-      const lesionSubChoice = document.getElementById('s1_lesion_subregion').value;
-      const lesionSubOther = (document.getElementById('s1_lesion_subregion_other').value||'').trim();
-      s.s1_lesion_subregion_choice = lesionSubChoice;
-      s.s1_lesion_subregion_other = lesionSubChoice === '其他' ? lesionSubOther : '';
-      s.s1_lesion_subregion = (lesionSubChoice === '其他') ? (lesionSubOther || '') : lesionSubChoice;
-      s.s1_lesion_laterality = document.getElementById('s1_lesion_laterality').value || '';
+      const lesionLoc = getLocationData('lesion');
+      s.s1_lesion_region = lesionLoc.region;
+      s.s1_lesion_subregion_choice = lesionLoc.subChoice;
+      s.s1_lesion_subregion_other = lesionLoc.subOther;
+      s.s1_lesion_subregion = lesionLoc.subValue;
+      s.s1_lesion_laterality = lesionLoc.laterality;
       let layer = document.getElementById('s1_lesion_layer').value;
       if(layer==='其他'){
         const lo=(document.getElementById('s1_lesion_layer_other').value||'').trim();
@@ -2174,8 +2352,15 @@
       s.s1_med_classes = collectChecks('s1_med_classes_box','s1_med_classes_other');
 
       // 身障
-      s.s1_dis_level = document.getElementById('s1_dis_level').value; // 段一身障等級
-      s.s1_dis_cat = document.getElementById('s1_dis_cat').value; // 段一身障類別
+      const disLevelEl=document.getElementById('s2_dis_level');
+      const disCatEl=document.getElementById('s2_dis_cat');
+      const disLevel = disLevelEl ? disLevelEl.value : '';
+      let disCat = '';
+      if(disLevel && disLevel !== '無' && disCatEl){
+        disCat = disCatEl.value || '';
+      }
+      s.s1_dis_level = disLevel; // 段一身障等級（讀取自段二）
+      s.s1_dis_cat = disCat;     // 段一身障類別（讀取自段二）
 
       // 補充
       s.s1_notes = document.getElementById('s1_notes').value;
@@ -2195,24 +2380,54 @@
           messages.push('請填寫疼痛強度（1-10）');
           markSection1Invalid('s1_pain_score');
         }
-        const region = document.getElementById('s1_body_region').value;
-        if(!region){ messages.push('請選擇疼痛部位大分類'); markSection1Invalid('s1_body_region'); }
-        const subSel = document.getElementById('s1_subregion').value;
-        const subOther = (document.getElementById('s1_subregion_other').value||'').trim();
-        if(!subSel){ messages.push('請選擇疼痛細部分位'); markSection1Invalid('s1_subregion'); }
-        else if(subSel==='其他' && !subOther){ messages.push('請填寫疼痛細部分位（其他）'); markSection1Invalid('s1_subregion_other'); }
-        if(SYMMETRIC_PARTS.has(subSel)){ const lat = document.getElementById('s1_laterality').value; if(!lat){ messages.push('請選擇疼痛側別'); markSection1Invalid('s1_laterality'); } }
+        const painLoc = getLocationData('pain');
+        if(!painLoc.region){
+          messages.push('請選擇疼痛部位大分類');
+          switchLocationContext('pain');
+          markSection1Invalid('s1_location_region');
+        }
+        if(!painLoc.subChoice){
+          messages.push('請選擇疼痛細部分位');
+          switchLocationContext('pain');
+          markSection1Invalid('s1_location_subregion');
+        }else if(painLoc.subChoice==='其他' && !painLoc.subOther){
+          messages.push('請填寫疼痛細部分位（其他）');
+          switchLocationContext('pain');
+          markSection1Invalid('s1_location_subregion_other');
+        }
+        if(SYMMETRIC_PARTS.has(getLocationSubregionText(painLoc))){
+          if(!painLoc.laterality){
+            messages.push('請選擇疼痛側別');
+            switchLocationContext('pain');
+            markSection1Invalid('s1_location_laterality');
+          }
+        }
       }
 
       const lesionOn = document.getElementById('s1_lesion_has').value === '有';
       if(lesionOn){
-        const region = document.getElementById('s1_lesion_region').value;
-        if(!region){ messages.push('請選擇病灶部位大分類'); markSection1Invalid('s1_lesion_region'); }
-        const subSel = document.getElementById('s1_lesion_subregion').value;
-        const subOther = (document.getElementById('s1_lesion_subregion_other').value||'').trim();
-        if(!subSel){ messages.push('請選擇病灶細部分位'); markSection1Invalid('s1_lesion_subregion'); }
-        else if(subSel==='其他' && !subOther){ messages.push('請填寫病灶細部分位（其他）'); markSection1Invalid('s1_lesion_subregion_other'); }
-        if(SYMMETRIC_PARTS.has(subSel)){ const lat = document.getElementById('s1_lesion_laterality').value; if(!lat){ messages.push('請選擇病灶側別'); markSection1Invalid('s1_lesion_laterality'); } }
+        const lesionLoc = getLocationData('lesion');
+        if(!lesionLoc.region){
+          messages.push('請選擇病灶部位大分類');
+          switchLocationContext('lesion');
+          markSection1Invalid('s1_location_region');
+        }
+        if(!lesionLoc.subChoice){
+          messages.push('請選擇病灶細部分位');
+          switchLocationContext('lesion');
+          markSection1Invalid('s1_location_subregion');
+        }else if(lesionLoc.subChoice==='其他' && !lesionLoc.subOther){
+          messages.push('請填寫病灶細部分位（其他）');
+          switchLocationContext('lesion');
+          markSection1Invalid('s1_location_subregion_other');
+        }
+        if(SYMMETRIC_PARTS.has(getLocationSubregionText(lesionLoc))){
+          if(!lesionLoc.laterality){
+            messages.push('請選擇病灶側別');
+            switchLocationContext('lesion');
+            markSection1Invalid('s1_location_laterality');
+          }
+        }
 
         const layerSel = document.getElementById('s1_lesion_layer').value;
         const layerOther = (document.getElementById('s1_lesion_layer_other').value||'').trim();
@@ -2421,7 +2636,8 @@
         swallowBits.push(txt);
       }
       const dietBits=[];
-      if (has(s.s1_diet_texture)) dietBits.push(`飲食質地${s.s1_diet_texture}`);
+      const dietArr = Array.isArray(s.s1_diet_texture) ? s.s1_diet_texture : [];
+      if (dietArr.length) dietBits.push(`飲食質地：${listCN(dietArr)}`);
       const tubeArr = Array.isArray(s.s1_feeding_tubes) ? s.s1_feeding_tubes : [];
       if (tubeArr.length) dietBits.push(`管灌方式：${listCN(tubeArr)}`);
       if (dietBits.length) swallowBits.push(dietBits.join('，'));
@@ -2636,19 +2852,31 @@
         lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS2()"> ${name}`;
         host.appendChild(lab);
       });
-      const catSel=document.getElementById('s2_dis_cat'); catSel.innerHTML=''; // 段二身障類別選單
-      const catSel1=document.getElementById('s1_dis_cat'); if(catSel1) catSel1.innerHTML=''; // 段一身障類別選單
-      S2_CATS.forEach(c=>{ // 產生類別選項
-        const o=document.createElement('option'); o.textContent=c; catSel.appendChild(o); // 段二加入選項
-        if(catSel1){ const o1=document.createElement('option'); o1.textContent=c; catSel1.appendChild(o1); } // 段一加入選項
-      });
+      const catSel=document.getElementById('s2_dis_cat');
+      if(catSel){
+        catSel.innerHTML=''; // 段二身障類別選單
+        S2_CATS.forEach(c=>{ // 產生類別選項
+          const o=document.createElement('option'); o.textContent=c; catSel.appendChild(o); // 段二加入選項
+        });
+      }
     }
     function toggleDisCategory(){
-      const lv2=document.getElementById('s2_dis_level')?.value; // 段二身障等級
-      document.getElementById('disCatBox').style.display = (lv2 && lv2!=='無') ? '' : 'none'; // 控制段二類別
-      const lv1=document.getElementById('s1_dis_level')?.value; // 段一身障等級
-      const box1=document.getElementById('s1_dis_cat_box'); // 段一類別區塊
-      if(box1){ box1.style.display = (lv1 && lv1!=='無') ? '' : 'none'; } // 控制段一類別
+      const levelEl=document.getElementById('s2_dis_level');
+      if(!levelEl) return;
+      const catEl=document.getElementById('s2_dis_cat');
+      const level = levelEl ? levelEl.value : '';
+      const cat = catEl ? catEl.value : '';
+      const showCat = level && level !== '無';
+      const box2=document.getElementById('disCatBox');
+      if(box2) box2.style.display = showCat ? '' : 'none';
+
+      const levelText=document.getElementById('s1_dis_level_text');
+      if(levelText) levelText.textContent = level || '—';
+      const box1=document.getElementById('s1_dis_cat_box');
+      if(box1) box1.style.display = showCat ? '' : 'none';
+      const catText=document.getElementById('s1_dis_cat_text');
+      if(catText) catText.textContent = showCat ? (cat || '未註明') : '—';
+
       buildS2(); // 更新經濟收入段落
     }
     function buildS2(){
@@ -3540,7 +3768,9 @@
       toggleVisionNotes(); toggleTransportOther(); toggleDhxOther(); toggleMedOther();
       toggleUrineOther('day'); toggleUrineOther('night');
       toggleLesionCombined(); toggleLesionLayerOther(); togglePainCombined(); toggleLesionHospital();
-      renderHearingDetails(); updateSubregion(); updateLaterality('pain'); updateLesionSubregion(); updateLaterality('lesion');
+      renderHearingDetails();
+      applyLocationStateToUI();
+      updateLocationVisibility();
       toggleAdlHow('s1_adl_eating'); toggleAdlHow('s1_adl_groom'); toggleAdlHow('s1_adl_bathing');
       toggleAdlHow('s1_adl_dressing'); toggleAdlHow('s1_post_toilet'); toggleAdlHow('s1_meal_prep');
       toggleAdlHow('s1_housework'); toggleAdlHow('s1_finance');
@@ -3571,7 +3801,7 @@
       // addExtraRow();
 
       // 其它原有初始化
-      renderS2(); toggleDisCategory(); syncDisab('s2');
+      renderS2(); syncDisab();
       renderS3(); toggleOtherType(); buildS3();
       bindAutoGoalField('short_care');
       bindAutoGoalField('mid_care');
