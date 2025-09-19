@@ -3656,6 +3656,7 @@
         `;
         host.appendChild(row);
       });
+    }
 
 
     const servicePlanState = {};
@@ -4306,8 +4307,7 @@
       lines.push(`上述計畫，均告知${formatCaseDisplay()}其了解計畫內容並同意服務使用，並簽訂服務使用確認單。（請單位留存確認單備查）`);
       const manager=(document.getElementById('caseManagerName')?.value || '').trim() || '（請填寫個管師姓名）';
       lines.push(`個案管理員：${manager}`);
-      box.value = lines.join('
-');
+      box.value = lines.join('\n');
     }
 
     function serializeServicePlan(){
