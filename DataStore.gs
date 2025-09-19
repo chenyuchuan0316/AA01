@@ -1,8 +1,19 @@
-/** ============== LTCServiceData.gs =============
- * 桃園市長照給付資料庫（v1）常用資料表
- * 來源：桃園市_長照給付資料庫_v1.xlsx
- * ============================================ */
+/** ============================================================
+ * DataStore.gs
+ *
+ * 集中管理 AA01 使用的外部資源識別碼與桃園市長照給付
+ * 資料庫靜態資料。所有伺服端模組皆從此處取得設定或
+ * 參考資料，以確保來源一致且容易維護。
+ * ============================================================ */
 
+const TEMPLATE_DOC_ID   = '1xPMnoX6VvE46mHPEtEpUx1vq86ZSM9A123N_DKhlaWI';
+const OUTPUT_FOLDER_ID  = '1nzWSaZDP2z7ARiWCSZ5j6mSAwhWYIQBO';
+const MANAGERS_SHEET_ID = '1O5VcGEKycT396zP5Am2CFmUux9I3Hc7yRX77wrNthfA';
+const MANAGERS_SHEET_NAME = '工作表3';
+const CONSULTANTS_BOOK_ID  = '1GIkHN7Yz2rEhs0djFH4nm3ZsIHR6n_iXz2Nf9XZe1yg';
+const CONSULTANTS_BOOK_NAME = '照專名單';
+
+/** 桃園市長照給付資料庫（v1）常用資料表 */
 const TAOYUAN_LTC_DATA = {
   "needLevelsCaps": [
     {
