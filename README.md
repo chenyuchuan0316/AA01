@@ -18,10 +18,9 @@ HtmlService：Sidebar.html
    └── doGet()（Apps Script Web App 模式）
           ├── 收集輸入、組句、基本驗證
           └── 呼叫 google.script.run.applyAndSave(form)
-                  └── Main.gs / applyAndSave(form)
-                        ├── 依資料夾檔名計算版號 (FilesVersion.gs)
-                        ├── 依段落寫入內容 (H1_Sections.gs)
-                        └── 通用工具 (Utils.gs)
+                  └── AppCore.gs / applyAndSave(form)
+                        ├── 文件寫入器（H1 段落、附件頁）
+                        └── 服務資料查詢（透過 DataStore.gs）
 ```
 
 * **前端 (Sidebar.html)**：使用原生 HTML/CSS/JavaScript 建立表單介面，並在提交前負責資料整理、文字重組、欄位驗證。
@@ -34,14 +33,8 @@ HtmlService：Sidebar.html
 | 檔案 | 內容摘要 |
 | --- | --- |
 | `AGENTS.md` | 專案維護指南與開發原則。|
-| `Main.gs` | 建立「計畫助手」選單、顯示側欄、接收前端表單並驅動整體流程。|
-| `Constants.gs` | 集中管理外部資源 ID（模板文件、輸出資料夾、個管師/照專試算表）。部署前需依實際環境調整。|
-| `FilesVersion.gs` | 依現有檔案命名計算下一版號 (`baseName_Vn` → `n+1`)。|
-| `Utils.gs` | 共用函式：尋找標題段落、插入或取代段落內容、日期格式轉換等。所有 `applyH1_*` 函式與附件處理均仰賴這些工具。|
-| `LTCServiceData.gs` | 桃園市長照給付資料庫（v1）靜態資料表，提供 `getTaoyuanLtcData()` 與 `getTaoyuanLtcTable()` 供前端載入。|
-| `H1_Sections.gs` | 第一部分（H1）所有段落的寫入邏輯，集中於單一檔案並附詳細註解。|
-| `PlanAttachments.gs` | 產出附件頁：計畫執行規劃與服務明細（頁 2、頁 3）。|
-| `HRLookup.gs` | 透過 `SpreadsheetApp` 讀取 Google 試算表，依單位代碼抓取個管師/照專名單供前端下拉選單使用。|
+| `AppCore.gs` | 入口流程、文件寫入、通用工具與人員名單查詢皆集中於此。亦提供 `getServiceCatalog()` 給前端取得服務資料。|
+| `DataStore.gs` | 外部資源 ID 及桃園市長照給付資料庫靜態表，供 `AppCore.gs` 與前端查詢。|
 | `Sidebar.html` | 側欄 UI 與邏輯。負責收集使用者輸入、產生描述文字、基本驗證與呼叫後端函式。|
 
 ---
@@ -54,7 +47,7 @@ AA01 需在 Google Workspace 環境執行，並取得下列服務權限：
 * Google Drive API (`DriveApp`)：複製模板並寫入指定資料夾。
 * Google Sheets API (`SpreadsheetApp`)：讀取個管師及照專名單。
 
-部署前請在 `Constants.gs` 調整以下常數為自己環境的 ID：
+部署前請在 `DataStore.gs` 調整以下常數為自己環境的 ID：
 
 | 常數 | 用途 |
 | --- | --- |
@@ -92,7 +85,7 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
 
 1. **建立獨立 Apps Script 專案**
    - 前往 [script.google.com](https://script.google.com) 建立新的（未綁定任何文件的）專案。
-   - 將本儲存庫的所有檔案貼入專案；`Main.gs` 內的 `doGet()` 會回傳與側欄相同的 HtmlService 介面。
+   - 將本儲存庫的所有檔案貼入專案；`AppCore.gs` 內的 `doGet()` 會回傳與側欄相同的 HtmlService 介面。
 
 2. **設定常數**
    - 仍需依實際資源填入 `Constants.gs`，並確認模板/資料夾/試算表授權正確。
@@ -123,10 +116,10 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
    - 送出前執行驗證：必填欄位、部分協助的說明文字、皮膚病灶醫療院所等。
    - 將所有欄位整合成 `form` 物件，呼叫 `applyAndSave(form)`。
 
-3. **後端寫入** (`Main.gs` + `H1_Sections.gs`)
+3. **後端寫入** (`AppCore.gs`)
    - `applyAndSave` 先計算新檔名稱（`單位代碼_家訪日期_個案姓名_V{版號}`）。
    - 於 `OUTPUT_FOLDER_ID` 指定的資料夾中，以 `TEMPLATE_DOC_ID` 為模板建立副本並開啟 Body。
-   - `DOCUMENT_WRITERS` 依序呼叫 `applyH1_*` 函式處理各段落（皆集中於 `H1_Sections.gs`）：
+   - `DOCUMENT_WRITERS` 依序呼叫 `applyH1_*` 函式處理各段落（邏輯集中於 `AppCore.gs`）：
     - `applyH1_CallDate` / `applyH1_VisitDate`：更新標題列文字或插入出院日期。
     - `applyH1_Attendees`：組出偕同訪視者句子（包含主照者、照專、其他參與者）。
     - `applyH1_CaseProfile`：分段處理個案概況六大小節，必要時補上預設文字。
@@ -149,6 +142,7 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
   - `buildSection1Text_v2` 會根據輸入產出完整句子並呈現在預覽框。
 * **(二)~(四)**：經濟收入、居住環境、社會支持皆維持既有表單邏輯並組句。
 * **(五)(六)**：其他與複評評值可手動輸入文字，提供 AI 潤稿按鈕（目前僅回傳原文）。
+* **正式資源（B 服務）**：日間照顧與 BD03 交通車會依 CMS 等級及桃園市給付額度自動推估每週/每月可使用次數、耗用點數與剩餘額度，並將建議文字同步至服務計畫與附件摘要。所有服務代碼在加入計畫時，側欄亦會套用對應的「使用方式」範本，讓填寫者僅需視個案微調敘述。
 * **照顧目標**：支援問題清單（最多 5 項）及短/中/長期目標；長期目標會彙整短中期欄位。
 * **不一致原因與追蹤計畫**：常用快捷語句可勾選後自動附加在第三欄。
 * **附件預覽（其他備註分頁）**：顯示計畫執行規劃文字及服務明細表，與輸出附件同步更新。
@@ -158,14 +152,14 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
 
 ## 常見維護與擴充建議
 
-* 新增段落：在 `H1_Sections.gs` 中新增對應的 `applyH1_NewSection(body, form)`，並在 `Main.gs` 的 `DOCUMENT_WRITERS` 中按段落順序呼叫。
-* 調整輸出格式：優先修改 `H1_Sections.gs` 內的對應段落，必要時更新 `Utils.gs` 的輔助函式。
+* 新增段落：在 `AppCore.gs` 中新增對應的 `applyH1_NewSection(body, form)`，並於 `DOCUMENT_WRITERS` 中按段落順序呼叫。
+* 調整輸出格式：優先修改 `AppCore.gs` 內對應的 `applyH1_*` 段落，必要時更新同檔案中的共用工具函式。
 * 新增欄位：
   1. 在 `Sidebar.html` 新增 UI 與資料整合邏輯。
   2. 調整 `applyAndSave` 的 `form` 組裝。
-  3. 在 `H1_Sections.gs` 中對應的 `applyH1_*` 函式使用新欄位。
-* 更新給付資料：若桃園市長照給付標準調整，請同步更新 `桃園市_長照給付資料庫_v1.xlsx` 並重新產出 `LTCServiceData.gs`，同時檢視 `Sidebar.html` 內的服務代碼敘述是否對應。
-* 對接真實 AI 潤稿：在 `Main.gs` 的 `polishSection` 實作串接外部 API，並遵守資料隱私規範。
+  3. 在 `AppCore.gs` 中對應的 `applyH1_*` 函式使用新欄位。
+* 更新給付資料：若桃園市長照給付標準調整，請同步更新 `桃園市_長照給付資料庫_v1.xlsx` 並重新產出 `DataStore.gs` 中的 `TAOYUAN_LTC_DATA` 段落，同時檢視 `Sidebar.html` 內的服務代碼敘述是否對應。
+* 對接真實 AI 潤稿：在 `AppCore.gs` 的 `polishSection` 實作串接外部 API，並遵守資料隱私規範。
 
 ---
 
