@@ -782,7 +782,7 @@
           <div>
             <label>電話使用</label>
             <select id="s1_phone" onchange="togglePhoneNotes()">
-              <option>會接聽及撥號</option><option selected>只會接聽</option><option>不會使用</option>
+              <option selected>會撥打與接聽</option><option>僅能接聽</option><option>不會使用</option>
             </select>
             <div id="s1_phone_note_wrap" style="display:none; margin-top:6px;">
               <div class="checkcol" id="s1_phone_note_box"></div>
@@ -945,6 +945,8 @@
         <div class="hr"></div>
 
         <!-- 補充內容 + 預覽（自動產文） -->
+        <label>建議措施（已完成之提醒／安排）</label>
+        <textarea id="s1_actions" placeholder="請輸入具體行動，例如：已提醒家屬設定白名單，避免詐騙來電。"></textarea>
         <label>補充內容（選填）</label>
         <textarea id="s1_notes" placeholder="其他未涵蓋重點（限簡要）；將附加於段落末端。"></textarea>
         <textarea id="section1_out" style="display:none;"></textarea>
@@ -1453,12 +1455,12 @@
     const S1_DIET_TEXTURE_OPTIONS = ['一般','軟質','碎食','泥狀','蜂蜜稠','布丁稠'];
     const S1_FEEDING_TUBE_OPTIONS = ['鼻胃管（NGT）','胃造口（PEG）'];
     const S1_ORAL_OPTIONS = ['自然牙完整','缺牙','口腔衛生不佳','口乾','口臭','活動假牙（上）','活動假牙（下）','假牙不合／鬆動'];
-    const S1_EXCRETION_AID_OPTIONS = ['紙尿褲／尿墊','便盆椅','尿壺','導尿管（留置）','導尿管（間歇）','尿造口袋','糞造口袋','夜間集尿袋'];
+    const S1_EXCRETION_AID_OPTIONS = ['紙尿褲','尿墊','便盆椅','尿壺','留置導尿管','間歇導尿管','尿造口袋','糞造口袋','夜間集尿袋'];
     const S1_BALANCE_OPTIONS = ['站立不穩','頭暈','TUG>12s'];
     const S1_SITTING_SUPPORT_OPTIONS = ['需安全帶','需托盤／擋板','坐墊／防滑具'];
-    const S1_MOOD_BEHAVIOR_OPTIONS = ['焦慮','憂鬱','易怒','妄想／幻想','遊走','重複行為','日夜顛倒','脫序行為','囤積'];
-    const S1_PHONE_NOTE_OPTIONS = ['重聽需擴音','易受詐騙（建議白名單）','其他'];
-    const S1_DEVICE_OPTIONS = ['鼻導管氧氣','氧氣機','氣切','鼻胃管／PEG','導尿管','中心靜脈／PICC','造口（尿）','造口（糞）','CPAP／BiPAP','血糖機','藥盒'];
+    const S1_MOOD_BEHAVIOR_OPTIONS = ['妄想','幻想性言談','焦慮','憂鬱','易怒','遊走','重複行為','日夜顛倒','脫序行為','囤積'];
+    const S1_PHONE_NOTE_OPTIONS = ['重聽需擴音','易受詐騙','其他'];
+    const S1_DEVICE_OPTIONS = ['鼻胃管','胃造口管（PEG）','氣切管','鼻導管氧氣','氧氣機','中心靜脈導管','PICC 導管','呼吸輔助器（CPAP）','雙水平呼吸器（BiPAP）','血糖機','藥盒'];
     const INSOMNIA_DETAIL = {
       '疼痛': ['關節炎','骨刺','神經病變','慢性病帶來'],
       '頻尿': ['攝護腺肥大','膀胱功能下降','糖尿病','泌尿道疾病'],
@@ -2061,7 +2063,7 @@
       const sel=document.getElementById('s1_phone');
       const wrap=document.getElementById('s1_phone_note_wrap');
       if(!sel || !wrap) return;
-      const show = sel.value && sel.value !== '會接聽及撥號';
+      const show = sel.value && sel.value !== '會撥打與接聽';
       wrap.style.display = show ? '' : 'none';
       if(!show){
         wrap.querySelectorAll('input[type=checkbox]').forEach(c=>{ c.checked=false; });
@@ -2080,7 +2082,7 @@
     function hasNightCatheterSelection(){
       return [...document.querySelectorAll('#s1_excretion_aids_box input[type=checkbox]:checked')]
         .map(x=>x.value)
-        .some(v=>v==='導尿管（留置）' || v==='尿造口袋' || v==='糞造口袋' || v==='夜間集尿袋');
+        .some(v=>v==='留置導尿管' || v==='間歇導尿管' || v==='尿造口袋' || v==='糞造口袋' || v==='夜間集尿袋');
     }
 
     function updateNocturiaCountVisibility(){
@@ -2403,6 +2405,7 @@
       s.s1_dis_cat = disCat;     // 段一身障類別（讀取自段二）
 
       // 補充
+      s.s1_actions = document.getElementById('s1_actions').value;
       s.s1_notes = document.getElementById('s1_notes').value;
 
       return s;
@@ -2411,6 +2414,33 @@
     function validateSection1(){
       resetSection1Validation();
       const messages=[];
+
+      const hearingDetails = collectHearingDetails();
+      const needDeviceStatus = Array.isArray(hearingDetails) && hearingDetails.some(item => /助聽器|擴音/.test(item));
+      if (needDeviceStatus) {
+        const adherence = (document.getElementById('s1_hearing_device_adherence')?.value || '').trim();
+        if (!adherence) {
+          messages.push('請選擇助聽器/擴音使用情形');
+          markSection1Invalid('s1_hearing_device_adherence');
+        }
+      }
+
+      const phoneStatus = (document.getElementById('s1_phone')?.value || '').trim();
+      if (phoneStatus && phoneStatus !== '會撥打與接聽') {
+        const phoneChecks = [...document.querySelectorAll('#s1_phone_note_box input[type=checkbox]:checked')];
+        if (!phoneChecks.length) {
+          messages.push('請勾選電話使用原因');
+          markSection1Invalid('s1_phone_note_box');
+        }
+        const otherPhone = document.querySelector('#s1_phone_note_box input[value="其他"]');
+        if (otherPhone && otherPhone.checked) {
+          const otherVal = (document.getElementById('s1_phone_note_other')?.value || '').trim();
+          if (!otherVal) {
+            messages.push('請填寫電話使用其他原因');
+            markSection1Invalid('s1_phone_note_other');
+          }
+        }
+      }
 
       const painOn = document.getElementById('s1_pain').value === '有';
       if(painOn){
@@ -2548,6 +2578,65 @@
           default:
             return `跌倒史：${history}`;
         }
+      }
+
+      const EXCRETION_OUTPUT_MAP = {
+        '紙尿褲': '使用紙尿褲',
+        '尿墊': '使用尿墊',
+        '便盆椅': '排泄依靠便盆椅',
+        '尿壺': '使用尿壺協助排尿',
+        '留置導尿管': '以留置導尿管排尿',
+        '間歇導尿管': '以間歇導尿管排尿',
+        '尿造口袋': '使用尿造口袋收集尿液',
+        '糞造口袋': '使用糞造口袋收集排泄物',
+        '夜間集尿袋': '夜間需使用集尿袋'
+      };
+      function formatExcretionAids(list) {
+        const arr = Array.isArray(list) ? list : [];
+        return arr.map(item => EXCRETION_OUTPUT_MAP[item] || `使用${item}`);
+      }
+
+      const DEVICE_OUTPUT_MAP = {
+        '鼻胃管': '目前以鼻胃管進食',
+        '胃造口管（PEG）': '使用胃造口管餵食',
+        '氣切管': '留置氣切管維持呼吸道暢通',
+        '鼻導管氧氣': '使用鼻導管給氧',
+        '氧氣機': '使用氧氣機輔助呼吸',
+        '中心靜脈導管': '留置中心靜脈導管',
+        'PICC 導管': '留置 PICC 導管',
+        '呼吸輔助器（CPAP）': '持續使用 CPAP 呼吸輔助器',
+        '雙水平呼吸器（BiPAP）': '持續使用 BiPAP 呼吸輔助器',
+        '血糖機': '透過血糖機監測血糖',
+        '藥盒': '使用藥盒管理用藥'
+      };
+      function formatDeviceUsage(list, note) {
+        const arr = Array.isArray(list) ? list : [];
+        const sentences = arr.map(item => DEVICE_OUTPUT_MAP[item] || item);
+        if (sentences.length && has(note)) {
+          sentences[sentences.length - 1] += `（${note}）`;
+        } else if (!sentences.length && has(note)) {
+          sentences.push(note);
+        }
+        return sentences;
+      }
+
+      const PHONE_STATUS_TEXT = {
+        '會撥打與接聽': '電話操作無困難',
+        '僅能接聽': '僅能接聽電話，不會撥打',
+        '不會使用': '電話使用困難'
+      };
+      const PHONE_NOTE_TEXT = {
+        '重聽需擴音': '需擴音設備',
+        '易受詐騙': '曾多次受詐騙電話干擾'
+      };
+      function formatPhoneUsage(status, notes) {
+        if (!has(status)) return '';
+        const base = PHONE_STATUS_TEXT[status] || `電話${status}`;
+        const extras = (Array.isArray(notes) ? notes : []).map(note => PHONE_NOTE_TEXT[note] || note);
+        if (extras.length) {
+          return `${base}，${extras.join('，')}`;
+        }
+        return base;
       }
 
       function phraseAwareness(v) {
@@ -2745,16 +2834,16 @@
       const adlSub=adlSubArr.join("、");
       if (adlSub) adlBits.push(adlSub);
       const deviceArr = Array.isArray(s.s1_devices) ? s.s1_devices : [];
-      if (deviceArr.length) {
-        let deviceText = `管路／裝置：${listCN(deviceArr)}`;
-        if (has(s.s1_devices_note)) deviceText += `（${s.s1_devices_note}）`;
-        adlBits.push(deviceText);
+      const deviceSentences = formatDeviceUsage(deviceArr, s.s1_devices_note);
+      if (deviceSentences.length) {
+        adlBits.push(deviceSentences.join('、'));
       }
       const toiletBits=[];
       const dayUrine = formatUrination(s.s1_urine_day_choice, s.s1_urine_day_is_other, s.s1_urine_day);
       const excretionArr = Array.isArray(s.s1_excretion_aids) ? s.s1_excretion_aids : [];
-      const nightCatheter = excretionArr.some(v=>['導尿管（留置）','尿造口袋','糞造口袋','夜間集尿袋'].includes(v));
-      if (excretionArr.length) toiletBits.push(`使用排泄輔具：${listCN(excretionArr)}`);
+      const nightCatheter = excretionArr.some(v=>['留置導尿管','間歇導尿管','尿造口袋','糞造口袋','夜間集尿袋'].includes(v));
+      const excretionSentences = formatExcretionAids(excretionArr);
+      if (excretionSentences.length) toiletBits.push(excretionSentences.join('、'));
       if (has(dayUrine)) toiletBits.push(`白天排尿${dayUrine}`);
       if (nightCatheter) {
         toiletBits.push('夜間以導尿／集尿袋處理，不以起夜次數評估');
@@ -2772,12 +2861,9 @@
       // ⑥ 生活管理/睡眠
       const lifeBits=[];
       if (has(s.s1_phone)) {
-        let phoneText = s.s1_phone;
         const phoneArr = Array.isArray(s.s1_phone_notes) ? s.s1_phone_notes : [];
-        if (s.s1_phone !== '會接聽及撥號' && phoneArr.length) {
-          phoneText += `（${listCN(phoneArr)}）`;
-        }
-        lifeBits.push(`電話使用${phoneText}`);
+        const phoneText = formatPhoneUsage(s.s1_phone, phoneArr);
+        if (has(phoneText)) lifeBits.push(phoneText);
       }
       if (has(s.s1_shopping)){
         let shopping = s.s1_shopping;
@@ -2852,8 +2938,9 @@
 
       // ⑨ 補充（有才輸出）
       const p9 = has(s.s1_notes) ? s.s1_notes : "";
+      const actionText = has(s.s1_actions) ? s.s1_actions : "";
 
-      const segments=[p1,p2,p3,p4,pSwallow,p5,p6,p7,p9].filter(Boolean);
+      const segments=[p1,p2,p3,p4,pSwallow,p5,p6,p7,actionText,p9].filter(Boolean);
       return `${segments.join("。")}。`;
     }
 
@@ -4191,9 +4278,15 @@
       const msg=document.getElementById('msg'); msg.textContent='';
       const unitCode=document.getElementById('unitCode').value;
       const caseManagerName=document.getElementById('caseManagerName').value;
-      const caseName=(document.getElementById('caseName').value||'').trim();
+      const caseNameInput=document.getElementById('caseName');
+      const caseName=(caseNameInput?.value||'').trim();
       const consultName=(document.getElementById('consultName').value||'').trim();
-      if(!caseName){ msg.textContent='請輸入：個案姓名'; return; }
+      if(!caseName){
+        if(caseNameInput){ caseNameInput.classList.add('input-invalid'); caseNameInput.focus(); }
+        msg.textContent='請輸入：個案姓名';
+        return;
+      }
+      if(caseNameInput){ caseNameInput.classList.remove('input-invalid'); }
 
       let primaryCaregiverRel = (document.getElementById('primaryRel').value||'').trim();
       let primaryCaregiverName= (document.getElementById('primaryName').value||'').trim();
@@ -4335,6 +4428,7 @@
       document.getElementById('primaryName')?.addEventListener('input',  syncSocialPrimary);
       const caseNameInput=document.getElementById('caseName');
       if(caseNameInput){
+        caseNameInput.addEventListener('input', ()=>{ caseNameInput.classList.remove('input-invalid'); });
         caseNameInput.addEventListener('input', syncSocialPrimary);
         caseNameInput.addEventListener('input', updateConsultVisitText);
       }
