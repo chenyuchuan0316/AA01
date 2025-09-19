@@ -395,6 +395,7 @@
             <select id="s1_cognition">
               <option>清楚可應答</option>
               <option>需重複或放慢</option>
+              <option>健忘／短期記憶不佳</option>
               <option>表達或理解困難</option>
               <option>無法溝通</option>
               <option>無法評估</option>
@@ -403,7 +404,7 @@
           <div>
             <label>意識狀態</label>
             <select id="s1_awareness">
-              <option>清楚</option><option>健忘</option><option>遲鈍</option>
+              <option>清楚</option><option>遲鈍</option>
               <option>混亂</option><option>模糊</option><option>嗜睡</option><option>昏迷</option>
             </select>
           </div>
@@ -421,6 +422,14 @@
             <label>視力補充</label>
             <div class="checkcol" id="s1_vision_note_box"></div>
             <input id="s1_vision_other" type="text" placeholder="其他說明" style="display:none; margin-top:6px;">
+            <div id="s1_glasses_adherence_wrap" style="display:none; margin-top:6px;">
+              <select id="s1_glasses_adherence">
+                <option value="" class="placeholder-option" disabled selected>配戴情形</option>
+                <option>常態配戴</option>
+                <option>偶爾配戴</option>
+                <option>不配戴</option>
+              </select>
+            </div>
           </div>
 
           <!-- 聽力（新版：兩層） -->
@@ -438,6 +447,60 @@
           <div id="s1_hearing_detail_wrap" style="display:none;">
             <label>狀態說明（可複選）</label>
             <div class="checkcol" id="s1_hearing_detail_box"></div>
+            <div id="s1_hearing_device_wrap" style="display:none; margin-top:6px;">
+              <select id="s1_hearing_device_adherence">
+                <option value="" class="placeholder-option" disabled selected>助聽／擴音依從性</option>
+                <option>持續使用</option>
+                <option>間斷使用</option>
+                <option>不使用</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>溝通語言／方式</label>
+            <div class="checkcol" id="s1_lang_box"></div>
+            <input id="s1_lang_note" type="text" placeholder="備註（例如：以台語為主）" style="margin-top:6px;">
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div>
+            <label>吞嚥／嗆咳</label>
+            <select id="s1_swallow" onchange="toggleSwallow()">
+              <option>無困難</option>
+              <option>輕度</option>
+              <option>明顯困難</option>
+              <option>危險（需專評）</option>
+            </select>
+          </div>
+          <div id="s1_swallow_sx_wrap" style="display:none;">
+            <label>吞嚥症狀</label>
+            <div class="checkcol" id="s1_swallow_sx_box"></div>
+          </div>
+          <div id="s1_diet_wrap" style="display:none;">
+            <label>飲食質地</label>
+            <select id="s1_diet_texture">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option>一般</option>
+              <option>軟質</option>
+              <option>碎食</option>
+              <option>泥狀</option>
+              <option>蜂蜜稠</option>
+              <option>布丁稠</option>
+            </select>
+            <label style="margin-top:6px; display:block;">管灌</label>
+            <div class="checkcol" id="s1_feeding_tube_box"></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>口腔牙齒／假牙</label>
+            <div class="checkcol" id="s1_oral_box"></div>
+            <input id="s1_oral_note" type="text" placeholder="備註" style="margin-top:6px;">
           </div>
         </div>
 
@@ -554,13 +617,13 @@
           <div>
             <label>室內行走</label>
             <select id="s1_walk_indoor">
-              <option selected>無輔具緩慢</option><option>單拐</option><option>助行器</option><option>輪椅</option><option>無法</option>
+              <option selected>無輔具緩慢</option><option>單拐</option><option>四腳拐</option><option>助行器</option><option>輪椅</option><option>無法</option>
             </select>
           </div>
           <div>
             <label>外出行走</label>
             <select id="s1_walk_outdoor">
-              <option>獨立</option><option selected>單拐</option><option>助行器</option><option>輪椅</option><option>無法</option>
+              <option>獨立</option><option selected>單拐</option><option>四腳拐</option><option>助行器</option><option>輪椅</option><option>無法</option>
             </select>
           </div>
           <div>
@@ -568,6 +631,60 @@
             <select id="s1_stairs">
               <option>可獨立</option><option selected>需扶手</option><option>需人協助</option><option>無法</option>
             </select>
+          </div>
+          <div>
+            <label>偏側無力</label>
+            <select id="s1_weak_laterality">
+              <option>無</option>
+              <option>左側</option>
+              <option>右側</option>
+              <option>雙側</option>
+            </select>
+          </div>
+          <div>
+            <label>跌倒史</label>
+            <select id="s1_fall_history" onchange="toggleFallDetail()">
+              <option>無</option>
+              <option>過去1年1次</option>
+              <option>過去1年≧2次</option>
+              <option>不明</option>
+            </select>
+            <input id="s1_fall_times" type="number" min="0" placeholder="次數" style="display:none; margin-top:6px;">
+          </div>
+          <div style="grid-column:1 / -1;">
+            <label>平衡狀態</label>
+            <div class="checkcol" id="s1_balance_box"></div>
+          </div>
+          <div>
+            <label>坐姿穩定／輪椅安全</label>
+            <select id="s1_sitting_stability" onchange="toggleSittingSupports()">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option>穩定</option>
+              <option>易前傾</option>
+              <option>易滑落</option>
+            </select>
+            <div class="checkcol" id="s1_sitting_support_box" style="display:none; margin-top:6px;"></div>
+          </div>
+          <div>
+            <label>步態</label>
+            <select id="s1_gait">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option>正常</option>
+              <option>拖步</option>
+              <option>小碎步</option>
+              <option>步寬增大</option>
+              <option>偏斜</option>
+              <option>跨步不穩</option>
+              <option>其他</option>
+            </select>
+            <input id="s1_gait_note" type="text" placeholder="備註" style="margin-top:6px;">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label>排泄輔具</label>
+            <div class="checkcol" id="s1_excretion_aids_box"></div>
           </div>
         </div>
 
@@ -608,13 +725,18 @@
             </select>
             <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
-          <div>
+          <div id="s1_urine_night_wrap">
             <label>夜間排尿</label>
             <select id="s1_urine_night" onchange="toggleUrineOther('night')">
-              <option selected>夜間未起夜</option><option>夜間起夜1次</option><option>夜間起夜2–3次</option><option>夜間有尿失禁</option><option>其他</option>
+              <option selected>夜間未起夜</option><option>夜間起夜1次</option><option>夜間起夜2–3次</option><option>夜間起夜≥4次</option><option>夜間有尿失禁</option><option>其他</option>
             </select>
             <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
+          <div id="s1_nocturia_wrap" style="display:none;">
+            <label>夜尿數值</label>
+            <input id="s1_nocturia_count" type="number" min="0" max="10" placeholder="0-10">
+          </div>
+          <div id="s1_night_catheter_note" class="hint" style="display:none; grid-column:1 / -1;">夜間以導尿／集尿袋處理，不以起夜次數評估</div>
           <div>
             <label>如廁後清潔</label>
             <select id="s1_post_toilet" onchange="toggleAdlHow('s1_post_toilet')">
@@ -630,9 +752,13 @@
         <div class="grid3">
           <div>
             <label>電話使用</label>
-            <select id="s1_phone">
+            <select id="s1_phone" onchange="togglePhoneNotes()">
               <option>會接聽及撥號</option><option selected>只會接聽</option><option>不會使用</option>
             </select>
+            <div id="s1_phone_note_wrap" style="display:none; margin-top:6px;">
+              <div class="checkcol" id="s1_phone_note_box"></div>
+              <input id="s1_phone_note_other" type="text" placeholder="其他說明" style="display:none; margin-top:6px;">
+            </div>
           </div>
           <div>
             <label>外出購物</label>
@@ -641,7 +767,7 @@
             </select>
             <select id="s1_shopping_how" style="display:none; margin-top:6px;" onchange="toggleShoppingHow()">
               <option value="" class="placeholder-option" disabled selected>方式/說明</option>
-              <option>家屬陪同購物</option><option>由家屬代購</option><option>使用外送平台</option><option>其他</option>
+              <option>家屬陪同購物</option><option>由家屬代購</option><option>使用外送平台</option><option>居服員陪同／代購</option><option>外看（看護／志工）代購</option><option>其他</option>
             </select>
             <input id="s1_shopping_how_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
           </div>
@@ -675,6 +801,30 @@
               <option selected>獨立</option><option>部分協助</option><option>他人代辦</option>
             </select>
             <input id="s1_finance_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;">
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label>情緒／行為（可複選）</label>
+            <div class="checkcol" id="s1_mood_behaviors_box"></div>
+          </div>
+          <div>
+            <label>執行動機／需督促</label>
+            <select id="s1_motivation">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option>主動配合</option>
+              <option>需提醒／督促</option>
+              <option>拒絕／抗拒</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:8px;">
+          <div>
+            <label>管路／裝置</label>
+            <div class="checkcol" id="s1_devices_box"></div>
+            <input id="s1_devices_note" type="text" placeholder="備註" style="margin-top:6px;">
           </div>
         </div>
 
@@ -1220,16 +1370,26 @@
     /* ================== (一) 身心概況：字典、連動、蒐集、產文 ================== */
 
     // 字典
-    const S1_VISION_NOTES = ['白內障術後','配戴眼鏡','其他'];
+    const S1_VISION_NOTES = ['白內障術後','配戴眼鏡','老花','單眼視力不佳','護目鏡依從性差','其他'];
     const VISION_NOTE_SUGGESTION = {
       '靠近才能辨識': ['配戴眼鏡'],
       '即使配戴眼鏡，仍難以辨識': ['配戴眼鏡'],
       '僅能分辨明暗，無法辨識人臉或物體輪廓': ['其他'],
       '完全失去視覺功能，無法感知光線': ['其他']
     };
-    const S1_LESION_SX_LIST = ['疼痛','搔癢','出血','紅腫','滲液','潰瘍','無不適'];
+    const S1_LESION_SX_LIST = ['疼痛','搔癢','出血','紅腫','滲液','潰瘍','脫屑','壓紅','無不適'];
     const S1_DHX_LIST     = ['高血壓','糖尿病','高脂血症','心臟病','腦中風','失智症','慢性腎臟病','慢性阻塞性肺病','退化性關節炎','其他'];
-    const S1_MED_CLASSES  = ['降壓藥','甲狀腺藥','降脂藥','抗焦慮藥','其他'];
+    const S1_MED_CLASSES  = ['降壓藥','甲狀腺藥','降脂藥','抗焦慮／鎮定','睡眠用藥','精神科用藥','抗血栓／抗凝','利尿劑','胃腸用藥','止痛藥','止咳化痰','降血糖／胰島素','攝護腺用藥','其他'];
+    const S1_LANG_OPTIONS = ['國語','台語','客語','原住民語','英語','手勢／書寫','讀唇','溝通板／App'];
+    const S1_SWALLOW_SX_OPTIONS = ['嗆咳','殘留','口水外漏','吞嚥延遲','需要吞嚥訓練'];
+    const S1_FEEDING_TUBE_OPTIONS = ['鼻胃管（NGT）','胃造口（PEG）'];
+    const S1_ORAL_OPTIONS = ['自然牙完整','缺牙','口腔衛生不佳','口乾','口臭','活動假牙（上）','活動假牙（下）','假牙不合／鬆動'];
+    const S1_EXCRETION_AID_OPTIONS = ['紙尿褲／尿墊','便盆椅','尿壺','導尿管（留置）','導尿管（間歇）','尿造口袋','糞造口袋','夜間集尿袋'];
+    const S1_BALANCE_OPTIONS = ['站立不穩','頭暈','TUG>12s'];
+    const S1_SITTING_SUPPORT_OPTIONS = ['需安全帶','需托盤／擋板','坐墊／防滑具'];
+    const S1_MOOD_BEHAVIOR_OPTIONS = ['焦慮','憂鬱','易怒','妄想／幻想','遊走','重複行為','日夜顛倒','脫序行為','囤積'];
+    const S1_PHONE_NOTE_OPTIONS = ['重聽需擴音','易受詐騙（建議白名單）','其他'];
+    const S1_DEVICE_OPTIONS = ['鼻導管氧氣','氧氣機','氣切','鼻胃管／PEG','導尿管','中心靜脈／PICC','造口（尿）','造口（糞）','CPAP／BiPAP','血糖機','藥盒'];
     const INSOMNIA_DETAIL = {
       '疼痛': ['關節炎','骨刺','神經病變','慢性病帶來'],
       '頻尿': ['攝護腺肥大','膀胱功能下降','糖尿病','泌尿道疾病'],
@@ -1244,15 +1404,15 @@
     const HEARING_DETAIL = {
       '無明顯異常': ['對話流暢，無需特別協助'],
       '輕度受損':   ['需提高音量','在安靜環境下才能聽清'],
-      '中度受損':   ['需近距離交談','借助助聽器才能理解'],
-      '重度受損':   ['助聽器效果有限','需讀唇或書寫輔助'],
+      '中度受損':   ['需近距離交談','借助助聽器才能理解','使用擴音設備','助聽器需維修／電量管理'],
+      '重度受損':   ['助聽器效果有限','需讀唇或書寫輔助','使用擴音設備','助聽器需維修／電量管理','不配戴（依從性差）'],
       '極重度受損': ['僅能感知大聲或震動','幾乎無法辨識語音內容'],
       '完全失聰':   ['完全聽不見','無法感知聲音']
     };
 
     // 疼痛部位 × 皮膚病灶：大分類 → 細部分位 → 側別
     const REGION_MAP = {
-      '頭頸部': ['頭部','眼睛','口腔牙齒','咽喉','頸部'],
+      '頭頸部': ['頭部','眼睛','面部','口腔牙齒','咽喉','頸部'],
       '上肢':   ['肩膀','手臂','手部'],
       '軀幹':   ['胸部','腹部','背部','腰部','臀部'],
       '下肢':   ['大腿','膝蓋','小腿','足部'],
@@ -1290,6 +1450,107 @@
         meds.appendChild(lab);
       });
 
+      const langBox=document.getElementById('s1_lang_box');
+      if(langBox){
+        langBox.innerHTML='';
+        S1_LANG_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="lang_${i}"> ${name}`;
+          langBox.appendChild(lab);
+        });
+      }
+
+      const swallowBox=document.getElementById('s1_swallow_sx_box');
+      if(swallowBox){
+        swallowBox.innerHTML='';
+        S1_SWALLOW_SX_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="swallow_${i}"> ${name}`;
+          swallowBox.appendChild(lab);
+        });
+      }
+
+      const tubeBox=document.getElementById('s1_feeding_tube_box');
+      if(tubeBox){
+        tubeBox.innerHTML='';
+        S1_FEEDING_TUBE_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="tube_${i}"> ${name}`;
+          tubeBox.appendChild(lab);
+        });
+      }
+
+      const oralBox=document.getElementById('s1_oral_box');
+      if(oralBox){
+        oralBox.innerHTML='';
+        S1_ORAL_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="oral_${i}"> ${name}`;
+          oralBox.appendChild(lab);
+        });
+      }
+
+      const excretionBox=document.getElementById('s1_excretion_aids_box');
+      if(excretionBox){
+        excretionBox.innerHTML='';
+        S1_EXCRETION_AID_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="exaid_${i}" onchange="updateExcretionAidEffects()"> ${name}`;
+          excretionBox.appendChild(lab);
+        });
+      }
+
+      const balanceBox=document.getElementById('s1_balance_box');
+      if(balanceBox){
+        balanceBox.innerHTML='';
+        S1_BALANCE_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="balance_${i}"> ${name}`;
+          balanceBox.appendChild(lab);
+        });
+      }
+
+      const sittingSupportBox=document.getElementById('s1_sitting_support_box');
+      if(sittingSupportBox){
+        sittingSupportBox.innerHTML='';
+        S1_SITTING_SUPPORT_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="sit_${i}"> ${name}`;
+          sittingSupportBox.appendChild(lab);
+        });
+      }
+
+      const moodBox=document.getElementById('s1_mood_behaviors_box');
+      if(moodBox){
+        moodBox.innerHTML='';
+        S1_MOOD_BEHAVIOR_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="mood_${i}"> ${name}`;
+          moodBox.appendChild(lab);
+        });
+      }
+
+      const phoneNoteBox=document.getElementById('s1_phone_note_box');
+      if(phoneNoteBox){
+        phoneNoteBox.innerHTML='';
+        S1_PHONE_NOTE_OPTIONS.forEach((name,i)=>{
+          const handler = name==='其他' ? ' onchange="togglePhoneNoteOther()"' : '';
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="phonenote_${i}"${handler}> ${name}`;
+          phoneNoteBox.appendChild(lab);
+        });
+      }
+
+      const deviceBox=document.getElementById('s1_devices_box');
+      if(deviceBox){
+        deviceBox.innerHTML='';
+        S1_DEVICE_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="device_${i}"> ${name}`;
+          deviceBox.appendChild(lab);
+        });
+      }
+
     }
 
     function setupLesionSymptomsBox(){
@@ -1321,6 +1582,7 @@
         });
       }
       toggleVisionOther();
+      toggleGlassesAdherence();
     }
     function onVisionNoteChange(event){
       const target=event && event.target;
@@ -1328,10 +1590,22 @@
         target.removeAttribute('data-auto');
       }
       toggleVisionOther();
+      toggleGlassesAdherence();
     }
     function toggleVisionOther(){
       const hasOther = document.querySelector('#s1_vision_note_box input[value="其他"]')?.checked;
       document.getElementById('s1_vision_other').style.display = hasOther?'':'none';
+    }
+    function toggleGlassesAdherence(){
+      const wrap=document.getElementById('s1_glasses_adherence_wrap');
+      if(!wrap) return;
+      const checks=[...document.querySelectorAll('#s1_vision_note_box input[type=checkbox]:checked')].map(x=>x.value);
+      const need=checks.some(v=>v==='配戴眼鏡'||v==='護目鏡依從性差');
+      wrap.style.display = need ? '' : 'none';
+      if(!need){
+        const sel=document.getElementById('s1_glasses_adherence');
+        if(sel) sel.value='';
+      }
     }
 
     // 聽力兩層渲染
@@ -1340,15 +1614,30 @@
       const wrap  = document.getElementById('s1_hearing_detail_wrap');
       const box   = document.getElementById('s1_hearing_detail_box');
       if(!level){ wrap.style.display='none'; box.innerHTML=''; return; }
-      const items = HEARING_DETAIL[level] || [];
+      const items = (HEARING_DETAIL[level] || []).slice();
+      const extra = '在嘈雜環境下理解困難';
+      if(!items.includes(extra)) items.push(extra);
       box.innerHTML = '';
       items.forEach((txt, i)=>{
         const id = 'hear_'+i;
         const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${txt}" id="${id}"> ${txt}`;
+        lab.innerHTML=`<input type="checkbox" value="${txt}" id="${id}" onchange="toggleHearingDeviceAdherence()"> ${txt}`;
         box.appendChild(lab);
       });
       wrap.style.display='';
+      toggleHearingDeviceAdherence();
+    }
+
+    function toggleHearingDeviceAdherence(){
+      const wrap=document.getElementById('s1_hearing_device_wrap');
+      if(!wrap) return;
+      const checks=[...document.querySelectorAll('#s1_hearing_detail_box input[type=checkbox]')];
+      const need=checks.some(c=>c.checked && (c.value==='借助助聽器才能理解' || c.value==='使用擴音設備'));
+      wrap.style.display = need ? '' : 'none';
+      if(!need){
+        const sel=document.getElementById('s1_hearing_device_adherence');
+        if(sel) sel.value='';
+      }
     }
 
     // 疼痛預設無；有→顯示 1-10
@@ -1494,6 +1783,114 @@
       if(!show) input.value='';
     }
 
+    function toggleSwallow(){
+      const sel=document.getElementById('s1_swallow');
+      const level=sel ? sel.value : '';
+      const detailOn = level && level !== '無困難';
+      const sxWrap=document.getElementById('s1_swallow_sx_wrap');
+      if(sxWrap){
+        sxWrap.style.display = detailOn ? '' : 'none';
+        if(!detailOn){
+          sxWrap.querySelectorAll('input[type=checkbox]').forEach(c=>{ c.checked=false; });
+        }
+      }
+      const dietWrap=document.getElementById('s1_diet_wrap');
+      if(dietWrap){
+        dietWrap.style.display = detailOn ? '' : 'none';
+        if(!detailOn){
+          const dietSel=document.getElementById('s1_diet_texture');
+          if(dietSel) dietSel.value='';
+          document.querySelectorAll('#s1_feeding_tube_box input[type=checkbox]').forEach(c=>{ c.checked=false; });
+        }
+      }
+    }
+
+    function toggleFallDetail(){
+      const sel=document.getElementById('s1_fall_history');
+      const input=document.getElementById('s1_fall_times');
+      if(!sel || !input) return;
+      const value=sel.value;
+      const show = value==='過去1年1次' || value==='過去1年≧2次';
+      input.style.display = show ? '' : 'none';
+      if(!show) input.value='';
+    }
+
+    function toggleSittingSupports(){
+      const sel=document.getElementById('s1_sitting_stability');
+      const box=document.getElementById('s1_sitting_support_box');
+      if(!sel || !box) return;
+      const show = sel.value && sel.value !== '穩定';
+      box.style.display = show ? '' : 'none';
+      if(!show){
+        box.querySelectorAll('input[type=checkbox]').forEach(c=>{ c.checked=false; });
+      }
+    }
+
+    function togglePhoneNotes(){
+      const sel=document.getElementById('s1_phone');
+      const wrap=document.getElementById('s1_phone_note_wrap');
+      if(!sel || !wrap) return;
+      const show = sel.value && sel.value !== '會接聽及撥號';
+      wrap.style.display = show ? '' : 'none';
+      if(!show){
+        wrap.querySelectorAll('input[type=checkbox]').forEach(c=>{ c.checked=false; });
+      }
+      togglePhoneNoteOther();
+    }
+
+    function togglePhoneNoteOther(){
+      const other=document.getElementById('s1_phone_note_other');
+      if(!other) return;
+      const on=document.querySelector('#s1_phone_note_box input[value="其他"]')?.checked;
+      other.style.display = on ? '' : 'none';
+      if(!on) other.value='';
+    }
+
+    function hasNightCatheterSelection(){
+      return [...document.querySelectorAll('#s1_excretion_aids_box input[type=checkbox]:checked')]
+        .map(x=>x.value)
+        .some(v=>v==='導尿管（留置）' || v==='尿造口袋' || v==='糞造口袋' || v==='夜間集尿袋');
+    }
+
+    function updateNocturiaCountVisibility(){
+      const wrap=document.getElementById('s1_nocturia_wrap');
+      const input=document.getElementById('s1_nocturia_count');
+      if(hasNightCatheterSelection()){
+        if(wrap) wrap.style.display='none';
+        if(input) input.value='';
+        return;
+      }
+      const sel=document.getElementById('s1_urine_night');
+      if(!wrap || !sel){
+        if(wrap) wrap.style.display='none';
+        if(input) input.value='';
+        return;
+      }
+      const value=sel.value;
+      const show=value && value !== '夜間未起夜';
+      wrap.style.display = show ? '' : 'none';
+      if(!show && input) input.value='';
+    }
+
+    function updateExcretionAidEffects(){
+      const nightWrap=document.getElementById('s1_urine_night_wrap');
+      const other=document.getElementById('s1_urine_night_other');
+      const note=document.getElementById('s1_night_catheter_note');
+      const sel=document.getElementById('s1_urine_night');
+      const hasCatheter=hasNightCatheterSelection();
+      if(hasCatheter){
+        if(nightWrap) nightWrap.style.display='none';
+        if(note) note.style.display='';
+        if(sel) sel.value='';
+        if(other){ other.style.display='none'; other.value=''; }
+      }else{
+        if(nightWrap) nightWrap.style.display='';
+        if(note) note.style.display='none';
+        toggleUrineOther('night');
+      }
+      updateNocturiaCountVisibility();
+    }
+
     function toggleAdlHow(id){
       const sel=document.getElementById(id);
       const input=document.getElementById(id+'_how');
@@ -1529,6 +1926,7 @@
       const show = sel.value==='其他';
       input.style.display = show?'':'none';
       if(!show) input.value='';
+      if(type==='night') updateNocturiaCountVisibility();
     }
     function toggleDhxOther(){
       const on = document.querySelector('#s1_dhx_box input[value="其他"]')?.checked;
@@ -1651,11 +2049,22 @@
       s.s1_gender = document.getElementById('s1_gender').value;
       s.s1_awareness = document.getElementById('s1_awareness').value;
       s.s1_cognition = document.getElementById('s1_cognition').value;
+      s.s1_lang = collectChecks('s1_lang_box');
+      s.s1_lang_note = document.getElementById('s1_lang_note').value;
       // 視聽
       s.s1_vision = document.getElementById('s1_vision').value;
       s.s1_vision_note = collectChecks('s1_vision_note_box','s1_vision_other');
+      s.s1_glasses_adherence = document.getElementById('s1_glasses_adherence').value;
       s.s1_hearing_level = document.getElementById('s1_hearing_level').value;
       s.s1_hearing_details = collectHearingDetails();
+      s.s1_hearing_device_adherence = document.getElementById('s1_hearing_device_adherence').value;
+      // 吞嚥與口腔
+      s.s1_swallow = document.getElementById('s1_swallow').value;
+      s.s1_swallow_sx = collectChecks('s1_swallow_sx_box');
+      s.s1_diet_texture = document.getElementById('s1_diet_texture').value;
+      s.s1_feeding_tubes = collectChecks('s1_feeding_tube_box');
+      s.s1_oral = collectChecks('s1_oral_box');
+      s.s1_oral_note = document.getElementById('s1_oral_note').value;
       // 疼痛/皮膚 + 部位
       s.s1_pain = document.getElementById('s1_pain').value;
       s.s1_pain_score = document.getElementById('s1_pain_score').value;
@@ -1692,6 +2101,14 @@
       s.s1_walk_indoor = document.getElementById('s1_walk_indoor').value;
       s.s1_walk_outdoor = document.getElementById('s1_walk_outdoor').value;
       s.s1_stairs = document.getElementById('s1_stairs').value;
+      s.s1_weak_laterality = document.getElementById('s1_weak_laterality').value;
+      s.s1_fall_history = document.getElementById('s1_fall_history').value;
+      s.s1_fall_times = document.getElementById('s1_fall_times').value;
+      s.s1_balance = collectChecks('s1_balance_box');
+      s.s1_sitting_stability = document.getElementById('s1_sitting_stability').value;
+      s.s1_sitting_supports = collectChecks('s1_sitting_support_box');
+      s.s1_gait = document.getElementById('s1_gait').value;
+      s.s1_gait_note = document.getElementById('s1_gait_note').value;
       s.s1_adl_eating = document.getElementById('s1_adl_eating').value;
       s.s1_adl_eating_how = document.getElementById('s1_adl_eating_how').value;
       s.s1_adl_groom = document.getElementById('s1_adl_groom').value;
@@ -1700,6 +2117,7 @@
       s.s1_adl_bathing_how = document.getElementById('s1_adl_bathing_how').value;
       s.s1_adl_dressing = document.getElementById('s1_adl_dressing').value;
       s.s1_adl_dressing_how = document.getElementById('s1_adl_dressing_how').value;
+      s.s1_excretion_aids = collectChecks('s1_excretion_aids_box');
       const urineDaySel = document.getElementById('s1_urine_day').value;
       const urineDayOther = (document.getElementById('s1_urine_day_other').value||'').trim();
       s.s1_urine_day_choice = urineDaySel;
@@ -1713,11 +2131,13 @@
       s.s1_urine_night_is_other = (urineNightSel==='其他' && !!urineNightOther);
       s.s1_urine_night_other = s.s1_urine_night_is_other ? urineNightOther : '';
       s.s1_urine_night = s.s1_urine_night_is_other ? urineNightOther : urineNightSel;
+      s.s1_nocturia_count = document.getElementById('s1_nocturia_count').value;
       s.s1_post_toilet = document.getElementById('s1_post_toilet').value;
       s.s1_post_toilet_how = document.getElementById('s1_post_toilet_how').value;
 
       // 生活管理
       s.s1_phone = document.getElementById('s1_phone').value;
+      s.s1_phone_notes = collectChecks('s1_phone_note_box','s1_phone_note_other');
       s.s1_shopping = document.getElementById('s1_shopping').value;
       s.s1_shopping_how = document.getElementById('s1_shopping_how').value;
       s.s1_shopping_how_other = document.getElementById('s1_shopping_how_other').value;
@@ -1735,6 +2155,10 @@
       s.s1_sleep_reason_detail = document.getElementById('s1_sleep_reason_detail').value;
       s.s1_sleep_reason_other = document.getElementById('s1_sleep_reason_other').value;
       s.s1_daytime = document.getElementById('s1_daytime').value;
+      s.s1_mood_behaviors = collectChecks('s1_mood_behaviors_box');
+      s.s1_motivation = document.getElementById('s1_motivation').value;
+      s.s1_devices = collectChecks('s1_devices_box');
+      s.s1_devices_note = document.getElementById('s1_devices_note').value;
 
       // 疾病/用藥/就醫
       s.s1_dhx = collectChecks('s1_dhx_box','s1_dhx_other');
@@ -1842,18 +2266,39 @@
         if (has(laterality)) text += `（${laterality}）`;
         return text;
       }
-      function formatUrination(choice, isOther, value) {
+      function formatUrination(choice, isOther, value, extra) {
         if (isOther) {
           return has(value) ? `其他（${value}）` : '其他';
         }
-        return choice || value || '';
+        let text = choice || value || '';
+        if (has(extra) && text && text !== '夜間未起夜') {
+          text += `（夜尿 ${extra} 次）`;
+        }
+        return text;
+      }
+      function formatFallHistory(history, times) {
+        if (!has(history)) return '';
+        const count = has(times) ? Number(times) : NaN;
+        switch (String(history)) {
+          case '無':
+            return '近一年無跌倒紀錄';
+          case '過去1年1次':
+            if (!Number.isNaN(count) && count > 0) return `過去一年曾跌倒${count}次`;
+            return '過去一年曾跌倒1次';
+          case '過去1年≧2次':
+            if (!Number.isNaN(count) && count > 0) return `過去一年曾跌倒${count}次`;
+            return '過去一年跌倒兩次以上';
+          case '不明':
+            return '跌倒史不明';
+          default:
+            return `跌倒史：${history}`;
+        }
       }
 
       function phraseAwareness(v) {
         if (!has(v)) return "";
         switch (String(v)) {
           case "清楚": return "意識清楚";
-          case "健忘": return "意識健忘";
           case "遲鈍": return "意識遲鈍";
           case "混亂": return "意識混亂";
           case "模糊": return "意識模糊";
@@ -1867,6 +2312,7 @@
         switch (String(v)) {
           case "清楚可應答":     return "認知清楚可應答";
           case "需重複或放慢":   return "認知需重複或放慢";
+          case "健忘／短期記憶不佳": return "認知健忘明顯";
           case "表達或理解困難": return "表達或理解困難";
           case "無法溝通":       return "無法溝通";
           case "無法評估":       return "認知狀態無法評估";
@@ -1891,17 +2337,38 @@
       const aw = phraseAwareness(s.s1_awareness);
       const cg = phraseCognition(s.s1_cognition);
       if (aw || cg) header.push([aw, cg].filter(Boolean).join("，"));
+      const langArr = Array.isArray(s.s1_lang) ? s.s1_lang : [];
+      if (langArr.length) {
+        let langText = `溝通以${listCN(langArr)}為主`;
+        if (has(s.s1_lang_note)) langText += `（${s.s1_lang_note}）`;
+        header.push(langText);
+      }
       const p1 = header.join("，");
 
       // ② 視聽
       let visionPhrase = phraseVision(s.s1_vision);
-      const vNotes = [].concat(Array.isArray(s.s1_vision_note) ? s.s1_vision_note : (has(s.s1_vision_note) ? [s.s1_vision_note] : []));
+      const vNotesRaw = [].concat(Array.isArray(s.s1_vision_note) ? s.s1_vision_note : (has(s.s1_vision_note) ? [s.s1_vision_note] : []));
+      const vNotes = vNotesRaw.map(note=>{
+        if ((note === '配戴眼鏡' || note === '護目鏡依從性差') && has(s.s1_glasses_adherence)) {
+          return `${note}（${s.s1_glasses_adherence}）`;
+        }
+        return note;
+      });
       if (visionPhrase && vNotes.length) visionPhrase += `（${listCN(vNotes)}）`;
       let hearingPhrase = '';
       if (has(s.s1_hearing_level)) {
         hearingPhrase = `聽力${s.s1_hearing_level}`;
-        if (Array.isArray(s.s1_hearing_details) && s.s1_hearing_details.length){
-          hearingPhrase += `（${listCN(s.s1_hearing_details)}）`;
+        const hearingDetails = Array.isArray(s.s1_hearing_details) ? s.s1_hearing_details.slice() : [];
+        if (hearingDetails.length && has(s.s1_hearing_device_adherence)){
+          for (let i=0;i<hearingDetails.length;i++){
+            const detail = hearingDetails[i];
+            if(detail==='借助助聽器才能理解' || detail==='使用擴音設備'){
+              hearingDetails[i] = `${detail}（${s.s1_hearing_device_adherence}）`;
+            }
+          }
+        }
+        if (hearingDetails.length){
+          hearingPhrase += `（${listCN(hearingDetails)}）`;
         }
       }
       const p2 = [visionPhrase, hearingPhrase].filter(Boolean).join("，");
@@ -1943,12 +2410,57 @@
       }
       const p3 = [painBits.join('，'), lesionBits.join('，')].filter(Boolean).join('；');
 
+      // 吞嚥/飲食/口腔
+      const swallowBits=[];
+      if (has(s.s1_swallow)) {
+        let txt = `吞嚥${s.s1_swallow}`;
+        if (s.s1_swallow !== '無困難') {
+          const sxArr = Array.isArray(s.s1_swallow_sx) ? s.s1_swallow_sx : [];
+          if (sxArr.length) txt += `（${listCN(sxArr)}）`;
+        }
+        swallowBits.push(txt);
+      }
+      const dietBits=[];
+      if (has(s.s1_diet_texture)) dietBits.push(`飲食質地${s.s1_diet_texture}`);
+      const tubeArr = Array.isArray(s.s1_feeding_tubes) ? s.s1_feeding_tubes : [];
+      if (tubeArr.length) dietBits.push(`管灌方式：${listCN(tubeArr)}`);
+      if (dietBits.length) swallowBits.push(dietBits.join('，'));
+      const oralArr = Array.isArray(s.s1_oral) ? s.s1_oral : [];
+      if (oralArr.length) {
+        let oralText = `口腔狀況：${listCN(oralArr)}`;
+        if (has(s.s1_oral_note)) oralText += `（${s.s1_oral_note}）`;
+        swallowBits.push(oralText);
+      }
+      const pSwallow = swallowBits.join('；');
+
       // ④ 行動
       const moveBits=[];
       if (has(s.s1_transfer)) moveBits.push(`起身移位${s.s1_transfer}`);
       if (has(s.s1_walk_indoor)) moveBits.push(`在家${s.s1_walk_indoor}行走`);
       if (has(s.s1_walk_outdoor)) moveBits.push(`外出${s.s1_walk_outdoor}輔助`);
       if (has(s.s1_stairs)) moveBits.push(`上下樓${s.s1_stairs}`);
+      if (has(s.s1_weak_laterality) && s.s1_weak_laterality !== '無') {
+        moveBits.push(`偏側無力：${s.s1_weak_laterality}`);
+      }
+      const fallText = formatFallHistory(s.s1_fall_history, s.s1_fall_times);
+      if (has(fallText)) moveBits.push(fallText);
+      const balanceArr = Array.isArray(s.s1_balance) ? s.s1_balance : [];
+      if (balanceArr.length) moveBits.push(`平衡狀態：${listCN(balanceArr)}`);
+      if (has(s.s1_sitting_stability)) {
+        let sitText = s.s1_sitting_stability === '穩定' ? '坐姿穩定' : `坐姿${s.s1_sitting_stability}`;
+        const supportArr = Array.isArray(s.s1_sitting_supports) ? s.s1_sitting_supports : [];
+        if (supportArr.length) sitText += `，需${listCN(supportArr)}`;
+        moveBits.push(sitText);
+      }
+      if (has(s.s1_gait)) {
+        let gaitText = s.s1_gait;
+        if (gaitText === '其他' && has(s.s1_gait_note)) {
+          gaitText = s.s1_gait_note;
+        } else if (has(s.s1_gait_note)) {
+          gaitText += `（${s.s1_gait_note}）`;
+        }
+        moveBits.push(`步態${gaitText}`);
+      }
       const p4 = moveBits.join("，");
 
       // ⑤ ADL/排泄
@@ -1976,11 +2488,24 @@
       }
       const adlSub=adlSubArr.join("、");
       if (adlSub) adlBits.push(adlSub);
+      const deviceArr = Array.isArray(s.s1_devices) ? s.s1_devices : [];
+      if (deviceArr.length) {
+        let deviceText = `管路／裝置：${listCN(deviceArr)}`;
+        if (has(s.s1_devices_note)) deviceText += `（${s.s1_devices_note}）`;
+        adlBits.push(deviceText);
+      }
       const toiletBits=[];
       const dayUrine = formatUrination(s.s1_urine_day_choice, s.s1_urine_day_is_other, s.s1_urine_day);
+      const excretionArr = Array.isArray(s.s1_excretion_aids) ? s.s1_excretion_aids : [];
+      const nightCatheter = excretionArr.some(v=>['導尿管（留置）','尿造口袋','糞造口袋','夜間集尿袋'].includes(v));
+      if (excretionArr.length) toiletBits.push(`使用排泄輔具：${listCN(excretionArr)}`);
       if (has(dayUrine)) toiletBits.push(`白天排尿${dayUrine}`);
-      const nightUrine = formatUrination(s.s1_urine_night_choice, s.s1_urine_night_is_other, s.s1_urine_night);
-      if (has(nightUrine)) toiletBits.push(`夜間排尿${nightUrine}`);
+      if (nightCatheter) {
+        toiletBits.push('夜間以導尿／集尿袋處理，不以起夜次數評估');
+      } else {
+        const nightUrine = formatUrination(s.s1_urine_night_choice, s.s1_urine_night_is_other, s.s1_urine_night, s.s1_nocturia_count);
+        if (has(nightUrine)) toiletBits.push(`夜間排尿${nightUrine}`);
+      }
       if (has(s.s1_post_toilet)){
         let txt=`如廁後清潔${s.s1_post_toilet}`;
         if(s.s1_post_toilet==='部分協助' && has(s.s1_post_toilet_how)) txt+=`（部分協助方式：${s.s1_post_toilet_how}）`;
@@ -1990,7 +2515,14 @@
 
       // ⑥ 生活管理/睡眠
       const lifeBits=[];
-      if (has(s.s1_phone)) lifeBits.push(`電話使用${s.s1_phone}`);
+      if (has(s.s1_phone)) {
+        let phoneText = s.s1_phone;
+        const phoneArr = Array.isArray(s.s1_phone_notes) ? s.s1_phone_notes : [];
+        if (s.s1_phone !== '會接聽及撥號' && phoneArr.length) {
+          phoneText += `（${listCN(phoneArr)}）`;
+        }
+        lifeBits.push(`電話使用${phoneText}`);
+      }
       if (has(s.s1_shopping)){
         let shopping = s.s1_shopping;
         if((shopping==='需陪同' || shopping==='不外出') && has(s.s1_shopping_how)){
@@ -2041,6 +2573,9 @@
         lifeBits.push(`睡眠${sleep}`);
       }
       if (has(s.s1_daytime)) lifeBits.push(`白天活動以${s.s1_daytime}為主`);
+      const moodArr = Array.isArray(s.s1_mood_behaviors) ? s.s1_mood_behaviors : [];
+      if (moodArr.length) lifeBits.push(`情緒／行為：${listCN(moodArr)}`);
+      if (has(s.s1_motivation)) lifeBits.push(`執行動機：${s.s1_motivation}`);
       const p6 = lifeBits.join("，");
 
       // ⑦ 疾病/用藥/就醫
@@ -2062,7 +2597,7 @@
       // ⑨ 補充（有才輸出）
       const p9 = has(s.s1_notes) ? s.s1_notes : "";
 
-      const segments=[p1,p2,p3,p4,p5,p6,p7,p9].filter(Boolean);
+      const segments=[p1,p2,p3,p4,pSwallow,p5,p6,p7,p9].filter(Boolean);
       return `${segments.join("。")}。`;
     }
 
@@ -3010,6 +3545,8 @@
       toggleAdlHow('s1_adl_dressing'); toggleAdlHow('s1_post_toilet'); toggleAdlHow('s1_meal_prep');
       toggleAdlHow('s1_housework'); toggleAdlHow('s1_finance');
       toggleShoppingHow(); toggleDishwashHow(); toggleSleepReason();
+      toggleSwallow(); toggleFallDetail(); toggleSittingSupports(); togglePhoneNotes();
+      updateExcretionAidEffects(); toggleGlassesAdherence(); toggleHearingDeviceAdherence();
       syncNoDiscomfort('s1_lesion_sx_box'); // 初始化互斥狀態
 
       const s1block = document.getElementById('section1_block');
