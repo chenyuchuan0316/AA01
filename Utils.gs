@@ -87,3 +87,23 @@ function upsertSingleLineUnderHeading(body, headingVariants, content){
   }
   return true;
 }
+
+/** 在文件結尾補上一個分頁符號（若尚未存在） */
+function ensurePageBreak(body){
+  if (!body) return;
+  const total = body.getNumChildren();
+  if (total <= 0) return;
+  const last = body.getChild(total - 1);
+  if (last && last.getType() === DocumentApp.ElementType.PAGE_BREAK) return;
+  body.appendPageBreak();
+}
+
+/** 於文件末尾新增標題段落，並套用指定 Heading 等級 */
+function appendHeading(body, text, heading){
+  if (!body) return null;
+  const paragraph = body.appendParagraph(text || '');
+  if (heading) {
+    paragraph.setHeading(heading);
+  }
+  return paragraph;
+}
