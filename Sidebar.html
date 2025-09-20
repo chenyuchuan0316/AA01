@@ -697,6 +697,95 @@
       color:#0f172a; max-height:55vh; overflow:auto; font-size:17px;
     }
     #goalPreview.goal-preview-empty{ color:#6b7280; }
+    .preview-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .preview-card-container{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:10px;
+    }
+    .preview-card-container[data-empty="1"]{
+      border:1px dashed var(--border);
+      border-radius:12px;
+      padding:16px;
+      background:#f8fafc;
+    }
+    .preview-empty{ color:#6b7280; font-size:.95rem; }
+    .preview-card{
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      padding:14px 16px;
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .preview-card[data-changed="1"]{
+      border-color:#f97316;
+      box-shadow:0 0 0 1px rgba(249,115,22,.2), var(--shadow);
+    }
+    .preview-card[data-empty="1"] .preview-card-body{ color:#6b7280; }
+    .preview-card-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .preview-card-title{
+      font-weight:700;
+      color:var(--title);
+      font-size:1.05rem;
+    }
+    .preview-card-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .preview-card-body{
+      line-height:1.7;
+      color:#111827;
+      font-size:1rem;
+    }
+    .preview-card-body .diff-add{
+      background:rgba(34,197,94,.18);
+      border-radius:4px;
+      padding:0 2px;
+    }
+    .preview-card-body .diff-del{
+      text-decoration:line-through;
+      color:#b91c1c;
+      background:rgba(239,68,68,.12);
+      border-radius:4px;
+      padding:0 2px;
+    }
+    .preview-card-body .diff-empty{
+      color:#6b7280;
+    }
+    .preview-card-previous{
+      margin-top:6px;
+      padding:10px 12px;
+      border-radius:10px;
+      background:#f8fafc;
+      color:#4b5563;
+      font-size:.95rem;
+    }
+    .preview-card-previous strong{ color:#1f2937; }
+    .preview-toggle.active{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+    .rule-invalid{
+      border-color:#f97316 !important;
+      box-shadow:0 0 0 2px rgba(249,115,22,.18) !important;
+    }
 
     /* 提示／狀態色與區隔線 */
     .hint{ font-size:.95rem; color:#4b5563; }
@@ -802,6 +891,15 @@
     }
     #validationToast button.small{
       height:var(--h-button-sm);
+    }
+    #validationToast[data-type="warn"]{
+      background:#854d0e;
+      color:#fff7ed;
+    }
+    #validationToast[data-type="warn"] button.primary{
+      background:#fff7ed;
+      color:#854d0e;
+      border-color:#fff7ed;
     }
     @media (max-width:600px){
       #validationToast{
@@ -1551,8 +1649,14 @@
         <textarea id="s1_notes" placeholder="其他未涵蓋重點（限簡要）；將附加於段落末端。"></textarea>
         <textarea id="section1_out" style="display:none;" data-progress-ignore="1"></textarea>
         <div id="section1_errors" class="error-messages" data-progress-ignore="1"></div>
-        <div class="hint" style="margin-top:6px;">預覽（重組後）：</div>
-        <div id="section1_preview" class="preview"></div>
+        <div class="preview-toolbar" style="margin-top:6px;">
+          <span class="hint">預覽（主題分段）：</span>
+          <button type="button" class="small preview-toggle" id="section1_diff_toggle" data-active="0">只看變更</button>
+        </div>
+        <div id="section1_rule_errors" class="error-messages" data-progress-ignore="1"></div>
+        <div id="section1_preview_cards" class="preview-card-container" data-empty="1">
+          <div class="preview-empty">尚未產生預覽內容。</div>
+        </div>
       </div>
     </div>
 
@@ -4216,6 +4320,585 @@
       return { ok: messages.length===0, messages };
     }
 
+    const SECTION1_PREVIEW_META = Object.freeze([
+      { key:'overview', title:'基本概況', anchor:'s1_age' },
+      { key:'vision', title:'視力', anchor:'s1_vision' },
+      { key:'hearing', title:'聽力', anchor:'s1_hearing_level' },
+      { key:'painLesion', title:'疼痛／病灶', anchor:'s1_pain' },
+      { key:'swallow', title:'吞嚥與飲食', anchor:'s1_swallow' },
+      { key:'mobility', title:'移位／行動', anchor:'s1_transfer' },
+      { key:'adl', title:'ADL／排泄', anchor:'s1_adl_eating' },
+      { key:'life', title:'生活管理／睡眠', anchor:'s1_phone' },
+      { key:'disease', title:'疾病／用藥', anchor:'s1_dhx_box' },
+      { key:'actions', title:'建議措施', anchor:'s1_actions_list' },
+      { key:'notes', title:'補充內容', anchor:'s1_notes' }
+    ]);
+
+    const SECTION1_PREVIOUS_STORAGE_KEY = 'AA01.section1.previousSegments';
+
+    const section1PreviewState = {
+      segments: [],
+      previous: {},
+      diffOnly: false
+    };
+
+    function encodePreviewText(text){
+      return escapeHtml(text || '').replace(/\n/g,'<br>');
+    }
+
+    function diffStrings(oldText, newText){
+      const oldArr = Array.from(oldText || '');
+      const newArr = Array.from(newText || '');
+      const m = oldArr.length;
+      const n = newArr.length;
+      const dp = Array(m + 1);
+      for(let i=0;i<=m;i++){ dp[i] = Array(n + 1).fill(0); }
+      for(let i=m-1;i>=0;i--){
+        for(let j=n-1;j>=0;j--){
+          if(oldArr[i] === newArr[j]) dp[i][j] = dp[i+1][j+1] + 1;
+          else dp[i][j] = Math.max(dp[i+1][j], dp[i][j+1]);
+        }
+      }
+      const parts = [];
+      let i=0, j=0;
+      while(i<m && j<n){
+        if(oldArr[i] === newArr[j]){
+          parts.push({ type:'same', value: oldArr[i] });
+          i++; j++;
+        }else if(dp[i+1][j] >= dp[i][j+1]){
+          parts.push({ type:'removed', value: oldArr[i] });
+          i++;
+        }else{
+          parts.push({ type:'added', value: newArr[j] });
+          j++;
+        }
+      }
+      while(i<m){ parts.push({ type:'removed', value: oldArr[i++] }); }
+      while(j<n){ parts.push({ type:'added', value: newArr[j++] }); }
+      const chunks=[];
+      parts.forEach(function(part){
+        if(!chunks.length || chunks[chunks.length-1].type !== part.type){
+          chunks.push({ type:part.type, value:part.value });
+        }else{
+          chunks[chunks.length-1].value += part.value;
+        }
+      });
+      return chunks.map(function(chunk){
+        const encoded = encodePreviewText(chunk.value);
+        if(chunk.type === 'added') return `<span class="diff-add">${encoded}</span>`;
+        if(chunk.type === 'removed') return `<span class="diff-del">${encoded}</span>`;
+        return encoded;
+      }).join('');
+    }
+
+    function buildPreviewDiff(oldText, newText){
+      const oldTrim = (oldText || '').trim();
+      const newTrim = (newText || '').trim();
+      if(!oldTrim && !newTrim){
+        return { html:'', changed:false, oldHtml:'' };
+      }
+      if(oldTrim === newTrim){
+        return { html: encodePreviewText(newTrim), changed:false, oldHtml: encodePreviewText(oldTrim) };
+      }
+      if(!oldTrim && newTrim){
+        return { html: `<span class="diff-add">${encodePreviewText(newTrim)}</span>`, changed:true, oldHtml:'' };
+      }
+      if(oldTrim && !newTrim){
+        return {
+          html: '<span class="diff-empty">（本段無內容）</span>',
+          changed:true,
+          oldHtml: `<span class="diff-del">${encodePreviewText(oldTrim)}</span>`
+        };
+      }
+      return {
+        html: diffStrings(oldTrim, newTrim),
+        changed:true,
+        oldHtml: encodePreviewText(oldTrim)
+      };
+    }
+
+    function renderSection1Preview(segments, options){
+      const container=document.getElementById('section1_preview_cards');
+      if(!container) return;
+      container.innerHTML='';
+      const placeholder=document.createElement('div');
+      placeholder.className='preview-empty';
+      container.appendChild(placeholder);
+      if(!Array.isArray(segments) || !segments.length){
+        container.dataset.empty='1';
+        placeholder.textContent = options && options.placeholder ? options.placeholder : '尚未產生預覽內容。';
+        section1PreviewState.previous = section1PreviewState.previous || readSection1Previous();
+        updateSection1PreviewDiffMode();
+        return;
+      }
+      placeholder.style.display='none';
+      container.dataset.empty='0';
+      const previousMap = Object.assign({}, section1PreviewState.previous || readSection1Previous());
+      segments.forEach(function(segment){
+        const card=document.createElement('div');
+        card.className='preview-card';
+        card.dataset.key=segment.key;
+        const diff=buildPreviewDiff(previousMap[segment.key], segment.value);
+        card.dataset.changed = diff.changed ? '1' : '0';
+        card.dataset.empty = segment.value ? '0' : '1';
+        const header=document.createElement('div');
+        header.className='preview-card-header';
+        const title=document.createElement('div');
+        title.className='preview-card-title';
+        title.textContent=segment.title;
+        header.appendChild(title);
+        const actions=document.createElement('div');
+        actions.className='preview-card-actions';
+        const anchorBtn=document.createElement('button');
+        anchorBtn.type='button';
+        anchorBtn.className='small';
+        anchorBtn.textContent='回到來源欄位';
+        anchorBtn.addEventListener('click', function(){ jumpToField(segment.anchor); });
+        actions.appendChild(anchorBtn);
+        header.appendChild(actions);
+        card.appendChild(header);
+        const body=document.createElement('div');
+        body.className='preview-card-body';
+        body.innerHTML = diff.html || '<span class="diff-empty">（未填寫）</span>';
+        card.appendChild(body);
+        if(diff.changed && diff.oldHtml){
+          const prevBox=document.createElement('div');
+          prevBox.className='preview-card-previous';
+          prevBox.innerHTML = '<strong>上一版：</strong>' + diff.oldHtml;
+          card.appendChild(prevBox);
+        }
+        container.appendChild(card);
+      });
+      updateSection1PreviewDiffMode();
+    }
+
+    function updateSection1PreviewDiffMode(){
+      const container=document.getElementById('section1_preview_cards');
+      if(!container) return;
+      const diffOnly=!!section1PreviewState.diffOnly;
+      const toggleBtn=document.getElementById('section1_diff_toggle');
+      if(toggleBtn){
+        toggleBtn.classList.toggle('active', diffOnly);
+        toggleBtn.dataset.active = diffOnly ? '1' : '0';
+      }
+      const placeholder=container.querySelector('.preview-empty');
+      const cards=[...container.querySelectorAll('.preview-card')];
+      let visibleCount=0;
+      cards.forEach(function(card){
+        const changed=card.dataset.changed === '1';
+        const prevBox=card.querySelector('.preview-card-previous');
+        if(prevBox) prevBox.style.display = diffOnly ? '' : 'none';
+        if(diffOnly && !changed){
+          card.style.display='none';
+        }else{
+          card.style.display='';
+          visibleCount++;
+        }
+      });
+      if(!cards.length){
+        container.dataset.empty='1';
+        if(placeholder){ placeholder.style.display=''; }
+        return;
+      }
+      if(diffOnly && visibleCount===0){
+        container.dataset.empty='1';
+        if(placeholder){
+          placeholder.textContent='目前與上一版內容相同。';
+          placeholder.style.display='';
+        }
+      }else{
+        container.dataset.empty='0';
+        if(placeholder){
+          placeholder.textContent='尚未產生預覽內容。';
+          placeholder.style.display='none';
+        }
+      }
+    }
+
+    function toggleSection1DiffMode(){
+      section1PreviewState.diffOnly = !section1PreviewState.diffOnly;
+      updateSection1PreviewDiffMode();
+    }
+
+    function readSection1Previous(){
+      if(typeof window === 'undefined' || !window.localStorage) return {};
+      try{
+        const raw = window.localStorage.getItem(SECTION1_PREVIOUS_STORAGE_KEY);
+        if(!raw) return {};
+        const parsed = JSON.parse(raw);
+        if(parsed && typeof parsed === 'object') return parsed;
+      }catch(err){ return {}; }
+      return {};
+    }
+
+    function persistSection1Previous(){
+      if(typeof window === 'undefined' || !window.localStorage) return;
+      const map={};
+      (section1PreviewState.segments || []).forEach(function(segment){
+        map[segment.key] = segment && typeof segment.value === 'string' ? segment.value : '';
+      });
+      try{
+        window.localStorage.setItem(SECTION1_PREVIOUS_STORAGE_KEY, JSON.stringify(map));
+        section1PreviewState.previous = map;
+      }catch(err){ /* ignore quota errors */ }
+    }
+
+    function initSection1Preview(){
+      section1PreviewState.previous = readSection1Previous();
+      const toggleBtn=document.getElementById('section1_diff_toggle');
+      if(toggleBtn){
+        toggleBtn.addEventListener('click', ()=>toggleSection1DiffMode());
+      }
+      updateSection1PreviewDiffMode();
+    }
+
+    const FORM_RULES = Object.freeze([
+      {
+        id:'urine-night-bag',
+        if:[{ field:'s1_excretion_aids', op:'includes', value:'夜間集尿袋' }],
+        then:[
+          { action:'hide', field:'s1_urine_night_wrap' },
+          { action:'hide', field:'s1_nocturia_wrap' },
+          { action:'clear', field:'s1_urine_night' },
+          { action:'clear', field:'s1_urine_night_other' },
+          { action:'clear', field:'s1_nocturia_count' },
+          { action:'warn', message:'已勾選夜間集尿袋，夜間排尿欄位已隱藏並清空。', fields:['s1_excretion_aids_box'] }
+        ]
+      },
+      {
+        id:'nocturia-inconsistent',
+        if:[
+          { field:'s1_nocturia_count', op:'>=', value:1 },
+          { field:'s1_urine_night', op:'in', value:['', '夜間未起夜'] }
+        ],
+        then:[
+          { action:'block', message:'夜尿次數大於 0 時，夜間排尿不可為「夜間未起夜」，請調整。', fields:['s1_urine_night','s1_nocturia_count'] }
+        ]
+      },
+      {
+        id:'swallow-diet',
+        if:[
+          { field:'s1_swallow', op:'in', value:['明顯困難','危險（需專評）'] },
+          { field:'s1_diet_texture', op:'includes', value:'一般' }
+        ],
+        then:[
+          { action:'fix', field:'s1_diet_texture_box', mode:'remove', value:'一般' },
+          { action:'warn', message:'吞嚥評估為明顯困難，已移除「一般」飲食質地。', fields:['s1_diet_texture_box'] }
+        ]
+      },
+      {
+        id:'swallow-tube',
+        if:[
+          { field:'s1_swallow', op:'=', value:'無困難' },
+          { field:'s1_feeding_tubes', op:'notEmpty' }
+        ],
+        then:[
+          { action:'warn', message:'吞嚥狀態為「無困難」，請確認是否仍需勾選管灌方式。', fields:['s1_swallow','s1_feeding_tube_box'] }
+        ]
+      },
+      {
+        id:'transfer-walk',
+        if:[
+          { field:'s1_transfer', op:'in', value:['重度協助','完全依賴'] },
+          { field:'s1_walk_indoor', op:'in', value:['無輔具緩慢','單拐','四腳拐'] }
+        ],
+        then:[
+          { action:'block', message:'起身移位為重度協助／完全依賴時，請確認室內行走仍標示為可行走狀態。', fields:['s1_transfer','s1_walk_indoor'] }
+        ]
+      }
+    ]);
+
+    const section1RuleRuntime = {
+      hiddenFields: new Set(),
+      invalidFields: new Set(),
+      warnings: [],
+      blocks: []
+    };
+
+    function resetSection1RuleEffects(){
+      Array.from(section1RuleRuntime.hiddenFields).forEach(function(fieldId){
+        hideRuleField(fieldId, false);
+      });
+      section1RuleRuntime.hiddenFields.clear();
+      Array.from(section1RuleRuntime.invalidFields).forEach(function(fieldId){
+        markRuleInvalid(fieldId, false);
+      });
+      section1RuleRuntime.invalidFields.clear();
+      section1RuleRuntime.warnings = [];
+      section1RuleRuntime.blocks = [];
+      renderSection1RuleMessages([]);
+      clearRuleWarningToast();
+    }
+
+    function hideRuleField(fieldId, hidden){
+      const el=document.getElementById(fieldId);
+      if(!el) return;
+      if(hidden){
+        if(!section1RuleRuntime.hiddenFields.has(fieldId)){
+          el.dataset.rulePrevDisplay = el.style.display || '';
+          el.style.display='none';
+          el.dataset.ruleHidden='1';
+          section1RuleRuntime.hiddenFields.add(fieldId);
+        }
+      }else{
+        if(section1RuleRuntime.hiddenFields.has(fieldId)){
+          const prev = el.dataset.rulePrevDisplay;
+          el.style.display = typeof prev === 'undefined' ? '' : prev;
+          delete el.dataset.rulePrevDisplay;
+          delete el.dataset.ruleHidden;
+          section1RuleRuntime.hiddenFields.delete(fieldId);
+        }
+      }
+    }
+
+    function cssEscapeValue(value){
+      return String(value).replace(/(["\\])/g,'\\$1');
+    }
+
+    function clearRuleField(fieldId){
+      const el=document.getElementById(fieldId);
+      if(!el) return false;
+      let mutated=false;
+      if(el.matches && el.matches('input[type=checkbox], input[type=radio]')){
+        if(el.checked){ el.checked=false; mutated=true; }
+      }else if(el.matches && el.matches('select')){
+        if(el.value){ el.value=''; mutated=true; }
+      }else if(el.matches && el.matches('input, textarea')){
+        if(el.value){ el.value=''; mutated=true; }
+      }else{
+        const inputs=el.querySelectorAll('input[type=checkbox], input[type=radio]');
+        inputs.forEach(function(input){
+          if(input.checked){ input.checked=false; mutated=true; }
+        });
+        const textInputs=el.querySelectorAll('input:not([type=checkbox]):not([type=radio]), textarea, select');
+        textInputs.forEach(function(input){
+          if(input.value){ input.value=''; mutated=true; }
+        });
+      }
+      return mutated;
+    }
+
+    function applyRuleFix(action){
+      if(!action || !action.field) return false;
+      if(action.mode === 'remove'){
+        const host=document.getElementById(action.field);
+        if(!host) return false;
+        const selector='input[type=checkbox][value="' + cssEscapeValue(action.value) + '"]';
+        let changed=false;
+        host.querySelectorAll(selector).forEach(function(box){
+          if(box.checked){ box.checked=false; changed=true; }
+        });
+        return changed;
+      }
+      if(action.mode === 'set'){
+        const el=document.getElementById(action.field);
+        if(!el) return false;
+        if(el.matches && el.matches('select')){
+          if(el.value !== action.value){ el.value = action.value; return true; }
+        }else if(el.matches && el.matches('input, textarea')){
+          if(el.value !== action.value){ el.value = action.value; return true; }
+        }
+      }
+      return false;
+    }
+
+    function markRuleInvalid(fieldId, invalid){
+      const el=document.getElementById(fieldId);
+      if(!el) return;
+      let target=el;
+      if(!target.classList){
+        target = el.querySelector('input,select,textarea');
+      }
+      if(target && target.classList){
+        if(invalid){
+          target.classList.add('rule-invalid');
+          section1RuleRuntime.invalidFields.add(fieldId);
+        }else{
+          target.classList.remove('rule-invalid');
+          section1RuleRuntime.invalidFields.delete(fieldId);
+        }
+      }
+    }
+
+    function getRuleFieldValue(state, key){
+      if(!state || !key) return undefined;
+      return state[key];
+    }
+
+    function evaluateRuleCondition(state, condition){
+      if(!condition) return true;
+      const current = getRuleFieldValue(state, condition.field);
+      const op = condition.op || '=';
+      const expected = condition.value;
+      switch(op){
+        case '=':
+          return current === expected;
+        case '!=':
+          return current !== expected;
+        case 'includes':
+          return Array.isArray(current) ? current.indexOf(expected) !== -1 : false;
+        case 'notIncludes':
+          return Array.isArray(current) ? current.indexOf(expected) === -1 : true;
+        case 'in':
+          return Array.isArray(expected) ? expected.indexOf(current) !== -1 : false;
+        case '>=':
+          return Number(current) >= Number(expected);
+        case '>':
+          return Number(current) > Number(expected);
+        case '<=':
+          return Number(current) <= Number(expected);
+        case '<':
+          return Number(current) < Number(expected);
+        case 'notEmpty':
+          if(Array.isArray(current)) return current.length > 0;
+          if(current === undefined || current === null) return false;
+          return String(current).trim() !== '';
+        case 'empty':
+          if(Array.isArray(current)) return current.length === 0;
+          if(current === undefined || current === null) return true;
+          return String(current).trim() === '';
+        default:
+          return false;
+      }
+    }
+
+    function applyRuleAction(rule, action, state, runtime){
+      if(!action) return;
+      switch(action.action){
+        case 'hide':
+          hideRuleField(action.field, true);
+          break;
+        case 'clear':
+          if(clearRuleField(action.field)) runtime.mutated = true;
+          break;
+        case 'fix':
+          if(applyRuleFix(action)) runtime.mutated = true;
+          break;
+        case 'warn':
+          runtime.warnings.push({
+            ruleId: rule.id,
+            message: action.message || '',
+            fields: Array.isArray(action.fields) ? action.fields.slice() : (action.field ? [action.field] : [])
+          });
+          break;
+        case 'block':
+          const blockFields = Array.isArray(action.fields) ? action.fields.slice() : (action.field ? [action.field] : []);
+          blockFields.forEach(function(fieldId){ markRuleInvalid(fieldId, true); });
+          runtime.blocks.push({
+            ruleId: rule.id,
+            message: action.message || '',
+            fields: blockFields
+          });
+          break;
+      }
+    }
+
+    function renderSection1RuleMessages(blocks){
+      const box=document.getElementById('section1_rule_errors');
+      if(!box) return;
+      box.innerHTML='';
+      if(!Array.isArray(blocks) || !blocks.length){
+        box.style.display='none';
+        box.dataset.show='0';
+        return;
+      }
+      const itemsHtml = blocks.map(function(block){
+        const target = block.fields && block.fields[0] ? escapeHtml(block.fields[0]) : '';
+        const text = escapeHtml(block.message || '請確認欄位內容');
+        return `<li><a href="#" data-target="${target}">${text}</a></li>`;
+      }).join('');
+      box.innerHTML = `<ul>${itemsHtml}</ul>`;
+      box.style.display='';
+      box.dataset.show='1';
+      box.querySelectorAll('a').forEach(function(link){
+        link.addEventListener('click', handleRuleErrorClick);
+      });
+    }
+
+    function handleRuleErrorClick(evt){
+      if(evt) evt.preventDefault();
+      const link = evt && evt.currentTarget ? evt.currentTarget : null;
+      if(!link) return;
+      const targetId = link.dataset.target || '';
+      setActivePage('goals');
+      focusErrorTarget(targetId);
+    }
+
+    function showRuleWarningToast(message, warn){
+      const toast=document.getElementById('validationToast');
+      if(!toast) return;
+      const activeType = toast.dataset.type || '';
+      if(toast.dataset.show === '1' && activeType !== 'warn') return;
+      const target = warn && warn.fields && warn.fields[0] ? warn.fields[0] : '';
+      showValidationToast({ type:'warn', message: message || '請檢查欄位內容。', target: target, page:'goals' });
+    }
+
+    function clearRuleWarningToast(){
+      const toast=document.getElementById('validationToast');
+      if(!toast) return;
+      if(toast.dataset.show === '1' && toast.dataset.type === 'warn'){
+        hideValidationToast();
+      }
+    }
+
+    function applyRules(formState){
+      resetSection1RuleEffects();
+      const runtime = { mutated:false, warnings:[], blocks:[] };
+      FORM_RULES.forEach(function(rule){
+        if(!rule || !rule.then) return;
+        const matches = (rule.if || []).every(function(condition){
+          return evaluateRuleCondition(formState, condition);
+        });
+        if(matches){
+          (rule.then || []).forEach(function(action){
+            applyRuleAction(rule, action, formState, runtime);
+          });
+        }
+      });
+      section1RuleRuntime.blocks = runtime.blocks.slice();
+      section1RuleRuntime.warnings = runtime.warnings.slice();
+      renderSection1RuleMessages(section1RuleRuntime.blocks);
+      if(section1RuleRuntime.warnings.length && !section1RuleRuntime.blocks.length){
+        showRuleWarningToast(section1RuleRuntime.warnings[0].message, section1RuleRuntime.warnings[0]);
+      }else{
+        clearRuleWarningToast();
+      }
+      return runtime;
+    }
+
+    function runSection1Rules(){
+      let state = collectS1();
+      let result = applyRules(state);
+      if(result && result.mutated){
+        state = collectS1();
+        result = applyRules(state);
+      }
+      return state;
+    }
+
+    function initFormRules(){
+      section1RuleRuntime.hiddenFields = new Set();
+      section1RuleRuntime.invalidFields = new Set();
+      section1RuleRuntime.warnings = [];
+      section1RuleRuntime.blocks = [];
+      runSection1Rules();
+    }
+
+    function jumpToField(fieldId){
+      if(!fieldId) return;
+      setActivePage('goals');
+      const el=document.getElementById(fieldId);
+      if(!el) return;
+      if(typeof el.scrollIntoView === 'function'){
+        el.scrollIntoView({ behavior:'smooth', block:'center' });
+      }
+      let focusEl=null;
+      if(typeof el.focus === 'function'){ focusEl=el; }
+      else{ focusEl=el.querySelector('input,select,textarea,button,[tabindex]'); }
+      if(focusEl && typeof focusEl.focus === 'function'){ focusEl.focus({ preventScroll:true }); }
+    }
+
+
     // 產文（新版）
     function buildSection1Text_v2(s) {
       const has = v => {
@@ -4403,8 +5086,6 @@
           hearingPhrase += `（${listCN(hearingDetails)}）`;
         }
       }
-      const p2 = [visionPhrase, hearingPhrase].filter(Boolean).join("，");
-
       // ③ 疼痛/皮膚（合併）
       const painBits = [];
       if (String(s.s1_pain) === "有") {
@@ -4645,26 +5326,75 @@
 
       const actionText = formatActions(s.s1_actions);
 
-      const segments=[p1,p2,p3,p4,pSwallow,p5,p6,p7,actionText,p9].filter(Boolean);
-      return `${segments.join("。")}。`;
+      const assembledSegments=[
+        p1,
+        [visionPhrase, hearingPhrase].filter(Boolean).join('，'),
+        p3,
+        pSwallow,
+        p4,
+        p5,
+        p6,
+        p7,
+        actionText,
+        p9
+      ].filter(function(text){ return text && String(text).trim(); });
+
+      let fullText='';
+      if(assembledSegments.length){
+        fullText=assembledSegments.join('。');
+        if(!/[。！？]$/.test(fullText)){ fullText+='。'; }
+      }else{
+        fullText='。';
+      }
+
+      const pieceMap={
+        overview:p1,
+        vision:visionPhrase,
+        hearing:hearingPhrase,
+        painLesion:p3,
+        swallow:pSwallow,
+        mobility:p4,
+        adl:p5,
+        life:p6,
+        disease:p7,
+        actions:actionText,
+        notes:p9
+      };
+
+      const previewSegments = SECTION1_PREVIEW_META.map(function(meta){
+        const raw = pieceMap[meta.key] || '';
+        return {
+          key: meta.key,
+          title: meta.title,
+          anchor: meta.anchor,
+          value: typeof raw === 'string' ? raw.trim() : raw
+        };
+      });
+
+      return { fullText: fullText, segments: previewSegments };
     }
 
     function buildSection1(presetValidation){
+      let state = runSection1Rules();
       const validation = presetValidation || validateSection1();
       if(!validation.ok){
         document.getElementById('section1_out').value = '';
+        section1PreviewState.segments = [];
         const texts = Array.isArray(validation.messages)
           ? validation.messages.map(item=>item && item.text ? item.text : '').filter(Boolean)
           : [];
         const msg = texts.length ? texts.join('、') : '請補齊必填欄位';
-        document.getElementById('section1_preview').textContent = `（一）身心概況：${msg}`;
+        renderSection1Preview([], { placeholder: `（一）身心概況：${msg}` });
         return '';
       }
-      const s = collectS1();
-      const text = buildSection1Text_v2(s);
-      document.getElementById('section1_out').value = text;
-      document.getElementById('section1_preview').textContent = `（一）身心概況：${text}`;
-      return text;
+      if(!state || typeof state !== 'object'){
+        state = collectS1();
+      }
+      const result = buildSection1Text_v2(state);
+      document.getElementById('section1_out').value = result.fullText;
+      section1PreviewState.segments = result.segments;
+      renderSection1Preview(result.segments);
+      return result.fullText;
     }
 
     /* ===== 四-(二) 經濟收入：原程式 ===== */
@@ -8616,24 +9346,47 @@
       });
     }
 
-    function showValidationToast(sectionLabel, firstError){
+    function showValidationToast(options){
       const toast=document.getElementById('validationToast');
       const textEl=document.getElementById('validationToastText');
+      const titleEl=toast ? toast.querySelector('.toast-title') : null;
+      const actionBtn=document.getElementById('validationToastAction');
       if(!toast || !textEl) return;
-      const normalized=normalizeLabelText(sectionLabel);
-      const label = normalized && normalized !== '其他' ? normalized : '表單';
-      textEl.textContent = `${label} 有未完成的欄位，請補齊後再提交。`;
+      const payload=options || {};
+      const type=payload.type || 'error';
+      const sectionLabel=payload.sectionLabel || '';
+      let message=payload.message;
+      if(!message){
+        if(type === 'warn'){
+          message = '請留意表單欄位的提醒。';
+        }else{
+          const normalized=normalizeLabelText(sectionLabel);
+          const label = normalized && normalized !== '其他' ? normalized : '表單';
+          message = `${label} 有未完成的欄位，請補齊後再提交。`;
+        }
+      }
+      textEl.textContent = message;
+      if(titleEl){
+        titleEl.textContent = type === 'warn' ? '提醒' : '提交前請先修正';
+      }
+      toast.dataset.type = type;
       toast.dataset.show='1';
-      toast.dataset.target = firstError && firstError.fieldId ? firstError.fieldId : '';
-      toast.dataset.page = firstError && firstError.pageId ? firstError.pageId : '';
+      toast.dataset.target = payload.target || '';
+      toast.dataset.page = payload.page || '';
+      if(actionBtn){
+        actionBtn.style.display = payload.target ? '' : 'none';
+      }
     }
 
     function hideValidationToast(){
       const toast=document.getElementById('validationToast');
+      const action=document.getElementById('validationToastAction');
       if(!toast) return;
       toast.dataset.show='0';
       toast.dataset.target='';
       toast.dataset.page='';
+      toast.dataset.type='';
+      if(action){ action.style.display=''; }
     }
 
     function initValidationToast(){
@@ -8689,6 +9442,46 @@
       }
     }
 
+    const STYLE_CHECK_FIELDS = Object.freeze([
+      { id:'section1_out', label:'（一）身心概況', pageId:'goals' },
+      { id:'section2_out', label:'（二）經濟收入', pageId:'goals' },
+      { id:'section3_out', label:'（三）居住環境', pageId:'goals' },
+      { id:'section4_out', label:'（四）社會支持', pageId:'goals' },
+      { id:'section5', label:'（五）其他', pageId:'goals' },
+      { id:'section6_struct', label:'（六）複評評值', pageId:'goals' },
+      { id:'plan_text', label:'附件一：計畫執行規劃', pageId:'execution' }
+    ]);
+
+    function clearStyleCheckerMarks(){
+      STYLE_CHECK_FIELDS.forEach(function(field){
+        const el=document.getElementById(field.id);
+        if(el && el.classList){
+          el.classList.remove('input-invalid');
+        }
+      });
+    }
+
+    function runStyleChecker(){
+      clearStyleCheckerMarks();
+      const issues=[];
+      STYLE_CHECK_FIELDS.forEach(function(field){
+        const el=document.getElementById(field.id);
+        if(!el) return;
+        const text=(el.value || '').trim();
+        if(!text) return;
+        if(/\s{2,}/.test(text)){
+          issues.push({ fieldId: field.id, pageId: field.pageId, message: field.label + ' 出現連續空白，請調整。' });
+        }
+        if(/[,.!?]/.test(text)){
+          issues.push({ fieldId: field.id, pageId: field.pageId, message: field.label + ' 建議改用全形標點符號。' });
+        }
+        if(/ [。，、；：]/.test(text)){
+          issues.push({ fieldId: field.id, pageId: field.pageId, message: field.label + ' 含前置空白，請確認標點前的空格。' });
+        }
+      });
+      return { ok: issues.length === 0, issues: issues };
+    }
+
     function applyAndSave(){
       const msg=document.getElementById('msg');
       if(msg) msg.textContent='';
@@ -8737,7 +9530,12 @@
           if(first.pageId) setActivePage(first.pageId);
           focusErrorTarget(first.fieldId);
           const sectionLabel=resolveErrorSectionLabel(first);
-          showValidationToast(sectionLabel, first);
+          showValidationToast({
+            type:'error',
+            sectionLabel:sectionLabel,
+            target:first.fieldId,
+            page:first.pageId
+          });
         }
         return;
       }
@@ -8749,6 +9547,42 @@
       buildS2(); buildS3(); buildSection4(); buildSection6(); buildLongGoal();
 
       buildApprovalPlanPreview();
+
+      const ruleBlocks = Array.isArray(section1RuleRuntime.blocks) ? section1RuleRuntime.blocks : [];
+      if(ruleBlocks.length){
+        if(msg) msg.textContent='請先排除跨欄位矛盾後再產出。';
+        const firstBlock = ruleBlocks[0] || {};
+        const blockField = Array.isArray(firstBlock.fields) && firstBlock.fields.length ? firstBlock.fields[0] : '';
+        showValidationToast({
+          type:'error',
+          message:firstBlock.message || '請修正跨欄位矛盾後再提交。',
+          target:blockField,
+          page:'goals'
+        });
+        if(blockField) focusErrorTarget(blockField);
+        return;
+      }
+
+      const styleCheck = runStyleChecker();
+      if(!styleCheck.ok){
+        if(msg) msg.textContent='樣式檢查未通過，請依提示調整後再提交。';
+        styleCheck.issues.forEach(function(issue){
+          const fieldEl=document.getElementById(issue.fieldId);
+          if(fieldEl && fieldEl.classList){ fieldEl.classList.add('input-invalid'); }
+        });
+        const firstIssue = styleCheck.issues[0] || {};
+        const targetField = firstIssue.fieldId || '';
+        const pageId = firstIssue.pageId || 'goals';
+        showValidationToast({
+          type:'warn',
+          message:firstIssue.message || '請調整文字樣式後再提交。',
+          target:targetField,
+          page:pageId
+        });
+        if(pageId) setActivePage(pageId);
+        if(targetField) focusErrorTarget(targetField);
+        return;
+      }
 
       const consentParties = buildConsentParties();
       const form = {
@@ -8796,6 +9630,9 @@
       google.script.run
         .withSuccessHandler(res=>{
           renderOutputMessage(res);
+          persistSection1Previous();
+          clearStyleCheckerMarks();
+          renderSection1Preview(section1PreviewState.segments);
           if (res && res.file && res.file.url) openProducedFile(res.file.url);
         })
         .withFailureHandler(err=>{
@@ -8854,6 +9691,9 @@
       }
 
       initActionEntries();
+
+      initSection1Preview();
+      initFormRules();
 
       buildSection1(); // 初次預覽一次
     }
