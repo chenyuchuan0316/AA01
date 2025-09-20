@@ -5163,10 +5163,30 @@
       const cap = toCurrencyInt(options.cap);
       const sum = toCurrencyInt(options.sum);
       const hasForeignCare = !!options.hasForeignCare;
+      const foreignRateCandidate = options.foreignCare30;
+      let foreignRate = 0.3;
+      let applyForeignDeduct = hasForeignCare;
+      if(foreignRateCandidate !== undefined && foreignRateCandidate !== null && foreignRateCandidate !== ''){
+        const numeric = Number(foreignRateCandidate);
+        if(Number.isFinite(numeric)){
+          applyForeignDeduct = applyForeignDeduct || numeric > 0;
+          if(numeric > 1){
+            foreignRate = numeric / 100;
+          }else if(numeric >= 0){
+            foreignRate = numeric;
+          }
+        }
+      }
+      if(!Number.isFinite(foreignRate) || foreignRate < 0){
+        foreignRate = 0;
+      }
+      if(foreignRate > 1){
+        foreignRate = 1;
+      }
       let effectiveCap = cap;
       let foreignDeduct = 0;
-      if(hasForeignCare && cap > 0){
-        foreignDeduct = toCurrencyInt(cap * 0.3);
+      if(applyForeignDeduct && cap > 0 && foreignRate > 0){
+        foreignDeduct = toCurrencyInt(cap * foreignRate);
         effectiveCap = Math.max(0, cap - foreignDeduct);
       }
       if(options.annualCap !== undefined){
@@ -5435,14 +5455,14 @@
         return;
       }
 
-      const weeklyLimit = 5;
+      const weeklyLimit = 7;
       const limitMonthly = Math.floor(weeksPerMonth * weeklyLimit);
       const rawMonthlyVisits = Math.max(0, Math.floor(cap / totalPerVisit));
       const monthlyVisits = Math.min(rawMonthlyVisits, limitMonthly);
       const cappedByWeeklyLimit = rawMonthlyVisits > limitMonthly;
       const weeklyVisits = monthlyVisits > 0 ? Math.min(weeklyLimit, monthlyVisits / weeksPerMonth) : 0;
-      const dayCareUsage = basePerVisit * monthlyVisits;
-      const transportUsage = transportPerVisit * monthlyVisits;
+      const dayCareUsage = toCurrencyInt(basePerVisit * monthlyVisits);
+      const transportUsage = toCurrencyInt(transportPerVisit * monthlyVisits);
       const totalUsage = dayCareUsage + transportUsage;
       const copayRate = getBcCopayRate();
       const financials = computeFinancials({
@@ -5453,21 +5473,70 @@
       });
       const remainingCap = Math.max(0, financials.effectiveCap - financials.withinCapUsage);
 
+      function allocateAmount(totalAmount, weights){
+        const result = weights.map(()=>0);
+        const normalizedWeights = weights.map(weight=>Math.max(0, toCurrencyInt(weight)));
+        const totalWeight = normalizedWeights.reduce((sum, weight)=>sum + weight, 0);
+        const totalInt = toCurrencyInt(totalAmount);
+        if(!(totalInt > 0) || totalWeight <= 0){
+          return result;
+        }
+        let remainder = totalInt;
+        normalizedWeights.forEach((weight, idx)=>{
+          if(weight <= 0){
+            result[idx] = 0;
+            return;
+          }
+          const share = Math.floor((totalInt * weight) / totalWeight);
+          result[idx] = share;
+          remainder -= share;
+        });
+        if(remainder > 0){
+          const order = normalizedWeights
+            .map((weight, idx)=>({ weight, idx }))
+            .filter(item=>item.weight > 0)
+            .sort((a,b)=>{
+              if(b.weight === a.weight){
+                return a.idx - b.idx;
+              }
+              return b.weight - a.weight;
+            });
+          for(let i=0;i<order.length && remainder>0;i++){
+            result[order[i].idx] += 1;
+            remainder -= 1;
+          }
+        }
+        return result;
+      }
+
+      const usageWeights = [dayCareUsage, transportUsage];
+      const withinShares = allocateAmount(financials.withinCapCopay, usageWeights);
+      const excessShares = allocateAmount(financials.excessSelfPay, usageWeights);
+      const publicShares = allocateAmount(financials.publicExpense, usageWeights);
+      const dayWithin = withinShares[0];
+      const transportWithin = withinShares[1];
+      const dayExcess = excessShares[0];
+      const transportExcess = excessShares[1];
+      const dayPublic = publicShares[0];
+      const transportPublic = publicShares[1];
+      const dayTotalSelfPay = dayWithin + dayExcess;
+      const transportTotalSelfPay = transportWithin + transportExcess;
+
       updateEntryAutoValues(dayCareEntry, {
         monthlyVisits: monthlyVisits,
         weeklyVisits: weeklyVisits,
         monthlyUnits: dayCareUsage,
         remaining: remainingCap,
         unitLabel: '次',
-        withinCapCopay: financials.withinCapCopay,
-        excessSelfPay: financials.excessSelfPay,
-        totalSelfPay: financials.totalSelfPay,
-        publicExpense: financials.publicExpense
+        withinCapCopay: dayWithin,
+        excessSelfPay: dayExcess,
+        totalSelfPay: dayTotalSelfPay,
+        publicExpense: dayPublic
       });
       if(monthlyVisits > 0){
         const weeklyText = formatAutoDecimal(weeklyVisits) || '0';
         let freqText = `預估每月${monthlyVisits}次（約每週${weeklyText}次）`;
-        freqText += '，每日最多 1 次，每週不超過 5 次';
+        freqText += '，每日最多 1 次，每週不超過 7 次';
         if(cappedByWeeklyLimit){
           freqText += '（已套用上限）';
         }
@@ -5484,7 +5553,11 @@
           weeklyVisits: transportWeekly,
           monthlyUnits: transportUsage,
           remaining: remainingCap,
-          unitLabel: '趟'
+          unitLabel: '趟',
+          withinCapCopay: transportWithin,
+          excessSelfPay: transportExcess,
+          totalSelfPay: transportTotalSelfPay,
+          publicExpense: transportPublic
         });
         transportEntry.autoFrequencyText = monthlyVisits > 0
           ? `搭配日間照顧往返${roundTrips}趟／次，月計約${formatAutoInteger(transportEntry.autoPlanMonthlyVisits)}趟（每週約${formatAutoDecimal(transportWeekly)}趟）`
