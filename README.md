@@ -117,7 +117,7 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
    - 將所有欄位整合成 `form` 物件，呼叫 `applyAndSave(form)`。
 
 3. **後端寫入** (`AppCore.gs`)
-   - `applyAndSave` 先計算新檔名稱（`單位代碼_家訪日期_個案姓名_V{版號}`）。
+   - `applyAndSave` 先計算新檔名稱（`FNA1_YYYYMMDD_個案姓名_個管師姓名_V{版號}`），並以「個案×個管師」為唯一鍵遞增版號。
    - 於 `OUTPUT_FOLDER_ID` 指定的資料夾中，以 `TEMPLATE_DOC_ID` 為模板建立副本並開啟 Body。
    - `DOCUMENT_WRITERS` 依序呼叫 `applyH1_*` 函式處理各段落（邏輯集中於 `AppCore.gs`）：
     - `applyH1_CallDate` / `applyH1_VisitDate`：更新標題列文字或插入出院日期。

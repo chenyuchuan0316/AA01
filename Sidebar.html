@@ -129,11 +129,20 @@
     }
 
     /* 日期顯示盒（更清楚） */
-    .datebox{ display:flex; align-items:center; gap:10px; }
-    .dateval{
-      padding:10px 12px; min-width:160px; text-align:center;
-      border:1px solid var(--border); border-radius:12px; background:#f7f9fc; color:#1a1c1e; font-weight:700; font-size:18px;
+    .datebox{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .datebox input[type="date"]{
+      width:auto;
+      min-width:176px;
+      flex:0 0 auto;
     }
+    .date-controls{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .date-controls button.small{ min-width:64px; }
+    .date-controls button.calendar-btn{ min-width:72px; }
 
     /* 按鈕與操作面積（主按鈕 56px，小按鈕 48px） */
     .btnbar{ display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
@@ -496,7 +505,7 @@
       body{ margin:12px; }
       .group{ padding:18px; margin-bottom:14px; }
       .row, .grid2, .grid3{ gap:12px; }
-      .dateval{ min-width:150px; font-size:18px; }
+      .datebox input[type="date"]{ min-width:150px; font-size:18px; }
       .preview{ font-size:1rem; }
     }
   </style>
@@ -560,13 +569,13 @@
   <div class="group">
     <label>一、電聯日期</label>
     <div id="callDateControls" class="datebox">
-      <div id="callDate" class="dateval"></div>
-      <input id="callDate_input" type="date" onchange="onDatePickerChange('callDate', this.value)">
-      <div class="btnbar">
-        <button class="small" onclick="shiftDate('callDate', -5)">-5天</button>
-        <button class="small" onclick="shiftDate('callDate',  5)">+5天</button>
-        <button class="small" onclick="shiftDate('callDate', -1)">-1天</button>
-        <button class="small" onclick="shiftDate('callDate',  1)">+1天</button>
+      <input id="callDate" type="date">
+      <div class="date-controls">
+        <button type="button" class="small" onclick="shiftDate('callDate', -5)">-5天</button>
+        <button type="button" class="small" onclick="shiftDate('callDate',  5)">+5天</button>
+        <button type="button" class="small" onclick="shiftDate('callDate', -1)">-1天</button>
+        <button type="button" class="small" onclick="shiftDate('callDate',  1)">+1天</button>
+        <button type="button" class="small calendar-btn" onclick="openDatePicker('callDate')">日曆</button>
       </div>
     </div>
     <div class="row" style="margin-top:8px;">
@@ -581,13 +590,13 @@
   <div class="group">
     <label>二、家訪日期</label>
     <div class="datebox">
-      <div id="visitDate" class="dateval"></div>
-      <input id="visitDate_input" type="date" onchange="onDatePickerChange('visitDate', this.value)">
-      <div class="btnbar">
-        <button class="small" onclick="shiftDate('visitDate', -5)">-5天</button>
-        <button class="small" onclick="shiftDate('visitDate',  5)">+5天</button>
-        <button class="small" onclick="shiftDate('visitDate', -1)">-1天</button>
-        <button class="small" onclick="shiftDate('visitDate',  1)">+1天</button>
+      <input id="visitDate" type="date">
+      <div class="date-controls">
+        <button type="button" class="small" onclick="shiftDate('visitDate', -5)">-5天</button>
+        <button type="button" class="small" onclick="shiftDate('visitDate',  5)">+5天</button>
+        <button type="button" class="small" onclick="shiftDate('visitDate', -1)">-1天</button>
+        <button type="button" class="small" onclick="shiftDate('visitDate',  1)">+1天</button>
+        <button type="button" class="small calendar-btn" onclick="openDatePicker('visitDate')">日曆</button>
       </div>
     </div>
     <div class="row" style="margin-top:8px;">
@@ -597,13 +606,13 @@
     </div>
     <div id="dischargeBox" style="display:none;">
       <div class="datebox">
-        <div id="dischargeDate" class="dateval"></div>
-        <input id="dischargeDate_input" type="date" onchange="onDatePickerChange('dischargeDate', this.value)">
-        <div class="btnbar">
-          <button class="small" onclick="shiftDate('dischargeDate', -5)">-5天</button>
-          <button class="small" onclick="shiftDate('dischargeDate',  5)">+5天</button>
-          <button class="small" onclick="shiftDate('dischargeDate', -1)">-1天</button>
-          <button class="small" onclick="shiftDate('dischargeDate',  1)">+1天</button>  
+        <input id="dischargeDate" type="date">
+        <div class="date-controls">
+          <button type="button" class="small" onclick="shiftDate('dischargeDate', -5)">-5天</button>
+          <button type="button" class="small" onclick="shiftDate('dischargeDate',  5)">+5天</button>
+          <button type="button" class="small" onclick="shiftDate('dischargeDate', -1)">-1天</button>
+          <button type="button" class="small" onclick="shiftDate('dischargeDate',  1)">+1天</button>
+          <button type="button" class="small calendar-btn" onclick="openDatePicker('dischargeDate')">日曆</button>
         </div>
       </div>
     </div>
@@ -1635,16 +1644,12 @@
     function setDateBox(id,d){
       if(!(d instanceof Date) || Number.isNaN(d.getTime())) return;
       const text=toYMD(d);
-      const display=document.getElementById(id);
-      if(display) display.textContent=text;
-      const input=document.getElementById(id+'_input');
+      const input=document.getElementById(id);
       if(input) input.value=text;
     }
     function getDateBox(id){
-      const input=document.getElementById(id+'_input');
-      if(input && input.value) return input.value;
-      const box=document.getElementById(id);
-      return box ? box.textContent : '';
+      const input=document.getElementById(id);
+      return input && input.value ? input.value : '';
     }
     function shiftDate(id,delta){
       const cur=getDateBox(id);
@@ -1653,9 +1658,31 @@
       base.setDate(base.getDate()+delta);
       setDateBox(id,base);
     }
-    function onDatePickerChange(id,value){
-      const parsed=parseDateInput(value);
-      if(parsed) setDateBox(id, parsed);
+    function attachDateInputEvents(id){
+      const input=document.getElementById(id);
+      if(!input) return;
+      input.setAttribute('title','↑/↓ ±1 天，Shift+↑/↓ ±5 天');
+      input.addEventListener('keydown', ev=>{
+        if(ev.key==='ArrowUp' || ev.key==='ArrowDown'){
+          const step = ev.shiftKey ? 5 : 1;
+          const delta = ev.key==='ArrowUp' ? step : -step;
+          shiftDate(id, delta);
+          ev.preventDefault();
+        }
+      });
+    }
+    function openDatePicker(id){
+      const input=document.getElementById(id);
+      if(!input) return;
+      if(typeof input.showPicker === 'function'){
+        input.showPicker();
+      }else{
+        input.focus();
+        input.click();
+      }
+    }
+    function initDateInputs(){
+      ['callDate','visitDate','dischargeDate'].forEach(attachDateInputEvents);
     }
     function toggleDischarge(){const on=document.getElementById('isDischarge').checked; document.getElementById('dischargeBox').style.display=on?'':'none'; if(on&&!getDateBox('dischargeDate')) setDateBox('dischargeDate', new Date());}
     function updateConsultVisitText(){
@@ -1688,6 +1715,23 @@
       return String(str || '').replace(/[&<>"']/g, function(ch){
         return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch] || ch;
       });
+    }
+    function renderOutputMessage(res){
+      const box=document.getElementById('msg');
+      if(!box) return;
+      if(res && res.file && res.file.url){
+        const messageText = res && res.message ? escapeHtml(res.message) : '已建立新檔';
+        const safeUrl = escapeHtml(res.file.url);
+        const safeName = escapeHtml(res.file.name || '新文件');
+        box.innerHTML = `${messageText} → <a href="${safeUrl}" target="_blank" rel="noopener">${safeName}</a> <button type="button" class="small" data-url="${safeUrl}" onclick="openProducedFile(this.dataset.url)">開啟</button>`;
+      }else{
+        box.textContent = res && res.message ? res.message : '';
+      }
+    }
+    function openProducedFile(url){
+      if(!url) return;
+      const opened = window.open(url, '_blank');
+      if(opened){ opened.opener = null; }
     }
     function nl2br(str){
       if(!str) return '';
@@ -1836,7 +1880,7 @@
     /* ================== (一) 身心概況：字典、連動、蒐集、產文 ================== */
 
     // 字典
-    const S1_VISION_NOTES = ['白內障術後','配戴眼鏡','老花','單眼視力不佳','護目鏡依從性差','其他'];
+    const S1_VISION_NOTES = ['白內障術後','配戴眼鏡','老花','單眼視力不佳','其他'];
     const VISION_NOTE_SUGGESTION = {
       '靠近才能辨識': ['配戴眼鏡'],
       '即使配戴眼鏡，仍難以辨識': ['配戴眼鏡'],
@@ -2098,7 +2142,7 @@
       const wrap=document.getElementById('s1_glasses_adherence_wrap');
       if(!wrap) return;
       const checks=[...document.querySelectorAll('#s1_vision_note_box input[type=checkbox]:checked')].map(x=>x.value);
-      const need=checks.some(v=>v==='配戴眼鏡'||v==='護目鏡依從性差');
+      const need=checks.some(v=>v==='配戴眼鏡');
       wrap.style.display = need ? '' : 'none';
       if(!need){
         const sel=document.getElementById('s1_glasses_adherence');
@@ -3264,7 +3308,7 @@
       let visionPhrase = phraseVision(s.s1_vision);
       const vNotesRaw = [].concat(Array.isArray(s.s1_vision_note) ? s.s1_vision_note : (has(s.s1_vision_note) ? [s.s1_vision_note] : []));
       const vNotes = vNotesRaw.map(note=>{
-        if ((note === '配戴眼鏡' || note === '護目鏡依從性差') && has(s.s1_glasses_adherence)) {
+        if (note === '配戴眼鏡' && has(s.s1_glasses_adherence)) {
           return `${note}（${s.s1_glasses_adherence}）`;
         }
         return note;
@@ -6386,8 +6430,8 @@
 
       google.script.run
         .withSuccessHandler(res=>{
-          msg.innerHTML = (res && res.message ? res.message+' ' : '') + (res && res.file ? `→ <b>${res.file.name}</b>` : '');
-          if (res && res.file && res.file.url) window.open(res.file.url, '_blank');
+          renderOutputMessage(res);
+          if (res && res.file && res.file.url) openProducedFile(res.file.url);
         })
         .withFailureHandler(err=>{
           msg.innerHTML = '<span class="danger">錯誤：</span>' + (err && err.message ? err.message : err);
@@ -6448,6 +6492,7 @@
 
     window.addEventListener('load', ()=>{
       initPageTabs();
+      initDateInputs();
       setDateBox('callDate', new Date());
       setDateBox('visitDate', new Date());
       loadManagers();

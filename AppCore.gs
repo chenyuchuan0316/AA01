@@ -51,15 +51,24 @@ const DOCUMENT_WRITERS = Object.freeze([
   applyPlanServiceSummaryPage
 ]);
 
+function sanitizeFilePart(part){
+  if (!part) return '';
+  return String(part)
+    .trim()
+    .replace(/[\\/:*?"<>|]/g, '')
+    .replace(/\s+/g, '');
+}
+
 function buildDocumentNaming(form){
-  const unitCode = (form && form.unitCode) || '';
-  const visitYmd = ((form && form.visitDate) || '').replace(/-/g, '');
-  const caseName = (form && form.caseName) || '';
-  let baseName = `${unitCode}_${visitYmd}_${caseName}`;
-  if (!unitCode && !visitYmd && !caseName) {
-    baseName = 'AA01_計畫';
-  }
-  const nextVersion = computeNextVersion(baseName);
+  const casePart = sanitizeFilePart(getTrimmed(form, 'caseName')) || '未填個案';
+  const managerPart = sanitizeFilePart(getTrimmed(form, 'caseManagerName')) || '未填個管師';
+  const versionKey = `${casePart}_${managerPart}`;
+  const rawVisit = getTrimmed(form, 'visitDate');
+  const visitYmd = rawVisit ? rawVisit.replace(/-/g, '') : '';
+  const todayYmd = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd');
+  const datePart = visitYmd || todayYmd;
+  const baseName = `FNA1_${datePart}_${versionKey}`;
+  const nextVersion = computeNextVersionByKey(versionKey);
   return {
     baseName: baseName,
     version: nextVersion,
@@ -761,11 +770,12 @@ function getTrimmed(form, key){
  * ============================================ */
 
 /** 依資料夾既有檔名計算下一版號：baseName_Vn → n+1 */
-function computeNextVersion(baseName){
+function computeNextVersionByKey(versionKey){
+  const key = versionKey || '未填個案_未填個管師';
   const folder = DriveApp.getFolderById(OUTPUT_FOLDER_ID);
   const it = folder.getFiles();
   let maxV = 0;
-  const re = new RegExp('^'+escapeRegExp(baseName)+'_V(\\d+)$');
+  const re = new RegExp('^FNA1_\\d{8}_'+escapeRegExp(key)+'_V(\\d+)$');
   while (it.hasNext()){
     const f = it.next();
     const name = f.getName();
