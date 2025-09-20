@@ -53,7 +53,7 @@
     html { font-size:18px; -webkit-text-size-adjust:100%; }
     @media (min-width:1440px){ html{ font-size:19px; } }
     @media (min-width:1920px){ html{ font-size:20px; } }
-    @media (max-width:480px){ html{ font-size:clamp(18px, 4.8vw, 20px); } }
+    @media (max-width:480px){ html{ font-size:clamp(20px, 6.4vw, 24px); } }
 
     html, body{ background:var(--bg); color:var(--text); }
     body{
@@ -169,7 +169,24 @@
     button[data-ic="plus"]::before{ content:"+"; margin-right:.25em; font-weight:900; }
     button[data-ic="minus"]::before{ content:"–"; margin-right:.25em; font-weight:900; }
 
-    .page-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+    .page-header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      padding-top:8px;
+      margin-bottom:16px;
+    }
+    .page-header-inner{
+      background:rgba(255,255,255,.94);
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .page-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin:0; }
     .page-tabs button{
       height:44px;
       padding:0 18px;
@@ -186,11 +203,96 @@
       color:#fff;
       border-color:var(--accent);
     }
+    .wizard{
+      position:relative;
+      display:flex;
+      justify-content:space-between;
+      gap:0;
+      align-items:flex-start;
+    }
+    .wizard-step{
+      position:relative;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      border:none;
+      background:none;
+      cursor:pointer;
+      color:var(--label);
+      font-weight:600;
+      padding:0;
+    }
+    .wizard-step::before{
+      content:'';
+      position:absolute;
+      top:20px;
+      left:-50%;
+      width:100%;
+      height:4px;
+      background:#dbe5ff;
+      z-index:-1;
+    }
+    .wizard-step:first-child::before{ display:none; }
+    .wizard-step[data-status="done"]::before,
+    .wizard-step[data-status="active"]::before{
+      background:var(--accent);
+    }
+    .wizard-step:focus-visible{
+      outline:2px solid var(--accent);
+      outline-offset:4px;
+    }
+    .wizard-index{
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#e2e8f0;
+      color:#1f2937;
+      font-weight:800;
+      font-size:1rem;
+    }
+    .wizard-label{
+      font-size:0.95rem;
+      text-align:center;
+      line-height:1.4;
+    }
+    .wizard-step[data-status="active"] .wizard-index,
+    .wizard-step[data-status="done"] .wizard-index{
+      background:var(--accent);
+      color:#fff;
+    }
+    .wizard-step[data-status="active"] .wizard-label{ color:var(--title); }
+    .wizard-step[data-status="done"] .wizard-label{ color:#0b1d4d; }
+    @media (max-width:720px){
+      .wizard{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
+      }
+      .wizard-step{
+        width:100%;
+        align-items:flex-start;
+      }
+      .wizard-step::before{ display:none; }
+      .wizard-label{ text-align:left; }
+    }
     .page-section{ display:none; }
     .page-section[data-active="1"]{ display:block; }
 
     .summary-section{ margin-bottom:20px; }
     .summary-title{ font-weight:700; color:var(--title); margin-bottom:8px; }
+    .summary-actions{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+      flex-wrap:wrap;
+    }
     .summary-table-wrapper{ overflow-x:auto; }
     .summary-table{ width:100%; border-collapse:collapse; min-width:600px; }
     .summary-table th, .summary-table td{
@@ -812,6 +914,26 @@
     }
     .error-messages ul{ margin:0; padding-left:20px; }
     .error-messages li{ margin-bottom:4px; }
+    .floating-actions{
+      position:fixed;
+      right:max(18px, env(safe-area-inset-right) + 18px);
+      bottom:max(24px, env(safe-area-inset-bottom) + 24px);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:flex-end;
+      z-index:80;
+    }
+    .floating-actions button{
+      min-width:140px;
+      box-shadow:var(--shadow);
+    }
+    .floating-actions button[data-variant="ghost"]{
+      background:rgba(255,255,255,.9);
+    }
+    #wizardSaveBtn{ order:1; }
+    #wizardNextBtn{ order:2; }
+    #wizardPrevBtn{ order:3; }
     #errorSummary{
       display:none;
       margin-top:12px;
@@ -853,7 +975,7 @@
     #validationToast{
       position:fixed;
       right:24px;
-      bottom:calc(24px + env(safe-area-inset-bottom));
+      bottom:calc(180px + env(safe-area-inset-bottom));
       max-width:360px;
       width:calc(100% - 48px);
       background:#111827;
@@ -902,11 +1024,23 @@
       border-color:#fff7ed;
     }
     @media (max-width:600px){
+      .floating-actions{
+        left:12px;
+        right:12px;
+        bottom:max(16px, env(safe-area-inset-bottom) + 16px);
+        flex-direction:row;
+        justify-content:space-between;
+        gap:8px;
+      }
+      .floating-actions button{
+        flex:1;
+        min-width:0;
+      }
       #validationToast{
         left:12px;
         right:12px;
         width:auto;
-        bottom:calc(12px + env(safe-area-inset-bottom));
+        bottom:calc(130px + env(safe-area-inset-bottom));
       }
     }
     .input-invalid{
@@ -955,15 +1089,37 @@
 
   <div class="app-container" id="appContainer">
 
-  <div class="page-tabs" id="pageTabs">
-    <button type="button" data-page="goals" class="active">計畫目標</button>
-    <button type="button" data-page="execution">計畫執行規劃</button>
-    <button type="button" data-page="notes">其他備註</button>
+  <div class="page-header" id="pageHeader">
+    <div class="page-header-inner">
+      <div class="page-tabs" id="pageTabs">
+        <button type="button" data-page="goals" class="active">計畫目標</button>
+        <button type="button" data-page="execution">計畫執行規劃</button>
+        <button type="button" data-page="notes">其他備註</button>
+      </div>
+      <div class="wizard" id="wizardSteps" aria-label="填寫進度">
+        <button type="button" class="wizard-step" data-step="1" data-page="goals" data-anchor="#basicInfoGroup">
+          <span class="wizard-index">1</span>
+          <span class="wizard-label">基本資訊</span>
+        </button>
+        <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#careGoalsGroup">
+          <span class="wizard-index">2</span>
+          <span class="wizard-label">照顧目標</span>
+        </button>
+        <button type="button" class="wizard-step" data-step="3" data-page="execution" data-anchor="#planExecutionGroup">
+          <span class="wizard-index">3</span>
+          <span class="wizard-label">計畫執行規劃</span>
+        </button>
+        <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planNotesGroup">
+          <span class="wizard-index">4</span>
+          <span class="wizard-label">附件與備註</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <div class="page-section" data-page="goals" data-active="1">
   <!-- 基本資訊 -->
-  <div class="group">
+  <div class="group" id="basicInfoGroup">
     <label>★基本資訊</label>
     <div class="row">
       <div>
@@ -1949,7 +2105,7 @@
   </div>
 
   <!-- 五、照顧目標（原功能保留） -->
-  <div class="group">
+  <div class="group" id="careGoalsGroup">
     <label>五、照顧目標</label>
 
     <div class="row"><div>
@@ -2031,7 +2187,7 @@
   </div>
 
   <div class="page-section" data-page="execution">
-  <div class="group">
+  <div class="group" id="planExecutionGroup">
     <label>計畫執行規劃</label>
     <div class="hint">請針對核定之服務填寫頻率、使用方式或案主期待，系統將依格式預覽全文。</div>
     <div id="planEditor" class="plan-editor"></div>
@@ -2057,48 +2213,50 @@
         <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
       </div>
     </div>
+    <div class="summary-section">
+      <div class="summary-title">服務計畫明細預覽（附件二）</div>
+      <div class="summary-actions">
+        <button type="button" class="small" id="planSummaryCopyBtn">複製表格</button>
+      </div>
+      <div id="planSummaryTotals" class="plan-summary-totals">
+        <div class="plan-summary-total-card">
+          <div class="plan-summary-total-label">CMS 等級月額度</div>
+          <div class="plan-summary-total-value" id="planSummaryCap">—</div>
+        </div>
+        <div class="plan-summary-total-card">
+          <div class="plan-summary-total-label">B/C 預估耗用</div>
+          <div class="plan-summary-total-value" id="planSummaryUsage">—</div>
+        </div>
+        <div class="plan-summary-total-card">
+          <div class="plan-summary-total-label">預估餘額</div>
+          <div class="plan-summary-total-value" id="planSummaryRemaining">—</div>
+        </div>
+        <div class="plan-summary-total-card">
+          <div class="plan-summary-total-label">上限內自付</div>
+          <div class="plan-summary-total-value" id="planSummaryWithin">—</div>
+        </div>
+        <div class="plan-summary-total-card">
+          <div class="plan-summary-total-label">超額自付</div>
+          <div class="plan-summary-total-value" id="planSummaryExcess">—</div>
+        </div>
+        <div class="plan-summary-total-card">
+          <div class="plan-summary-total-label">總自付</div>
+          <div class="plan-summary-total-value" id="planSummarySelfPay">—</div>
+        </div>
+      </div>
+      <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
+      <div id="planSummaryPreview" class="summary-table-wrapper">
+        <div class="hint">尚未選擇服務項目。</div>
+      </div>
+    </div>
   </div>
   </div>
 
   <div class="page-section" data-page="notes">
-  <div class="group">
+  <div class="group" id="planNotesGroup">
     <label>附件預覽</label>
     <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
     <textarea id="plan_text" class="plan-preview" readonly></textarea>
-    <div class="hr"></div>
-      <div class="summary-section">
-        <div class="summary-title">服務計畫明細預覽（附件二）</div>
-        <div id="planSummaryTotals" class="plan-summary-totals">
-          <div class="plan-summary-total-card">
-            <div class="plan-summary-total-label">CMS 等級月額度</div>
-            <div class="plan-summary-total-value" id="planSummaryCap">—</div>
-          </div>
-          <div class="plan-summary-total-card">
-            <div class="plan-summary-total-label">B/C 預估耗用</div>
-            <div class="plan-summary-total-value" id="planSummaryUsage">—</div>
-          </div>
-          <div class="plan-summary-total-card">
-            <div class="plan-summary-total-label">預估餘額</div>
-            <div class="plan-summary-total-value" id="planSummaryRemaining">—</div>
-          </div>
-          <div class="plan-summary-total-card">
-            <div class="plan-summary-total-label">上限內自付</div>
-            <div class="plan-summary-total-value" id="planSummaryWithin">—</div>
-          </div>
-          <div class="plan-summary-total-card">
-            <div class="plan-summary-total-label">超額自付</div>
-            <div class="plan-summary-total-value" id="planSummaryExcess">—</div>
-          </div>
-          <div class="plan-summary-total-card">
-            <div class="plan-summary-total-label">總自付</div>
-            <div class="plan-summary-total-value" id="planSummarySelfPay">—</div>
-          </div>
-        </div>
-        <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
-        <div id="planSummaryPreview" class="summary-table-wrapper">
-          <div class="hint">尚未選擇服務項目。</div>
-        </div>
-      </div>
   </div>
 
   <!-- 動作 -->
@@ -2110,6 +2268,12 @@
     <div id="msg" class="hint" style="margin-top:8px;"></div>
   </div>
   </div>
+  </div>
+
+  <div class="floating-actions" id="floatingActions" aria-label="頁面操作">
+    <button type="button" class="primary" id="wizardSaveBtn">存檔</button>
+    <button type="button" id="wizardNextBtn">下一步</button>
+    <button type="button" data-variant="ghost" id="wizardPrevBtn">返回</button>
   </div>
 
   <div id="validationToast" data-show="0" role="alert" aria-live="assertive">
@@ -2219,6 +2383,10 @@
       if(!str) return '';
       return escapeHtml(str).replace(/\n/g,'<br>');
     }
+
+    let wizardStepsMeta = [];
+    let wizardStepLookup = {};
+    let currentWizardStep = null;
 
 
     /* ===== 段落視圖（分層/收合/進度） ===== */
@@ -4820,7 +4988,12 @@
       const link = evt && evt.currentTarget ? evt.currentTarget : null;
       if(!link) return;
       const targetId = link.dataset.target || '';
-      setActivePage('goals');
+      const step = resolveWizardStepForField(targetId);
+      if(step){
+        setCurrentWizardStep(step, { scroll:false });
+      }else{
+        setActivePage('goals');
+      }
       focusErrorTarget(targetId);
     }
 
@@ -4830,7 +5003,8 @@
       const activeType = toast.dataset.type || '';
       if(toast.dataset.show === '1' && activeType !== 'warn') return;
       const target = warn && warn.fields && warn.fields[0] ? warn.fields[0] : '';
-      showValidationToast({ type:'warn', message: message || '請檢查欄位內容。', target: target, page:'goals' });
+      const step = resolveWizardStepForField(target);
+      showValidationToast({ type:'warn', message: message || '請檢查欄位內容。', target: target, page:'goals', step: step });
     }
 
     function clearRuleWarningToast(){
@@ -4886,9 +5060,19 @@
 
     function jumpToField(fieldId){
       if(!fieldId) return;
-      setActivePage('goals');
       const el=document.getElementById(fieldId);
-      if(!el) return;
+      if(!el){
+        setActivePage('goals');
+        return;
+      }
+      const step = resolveWizardStepForElement(el);
+      if(step){
+        setCurrentWizardStep(step, { scroll:false });
+      }else{
+        const section = el.closest ? el.closest('.page-section') : null;
+        const pageId = section && section.dataset ? section.dataset.page : 'goals';
+        setActivePage(pageId || 'goals');
+      }
       if(typeof el.scrollIntoView === 'function'){
         el.scrollIntoView({ behavior:'smooth', block:'center' });
       }
@@ -7767,38 +7951,96 @@
       }
     }
 
-    function buildPlanSummaryPreview(){
-      updatePlanSummaryTotals();
-      const host=document.getElementById('planSummaryPreview');
-      if(!host) return;
-      const entries=Object.values(servicePlanState);
-      if(!entries.length){
-        host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
-        return;
-      }
+
+    function collectPlanSummaryGroups(){
       const grouped={};
-      const totalSelfPayValue = entries.reduce((sum, entry)=>{
-        return sum + computeEntrySelfPay(entry);
-      }, 0);
-      entries.forEach(entry=>{
+      Object.values(servicePlanState).forEach(entry=>{
         if(!entry) return;
         const cat=(entry.category || determineServiceCategory(entry.code) || 'OTHER').toUpperCase();
         if(!grouped[cat]) grouped[cat]=[];
         grouped[cat].push(entry);
       });
       const order=['B','C','D','EF','G','SC','MEAL','OTHER'];
-      let html='';
+      const groups=[];
       order.forEach(cat=>{
         const list=grouped[cat];
         if(!list || !list.length) return;
-        html += `<div class="summary-section"><div class="summary-title">${escapeHtml(planCategoryLabel(cat))}</div>`;
-        html += '<table class="summary-table"><thead><tr><th>服務代碼</th><th>服務名稱</th><th>承接</th><th>指定單位</th><th>額度／單位</th><th>自費金額</th><th>使用頻率／說明</th></tr></thead><tbody>';
-        list.sort((a,b)=>{
+        const sorted=list.slice().sort((a,b)=>{
           const ac=(a && a.code) ? a.code : '';
           const bc=(b && b.code) ? b.code : '';
           return ac.localeCompare(bc);
         });
-        list.forEach(entry=>{
+        groups.push({ category:cat, label:planCategoryLabel(cat), entries:sorted });
+      });
+      return groups;
+    }
+
+    function sanitizeSummaryCell(value){
+      return (value || '').replace(/\s*\n\s*/g, ' / ').replace(/\t/g, ' ').trim();
+    }
+
+    let planSummaryClipboardText = '';
+    let planSummaryCopyTimer = null;
+
+    function setPlanSummaryClipboard(text){
+      const normalized = text ? String(text) : '';
+      const changed = normalized !== planSummaryClipboardText;
+      planSummaryClipboardText = normalized;
+      const btn=document.getElementById('planSummaryCopyBtn');
+      if(!btn) return;
+      if(!btn.dataset.originalLabel){
+        btn.dataset.originalLabel = btn.textContent || '複製表格';
+      }
+      let state = btn.dataset.copyState || '';
+      if(changed && planSummaryCopyTimer){
+        clearTimeout(planSummaryCopyTimer);
+        planSummaryCopyTimer = null;
+        if(state && state !== 'busy'){
+          btn.textContent = btn.dataset.originalLabel;
+          state = '';
+          btn.dataset.copyState = '';
+        }
+      }
+      const hasText = !!planSummaryClipboardText;
+      const isBusy = state === 'busy';
+      if(!hasText){
+        btn.textContent = btn.dataset.originalLabel;
+        if(state !== 'busy'){
+          btn.dataset.copyState = '';
+          state = '';
+        }
+      }
+      btn.disabled = !hasText || isBusy;
+      btn.setAttribute('aria-disabled', btn.disabled ? 'true' : 'false');
+    }
+
+    function buildPlanSummaryPreview(){
+      updatePlanSummaryTotals();
+      const host=document.getElementById('planSummaryPreview');
+      if(!host) return;
+      const groups=collectPlanSummaryGroups();
+      if(!groups.length){
+        host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
+        setPlanSummaryClipboard('');
+        return;
+      }
+      const header=['服務代碼','服務名稱','承接','指定單位','額度／單位','自費金額','使用頻率／說明'];
+      const copyLines=[];
+      let html='';
+      let totalSelfPayValue=0;
+      groups.forEach((group,index)=>{
+        if(index>0){
+          html += '<div class="hr" aria-hidden="true"></div>';
+          copyLines.push('');
+        }
+        html += `<div class="summary-title">${escapeHtml(group.label)}</div>`;
+        html += '<div class="summary-table-wrapper">';
+        html += '<table class="summary-table"><thead><tr>';
+        header.forEach(label=>{ html += `<th>${escapeHtml(label)}</th>`; });
+        html += '</tr></thead><tbody>';
+        copyLines.push(group.label);
+        copyLines.push(header.join('	'));
+        group.entries.forEach(entry=>{
           const vendorMode = entry && entry.vendorMode ? entry.vendorMode : '輪派';
           const vendorName = formatSummaryVendorName(entry);
           const amount = formatSummaryAmount(entry);
@@ -7813,16 +8055,119 @@
           html += `<td>${selfPayText ? nl2br(selfPayText) : '—'}</td>`;
           html += `<td>${usage ? nl2br(usage) : '—'}</td>`;
           html += '</tr>';
+          const copyRow=[
+            entry && entry.code ? entry.code : '',
+            entry && entry.name ? entry.name : '',
+            vendorMode,
+            vendorName,
+            sanitizeSummaryCell(amount),
+            sanitizeSummaryCell(selfPayText),
+            sanitizeSummaryCell(usage)
+          ];
+          copyLines.push(copyRow.join('	'));
+          totalSelfPayValue += computeEntrySelfPay(entry);
         });
         html += '</tbody></table></div>';
       });
-      if(!html){
-        host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
-        return;
-      }
       html += `<div class="summary-total-selfpay">自費總額：${formatAutoInteger(totalSelfPayValue)} 元</div>`;
       host.innerHTML = html;
+      setPlanSummaryClipboard(copyLines.join('
+'));
     }
+
+    function writeClipboardText(text){
+      if(!text){
+        return Promise.reject(new Error('empty'));
+      }
+      if(navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function'){
+        return navigator.clipboard.writeText(text);
+      }
+      return new Promise(function(resolve, reject){
+        try{
+          const textarea=document.createElement('textarea');
+          textarea.value=text;
+          textarea.setAttribute('readonly','');
+          textarea.style.position='fixed';
+          textarea.style.top='-9999px';
+          textarea.style.left='-9999px';
+          document.body.appendChild(textarea);
+          const selection = document.getSelection && document.getSelection();
+          const previousRange = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+          textarea.focus();
+          textarea.select();
+          let succeeded=false;
+          try{
+            succeeded = document.execCommand && document.execCommand('copy');
+          }catch(err){
+            succeeded = false;
+          }
+          document.body.removeChild(textarea);
+          if(previousRange && selection){
+            selection.removeAllRanges();
+            selection.addRange(previousRange);
+          }
+          if(succeeded){
+            resolve();
+          }else{
+            reject(new Error('copy-failed'));
+          }
+        }catch(err){
+          reject(err);
+        }
+      });
+    }
+
+    function showPlanSummaryCopyFeedback(btn, message, isError){
+      if(!btn) return;
+      if(!btn.dataset.originalLabel){
+        btn.dataset.originalLabel = btn.textContent || '複製表格';
+      }
+      btn.textContent = message;
+      btn.dataset.copyState = isError ? 'error' : 'success';
+      if(planSummaryCopyTimer){
+        clearTimeout(planSummaryCopyTimer);
+      }
+      planSummaryCopyTimer = window.setTimeout(function(){
+        btn.textContent = btn.dataset.originalLabel;
+        btn.dataset.copyState = '';
+        planSummaryCopyTimer = null;
+        if(!planSummaryClipboardText){
+          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
+        }
+      }, 2000);
+    }
+
+    function handlePlanSummaryCopyClick(evt){
+      if(evt) evt.preventDefault();
+      const btn = evt && evt.currentTarget ? evt.currentTarget : document.getElementById('planSummaryCopyBtn');
+      if(!btn || !planSummaryClipboardText){
+        return;
+      }
+      btn.disabled = true;
+      btn.dataset.copyState = 'busy';
+      btn.setAttribute('aria-disabled', 'true');
+      writeClipboardText(planSummaryClipboardText).then(function(){
+        showPlanSummaryCopyFeedback(btn, '已複製');
+        const hasText = !!planSummaryClipboardText;
+        btn.disabled = !hasText;
+        btn.setAttribute('aria-disabled', hasText ? 'false' : 'true');
+      }).catch(function(){
+        showPlanSummaryCopyFeedback(btn, '複製失敗', true);
+        const hasText = !!planSummaryClipboardText;
+        btn.disabled = !hasText;
+        btn.setAttribute('aria-disabled', hasText ? 'false' : 'true');
+      });
+    }
+
+    function initPlanSummaryCopy(){
+      const btn=document.getElementById('planSummaryCopyBtn');
+      if(!btn) return;
+      btn.addEventListener('click', handlePlanSummaryCopyClick);
+      setPlanSummaryClipboard(planSummaryClipboardText);
+    }
+
+
 
     function buildConsentParties(){
       const parties=[];
@@ -9373,6 +9718,7 @@
       toast.dataset.show='1';
       toast.dataset.target = payload.target || '';
       toast.dataset.page = payload.page || '';
+      toast.dataset.step = (payload.step !== undefined && payload.step !== null) ? String(payload.step) : '';
       if(actionBtn){
         actionBtn.style.display = payload.target ? '' : 'none';
       }
@@ -9386,6 +9732,7 @@
       toast.dataset.target='';
       toast.dataset.page='';
       toast.dataset.type='';
+      toast.dataset.step='';
       if(action){ action.style.display=''; }
     }
 
@@ -9398,8 +9745,11 @@
         action.addEventListener('click', ()=>{
           const pageId=toast.dataset.page;
           const targetId=toast.dataset.target;
+          const stepValue=toast.dataset.step;
+          const step = stepValue ? Number(stepValue) : null;
           hideValidationToast();
-          if(pageId) setActivePage(pageId);
+          if(pageId) setActivePage(pageId, { step: step });
+          else if(step) setCurrentWizardStep(step, { scroll:false });
           focusErrorTarget(targetId);
         });
       }
@@ -9415,8 +9765,10 @@
       if(!link) return;
       const pageId=link.dataset.page;
       const fieldId=link.dataset.target;
+      const step = resolveWizardStepForField(fieldId);
       hideValidationToast();
-      if(pageId) setActivePage(pageId);
+      if(pageId) setActivePage(pageId, { step: step });
+      else if(step) setCurrentWizardStep(step, { scroll:false });
       focusErrorTarget(fieldId);
     }
 
@@ -9527,14 +9879,17 @@
         if(msg) msg.textContent='請先修正標記欄位後再產出。';
         const first=errors[0];
         if(first){
-          if(first.pageId) setActivePage(first.pageId);
+          const step = resolveWizardStepForField(first.fieldId);
+          if(first.pageId) setActivePage(first.pageId, { step: step });
+          else if(step) setCurrentWizardStep(step, { scroll:false });
           focusErrorTarget(first.fieldId);
           const sectionLabel=resolveErrorSectionLabel(first);
           showValidationToast({
             type:'error',
             sectionLabel:sectionLabel,
             target:first.fieldId,
-            page:first.pageId
+            page:first.pageId,
+            step:step
           });
         }
         return;
@@ -9553,11 +9908,18 @@
         if(msg) msg.textContent='請先排除跨欄位矛盾後再產出。';
         const firstBlock = ruleBlocks[0] || {};
         const blockField = Array.isArray(firstBlock.fields) && firstBlock.fields.length ? firstBlock.fields[0] : '';
+        const step = resolveWizardStepForField(blockField);
+        if(step){
+          setCurrentWizardStep(step, { scroll:false });
+        }else{
+          setActivePage('goals');
+        }
         showValidationToast({
           type:'error',
           message:firstBlock.message || '請修正跨欄位矛盾後再提交。',
           target:blockField,
-          page:'goals'
+          page:'goals',
+          step:step
         });
         if(blockField) focusErrorTarget(blockField);
         return;
@@ -9573,13 +9935,16 @@
         const firstIssue = styleCheck.issues[0] || {};
         const targetField = firstIssue.fieldId || '';
         const pageId = firstIssue.pageId || 'goals';
+        const step = resolveWizardStepForField(targetField);
         showValidationToast({
           type:'warn',
           message:firstIssue.message || '請調整文字樣式後再提交。',
           target:targetField,
-          page:pageId
+          page:pageId,
+          step:step
         });
-        if(pageId) setActivePage(pageId);
+        if(pageId) setActivePage(pageId, { step: step });
+        else if(step) setCurrentWizardStep(step, { scroll:false });
         if(targetField) focusErrorTarget(targetField);
         return;
       }
@@ -9641,9 +10006,255 @@
         .applyAndSave(form);
     }
 
-    /* ===== 初始化 ===== */
-    function setActivePage(pageId){
+
+    /* ===== Wizard Flow 與浮動操作 ===== */
+
+    function findFirstWizardStepForPage(pageId){
+      if(!pageId) return null;
+      let candidate=null;
+      for(let i=0;i<wizardStepsMeta.length;i++){
+        const meta=wizardStepsMeta[i];
+        if(meta && meta.page === pageId){
+          if(!candidate || meta.step < candidate.step){
+            candidate = meta;
+          }
+        }
+      }
+      return candidate;
+    }
+
+    function getWizardStepMeta(step){
+      const stepNum = Number(step);
+      return wizardStepLookup[stepNum] || null;
+    }
+
+    function getWizardIndex(step){
+      const stepNum = Number(step);
+      for(let i=0;i<wizardStepsMeta.length;i++){
+        if(wizardStepsMeta[i].step === stepNum){
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    function updateWizardButtons(){
+      const prevBtn=document.getElementById('wizardPrevBtn');
+      const nextBtn=document.getElementById('wizardNextBtn');
+      const saveBtn=document.getElementById('wizardSaveBtn');
+      const total=wizardStepsMeta.length;
+      const index=getWizardIndex(currentWizardStep);
+      const hasSteps = total > 0 && index !== -1;
+      const canPrev = hasSteps && index > 0;
+      const canNext = hasSteps && index < total - 1;
+      if(prevBtn){
+        prevBtn.disabled = !canPrev;
+        prevBtn.setAttribute('aria-disabled', canPrev ? 'false' : 'true');
+      }
+      if(nextBtn){
+        nextBtn.disabled = !canNext;
+        nextBtn.setAttribute('aria-disabled', canNext ? 'false' : 'true');
+      }
+      if(saveBtn){
+        saveBtn.disabled = false;
+        saveBtn.setAttribute('aria-disabled', 'false');
+      }
+    }
+
+    function updateWizardVisual(step, options){
+      if(!wizardStepsMeta.length){
+        currentWizardStep = null;
+        updateWizardButtons();
+        return;
+      }
+      let targetStep = Number(step);
+      if(!wizardStepLookup[targetStep]){
+        targetStep = wizardStepsMeta[0].step;
+      }
+      wizardStepsMeta.forEach(function(meta){
+        if(!meta || !meta.element) return;
+        let status='todo';
+        if(meta.step < targetStep){ status='done'; }
+        else if(meta.step === targetStep){ status='active'; }
+        meta.element.dataset.status = status;
+        meta.element.setAttribute('aria-current', status === 'active' ? 'step' : 'false');
+      });
+      currentWizardStep = targetStep;
+      updateWizardButtons();
+    }
+
+    function determineWizardStepForPage(pageId, options){
+      if(!wizardStepsMeta.length || !pageId) return null;
+      if(options && options.step !== undefined){
+        const desired = Number(options.step);
+        if(wizardStepLookup[desired]) return desired;
+      }
+      const currentMeta = wizardStepLookup[currentWizardStep];
+      if(currentMeta && currentMeta.page === pageId){
+        return currentMeta.step;
+      }
+      const fallback = findFirstWizardStepForPage(pageId);
+      return fallback ? fallback.step : null;
+    }
+
+    function scrollToWizardAnchor(anchor, options){
+      if(!anchor) return;
+      const element = typeof anchor === 'string' ? document.querySelector(anchor) : anchor;
+      if(!element) return;
+      const header = document.querySelector('.page-header');
+      let offset = 16;
+      if(header){
+        offset += header.getBoundingClientRect().height || 0;
+      }
+      const rect = element.getBoundingClientRect();
+      const top = window.pageYOffset + rect.top - offset;
+      window.scrollTo({ top: top < 0 ? 0 : top, behavior: options && options.instant ? 'auto' : 'smooth' });
+    }
+
+    function setCurrentWizardStep(step, options){
+      const meta = getWizardStepMeta(step);
+      if(!meta) return;
+      setActivePage(meta.page, { step: meta.step });
+      if(!options || options.scroll !== false){
+        const anchor = meta.anchorElement || (meta.anchor ? document.querySelector(meta.anchor) : null);
+        scrollToWizardAnchor(anchor, options);
+      }
+      if(options && options.focus){
+        const anchor = meta.anchorElement || (meta.anchor ? document.querySelector(meta.anchor) : null);
+        const focusTarget = anchor && anchor.querySelector ? anchor.querySelector('input,select,textarea,button,[tabindex]') : null;
+        if(focusTarget && typeof focusTarget.focus === 'function'){
+          focusTarget.focus({ preventScroll:true });
+        }
+      }
+    }
+
+    function goWizardRelative(delta){
+      if(!wizardStepsMeta.length) return;
+      const index = getWizardIndex(currentWizardStep);
+      if(index === -1) return;
+      const target = wizardStepsMeta[index + delta];
+      if(target){
+        setCurrentWizardStep(target.step, { focus:true });
+      }
+    }
+
+    function resolveWizardStepForElement(el){
+      if(!el) return null;
+      for(let i=0;i<wizardStepsMeta.length;i++){
+        const meta = wizardStepsMeta[i];
+        if(!meta) continue;
+        const anchorEl = meta.anchorElement || (meta.anchor ? document.querySelector(meta.anchor) : null);
+        if(anchorEl){
+          if(anchorEl === el || anchorEl.contains(el) || (typeof el.closest === 'function' && el.closest(meta.anchor))){
+            return meta.step;
+          }
+        }
+      }
+      const section = el.closest ? el.closest('.page-section') : null;
+      if(section && section.dataset && section.dataset.page){
+        const pageId = section.dataset.page;
+        const precedingMask = (typeof Node !== 'undefined' && Node.DOCUMENT_POSITION_PRECEDING) ? Node.DOCUMENT_POSITION_PRECEDING : 2;
+        const followingMask = (typeof Node !== 'undefined' && Node.DOCUMENT_POSITION_FOLLOWING) ? Node.DOCUMENT_POSITION_FOLLOWING : 4;
+        let fallback = null;
+        let lastBefore = null;
+        for(let i=0;i<wizardStepsMeta.length;i++){
+          const meta = wizardStepsMeta[i];
+          if(!meta || meta.page !== pageId) continue;
+          if(!fallback) fallback = meta;
+          if(!meta.anchorElement && meta.anchor){
+            meta.anchorElement = document.querySelector(meta.anchor);
+          }
+          const anchorEl = meta.anchorElement;
+          if(!anchorEl || typeof anchorEl.compareDocumentPosition !== 'function'){
+            continue;
+          }
+          const position = anchorEl.compareDocumentPosition(el);
+          if(position === 0){
+            return meta.step;
+          }
+          if(position & followingMask){
+            lastBefore = meta;
+            continue;
+          }
+          if(position & precedingMask){
+            return lastBefore ? lastBefore.step : meta.step;
+          }
+        }
+        if(lastBefore){
+          return lastBefore.step;
+        }
+        if(fallback){
+          return fallback.step;
+        }
+      }
+      return null;
+    }
+
+    function resolveWizardStepForField(fieldId){
+      if(!fieldId) return null;
+      const el = document.getElementById(fieldId);
+      return resolveWizardStepForElement(el);
+    }
+
+    function initWizardFlow(){
+      wizardStepsMeta = [];
+      wizardStepLookup = {};
+      const buttons = document.querySelectorAll('#wizardSteps .wizard-step');
+      buttons.forEach(function(btn){
+        const step = Number(btn.dataset.step);
+        if(!step) return;
+        const meta = {
+          step: step,
+          element: btn,
+          page: btn.dataset.page || '',
+          anchor: btn.dataset.anchor || '',
+          anchorElement: null
+        };
+        meta.anchorElement = meta.anchor ? document.querySelector(meta.anchor) : null;
+        wizardStepsMeta.push(meta);
+        wizardStepLookup[step] = meta;
+        btn.addEventListener('click', function(){ setCurrentWizardStep(step, { focus:true }); });
+      });
+      wizardStepsMeta.sort(function(a,b){ return a.step - b.step; });
+      if(wizardStepsMeta.length){
+        const activeSection = document.querySelector('.page-section[data-active="1"]');
+        let initialStep = null;
+        if(activeSection && activeSection.dataset){
+          const pageId = activeSection.dataset.page;
+          const match = findFirstWizardStepForPage(pageId);
+          if(match) initialStep = match.step;
+        }
+        if(initialStep === null){
+          initialStep = wizardStepsMeta[0].step;
+        }
+        updateWizardVisual(initialStep);
+      }else{
+        currentWizardStep = null;
+        updateWizardButtons();
+      }
+    }
+
+    function initFloatingActions(){
+      const prevBtn=document.getElementById('wizardPrevBtn');
+      const nextBtn=document.getElementById('wizardNextBtn');
+      const saveBtn=document.getElementById('wizardSaveBtn');
+      if(prevBtn){
+        prevBtn.addEventListener('click', function(){ goWizardRelative(-1); });
+      }
+      if(nextBtn){
+        nextBtn.addEventListener('click', function(){ goWizardRelative(1); });
+      }
+      if(saveBtn){
+        saveBtn.addEventListener('click', function(){ applyAndSave(); });
+      }
+      updateWizardButtons();
+    }
+
+
+        /* ===== 初始化 ===== */
+    function setActivePage(pageId, options){
       if(!pageId) return;
+      const opts = options || {};
       const sections=document.querySelectorAll('.page-section');
       sections.forEach(section=>{
         const active = section.dataset.page === pageId ? '1' : '0';
@@ -9653,6 +10264,12 @@
       document.querySelectorAll('.page-tabs button').forEach(btn=>{
         btn.classList.toggle('active', btn.dataset.page === pageId);
       });
+      const step = determineWizardStepForPage(pageId, opts);
+      if(step !== null){
+        updateWizardVisual(step);
+      }else{
+        updateWizardButtons();
+      }
     }
 
     function initPageTabs(){
@@ -9699,6 +10316,9 @@
     }
 
     window.addEventListener('load', ()=>{
+      initWizardFlow();
+      initFloatingActions();
+      initPlanSummaryCopy();
       initPageTabs();
       initValidationToast();
       initDateInputs();
