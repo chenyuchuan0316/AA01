@@ -231,6 +231,133 @@
       border-color:var(--accent);
     }
 
+    .section-controls{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:8px;
+    }
+    .section-controls button{
+      height:var(--h-button-sm);
+      padding:0 16px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--label);
+      font-weight:600;
+      font-size:17px;
+      cursor:pointer;
+      transition:background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .section-controls button.active{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+    .section-controls button.section-toggle-all{
+      background:#f7f9fc;
+    }
+
+    .section-progress{
+      margin:12px 0;
+    }
+    .section-progress-text{
+      font-weight:600;
+      color:var(--label);
+      margin-bottom:6px;
+    }
+    .section-progress-bar{
+      position:relative;
+      width:100%;
+      height:8px;
+      border-radius:999px;
+      background:#e5e7eb;
+      overflow:hidden;
+    }
+    .section-progress-bar-fill{
+      position:absolute;
+      inset:0;
+      width:0%;
+      background:var(--accent);
+      transition:width .2s ease;
+    }
+
+    .section-group{
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:14px;
+      margin-bottom:12px;
+      background:#fff;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+    }
+    .section-group[data-level="advanced"]{
+      background:#f8fafc;
+    }
+    .section-group-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .section-group-toggle{
+      background:none;
+      border:none;
+      padding:0;
+      font-size:1.05rem;
+      font-weight:700;
+      color:var(--title);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .section-group-toggle::before{
+      content:'▾';
+      font-size:.9rem;
+      color:var(--title);
+      transition:transform .2s ease;
+    }
+    .section-group[data-collapsed="1"] .section-group-toggle::before{
+      transform:rotate(-90deg);
+    }
+    .section-group[data-level="advanced"] .section-group-toggle,
+    .section-group[data-level="advanced"] .section-group-toggle::before{
+      color:#0b1d4d;
+    }
+    .section-group-body{
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .section-group[data-collapsed="1"] .section-group-body{
+      display:none;
+    }
+    .section-group-empty{
+      display:none;
+      font-size:.95rem;
+      color:#6b7280;
+      padding:8px 10px;
+      border-radius:8px;
+      background:#f3f4f6;
+    }
+    .section-group[data-empty="1"] .section-group-empty{
+      display:block;
+    }
+
+    [data-section]{
+      position:relative;
+      display:block;
+    }
+    [data-section][data-hide-filled="1"] [data-field-container][data-filled="1"]{
+      display:none !important;
+    }
+    [data-section][data-show-advanced="0"] .section-group[data-level="advanced"],
+    [data-section][data-show-advanced="0"] [data-field-container][data-level="advanced"]{
+      display:none !important;
+    }
+
+
     /* 黏底主要動作列（避開 iOS 底部工具列） */
     .group:last-of-type .btnbar{
       position:sticky; bottom:max(18px, env(safe-area-inset-bottom));
@@ -800,7 +927,7 @@
 
     <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
     <div class="row">
-      <div id="section1_block">
+      <div id="section1_block" data-section="s1">
         <div class="titlebar">
           <label>(一) 身心概況</label>
         </div>
@@ -942,7 +1069,7 @@
           </div>
         </div>
 
-        <div id="s1_location_block" style="display:none;">
+        <div id="s1_location_block" style="display:none;" data-level="advanced">
           <div class="location-toolbar" id="s1_location_toolbar" style="display:none;">
             <span class="location-current">目前編輯：<span id="s1_location_active_label">疼痛部位</span></span>
             <div class="location-switch btnbar">
@@ -1011,7 +1138,7 @@
           <div class="field-error" id="s1_pain_location_error"></div>
         </div>
 
-        <div id="s1_lesion_more" style="display:none;">
+        <div id="s1_lesion_more" style="display:none;" data-level="advanced">
           <div class="row">
             <div>
               <label>病灶症狀</label>
@@ -1353,8 +1480,8 @@
         <div class="field-error" id="s1_actions_error"></div>
         <label>補充內容（選填）</label>
         <textarea id="s1_notes" placeholder="其他未涵蓋重點（限簡要）；將附加於段落末端。"></textarea>
-        <textarea id="section1_out" style="display:none;"></textarea>
-        <div id="section1_errors" class="error-messages"></div>
+        <textarea id="section1_out" style="display:none;" data-progress-ignore="1"></textarea>
+        <div id="section1_errors" class="error-messages" data-progress-ignore="1"></div>
         <div class="hint" style="margin-top:6px;">預覽（重組後）：</div>
         <div id="section1_preview" class="preview"></div>
       </div>
@@ -1388,7 +1515,7 @@
             <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身障類別 --></select>
           </div>
         </div>
-        <textarea id="section2_out" style="display:none;"></textarea>
+        <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
     </div>
 
@@ -1439,7 +1566,7 @@
             <div class="checkcol" id="s3_aids"></div>
           </div>
         </div>
-        <textarea id="section3_out" style="display:none;"></textarea>
+        <textarea id="section3_out" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
     </div>
 
@@ -1619,7 +1746,7 @@
           <div class="subtle">勾選將只輸出「標題短語」，說明文字僅作參考。</div>
         </div>
 
-        <textarea id="section4_out" style="display:none;"></textarea>
+        <textarea id="section4_out" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
     </div>
 
@@ -1643,7 +1770,7 @@
           <div><label>介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
           <div><label>介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
         </div>
-        <textarea id="section6_struct" style="display:none;"></textarea>
+        <textarea id="section6_struct" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
     </div>
   </div>
@@ -1920,6 +2047,538 @@
     function nl2br(str){
       if(!str) return '';
       return escapeHtml(str).replace(/\n/g,'<br>');
+    }
+
+
+    /* ===== 段落視圖（分層/收合/進度） ===== */
+    const SECTION_STORAGE_PREFIX = 'AA01.section.state.';
+    const SECTION_DEFAULT_STATE = { hideFilled:false, showAdvanced:false, collapsedGroups:{} };
+
+    function readSectionState(sectionId){
+      if(!sectionId || typeof window === 'undefined' || !window.localStorage) return Object.assign({}, SECTION_DEFAULT_STATE);
+      try{
+        const raw = window.localStorage.getItem(SECTION_STORAGE_PREFIX + sectionId);
+        if(!raw) return Object.assign({}, SECTION_DEFAULT_STATE);
+        const parsed = JSON.parse(raw);
+        return {
+          hideFilled: !!parsed.hideFilled,
+          showAdvanced: !!parsed.showAdvanced,
+          collapsedGroups: parsed && parsed.collapsedGroups && typeof parsed.collapsedGroups === 'object' ? parsed.collapsedGroups : {}
+        };
+      }catch(err){
+        return Object.assign({}, SECTION_DEFAULT_STATE);
+      }
+    }
+
+    function writeSectionState(sectionId, state){
+      if(!sectionId || typeof window === 'undefined' || !window.localStorage) return;
+      try{
+        window.localStorage.setItem(SECTION_STORAGE_PREFIX + sectionId, JSON.stringify(state || {}));
+      }catch(err){}
+    }
+
+    function isOptionalText(text){
+      if(!text) return false;
+      return /選填|非必填|可選|選擇性/.test(String(text));
+    }
+
+    function isInlineHidden(element, stop){
+      let node = element;
+      while(node && node !== stop){
+        if(node.style && (node.style.display === 'none' || node.style.visibility === 'hidden')) return true;
+        node = node.parentElement;
+      }
+      if(stop && stop.style && (stop.style.display === 'none' || stop.style.visibility === 'hidden')) return true;
+      return false;
+    }
+
+    function determineGroupLevel(group){
+      if(!group) return 'basic';
+      if(group.element && group.element.dataset.level) return group.element.dataset.level;
+      if(group.body){
+        const first = group.body.firstElementChild;
+        if(first && first.dataset && first.dataset.level) return first.dataset.level;
+      }
+      return 'basic';
+    }
+
+    function updateGroupTitle(group){
+      if(!group || !group.toggle) return;
+      const body = group.body;
+      let title = '';
+      if(body){
+        const titleLabel = body.querySelector('.titlebar label');
+        if(titleLabel) title = titleLabel.textContent.trim();
+        if(!title){
+          const label = body.querySelector('label');
+          if(label) title = label.textContent.trim();
+        }
+      }
+      if(!title) title = `群組 ${group.id || ''}`.trim();
+      group.toggle.textContent = title;
+    }
+
+    function buildSectionGroups(section){
+      const groups = [];
+      if(!section) return groups;
+      const children = Array.from(section.children);
+      if(!children.length) return groups;
+      const mainTitle = children.find(child => child.classList && child.classList.contains('titlebar'));
+      const startIndex = mainTitle ? (children.indexOf(mainTitle) + 1) : 0;
+      let current = null;
+      let counter = 0;
+      for(let i=startIndex; i<children.length; i++){
+        const node = children[i];
+        if(!node) continue;
+        if(node.classList && node.classList.contains('section-progress')) continue;
+        if(node.dataset && node.dataset.groupIgnore === '1') continue;
+        if(!current || (node.classList && node.classList.contains('titlebar'))){
+          const wrapper = document.createElement('div');
+          wrapper.className = 'section-group';
+          const groupId = String(++counter);
+          wrapper.dataset.groupId = groupId;
+          wrapper.dataset.collapsed = '0';
+          const header = document.createElement('div');
+          header.className = 'section-group-header';
+          const toggle = document.createElement('button');
+          toggle.type = 'button';
+          toggle.className = 'section-group-toggle';
+          toggle.setAttribute('aria-expanded', 'true');
+          toggle.textContent = '';
+          header.appendChild(toggle);
+          const body = document.createElement('div');
+          body.className = 'section-group-body';
+          const empty = document.createElement('div');
+          empty.className = 'section-group-empty';
+          empty.textContent = '此群組皆已完成';
+          body.appendChild(empty);
+          wrapper.appendChild(header);
+          wrapper.appendChild(body);
+          section.insertBefore(wrapper, node);
+          current = { element: wrapper, header, toggle, body, empty, id: groupId };
+          groups.push(current);
+        }
+        if(current && current.body){
+          current.body.appendChild(node);
+        }
+      }
+      groups.forEach(group=>{
+        updateGroupTitle(group);
+        group.element.dataset.level = determineGroupLevel(group);
+      });
+      return groups;
+    }
+
+    function isContainerVisible(section, container){
+      if(!container || container.dataset.fieldContainer !== '1') return false;
+      if(section){
+        if(section.dataset.showAdvanced === '0' && container.dataset.level === 'advanced') return false;
+        if(section.dataset.hideFilled === '1' && container.dataset.filled === '1') return false;
+        const parentGroup = container.closest('.section-group');
+        if(parentGroup && parentGroup.dataset.level === 'advanced' && section.dataset.showAdvanced === '0') return false;
+        if(parentGroup && parentGroup.dataset.collapsed === '1') return false;
+      }
+      const style = window.getComputedStyle(container);
+      if(style.display === 'none' || style.visibility === 'hidden') return false;
+      return true;
+    }
+
+    function updateGroupEmptyState(section, group){
+      if(!group || !group.body) return;
+      const containers = group.body.querySelectorAll('[data-field-container]');
+      let hasVisible = false;
+      containers.forEach(container=>{
+        if(isContainerVisible(section, container)) hasVisible = true;
+      });
+      group.element.dataset.empty = hasVisible ? '0' : '1';
+    }
+
+    function updateAllGroupEmptyStates(section){
+      if(!section || !section.__groups) return;
+      section.__groups.forEach(group=>updateGroupEmptyState(section, group));
+    }
+
+    function setGroupCollapsed(section, group, collapsed, opts){
+      if(!group || !group.element) return;
+      const target = collapsed ? '1' : '0';
+      group.element.dataset.collapsed = target;
+      if(group.toggle) group.toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      if(section && section.__state){
+        const state = section.__state;
+        state.collapsedGroups = state.collapsedGroups || {};
+        if(collapsed){
+          state.collapsedGroups[group.id] = true;
+        }else{
+          delete state.collapsedGroups[group.id];
+        }
+        if(!opts || opts.save !== false){
+          writeSectionState(section.dataset.section, state);
+        }
+      }
+    }
+
+    function isFieldEligible(field){
+      if(!field) return false;
+      if(field.type === 'hidden') return false;
+      if(field.dataset && field.dataset.progressIgnore === '1') return false;
+      if(field.closest('[data-progress-ignore="1"]')) return false;
+      if(field.id && /^section\d+_(out|struct)$/.test(field.id)) return false;
+      return true;
+    }
+
+    function getContainerForField(field, body){
+      let el = field;
+      while(el && el.parentElement !== body){
+        el = el.parentElement;
+      }
+      return el || field;
+    }
+
+    function determineFillMode(container){
+      const fields = container.__fields || [];
+      if(!fields.length) return 'all';
+      const checkable = fields.filter(field=>field.type === 'checkbox' || field.type === 'radio');
+      if(checkable.length && checkable.length === fields.length) return 'any';
+      return 'all';
+    }
+
+    function detectContainerBaseRequired(container){
+      if(!container) return false;
+      const explicit = container.getAttribute && container.getAttribute('data-required');
+      if(explicit === '0') return false;
+      if(explicit === '1') return true;
+      if(container.dataset && container.dataset.level === 'advanced') return false;
+      if(container.dataset && container.dataset.optional === '1') return false;
+      const label = container.querySelector && container.querySelector('label');
+      if(label && isOptionalText(label.textContent)) return false;
+      const fields = container.__fields || [];
+      for(let i=0; i<fields.length; i++){
+        const field = fields[i];
+        const placeholder = field.getAttribute && field.getAttribute('placeholder');
+        if(isOptionalText(placeholder) || field.dataset.optional === '1') return false;
+      }
+      return true;
+    }
+
+    function prepareFieldContainers(section){
+      const containers = [];
+      const dependencies = new Map();
+      const fields = section.querySelectorAll('input, select, textarea');
+      fields.forEach(field=>{
+        if(!isFieldEligible(field)) return;
+        const body = field.closest('.section-group-body');
+        if(!body) return;
+        const container = getContainerForField(field, body);
+        if(!container || (container.classList && container.classList.contains('section-group-empty'))) return;
+        if(!container.dataset.fieldContainer){
+          container.dataset.fieldContainer = '1';
+          container.__fields = [];
+          containers.push(container);
+          const group = container.closest('.section-group');
+          if(group){
+            container.dataset.groupId = group.dataset.groupId || '';
+            container.dataset.level = container.dataset.level || group.dataset.level || 'basic';
+          }
+          container.__conditionalRules = [];
+        }
+        if(container.__fields.indexOf(field) === -1){
+          container.__fields.push(field);
+        }
+        const ruleType = field.dataset.requiredWhen;
+        const sourceId = field.dataset.requiredSource;
+        if(ruleType && sourceId){
+          container.__conditionalRules.push({ type: ruleType, sourceId: sourceId });
+          if(!dependencies.has(sourceId)) dependencies.set(sourceId, []);
+          const list = dependencies.get(sourceId);
+          if(list.indexOf(container) === -1) list.push(container);
+        }
+      });
+      containers.forEach(container=>{
+        if(!Array.isArray(container.__fields)) container.__fields = [];
+        container.__fillMode = determineFillMode(container);
+        container.dataset.fillMode = container.__fillMode;
+        const baseRequired = detectContainerBaseRequired(container);
+        container.dataset.requiredBase = baseRequired ? '1' : '0';
+        container.dataset.required = baseRequired ? '1' : '0';
+        if(!container.dataset.level){
+          const group = container.closest('.section-group');
+          container.dataset.level = group ? (group.dataset.level || 'basic') : 'basic';
+        }
+      });
+      return { containers, dependencies };
+    }
+
+    function evaluateContainerRequirement(section, container){
+      if(!container) return false;
+      const baseRequired = container.dataset.requiredBase === '1';
+      let required = baseRequired;
+      const rules = container.__conditionalRules || [];
+      if(rules.length){
+        let conditionMet = false;
+        rules.forEach(rule=>{
+          if(rule.type === 'partial' && rule.sourceId){
+            const source = document.getElementById(rule.sourceId);
+            if(source && source.value === '部分協助') conditionMet = true;
+          }
+        });
+        if(conditionMet){
+          required = true;
+        }else if(!baseRequired){
+          required = false;
+        }
+      }
+      container.dataset.required = required ? '1' : '0';
+      return required;
+    }
+
+    function isFieldValueFilled(field, container){
+      if(!field) return false;
+      if(isInlineHidden(field, container)) return true;
+      if(field.type === 'checkbox'){
+        const inputs = container.querySelectorAll('input[type=checkbox]');
+        return Array.from(inputs).some(input=>input.checked);
+      }
+      if(field.type === 'radio'){
+        const radios = container.querySelectorAll(`input[type=radio][name="${field.name}"]`);
+        if(radios.length) return Array.from(radios).some(radio=>radio.checked);
+        return field.checked;
+      }
+      if(field.tagName === 'SELECT'){
+        const value = field.value;
+        if(value === undefined || value === null || value === '') return false;
+        const option = field.options[field.selectedIndex];
+        if(option && (option.disabled || option.classList.contains('placeholder-option'))) return false;
+        return true;
+      }
+      if(field.type === 'number'){
+        const val = field.value;
+        if(val === undefined || val === null) return false;
+        return String(val).trim() !== '';
+      }
+      if(field.type === 'date' || field.type === 'time'){
+        return !!field.value;
+      }
+      if(field.tagName === 'TEXTAREA' || field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'search' || field.type === 'url'){
+        return String(field.value || '').trim() !== '';
+      }
+      return String(field.value || '').trim() !== '';
+    }
+
+    function updateContainerFilled(section, container){
+      if(!container) return false;
+      const fields = container.__fields || [];
+      if(!fields.length){
+        container.dataset.filled = '1';
+        return true;
+      }
+      const fillMode = container.__fillMode || 'all';
+      let filled = false;
+      if(fillMode === 'any'){
+        filled = fields.some(field=>isFieldValueFilled(field, container));
+      }else{
+        filled = fields.every(field=>isFieldValueFilled(field, container));
+      }
+      container.dataset.filled = filled ? '1' : '0';
+      return filled;
+    }
+
+    function bindFieldListeners(section, container){
+      const fields = container.__fields || [];
+      const handler = ()=>{
+        evaluateContainerRequirement(section, container);
+        updateContainerFilled(section, container);
+        updateSectionProgress(section);
+      };
+      fields.forEach(field=>{
+        if(field.dataset.progressListener) return;
+        field.addEventListener('input', handler);
+        field.addEventListener('change', handler);
+        field.dataset.progressListener = '1';
+      });
+    }
+
+    function updateSectionProgress(section){
+      if(!section) return;
+      const progress = section.__progress;
+      const containers = section.__fieldContainers || [];
+      let requiredCount = 0;
+      let filledCount = 0;
+      containers.forEach(container=>{
+        const required = evaluateContainerRequirement(section, container);
+        if(required){
+          requiredCount++;
+          if(updateContainerFilled(section, container)) filledCount++;
+        }else{
+          updateContainerFilled(section, container);
+        }
+      });
+      if(progress){
+        let percent = requiredCount ? Math.round((filledCount / requiredCount) * 100) : 100;
+        if(!Number.isFinite(percent)) percent = 100;
+        progress.text.textContent = `已完成 ${filledCount} / ${requiredCount}（${percent}%）`;
+        progress.bar.style.width = `${percent}%`;
+      }
+      updateAllGroupEmptyStates(section);
+    }
+
+    function createSectionProgress(section){
+      if(!section) return;
+      const progress = document.createElement('div');
+      progress.className = 'section-progress';
+      const text = document.createElement('div');
+      text.className = 'section-progress-text';
+      text.textContent = '已完成 0 / 0（0%）';
+      const barWrap = document.createElement('div');
+      barWrap.className = 'section-progress-bar';
+      const bar = document.createElement('div');
+      bar.className = 'section-progress-bar-fill';
+      barWrap.appendChild(bar);
+      progress.appendChild(text);
+      progress.appendChild(barWrap);
+      const firstGroup = section.querySelector('.section-group');
+      if(firstGroup){
+        section.insertBefore(progress, firstGroup);
+      }else{
+        section.appendChild(progress);
+      }
+      section.__progress = { element: progress, text, bar };
+    }
+
+    function updateToggleButtons(section){
+      if(!section) return;
+      const controls = section.__controls || {};
+      const state = section.__state || SECTION_DEFAULT_STATE;
+      if(controls.onlyBtn){
+        controls.onlyBtn.classList.toggle('active', !!state.hideFilled);
+        controls.onlyBtn.setAttribute('aria-pressed', state.hideFilled ? 'true' : 'false');
+      }
+      if(controls.advancedBtn){
+        controls.advancedBtn.classList.toggle('active', !!state.showAdvanced);
+        controls.advancedBtn.setAttribute('aria-pressed', state.showAdvanced ? 'true' : 'false');
+        controls.advancedBtn.textContent = state.showAdvanced ? '隱藏進階' : '顯示進階';
+      }
+      if(controls.toggleAllBtn){
+        const groups = section.__groups || [];
+        const allCollapsed = groups.length ? groups.every(group=>group.element.dataset.collapsed === '1') : false;
+        controls.toggleAllBtn.textContent = allCollapsed ? '全部展開' : '全部收合';
+      }
+    }
+
+    function createSectionControls(section){
+      const header = section.querySelector('.titlebar');
+      if(!header) return;
+      const controls = document.createElement('div');
+      controls.className = 'section-controls';
+      const onlyBtn = document.createElement('button');
+      onlyBtn.type = 'button';
+      onlyBtn.textContent = '只看未填';
+      const advancedBtn = document.createElement('button');
+      advancedBtn.type = 'button';
+      advancedBtn.textContent = '顯示進階';
+      const toggleAllBtn = document.createElement('button');
+      toggleAllBtn.type = 'button';
+      toggleAllBtn.className = 'section-toggle-all';
+      toggleAllBtn.textContent = '全部收合';
+      controls.appendChild(onlyBtn);
+      controls.appendChild(advancedBtn);
+      controls.appendChild(toggleAllBtn);
+      header.appendChild(controls);
+      section.__controls = { onlyBtn, advancedBtn, toggleAllBtn };
+      onlyBtn.addEventListener('click', ()=>{
+        const state = section.__state || (section.__state = readSectionState(section.dataset.section));
+        state.hideFilled = !state.hideFilled;
+        section.dataset.hideFilled = state.hideFilled ? '1' : '0';
+        updateToggleButtons(section);
+        writeSectionState(section.dataset.section, state);
+        updateAllGroupEmptyStates(section);
+      });
+      advancedBtn.addEventListener('click', ()=>{
+        const state = section.__state || (section.__state = readSectionState(section.dataset.section));
+        state.showAdvanced = !state.showAdvanced;
+        section.dataset.showAdvanced = state.showAdvanced ? '1' : '0';
+        updateToggleButtons(section);
+        writeSectionState(section.dataset.section, state);
+        updateAllGroupEmptyStates(section);
+      });
+      toggleAllBtn.addEventListener('click', ()=>{
+        const groups = section.__groups || [];
+        if(!groups.length) return;
+        const allCollapsed = groups.every(group=>group.element.dataset.collapsed === '1');
+        const target = !allCollapsed;
+        groups.forEach(group=>setGroupCollapsed(section, group, target, { save:false }));
+        const state = section.__state || (section.__state = readSectionState(section.dataset.section));
+        state.collapsedGroups = {};
+        if(target){
+          groups.forEach(group=>{ state.collapsedGroups[group.id] = true; });
+        }
+        writeSectionState(section.dataset.section, state);
+        updateToggleButtons(section);
+      });
+    }
+
+    function applySectionState(section, state){
+      if(!section) return;
+      section.dataset.hideFilled = state.hideFilled ? '1' : '0';
+      section.dataset.showAdvanced = state.showAdvanced ? '1' : '0';
+      const groups = section.__groups || [];
+      groups.forEach(group=>{
+        const collapsed = state.collapsedGroups && state.collapsedGroups[group.id];
+        group.element.dataset.collapsed = collapsed ? '1' : '0';
+        if(group.toggle) group.toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      });
+      updateToggleButtons(section);
+    }
+
+    function setupSection(section){
+      if(!section || section.dataset.sectionInit === '1') return;
+      section.dataset.sectionInit = '1';
+      const groups = buildSectionGroups(section);
+      section.__groups = groups;
+      createSectionProgress(section);
+      createSectionControls(section);
+      const prepared = prepareFieldContainers(section);
+      section.__fieldContainers = prepared.containers;
+      section.__dependencies = prepared.dependencies;
+      const state = readSectionState(section.dataset.section);
+      section.__state = state;
+      applySectionState(section, state);
+      (section.__fieldContainers || []).forEach(container=>{
+        bindFieldListeners(section, container);
+        evaluateContainerRequirement(section, container);
+        updateContainerFilled(section, container);
+      });
+      if(section.__dependencies){
+        section.__dependencies.forEach((containers, sourceId)=>{
+          const source = document.getElementById(sourceId);
+          if(!source) return;
+          const handler = ()=>{
+            containers.forEach(container=>{
+              evaluateContainerRequirement(section, container);
+              updateContainerFilled(section, container);
+            });
+            updateSectionProgress(section);
+          };
+          source.addEventListener('change', handler);
+          source.addEventListener('input', handler);
+        });
+      }
+      (section.__groups || []).forEach(group=>{
+        if(group.toggle){
+          group.toggle.addEventListener('click', ()=>{
+            const collapsed = group.element.dataset.collapsed === '1';
+            setGroupCollapsed(section, group, !collapsed);
+            updateToggleButtons(section);
+            updateAllGroupEmptyStates(section);
+          });
+        }
+      });
+      updateSectionProgress(section);
+      updateAllGroupEmptyStates(section);
+    }
+
+    function initSectionViews(){
+      const sections = document.querySelectorAll('[data-section]');
+      sections.forEach(section=>setupSection(section));
     }
 
     /* ===== 個管師名單 ===== */
@@ -8115,6 +8774,8 @@
       toggleCallDateByConsultVisit();
       updateConsultVisitText();
       buildApprovalPlanPreview();
+
+      initSectionViews();
 
     });
   </script>
