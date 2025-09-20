@@ -758,10 +758,10 @@ function formatPlanAmount(entry){
         }
       }
       if (isFiniteNumber(entry.autoPlanMonthlyUnits)){
-        lines.push(`預估耗用${formatPointValue(entry.autoPlanMonthlyUnits)}點`);
+        lines.push(`預估耗用${formatPointValue(entry.autoPlanMonthlyUnits)}元`);
       }
       if (isFiniteNumber(entry.autoPlanRemainingCap)){
-        lines.push(`預估餘額${formatPointValue(entry.autoPlanRemainingCap)}點`);
+        lines.push(`預估餘額${formatPointValue(entry.autoPlanRemainingCap)}元`);
       }
       if (lines.length) return lines.join('\n');
     }
