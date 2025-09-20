@@ -65,6 +65,10 @@
       -webkit-tap-highlight-color:transparent;
       text-rendering:optimizeLegibility;
     }
+    .app-container{
+      max-width:1200px;
+      margin:0 auto 120px auto;
+    }
 
     /* 卡片 */
     .group{
@@ -425,17 +429,104 @@
     /* Home care 卡式清單（維持放大字與輸入） */
     .home-care-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; }
     .home-care-item{
-      display:flex; align-items:center; gap:12px; padding:12px 14px;
-      border:1px solid var(--border); border-radius:12px; background:#fff; box-shadow:var(--shadow);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:16px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+      outline:none;
     }
-    .home-care-label{ display:flex; align-items:center; gap:8px; flex:1; font-size:var(--fs-base); color:#222; }
-    .home-care-code{ font-weight:800; color:#333; }
-    .home-care-name{ color:#111; }
+    .home-care-item::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius:16px;
+      border:2px solid transparent;
+      pointer-events:none;
+      transition:border-color .18s ease;
+    }
+    .home-care-item:hover{
+      transform:translateY(-2px);
+      box-shadow:0 8px 18px rgba(15,23,42,.12);
+    }
+    .home-care-item:focus-visible::after{
+      border-color:var(--accent);
+    }
+    .home-care-item[data-selected="1"]{
+      border-color:rgba(11,87,208,.45);
+      box-shadow:0 10px 22px rgba(15,23,42,.14);
+    }
+    .home-care-item[data-selected="1"]::after{
+      border-color:rgba(11,87,208,.45);
+    }
+    .home-care-main{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .home-care-title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      flex:1;
+      min-width:0;
+    }
+    .home-care-code{
+      font-weight:800;
+      color:#0b1d4d;
+      font-size:1.05rem;
+      letter-spacing:.5px;
+    }
+    .home-care-name{
+      color:#111;
+      font-weight:600;
+      font-size:0.98rem;
+      line-height:1.4;
+    }
+    .home-care-status{
+      font-size:0.9rem;
+      font-weight:600;
+      color:#475569;
+    }
+    .home-care-extra{
+      overflow:hidden;
+      max-height:0;
+      opacity:0;
+      transition:max-height .2s ease, opacity .2s ease;
+    }
+    .home-care-item[data-selected="1"] .home-care-extra{
+      max-height:140px;
+      opacity:1;
+    }
+    .home-care-qty-wrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .home-care-qty-label{
+      font-weight:600;
+      color:#1f2937;
+      white-space:nowrap;
+    }
     .home-care-qty{
-      width:120px; height:46px; padding:8px 10px; font-size:var(--fs-ctrl);
-      border:1px solid var(--border); border-radius:12px; display:none; box-sizing:border-box;
+      width:120px;
+      height:46px;
+      padding:8px 10px;
+      font-size:var(--fs-ctrl);
+      border:1px solid var(--border);
+      border-radius:12px;
+      box-sizing:border-box;
     }
-    .home-care-item:has(input[type=checkbox]:checked) .home-care-qty{ display:block !important; }
+    .home-care-item[data-has-qty="1"] .home-care-main{
+      align-items:flex-start;
+    }
 
     /* 預覽框：顏色加深以凸顯區塊 */
     .preview{
@@ -514,6 +605,8 @@
 
 
 <body>
+
+  <div class="app-container" id="appContainer">
 
   <div class="page-tabs" id="pageTabs">
     <button type="button" data-page="goals" class="active">計畫目標</button>
@@ -1625,6 +1718,7 @@
       <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
     </div>
     <div id="msg" class="hint" style="margin-top:8px;"></div>
+  </div>
   </div>
   </div>
 
@@ -4137,33 +4231,142 @@
       ['家暴或照顧疏忽風險','含自述暴力意念、疑似未通報'],
       ['自殺風險','意念/企圖/具體計畫/準備']
     ];
-      function renderFormal(){
-        const host=document.getElementById('sp_formal'); host.innerHTML='';
-        FORMAL.forEach((name)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleGoalInputs()"> ${name}`;
-          host.appendChild(lab);
-        });
-        const rHost=document.getElementById('sp_risks'); rHost.innerHTML='';
-        RISKS.forEach((it,i)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${it[0]}"> ${i+1}. ${it[0]} <span class="muted">（${it[1]}）</span>`; rHost.appendChild(lab);});
-        toggleGoalInputs();
+    function renderFormal(){
+      const host=document.getElementById('sp_formal');
+      host.innerHTML='';
+      FORMAL.forEach((name)=>{
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleGoalInputs()"> ${name}`;
+        host.appendChild(lab);
+      });
+      const rHost=document.getElementById('sp_risks');
+      rHost.innerHTML='';
+      RISKS.forEach((it,i)=>{
+        const lab=document.createElement('label');
+        lab.innerHTML=`<input type="checkbox" value="${it[0]}"> ${i+1}. ${it[0]} <span class="muted">（${it[1]}）</span>`;
+        rHost.appendChild(lab);
+      });
+      toggleGoalInputs();
     }
+
+    function setServiceCardSelected(card, selected){
+      if(!card) return;
+      card.dataset.selected = selected ? '1' : '0';
+      card.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      card.classList.toggle('is-selected', selected);
+      const status = card.querySelector('.home-care-status');
+      if(status){ status.textContent = selected ? '已選取' : '未選取'; }
+      const qty = card.querySelector('.home-care-qty');
+      if(qty){
+        qty.disabled = !selected;
+        qty.tabIndex = selected ? 0 : -1;
+        if(!selected){ qty.value=''; }
+      }
+    }
+
+    function handleServiceCardToggle(card, shouldSelect, callback, focusQuantity){
+      setServiceCardSelected(card, shouldSelect);
+      if(typeof callback === 'function'){
+        callback(card, shouldSelect);
+      }
+      if(shouldSelect && focusQuantity){
+        const qty = card.querySelector('.home-care-qty');
+        if(qty){ setTimeout(()=>{ qty.focus(); qty.select(); }, 0); }
+      }
+    }
+
+    function createServiceCard(item, options){
+      options = options || {};
+      const card=document.createElement('div');
+      card.className='home-care-item';
+      card.dataset.code = item.code || '';
+      card.dataset.selected='0';
+      card.setAttribute('role','button');
+      card.setAttribute('tabindex','0');
+      card.setAttribute('aria-pressed','false');
+      card.setAttribute('aria-label', `${item.code || ''} ${item.name || ''}`.trim());
+      if(options.hasQuantity){ card.dataset.hasQty='1'; }
+
+      const main=document.createElement('div');
+      main.className='home-care-main';
+      const title=document.createElement('div');
+      title.className='home-care-title';
+      const codeEl=document.createElement('span');
+      codeEl.className='home-care-code';
+      codeEl.textContent=item.code || '';
+      const nameEl=document.createElement('span');
+      nameEl.className='home-care-name';
+      nameEl.textContent=item.name ? `[${item.name}]` : '';
+      title.appendChild(codeEl);
+      title.appendChild(nameEl);
+      main.appendChild(title);
+      const status=document.createElement('span');
+      status.className='home-care-status';
+      status.textContent='未選取';
+      main.appendChild(status);
+      card.appendChild(main);
+
+      if(options.hasQuantity){
+        const extra=document.createElement('div');
+        extra.className='home-care-extra';
+        const wrap=document.createElement('div');
+        wrap.className='home-care-qty-wrap';
+        const label=document.createElement('span');
+        label.className='home-care-qty-label';
+        label.textContent=options.quantityLabel || '月次';
+        const input=document.createElement('input');
+        input.type='number';
+        input.className='home-care-qty';
+        input.dataset.code=item.code || '';
+        input.min='0';
+        input.step=options.quantityStep || '1';
+        input.placeholder=options.quantityPlaceholder || '數量';
+        input.disabled=true;
+        input.tabIndex=-1;
+        input.setAttribute('aria-controls','planSummaryPreview planEditor');
+        input.addEventListener('input', evt=>{ onHomeCareQuantityChange(evt.target); });
+        input.addEventListener('keydown', evt=>{
+          if(evt.key === 'Escape'){
+            evt.stopPropagation();
+            input.blur();
+            card.focus();
+          }
+        });
+        input.addEventListener('click', evt=>{ evt.stopPropagation(); });
+        wrap.appendChild(label);
+        wrap.appendChild(input);
+        extra.appendChild(wrap);
+        card.appendChild(extra);
+      }
+
+      const toggle = ()=>{
+        const nextSelected = card.dataset.selected !== '1';
+        handleServiceCardToggle(card, nextSelected, options.onToggle, options.hasQuantity);
+      };
+      card.addEventListener('click', evt=>{
+        if(evt.target && evt.target.closest('.home-care-qty-wrap')) return;
+        toggle();
+      });
+      card.addEventListener('keydown', evt=>{
+        if(evt.key === ' ' || evt.key === 'Enter'){
+          evt.preventDefault();
+          toggle();
+        }
+      });
+      return card;
+    }
+
     function renderHomeCareServices(){
       const host=document.getElementById('homeCareList');
       if(!host) return;
       host.innerHTML='';
       HOME_CARE_ITEMS.forEach(item=>{
-        const row=document.createElement('div');
-        row.className='home-care-item';
-        row.innerHTML = `
-          <label class="home-care-label">
-            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onHomeCareToggle(this)">
-            <span class="home-care-code">${item.code}</span>
-            <span class="home-care-name">[${item.name}]</span>
-          </label>
-          <input type="number" class="home-care-qty" data-code="${item.code}" min="0" placeholder="數量" oninput="onHomeCareQuantityChange(this)">
-        `;
-        host.appendChild(row);
+        const card=createServiceCard(item, {
+          hasQuantity:true,
+          quantityLabel:'月目標',
+          onToggle:(card, selected)=>{ onHomeCareToggle(card, selected); }
+        });
+        host.appendChild(card);
       });
     }
 
@@ -4172,29 +4375,22 @@
       if(!host) return;
       host.innerHTML='';
       DAY_CARE_ITEMS.forEach(item=>{
-        const row=document.createElement('div');
-        row.className='home-care-item';
-        row.innerHTML = `
-          <label class="home-care-label">
-            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onDayCareToggle(this)">
-            <span class="home-care-code">${item.code}</span>
-            <span class="home-care-name">[${item.name}]</span>
-          </label>
-        `;
-        host.appendChild(row);
+        const card=createServiceCard(item, {
+          onToggle:(card, selected)=>{ onDayCareToggle(card, selected); }
+        });
+        host.appendChild(card);
       });
     }
 
-    function ensureSingleDayCareSelection(activeBox){
-      if(!activeBox || !activeBox.checked) return;
-      const code = activeBox.value || '';
-      // 只有真正的「日間照顧」代碼（BB 開頭）需要互斥，
-      // 社區式服務（如 BD03 交通車）可以與日間照顧併行使用。
+    function ensureSingleDayCareSelection(activeCard){
+      if(!activeCard || activeCard.dataset.selected !== '1') return;
+      const code = activeCard.dataset.code || '';
       if(code.indexOf('BB') !== 0) return;
-      document.querySelectorAll('#dayCareList input[type=checkbox]').forEach(box=>{
-        if(box === activeBox) return;
-        if((box.value || '').indexOf('BB') === 0){
-          box.checked = false;
+      document.querySelectorAll('#dayCareList .home-care-item[data-selected="1"]').forEach(card=>{
+        if(card === activeCard) return;
+        const otherCode = card.dataset.code || '';
+        if(otherCode.indexOf('BB') === 0){
+          handleServiceCardToggle(card, false, (node)=>{ onDayCareToggle(node, false); }, false);
         }
       });
     }
@@ -4203,86 +4399,64 @@
       const level = getCmsLevel();
       const requirementMap = SERVICE_CATALOG && SERVICE_CATALOG.dayCareRequirements ? SERVICE_CATALOG.dayCareRequirements : {};
       const levelStr = level ? String(level) : '';
-      document.querySelectorAll('#dayCareList .home-care-item').forEach(row=>{
-        const box = row.querySelector('input[type=checkbox]');
-        if(!box) return;
-        const code = box.value;
+      document.querySelectorAll('#dayCareList .home-care-item').forEach(card=>{
+        const code = card.dataset.code || '';
         const required = requirementMap && Object.prototype.hasOwnProperty.call(requirementMap, code)
           ? String(requirementMap[code])
           : '';
         const allow = !levelStr || !required || required === levelStr;
-        row.style.display = allow ? '' : 'none';
-        if(!allow && box.checked){
-          box.checked = false;
+        card.style.display = allow ? '' : 'none';
+        if(!allow && card.dataset.selected === '1'){
+          handleServiceCardToggle(card, false, (node)=>{ onDayCareToggle(node, false); }, false);
         }
       });
     }
+
     function renderProfessionalServices(){
       const host=document.getElementById('profServiceList');
       if(!host) return;
       host.innerHTML='';
       PROFESSIONAL_SERVICE_ITEMS.forEach(item=>{
-        const row=document.createElement('div');
-        row.className='home-care-item';
-        row.innerHTML = `
-          <label class="home-care-label">
-            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onProfessionalToggle(this)">
-            <span class="home-care-code">${item.code}</span>
-            <span class="home-care-name">[${item.name}]</span>
-          </label>
-        `;
-        host.appendChild(row);
+        const card=createServiceCard(item, {
+          onToggle:(card, selected)=>{ onProfessionalToggle(card, selected); }
+        });
+        host.appendChild(card);
       });
     }
+
     function renderTransportServices(){
       const host=document.getElementById('transportServiceList');
       if(!host) return;
       host.innerHTML='';
       TRANSPORT_SERVICE_ITEMS.forEach(item=>{
-        const row=document.createElement('div');
-        row.className='home-care-item';
-        row.innerHTML = `
-          <label class="home-care-label">
-            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onTransportToggle(this)">
-            <span class="home-care-code">${item.code}</span>
-            <span class="home-care-name">[${item.name}]</span>
-          </label>
-        `;
-        host.appendChild(row);
+        const card=createServiceCard(item, {
+          onToggle:(card, selected)=>{ onTransportToggle(card, selected); }
+        });
+        host.appendChild(card);
       });
     }
+
     function renderRespiteServices(){
       const host=document.getElementById('respServiceList');
       if(!host) return;
       host.innerHTML='';
       RESPITE_SERVICE_ITEMS.forEach(item=>{
-        const row=document.createElement('div');
-        row.className='home-care-item';
-        row.innerHTML = `
-          <label class="home-care-label">
-            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onRespiteToggle(this)">
-            <span class="home-care-code">${item.code}</span>
-            <span class="home-care-name">[${item.name}]</span>
-          </label>
-        `;
-        host.appendChild(row);
+        const card=createServiceCard(item, {
+          onToggle:(card, selected)=>{ onRespiteToggle(card, selected); }
+        });
+        host.appendChild(card);
       });
     }
+
     function renderMealServices(){
       const host=document.getElementById('mealServiceList');
       if(!host) return;
       host.innerHTML='';
       MEAL_SERVICE_ITEMS.forEach(item=>{
-        const row=document.createElement('div');
-        row.className='home-care-item';
-        row.innerHTML = `
-          <label class="home-care-label">
-            <input type="checkbox" value="${item.code}" data-code="${item.code}" onchange="onMealToggle(this)">
-            <span class="home-care-code">${item.code}</span>
-            <span class="home-care-name">[${item.name}]</span>
-          </label>
-        `;
-        host.appendChild(row);
+        const card=createServiceCard(item, {
+          onToggle:(card, selected)=>{ onMealToggle(card, selected); }
+        });
+        host.appendChild(card);
       });
     }
 
@@ -4375,12 +4549,12 @@
 
     function getAllSelectedServiceCodes(){
       const codes = new Set();
-      document.querySelectorAll('#homeCareList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
-      document.querySelectorAll('#dayCareList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
-      document.querySelectorAll('#profServiceList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
-      document.querySelectorAll('#transportServiceList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
-      document.querySelectorAll('#respServiceList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
-      document.querySelectorAll('#mealServiceList input[type=checkbox]:checked').forEach(b=>codes.add(b.dataset.code));
+      document.querySelectorAll('#homeCareList .home-care-item[data-selected="1"]').forEach(card=>codes.add(card.dataset.code));
+      document.querySelectorAll('#dayCareList .home-care-item[data-selected="1"]').forEach(card=>codes.add(card.dataset.code));
+      document.querySelectorAll('#profServiceList .home-care-item[data-selected="1"]').forEach(card=>codes.add(card.dataset.code));
+      document.querySelectorAll('#transportServiceList .home-care-item[data-selected="1"]').forEach(card=>codes.add(card.dataset.code));
+      document.querySelectorAll('#respServiceList .home-care-item[data-selected="1"]').forEach(card=>codes.add(card.dataset.code));
+      document.querySelectorAll('#mealServiceList .home-care-item[data-selected="1"]').forEach(card=>codes.add(card.dataset.code));
       return Array.from(codes);
     }
 
@@ -4500,10 +4674,10 @@
         }
       }
       if(isFiniteNumber(entry.autoPlanMonthlyUnits)){
-        parts.push(`預估耗用${formatAutoInteger(entry.autoPlanMonthlyUnits)}點`);
+        parts.push(`預估耗用${formatAutoInteger(entry.autoPlanMonthlyUnits)}元`);
       }
       if(isFiniteNumber(entry.autoPlanRemainingCap)){
-        parts.push(`預估餘額${formatAutoInteger(entry.autoPlanRemainingCap)}點`);
+        parts.push(`預估餘額${formatAutoInteger(entry.autoPlanRemainingCap)}元`);
       }
       const freq = (entry.autoFrequencyText || '').trim();
       if(freq && parts.indexOf(freq) === -1){
@@ -4870,10 +5044,10 @@
             }
           }
           if(isFiniteNumber(entry.autoPlanMonthlyUnits)){
-            lines.push(`預估耗用${formatAutoInteger(entry.autoPlanMonthlyUnits)}點`);
+            lines.push(`預估耗用${formatAutoInteger(entry.autoPlanMonthlyUnits)}元`);
           }
           if(isFiniteNumber(entry.autoPlanRemainingCap)){
-            lines.push(`預估餘額${formatAutoInteger(entry.autoPlanRemainingCap)}點`);
+            lines.push(`預估餘額${formatAutoInteger(entry.autoPlanRemainingCap)}元`);
           }
           if(lines.length) return lines.join('\n');
         }
@@ -5002,11 +5176,11 @@
       if(!isFiniteNumber(value)) return '—';
       const roundedInt=Math.round(value);
       if(Math.abs(value - roundedInt) < 1e-4){
-        return `${formatAutoInteger(roundedInt)} 點`;
+        return `${formatAutoInteger(roundedInt)} 元`;
       }
       const rounded=Math.round(value * 10) / 10;
       if(Math.abs(rounded - Math.round(rounded)) < 1e-6){
-        return `${formatAutoInteger(Math.round(rounded))} 點`;
+        return `${formatAutoInteger(Math.round(rounded))} 元`;
       }
       const fixed=rounded.toFixed(1);
       const sign=fixed.startsWith('-') ? '-' : '';
@@ -5014,7 +5188,7 @@
       const parts=abs.split('.');
       const intPart=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
       const decimal=parts[1] ? `.${parts[1].replace(/0+$/, '')}` : '';
-      return `${sign}${intPart}${decimal} 點`;
+      return `${sign}${intPart}${decimal} 元`;
     }
 
     function updatePlanSummaryTotals(){
@@ -5024,7 +5198,7 @@
         if(totals.level){
           const levelText=`第${totals.level}級`;
           if(isFiniteNumber(totals.cap)){
-            capBox.textContent=`${levelText}｜${formatAutoInteger(totals.cap)} 點`;
+            capBox.textContent=`${levelText}｜${formatAutoInteger(totals.cap)} 元`;
           }else{
             capBox.textContent=`${levelText}｜—`;
           }
@@ -5061,7 +5235,7 @@
           hints.push('查無對應的 CMS 月額度，請確認服務資料設定。');
         }
         if(totals.missingRates.length){
-          hints.push(`缺少單價：${totals.missingRates.join('、')}，無法納入點數預估。`);
+          hints.push(`缺少單價：${totals.missingRates.join('、')}，無法納入金額預估。`);
         }
         if(hints.length){
           hintBox.textContent=hints.join(' ');
@@ -5312,6 +5486,29 @@
         .sort((a,b)=>a.code.localeCompare(b.code));
     }
 
+    function buildBa02WeeklyText(entry){
+      if(!entry || entry.code !== 'BA02') return '';
+      const manualMonthly=(entry.monthlyUnits || '').trim();
+      let monthlyValue=manualMonthly ? parsePlanNumber(manualMonthly) : 0;
+      if(!(monthlyValue > 0)){
+        const computed=(entry.monthlyUnitsComputed || '').trim();
+        if(computed){
+          monthlyValue=parsePlanNumber(computed);
+        }
+      }
+      if(!(monthlyValue > 0) && isFiniteNumber(entry.autoPlanMonthlyVisits)){
+        monthlyValue=entry.autoPlanMonthlyVisits;
+      }
+      if(!(monthlyValue > 0)) return '';
+      const weeklyValue=Math.ceil(monthlyValue / 4.5);
+      if(!(weeklyValue > 0)) return '';
+      const monthlyText=formatPlanNumber(monthlyValue);
+      const weeklyText=formatPlanNumber(weeklyValue);
+      if(!monthlyText || !weeklyText) return '';
+      const weeksText=formatPlanNumber(4.5) || '4.5';
+      return `由月目標 ${monthlyText} 次換算，每月 ${weeksText} 週 → 每週 ${weeklyText} 次`;
+    }
+
     function formatPlanEntryB(entry, idx){
       if(!entry) return '';
       let vendor='';
@@ -5327,8 +5524,12 @@
       const summary = buildAutoSummaryText(entry);
       const usageText = (entry.usage || entry.autoUsageText || '').trim();
       let text=`${idx}.${entry.code}[${entry.name || ''}]${vendor}`;
+      const ba02WeeklyText = buildBa02WeeklyText(entry);
       if(summary){
         text += `，${summary}`;
+        if(ba02WeeklyText){
+          text += `；${ba02WeeklyText}`;
+        }
         if(usageText){
           text += `；${usageText}`;
         }else{
@@ -5338,6 +5539,7 @@
         const monthly = entry.monthlyUnits ? `*${entry.monthlyUnits}` : '*（請填月單位）';
         const parts=[];
         if(entry.frequency) parts.push(entry.frequency);
+        if(ba02WeeklyText) parts.push(ba02WeeklyText);
         if(usageText) parts.push(usageText);
         text=`${idx}.${entry.code}[${entry.name || ''}]${monthly}${vendor}`;
         if(parts.length){
@@ -5616,54 +5818,46 @@
       }).getServiceCatalog();
     }
 
-    function onHomeCareToggle(box){
-      const code = box && box.dataset ? box.dataset.code : '';
-      toggleHomeCareQuantity(code);
+    function onHomeCareToggle(card, selected){
+      if(!card) return;
+      const code = card.dataset ? card.dataset.code : '';
+      if(!code) return;
+      if(!selected){
+        const input = card.querySelector('.home-care-qty');
+        if(input){ input.value=''; }
+      }
       updateCareServicePhrases();
       syncPlanStateWithSelections();
     }
 
     function onHomeCareQuantityChange(input){
       if(!input) return;
-      const code = input.dataset ? input.dataset.code : '';
-      if(!code) return;
-      const checkbox = document.querySelector(`#homeCareList input[type=checkbox][data-code="${code}"]`);
-      if(checkbox && checkbox.checked){
-        updateCareServicePhrases();
-        const value = input.value ? input.value.trim() : '';
-        if(value){
-          const entry = servicePlanState[code];
-          if(entry && !entry.monthlyUnits){
-            entry.monthlyUnits = value;
-            const planInput=document.querySelector(`[data-plan-code="${code}"][data-plan-field="monthlyUnits"]`);
-            if(planInput && planInput !== document.activeElement){ planInput.value = value; }
-          }
-        }
+      const card = input.closest('.home-care-item');
+      if(!card || card.dataset.selected !== '1'){
         buildApprovalPlanPreview();
-      }else{
-        buildApprovalPlanPreview();
+        return;
       }
+      const code = card.dataset ? card.dataset.code : '';
+      if(!code) return;
+      updateCareServicePhrases();
+      const value = input.value ? input.value.trim() : '';
+      if(value){
+        const entry = servicePlanState[code];
+        if(entry && !entry.monthlyUnits){
+          entry.monthlyUnits = value;
+          const planInput=document.querySelector(`[data-plan-code="${code}"][data-plan-field="monthlyUnits"]`);
+          if(planInput && planInput !== document.activeElement){ planInput.value = value; }
+        }
+      }
+      buildApprovalPlanPreview();
     }
 
-    function onDayCareToggle(box){
-      if(box && box.checked){
-        ensureSingleDayCareSelection(box);
+    function onDayCareToggle(card, selected){
+      if(selected){
+        ensureSingleDayCareSelection(card);
       }
       updateCareServicePhrases();
       syncPlanStateWithSelections();
-    }
-
-    function toggleHomeCareQuantity(code){
-      if(!code) return;
-      const checkbox = document.querySelector(`#homeCareList input[type=checkbox][data-code="${code}"]`);
-      const input = document.querySelector(`#homeCareList .home-care-qty[data-code="${code}"]`);
-      if(!input) return;
-      if(checkbox && checkbox.checked){
-        input.style.display='';
-      }else{
-        input.value='';
-        input.style.display='none';
-      }
     }
     function applyAutoText(id, text){
       const el=document.getElementById(id);
@@ -5716,94 +5910,71 @@
       updateMealServicePhrases();
     }
     function getSelectedHomeCareEntries(){
-      const rows=[...document.querySelectorAll('#homeCareList .home-care-item')];
-      const entries=[];
-      rows.forEach(row=>{
-        const box=row.querySelector('input[type=checkbox]');
-        if(!box || !box.checked) return;
-        const item=HOME_CARE_MAP[box.value];
-        if(!item) return;
+      const rows=[...document.querySelectorAll('#homeCareList .home-care-item[data-selected="1"]')];
+      return rows.map(row=>{
+        const code = row.dataset.code || '';
+        const item=HOME_CARE_MAP[code];
+        if(!item) return null;
         const qtyInput=row.querySelector('.home-care-qty');
         const quantity = qtyInput ? qtyInput.value.trim() : '';
-        entries.push({ code: box.value, item, quantity });
-      });
-      return entries;
+        return { code, item, quantity };
+      }).filter(Boolean);
     }
     function getSelectedDayCareEntries(){
-      const rows=[...document.querySelectorAll('#dayCareList .home-care-item')];
-      const entries=[];
-      rows.forEach(row=>{
-        const box=row.querySelector('input[type=checkbox]');
-        if(!box || !box.checked) return;
-        const item=DAY_CARE_MAP[box.value];
-        if(!item) return;
-        entries.push({ code: box.value, item });
-      });
-      return entries;
+      const rows=[...document.querySelectorAll('#dayCareList .home-care-item[data-selected="1"]')];
+      return rows.map(row=>{
+        const code = row.dataset.code || '';
+        const item=DAY_CARE_MAP[code];
+        return item ? { code, item } : null;
+      }).filter(Boolean);
     }
-    function onProfessionalToggle(box){
+    function onProfessionalToggle(){
       updateProfessionalServicePhrases();
       syncPlanStateWithSelections();
     }
-    function onTransportToggle(box){
+    function onTransportToggle(){
       updateTransportServicePhrases();
       syncPlanStateWithSelections();
     }
-    function onRespiteToggle(box){
+    function onRespiteToggle(){
       updateRespiteServicePhrases();
       syncPlanStateWithSelections();
     }
-    function onMealToggle(box){
+    function onMealToggle(){
       updateMealServicePhrases();
       syncPlanStateWithSelections();
     }
     function getSelectedProfessionalEntries(){
-      const rows=[...document.querySelectorAll('#profServiceList .home-care-item')];
-      const entries=[];
-      rows.forEach(row=>{
-        const box=row.querySelector('input[type=checkbox]');
-        if(!box || !box.checked) return;
-        const item=PROFESSIONAL_SERVICE_MAP[box.value];
-        if(!item) return;
-        entries.push({ code: box.value, item });
-      });
-      return entries;
+      const rows=[...document.querySelectorAll('#profServiceList .home-care-item[data-selected="1"]')];
+      return rows.map(row=>{
+        const code = row.dataset.code || '';
+        const item=PROFESSIONAL_SERVICE_MAP[code];
+        return item ? { code, item } : null;
+      }).filter(Boolean);
     }
     function getSelectedTransportEntries(){
-      const rows=[...document.querySelectorAll('#transportServiceList .home-care-item')];
-      const entries=[];
-      rows.forEach(row=>{
-        const box=row.querySelector('input[type=checkbox]');
-        if(!box || !box.checked) return;
-        const item=TRANSPORT_SERVICE_MAP[box.value];
-        if(!item) return;
-        entries.push({ code: box.value, item });
-      });
-      return entries;
+      const rows=[...document.querySelectorAll('#transportServiceList .home-care-item[data-selected="1"]')];
+      return rows.map(row=>{
+        const code = row.dataset.code || '';
+        const item=TRANSPORT_SERVICE_MAP[code];
+        return item ? { code, item } : null;
+      }).filter(Boolean);
     }
     function getSelectedRespiteEntries(){
-      const rows=[...document.querySelectorAll('#respServiceList .home-care-item')];
-      const entries=[];
-      rows.forEach(row=>{
-        const box=row.querySelector('input[type=checkbox]');
-        if(!box || !box.checked) return;
-        const item=RESPITE_SERVICE_MAP[box.value];
-        if(!item) return;
-        entries.push({ code: box.value, item });
-      });
-      return entries;
+      const rows=[...document.querySelectorAll('#respServiceList .home-care-item[data-selected="1"]')];
+      return rows.map(row=>{
+        const code = row.dataset.code || '';
+        const item=RESPITE_SERVICE_MAP[code];
+        return item ? { code, item } : null;
+      }).filter(Boolean);
     }
     function getSelectedMealEntries(){
-      const rows=[...document.querySelectorAll('#mealServiceList .home-care-item')];
-      const entries=[];
-      rows.forEach(row=>{
-        const box=row.querySelector('input[type=checkbox]');
-        if(!box || !box.checked) return;
-        const item=MEAL_SERVICE_MAP[box.value];
-        if(!item) return;
-        entries.push({ code: box.value, item });
-      });
-      return entries;
+      const rows=[...document.querySelectorAll('#mealServiceList .home-care-item[data-selected="1"]')];
+      return rows.map(row=>{
+        const code = row.dataset.code || '';
+        const item=MEAL_SERVICE_MAP[code];
+        return item ? { code, item } : null;
+      }).filter(Boolean);
     }
     function getSelectedHomeCareCodes(){
       return getSelectedHomeCareEntries().map(entry=>entry.code);
@@ -5916,23 +6087,36 @@
       setVisible('respServiceWrap', hasResp);
       setVisible('mealServiceWrap', hasMeal);
       if(!hasHomeCare){
-        [...document.querySelectorAll('#homeCareList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
-        [...document.querySelectorAll('#homeCareList .home-care-qty')].forEach(inp=>{ inp.value=''; inp.style.display='none'; });
+        document.querySelectorAll('#homeCareList .home-care-item').forEach(card=>{
+          if(card.dataset.selected === '1'){ setServiceCardSelected(card, false); }
+          const qty = card.querySelector('.home-care-qty');
+          if(qty){ qty.value=''; }
+        });
       }
       if(!hasDayCare){
-        [...document.querySelectorAll('#dayCareList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+        document.querySelectorAll('#dayCareList .home-care-item').forEach(card=>{
+          if(card.dataset.selected === '1'){ setServiceCardSelected(card, false); }
+        });
       }
       if(!hasProf){
-        [...document.querySelectorAll('#profServiceList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+        document.querySelectorAll('#profServiceList .home-care-item').forEach(card=>{
+          if(card.dataset.selected === '1'){ setServiceCardSelected(card, false); }
+        });
       }
       if(!hasCar){
-        [...document.querySelectorAll('#transportServiceList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+        document.querySelectorAll('#transportServiceList .home-care-item').forEach(card=>{
+          if(card.dataset.selected === '1'){ setServiceCardSelected(card, false); }
+        });
       }
       if(!hasResp){
-        [...document.querySelectorAll('#respServiceList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+        document.querySelectorAll('#respServiceList .home-care-item').forEach(card=>{
+          if(card.dataset.selected === '1'){ setServiceCardSelected(card, false); }
+        });
       }
       if(!hasMeal){
-        [...document.querySelectorAll('#mealServiceList input[type=checkbox]')].forEach(b=>{ b.checked=false; });
+        document.querySelectorAll('#mealServiceList .home-care-item').forEach(card=>{
+          if(card.dataset.selected === '1'){ setServiceCardSelected(card, false); }
+        });
       }
       updateCareServicePhrases();
       if(!hasProf) updateProfessionalServicePhrases();
