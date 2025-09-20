@@ -13,6 +13,102 @@ const MANAGERS_SHEET_NAME = '工作表3';
 const CONSULTANTS_BOOK_ID  = '1GIkHN7Yz2rEhs0djFH4nm3ZsIHR6n_iXz2Nf9XZe1yg';
 const CONSULTANTS_BOOK_NAME = '照專名單';
 
+const H1_TEMPLATES = Object.freeze({
+  callDate: Object.freeze({
+    consult: '本案（{{caseName}}）由照顧專員（{{consultName}}）進行約訪',
+    default: '{{date}}'
+  }),
+  visitDate: Object.freeze({
+    main: '{{date}}',
+    discharge: '出院日期：{{date}}'
+  }),
+  attendees: Object.freeze({
+    base: '個案（{{caseName}}）、福安個管（{{caseManagerName}}）、照專（{{consultName}}）',
+    primary: '主要照顧者為{{primaryRel}}（{{primaryName}}）',
+    extra: '{{role}}（{{name}}）',
+    sentence: '{{list}}。'
+  }),
+  careGoals: Object.freeze({
+    problemItem: '{{index}}.{{label}}',
+    problemTitle: '({{items}})',
+    problemNote: '補充說明：{{note}}',
+    serviceLine: '{{label}}：{{value}}'
+  }),
+  mismatch: Object.freeze({
+    line: '{{prefix}}{{text}}'
+  })
+});
+
+const H1_CASE_PROFILE_SECTIONS = Object.freeze([
+  { key: 'section1', headings: ['(一)身心概況：','(一) 身心概況：','（一）身心概況：'] },
+  { key: 'section2', headings: ['(二)經濟收入：','(二) 經濟收入：','（二）經濟收入：'] },
+  { key: 'section3', headings: ['(三)居住環境：','(三) 居住環境：','（三）居住環境：'] },
+  { key: 'section4', headings: ['(四)社會支持：','(四) 社會支持：','（四）社會支持：'] },
+  { key: 'section5', headings: ['(五)其他：','(五) 其他：','（五）其他：'], fallback: '無。' },
+  { key: 'section6', headings: ['(六)複評評值：','(六) 複評評值：','（六）複評評值：'], fallback: '此個案為新案，無複評評值。' }
+]);
+
+const H1_PROBLEM_DICT = Object.freeze({
+  1:'進食問題', 2:'洗澡問題', 3:'個人修飾問題', 4:'穿脫衣物問題', 5:'大小便控制問題',
+  6:'上廁所問題', 7:'移位問題', 8:'走路問題', 9:'上下樓梯問題', 10:'使用電話問題',
+  11:'購物或外出問題', 12:'備餐問題', 13:'處理家務問題', 14:'用藥問題', 15:'處理財務問題',
+  16:'溝通問題', 17:'短期記憶障礙', 18:'疼痛問題', 19:'不動症候群風險', 20:'皮膚照護問題',
+  21:'傷口問題', 22:'水份及營養問題', 23:'吞嚥問題', 24:'管路照顧問題', 25:'其他醫療照護問題',
+  26:'跌倒風險', 27:'安全疑慮', 28:'居住環境障礙', 29:'社會參與需協助', 30:'困擾行為',
+  31:'照顧負荷過重', 32:'輔具使用問題', 33:'感染問題', 34:'其他問題'
+});
+
+const H1_PROBLEM_HEADING_VARIANTS = (function(){
+  const bases = ['(一)照顧問題','(一) 照顧問題','（一）照顧問題','（一） 照顧問題'];
+  const marks = ['：', ':'];
+  const prefixes = ['', '五、照顧目標', '五、照顧目標 ', '五、 照顧目標', '五、 照顧目標 '];
+  const joiners = ['', '：', ':', '： ', ': ', ' '];
+  const variants = [];
+
+  prefixes.forEach(function(prefix){
+    bases.forEach(function(base){
+      marks.forEach(function(mark){
+        if (!prefix) {
+          variants.push(base + mark);
+        } else {
+          joiners.forEach(function(joiner){
+            variants.push(prefix + joiner + base + mark);
+          });
+        }
+      });
+    });
+  });
+
+  return Array.from(new Set(variants));
+})();
+
+const H1_GOAL_CATEGORY_FIELDS = Object.freeze([
+  { suffix: 'care', label: '照顧服務' },
+  { suffix: 'prof', label: '專業服務' },
+  { suffix: 'car',  label: '交通車服務' },
+  { suffix: 'resp', label: '喘息服務' },
+  { suffix: 'access', label: '無障礙及輔具' },
+  { suffix: 'meal', label: '營養送餐' }
+]);
+
+const H1_GOAL_TIERS = Object.freeze([
+  { prefix: 'short', headings: ['(二)短期目標','(二) 短期目標'] },
+  { prefix: 'mid', headings: ['(三)中期目標','(三) 中期目標'] }
+]);
+
+const H1_LONG_GOAL_HEADINGS = Object.freeze(['(四)長期目標','(四) 長期目標']);
+
+const H1_MISMATCH_REASON_FIELDS = Object.freeze([
+  { key: 'reason1', prefix: '1.目標達成的狀況以及未達成的差距：' },
+  { key: 'reason2', prefix: '2.資源的變動情形：' },
+  { key: 'reason3', prefix: '3.未使用的替代方案或是可能的影響：' }
+]);
+
+const H1_MISMATCH_QUICK_TEMPLATES = Object.freeze({
+  q1: '1..經與案○討論，目前暫無備餐之需求，改為代購服務。',
+  q2: '2..經與案○討論，目前因個案身體狀況，暫無專業服務需求，日後待個案狀況好轉後，依當下狀況核定，續追蹤。'
+});
+
 /** 桃園市長照給付資料庫（v1）常用資料表 */
 const TAOYUAN_LTC_DATA = {
   "needLevelsCaps": [
