@@ -48,7 +48,8 @@ const DOCUMENT_WRITERS = Object.freeze([
   applyH1_CareGoals,
   applyH1_MismatchPlan,
   applyPlanExecutionPage,
-  applyPlanServiceSummaryPage
+  applyPlanServiceSummaryPage,
+  applyPlanOtherNotesPage
 ]);
 
 function sanitizeFilePart(part){
@@ -395,7 +396,25 @@ function applyH1_MismatchPlan(body, form){
  * 處理附件頁面：計畫執行規劃與服務明細
  * ============================================== */
 
-const PLAN_CATEGORY_ORDER = Object.freeze(['B','C','D','EF','G','SC','MEAL','OTHER']);
+const PLAN_SUMMARY_GROUPS = Object.freeze([
+  { id:'BC', label:'居家服務（B/C）', includes:['B','C'] },
+  { id:'D', label:'專業服務（D）', includes:['D'] },
+  { id:'G', label:'喘息服務（G）', includes:['G'] },
+  { id:'EF', label:'輔具及無障礙補助（E/F）', includes:['EF'] },
+  { id:'SC', label:'短期照顧（SC）', includes:['SC'] },
+  { id:'MEAL', label:'營養餐飲服務（OT）', includes:['MEAL'] },
+  { id:'OTHER', label:'其他服務', includes:['OTHER'] }
+]);
+const PLAN_CATEGORY_ORDER = Object.freeze(PLAN_SUMMARY_GROUPS.map(function(group){ return group.id; }));
+const PLAN_CATEGORY_LOOKUP = (function(){
+  const map = {};
+  PLAN_SUMMARY_GROUPS.forEach(function(group){
+    (group.includes || []).forEach(function(cat){
+      map[String(cat).toUpperCase()] = group.id;
+    });
+  });
+  return map;
+})();
 
 function applyPlanExecutionPage(body, form){
   ensurePageBreak(body);
@@ -444,22 +463,22 @@ function applyPlanServiceSummaryPage(body, form){
   }
   const grouped = groupServicePlanEntries(entries);
   var totalSelfPay = 0;
-  PLAN_CATEGORY_ORDER.forEach(function(cat){
-    const list = grouped[cat];
+  PLAN_CATEGORY_ORDER.forEach(function(groupId){
+    const list = grouped[groupId];
     if (!list || !list.length) return;
-    appendHeading(body, planCategoryDisplay(cat), DocumentApp.ParagraphHeading.HEADING2);
-    list.sort(function(a,b){ return (a.code || '').localeCompare(b.code || ''); });
+    appendHeading(body, planCategoryDisplay(groupId), DocumentApp.ParagraphHeading.HEADING2);
     const rows = [['服務代碼','服務名稱','承接','指定單位','額度／單位','自費金額','使用頻率／說明']];
-    list.forEach(function(entry){
-      totalSelfPay += computeEntrySelfPay(entry);
+    const aggregatedRows = aggregateServicePlanRows(list);
+    aggregatedRows.forEach(function(row){
+      totalSelfPay += row.totalSelfPay || 0;
       rows.push([
-        entry.code || '',
-        entry.name || '',
-        formatVendorMode(entry),
-        formatVendorName(entry),
-        formatPlanAmount(entry),
-        formatPlanSelfPay(entry),
-        formatPlanUsage(entry)
+        row.codes || '',
+        row.names || '',
+        row.vendorMode || '',
+        row.vendorName || '',
+        row.amount || '',
+        row.selfPay || '',
+        row.usage || ''
       ]);
     });
     const table = body.appendTable(rows);
@@ -476,6 +495,94 @@ function applyPlanServiceSummaryPage(body, form){
   }
 }
 
+function applyPlanOtherNotesPage(body, form){
+  ensurePageBreak(body);
+  appendHeading(body, '附件三：其他備註', DocumentApp.ParagraphHeading.HEADING1);
+  const text = (form && form.planOther ? String(form.planOther) : '').trim();
+  if (!text){
+    body.appendParagraph('（未填寫備註）');
+    return;
+  }
+  text.split(/\r?\n/).forEach(function(line){
+    body.appendParagraph(line);
+  });
+}
+
+function aggregateServicePlanRows(entries){
+  const aggregated = {};
+  (entries || []).forEach(function(entry){
+    if (!entry) return;
+    var mode = (entry.vendorMode || '輪派').trim() || '輪派';
+    var name = (entry.vendorName || '').trim();
+    var key = mode + '||' + name;
+    if (!aggregated[key]){
+      aggregated[key] = { vendorMode: mode, vendorName: name, entries: [] };
+    }
+    aggregated[key].entries.push(entry);
+  });
+  const groups = Object.keys(aggregated).map(function(key){ return aggregated[key]; });
+  groups.forEach(function(group){
+    group.entries = group.entries.slice().sort(function(a,b){
+      const ac = (a && a.code) ? a.code : '';
+      const bc = (b && b.code) ? b.code : '';
+      return ac.localeCompare(bc);
+    });
+  });
+  groups.sort(function(a,b){
+    const ac = (a.entries[0] && a.entries[0].code) ? a.entries[0].code : '';
+    const bc = (b.entries[0] && b.entries[0].code) ? b.entries[0].code : '';
+    return ac.localeCompare(bc);
+  });
+  return groups.map(function(group){
+    var codes = [];
+    var names = [];
+    var amountParts = [];
+    var usageParts = [];
+    var selfPayParts = [];
+    var totalSelfPay = 0;
+    group.entries.forEach(function(entry){
+      var code = entry && entry.code ? entry.code : '';
+      var name = entry && entry.name ? entry.name : '';
+      if (code) codes.push(code);
+      if (name) names.push(name);
+      var amount = formatPlanAmount(entry);
+      if (amount){
+        amountParts.push(code ? code + '：' + amount : amount);
+      }
+      var usage = formatPlanUsage(entry);
+      if (usage){
+        usageParts.push(code ? code + '：' + usage : usage);
+      }
+      var selfPay = formatPlanSelfPay(entry);
+      if (selfPay){
+        selfPayParts.push(code ? code + '：' + selfPay : selfPay);
+      }
+      totalSelfPay += computeEntrySelfPay(entry);
+    });
+    var amountText = amountParts.join('\n');
+    var usageText = usageParts.join('\n');
+    var selfPayText = '';
+    if (totalSelfPay > 0){
+      selfPayText = '合計 ' + formatCurrencyValue(totalSelfPay);
+      if (selfPayParts.length){
+        selfPayText += '\n' + selfPayParts.join('\n');
+      }
+    }else if (selfPayParts.length){
+      selfPayText = selfPayParts.join('\n');
+    }
+    return {
+      vendorMode: group.vendorMode || '輪派',
+      vendorName: group.vendorName || '',
+      codes: codes.join('、'),
+      names: names.join('、'),
+      amount: amountText,
+      selfPay: selfPayText,
+      usage: usageText,
+      totalSelfPay: totalSelfPay
+    };
+  });
+}
+
 function groupServicePlanEntries(entries){
   const grouped = {};
   entries.forEach(function(entry){
@@ -484,9 +591,9 @@ function groupServicePlanEntries(entries){
     if (!cat){
       cat = determineServiceCategoryCode(entry.code);
     }
-    if (!cat) cat = 'OTHER';
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push(entry);
+    const groupId = PLAN_CATEGORY_LOOKUP[cat] || 'OTHER';
+    if (!grouped[groupId]) grouped[groupId] = [];
+    grouped[groupId].push(entry);
   });
   return grouped;
 }
@@ -505,19 +612,15 @@ function determineServiceCategoryCode(code){
   return '';
 }
 
-function planCategoryDisplay(cat){
-  switch((cat || '').toUpperCase()){
-    case 'B': return 'B碼服務（居家／日照）';
-    case 'C': return 'C碼專業服務';
-    case 'D': return 'D碼／交通接送';
-    case 'EF': return 'E.F碼（輔具與無障礙補助）';
-    case 'G': return 'G碼（喘息服務）';
-    case 'SC': return 'SC碼（短期照顧）';
-    case 'MEAL': return '營養餐飲服務（OT碼）';
-    default: return '其他服務';
+function planCategoryDisplay(id){
+  const key = (id || '').toUpperCase();
+  for (var i=0;i<PLAN_SUMMARY_GROUPS.length;i++){
+    if (PLAN_SUMMARY_GROUPS[i].id === key){
+      return PLAN_SUMMARY_GROUPS[i].label;
+    }
   }
+  return '其他服務';
 }
-
 function formatVendorMode(entry){
   if (!entry) return '';
   return entry.vendorMode || '輪派';
