@@ -338,6 +338,13 @@
       background:#f8fafc;
       border-style:dashed;
     }
+    .selfpay-field .selfpay-hint{
+      margin-top:6px;
+      font-size:0.95rem;
+      color:#475569;
+      display:none;
+    }
+    .selfpay-field .selfpay-hint[data-show="1"]{ display:block; }
     .plan-qty-toolbar{
       display:flex;
       align-items:center;
@@ -393,6 +400,15 @@
     }
     .plan-summary-total-value.negative{
       color:#b3261e;
+    }
+    .summary-total-selfpay{
+      margin-top:12px;
+      padding-top:8px;
+      border-top:1px solid var(--border);
+      text-align:right;
+      font-weight:700;
+      font-size:1rem;
+      color:#0b1d4d;
     }
     .plan-summary-totals-hint{
       font-size:0.95rem;
@@ -558,7 +574,7 @@
       min-height:38px;
     }
     .danger{ color:#b00020; }
-    .error-messages{
+    .error-messages{ 
       display:none;
       margin:10px 0;
       padding:12px 14px;
@@ -570,6 +586,20 @@
     }
     .error-messages ul{ margin:0; padding-left:20px; }
     .error-messages li{ margin-bottom:4px; }
+    #errorSummary{
+      display:none;
+      margin-top:12px;
+      padding:12px 16px;
+      border:1px solid #fca5a5;
+      border-radius:var(--radius);
+      background:#fff5f5;
+      color:#b3261e;
+      font-size:.95rem;
+    }
+    #errorSummary[data-show="1"]{ display:block; }
+    #errorSummary ul{ margin:0; padding-left:20px; }
+    #errorSummary li{ margin-bottom:6px; }
+    #errorSummary a{ color:#b3261e; text-decoration:underline; cursor:pointer; }
     .input-invalid{
       border-color:#d92d20 !important;
       box-shadow:0 0 0 2px rgba(217,45,32,.2) !important;
@@ -1745,6 +1775,18 @@
             <div class="plan-summary-total-label">預估餘額</div>
             <div class="plan-summary-total-value" id="planSummaryRemaining">—</div>
           </div>
+          <div class="plan-summary-total-card">
+            <div class="plan-summary-total-label">上限內自付</div>
+            <div class="plan-summary-total-value" id="planSummaryWithin">—</div>
+          </div>
+          <div class="plan-summary-total-card">
+            <div class="plan-summary-total-label">超額自付</div>
+            <div class="plan-summary-total-value" id="planSummaryExcess">—</div>
+          </div>
+          <div class="plan-summary-total-card">
+            <div class="plan-summary-total-label">總自付</div>
+            <div class="plan-summary-total-value" id="planSummarySelfPay">—</div>
+          </div>
         </div>
         <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
         <div id="planSummaryPreview" class="summary-table-wrapper">
@@ -1758,6 +1800,7 @@
     <div class="btnbar">
       <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
     </div>
+    <div id="errorSummary" data-show="0"></div>
     <div id="msg" class="hint" style="margin-top:8px;"></div>
   </div>
   </div>
@@ -1986,13 +2029,18 @@
       }
       return result;
     }
-    function validateParticipantConflicts(msg){
+    function validateParticipantConflicts(){
       const result=updateParticipantConflictHint();
+      const extrasBox=document.getElementById('extras');
       if(result.hasConflict){
-        if(msg) msg.textContent='請調整參與者角色，避免與主要照顧者重覆。';
-        return false;
+        if(extrasBox) extrasBox.classList.add('input-invalid');
+        return {
+          ok:false,
+          messages:[{ fieldId:'extras', pageId:'goals', text:'請調整參與者角色，避免與主要照顧者重覆。' }]
+        };
       }
-      return true;
+      if(extrasBox) extrasBox.classList.remove('input-invalid');
+      return { ok:true, messages:[] };
     }
     function collectExtras(){
       const reserved=new Set(['個案','福安個管','照專']);
@@ -3257,13 +3305,18 @@
     function validateSection1(){
       resetSection1Validation();
       const messages=[];
+      const plainMessages=[];
+      const addMessage=(fieldId, text)=>{
+        messages.push({ fieldId: fieldId, pageId: 'goals', text: text });
+        plainMessages.push(text);
+      };
 
       const hearingDetails = collectHearingDetails();
       const needDeviceStatus = Array.isArray(hearingDetails) && hearingDetails.some(item => /助聽器|擴音/.test(item));
       if (needDeviceStatus) {
         const adherence = (document.getElementById('s1_hearing_device_adherence')?.value || '').trim();
         if (!adherence) {
-          messages.push('請選擇助聽器/擴音使用情形');
+          addMessage('s1_hearing_device_adherence', '請選擇助聽器/擴音使用情形');
           markSection1Invalid('s1_hearing_device_adherence');
         }
       }
@@ -3272,14 +3325,14 @@
       if (phoneStatus && phoneStatus !== '會撥打與接聽') {
         const phoneChecks = [...document.querySelectorAll('#s1_phone_note_box input[type=checkbox]:checked')];
         if (!phoneChecks.length) {
-          messages.push('請勾選電話使用原因');
+          addMessage('s1_phone_note_box', '請勾選電話使用原因');
           markSection1Invalid('s1_phone_note_box');
         }
         const otherPhone = document.querySelector('#s1_phone_note_box input[value="其他"]');
         if (otherPhone && otherPhone.checked) {
           const otherVal = (document.getElementById('s1_phone_note_other')?.value || '').trim();
           if (!otherVal) {
-            messages.push('請填寫電話使用其他原因');
+            addMessage('s1_phone_note_other', '請填寫電話使用其他原因');
             markSection1Invalid('s1_phone_note_other');
           }
         }
@@ -3289,7 +3342,7 @@
       const nocturiaCount=nocturiaInput ? Number(nocturiaInput.value) : 0;
       const hasNightBag=!!document.querySelector('#s1_excretion_aids_box input[value="夜間集尿袋"]:checked');
       if(!Number.isNaN(nocturiaCount) && nocturiaCount >= 1 && hasNightBag){
-        messages.push('夜間記錄排尿次數時不可同時勾選夜間集尿袋');
+        addMessage('s1_nocturia_count', '夜間記錄排尿次數時不可同時勾選夜間集尿袋');
         markSection1Invalid('s1_nocturia_count');
         markSection1Invalid('s1_excretion_aids_box');
       }
@@ -3301,32 +3354,32 @@
         const score = document.getElementById('s1_pain_score').value;
         const scoreNum = Number(score);
         if(!score || Number.isNaN(scoreNum) || scoreNum < 1 || scoreNum > 10){
-          messages.push('請填寫疼痛強度（1-10）');
+          addMessage('s1_pain_score', '請填寫疼痛強度（1-10）');
           markSection1Invalid('s1_pain_score');
           painScoreError='請輸入 1–10 分的疼痛強度';
         }
         const painLoc = getLocationData('pain');
         let missingLocation=false;
         if(!painLoc.region){
-          messages.push('請選擇疼痛部位大分類');
+          addMessage('s1_location_region', '請選擇疼痛部位大分類');
           switchLocationContext('pain');
           markSection1Invalid('s1_location_region');
           missingLocation=true;
         }
         if(!painLoc.subChoice){
-          messages.push('請選擇疼痛細部分位');
+          addMessage('s1_location_subregion', '請選擇疼痛細部分位');
           switchLocationContext('pain');
           markSection1Invalid('s1_location_subregion');
           missingLocation=true;
         }else if(painLoc.subChoice==='其他' && !painLoc.subOther){
-          messages.push('請填寫疼痛細部分位（其他）');
+          addMessage('s1_location_subregion_other', '請填寫疼痛細部分位（其他）');
           switchLocationContext('pain');
           markSection1Invalid('s1_location_subregion_other');
           missingLocation=true;
         }
         if(SYMMETRIC_PARTS.has(getLocationSubregionText(painLoc))){
           if(!painLoc.laterality){
-            messages.push('請選擇疼痛側別');
+            addMessage('s1_location_laterality', '請選擇疼痛側別');
             switchLocationContext('pain');
             markSection1Invalid('s1_location_laterality');
             missingLocation=true;
@@ -3344,22 +3397,22 @@
       if(lesionOn){
         const lesionLoc = getLocationData('lesion');
         if(!lesionLoc.region){
-          messages.push('請選擇病灶部位大分類');
+          addMessage('s1_location_region', '請選擇病灶部位大分類');
           switchLocationContext('lesion');
           markSection1Invalid('s1_location_region');
         }
         if(!lesionLoc.subChoice){
-          messages.push('請選擇病灶細部分位');
+          addMessage('s1_location_subregion', '請選擇病灶細部分位');
           switchLocationContext('lesion');
           markSection1Invalid('s1_location_subregion');
         }else if(lesionLoc.subChoice==='其他' && !lesionLoc.subOther){
-          messages.push('請填寫病灶細部分位（其他）');
+          addMessage('s1_location_subregion_other', '請填寫病灶細部分位（其他）');
           switchLocationContext('lesion');
           markSection1Invalid('s1_location_subregion_other');
         }
         if(SYMMETRIC_PARTS.has(getLocationSubregionText(lesionLoc))){
           if(!lesionLoc.laterality){
-            messages.push('請選擇病灶側別');
+            addMessage('s1_location_laterality', '請選擇病灶側別');
             switchLocationContext('lesion');
             markSection1Invalid('s1_location_laterality');
           }
@@ -3367,27 +3420,38 @@
 
         const layerSel = document.getElementById('s1_lesion_layer').value;
         const layerOther = (document.getElementById('s1_lesion_layer_other').value||'').trim();
-        if(!layerSel){ messages.push('請選擇病灶層次'); markSection1Invalid('s1_lesion_layer'); }
-        else if(layerSel==='其他' && !layerOther){ messages.push('請填寫病灶層次（其他）'); markSection1Invalid('s1_lesion_layer_other'); }
+        if(!layerSel){
+          addMessage('s1_lesion_layer', '請選擇病灶層次');
+          markSection1Invalid('s1_lesion_layer');
+        }else if(layerSel==='其他' && !layerOther){
+          addMessage('s1_lesion_layer_other', '請填寫病灶層次（其他）');
+          markSection1Invalid('s1_lesion_layer_other');
+        }
 
         const sizeState=getLesionSizeState();
         if(sizeState.lenNum===null || sizeState.widNum===null){
-          messages.push('請填寫病灶大小（長、寬）');
+          addMessage('s1_lesion_length', '請填寫病灶大小（長、寬）');
           if(sizeState.lenNum===null) markSection1Invalid('s1_lesion_length');
           if(sizeState.widNum===null) markSection1Invalid('s1_lesion_width');
           lesionSizeError='請輸入長度與寬度（需大於 0 cm）';
         }
 
         const sx = collectChecks('s1_lesion_sx_box');
-        if(!Array.isArray(sx) || !sx.length){ messages.push('請勾選至少一項病灶症狀'); markSection1Invalid('s1_lesion_sx_box'); }
+        if(!Array.isArray(sx) || !sx.length){
+          addMessage('s1_lesion_sx_box', '請勾選至少一項病灶症狀');
+          markSection1Invalid('s1_lesion_sx_box');
+        }
 
-      const evalSel = document.getElementById('s1_lesion_eval').value;
-      if(evalSel && evalSel!=='未評估'){
-        const hosp = (document.getElementById('s1_lesion_hospital').value||'').trim();
-        if(!hosp){ messages.push('請填寫醫療院所名稱'); markSection1Invalid('s1_lesion_hospital'); }
+        const evalSel = document.getElementById('s1_lesion_eval').value;
+        if(evalSel && evalSel!=='未評估'){
+          const hosp = (document.getElementById('s1_lesion_hospital').value||'').trim();
+          if(!hosp){
+            addMessage('s1_lesion_hospital', '請填寫醫療院所名稱');
+            markSection1Invalid('s1_lesion_hospital');
+          }
+        }
       }
-    }
-    setFieldError('s1_lesion_size_error', lesionOn ? lesionSizeError : '');
+      setFieldError('s1_lesion_size_error', lesionOn ? lesionSizeError : '');
 
       const actionEntries = readActionEntries();
       let actionError='';
@@ -3395,11 +3459,11 @@
         const hasSource = !!entry.source;
         const hasText = !!entry.text;
         if(hasText && !hasSource){
-          if(!actionError){ messages.push('請為建議措施選擇來源'); }
+          if(!actionError){ addMessage('s1_actions_list', '請為建議措施選擇來源'); }
           if(entry.select) entry.select.classList.add('input-invalid');
           actionError = actionError || '請為建議措施選擇來源';
         }else if(hasSource && !hasText){
-          if(!actionError){ messages.push('請填寫建議措施內容'); }
+          if(!actionError){ addMessage('s1_actions_list', '請填寫建議措施內容'); }
           if(entry.textarea) entry.textarea.classList.add('input-invalid');
           actionError = actionError || '請填寫建議措施內容';
         }
@@ -3408,8 +3472,8 @@
 
       const box=document.getElementById('section1_errors');
       if(box){
-        if(messages.length){
-          box.innerHTML = `<ul>${messages.map(msg=>`<li>${msg}</li>`).join('')}</ul>`;
+        if(plainMessages.length){
+          box.innerHTML = `<ul>${plainMessages.map(text=>`<li>${text}</li>`).join('')}</ul>`;
           box.style.display='';
         }else{
           box.innerHTML='';
@@ -3857,7 +3921,10 @@
       const validation = presetValidation || validateSection1();
       if(!validation.ok){
         document.getElementById('section1_out').value = '';
-        const msg = validation.messages.length ? validation.messages.join('、') : '請補齊必填欄位';
+        const texts = Array.isArray(validation.messages)
+          ? validation.messages.map(item=>item && item.text ? item.text : '').filter(Boolean)
+          : [];
+        const msg = texts.length ? texts.join('、') : '請補齊必填欄位';
         document.getElementById('section1_preview').textContent = `（一）身心概況：${msg}`;
         return '';
       }
@@ -4001,10 +4068,29 @@
         '7': 32090,
         '8': 36180
       },
+      levelDetails: {
+        '2': { bcMonthlyCap: 10020, dCaps: { '1': 1680, '2': 1840, '3': 2000, '4': 2400 }, gAnnualCap: 32340, efThreeYearCap: 40000 },
+        '3': { bcMonthlyCap: 15460, dCaps: { '1': 1680, '2': 1840, '3': 2000, '4': 2400 }, gAnnualCap: 32340, efThreeYearCap: 40000 },
+        '4': { bcMonthlyCap: 18580, dCaps: { '1': 1680, '2': 1840, '3': 2000, '4': 2400 }, gAnnualCap: 32340, efThreeYearCap: 40000 },
+        '5': { bcMonthlyCap: 24100, dCaps: { '1': 1680, '2': 1840, '3': 2000, '4': 2400 }, gAnnualCap: 32340, efThreeYearCap: 40000 },
+        '6': { bcMonthlyCap: 28070, dCaps: { '1': 1680, '2': 1840, '3': 2000, '4': 2400 }, gAnnualCap: 32340, efThreeYearCap: 40000 },
+        '7': { bcMonthlyCap: 32090, dCaps: { '1': 1680, '2': 1840, '3': 2000, '4': 2400 }, gAnnualCap: 48510, efThreeYearCap: 40000 },
+        '8': { bcMonthlyCap: 36180, dCaps: { '1': 1680, '2': 1840, '3': 2000, '4': 2400 }, gAnnualCap: 48510, efThreeYearCap: 40000 }
+      },
       dayCareRequirements: {},
       dayCareLevels: {},
       serviceRates: {},
-      transportRoundTrips: 2
+      transportRoundTrips: 2,
+      copayRates: {
+        'B/C（照顧及專業服務）': { '低收入戶': 0, '中低收入戶': 5, '一般戶': 16 },
+        'D-第一類（交通接送）': { '低收入戶': 0, '中低收入戶': 10, '一般戶': 30 },
+        'D-第二類（交通接送）': { '低收入戶': 0, '中低收入戶': 9,  '一般戶': 27 },
+        'D-第三類（交通接送）': { '低收入戶': 0, '中低收入戶': 8,  '一般戶': 25 },
+        'D-第四類（交通接送）': { '低收入戶': 0, '中低收入戶': 7,  '一般戶': 21 },
+        'E/F（輔具/居家無障礙）': { '低收入戶': 0, '中低收入戶': 10, '一般戶': 30 },
+        'G（喘息服務）': { '低收入戶': 0, '中低收入戶': 5, '一般戶': 16 }
+      },
+      transportCategory: '第二類'
     };
     let SERVICE_CATALOG = JSON.parse(JSON.stringify(DEFAULT_SERVICE_CATALOG));
     const HOME_CARE_ITEMS = [
@@ -4696,6 +4782,7 @@
 
     const servicePlanState = {};
     let ba02WeeklyDisplays = {};
+    let selfPayHintDisplays = {};
     const MISMATCH_REASON_OPTIONS = [
       { value:'身體狀況', label:'身體狀況變化', short:'身體狀況' },
       { value:'個案意願', label:'個案意願', short:'個案意願' },
@@ -4770,7 +4857,13 @@
           autoPlanRemainingCap: null,
           autoPlanUnitLabel: '',
           autoUsageText: '',
-          usageManual: false
+          usageManual: false,
+          selfPayAmount: '',
+          selfPayManual: false,
+          autoWithinCapCopay: null,
+          autoExcessSelfPay: null,
+          autoTotalSelfPay: null,
+          autoPublicExpense: null
         };
       }else if(item && !servicePlanState[code].name){
         servicePlanState[code].name = item.name || '';
@@ -4781,6 +4874,13 @@
         // onPlanFieldChange 會將 usageManual 標記為 true，避免再被自動更新。
         applyAutoUsage(servicePlanState[code], item.short || '');
       }
+      const entry = servicePlanState[code];
+      if(entry.selfPayAmount === undefined) entry.selfPayAmount = '';
+      if(entry.selfPayManual === undefined) entry.selfPayManual = false;
+      if(entry.autoWithinCapCopay === undefined) entry.autoWithinCapCopay = null;
+      if(entry.autoExcessSelfPay === undefined) entry.autoExcessSelfPay = null;
+      if(entry.autoTotalSelfPay === undefined) entry.autoTotalSelfPay = null;
+      if(entry.autoPublicExpense === undefined) entry.autoPublicExpense = null;
       if(initialMonthlyUnits && !servicePlanState[code].monthlyUnits){
         servicePlanState[code].monthlyUnits = initialMonthlyUnits;
         servicePlanState[code].monthlyUnitsManual = true;
@@ -4879,29 +4979,32 @@
       const inputs=[...document.querySelectorAll('#mismatch_reason_box input[type=checkbox]')];
       inputs.forEach(input=>input.classList.remove('input-invalid'));
       if(other) other.classList.remove('input-invalid');
+      const messages=[];
       if(!diff.length){
         setMismatchError('');
-        return true;
+        return { ok:true, messages };
       }
       const selected=getSelectedMismatchReasons();
       if(!selected.length){
-        setMismatchError('請勾選不一致原因');
+        const text='請勾選不一致原因';
+        setMismatchError(text);
         inputs.forEach(input=>input.classList.add('input-invalid'));
-        return false;
+        messages.push({ fieldId:'mismatch_reason_box', pageId:'goals', text });
       }
       if(selected.includes('其他')){
-        const text=(other?.value || '').trim();
-        if(!text){
-          setMismatchError('請填寫其他原因說明');
-          if(other){
-            other.classList.add('input-invalid');
-            other.focus();
-          }
-          return false;
+        const textValue=(other?.value || '').trim();
+        if(!textValue){
+          const text='請填寫其他原因說明';
+          setMismatchError(text);
+          if(other) other.classList.add('input-invalid');
+          messages.push({ fieldId:'mismatch_reason_other', pageId:'goals', text });
         }
       }
+      if(messages.length){
+        return { ok:false, messages };
+      }
       setMismatchError('');
-      return true;
+      return { ok:true, messages:[] };
     }
 
     function updateMismatchReasons(opts){
@@ -5044,6 +5147,129 @@
       return rounded.toFixed(1).replace(/\.0$/, '');
     }
 
+    function toCurrencyInt(value){
+      if(value === undefined || value === null) return 0;
+      const num = Number(value);
+      if(!Number.isFinite(num)) return 0;
+      return Math.max(0, Math.floor(num));
+    }
+
+    function computeFinancials(options){
+      options = options || {};
+      const copayCandidate = Number(options.copayRate);
+      const transportCandidate = Number(options.transportTierRate);
+      const ratePercent = Number.isFinite(copayCandidate) ? copayCandidate : (Number.isFinite(transportCandidate) ? transportCandidate : 0);
+      const rate = Math.max(0, ratePercent);
+      const cap = toCurrencyInt(options.cap);
+      const sum = toCurrencyInt(options.sum);
+      const hasForeignCare = !!options.hasForeignCare;
+      let effectiveCap = cap;
+      let foreignDeduct = 0;
+      if(hasForeignCare && cap > 0){
+        foreignDeduct = toCurrencyInt(cap * 0.3);
+        effectiveCap = Math.max(0, cap - foreignDeduct);
+      }
+      if(options.annualCap !== undefined){
+        const annual = toCurrencyInt(options.annualCap);
+        if(annual > 0){
+          effectiveCap = effectiveCap > 0 ? Math.min(effectiveCap, annual) : annual;
+        }
+      }
+      if(options.threeYearCap !== undefined){
+        const threeYear = toCurrencyInt(options.threeYearCap);
+        if(threeYear > 0){
+          effectiveCap = effectiveCap > 0 ? Math.min(effectiveCap, threeYear) : threeYear;
+        }
+      }
+      const withinCapUsage = Math.min(sum, effectiveCap);
+      const withinCapCopay = toCurrencyInt(withinCapUsage * (rate / 100));
+      const publicExpense = Math.max(0, withinCapUsage - withinCapCopay);
+      const excessUsage = Math.max(0, sum - effectiveCap);
+      const excessSelfPay = toCurrencyInt(excessUsage);
+      const totalSelfPay = withinCapCopay + excessSelfPay;
+      return {
+        cap: cap,
+        effectiveCap: effectiveCap,
+        foreignDeduct: foreignDeduct,
+        usage: sum,
+        withinCapUsage: withinCapUsage,
+        withinCapCopay: withinCapCopay,
+        publicExpense: publicExpense,
+        excessSelfPay: excessSelfPay,
+        totalSelfPay: totalSelfPay
+      };
+    }
+
+    function getHouseholdStatus(){
+      const field = document.getElementById('s2_id');
+      if(!field) return '一般戶';
+      const value = (field.value || '').trim();
+      return value || '一般戶';
+    }
+
+    function getCopayRate(bucket){
+      if(!bucket) return 0;
+      const status = getHouseholdStatus();
+      const map = SERVICE_CATALOG && SERVICE_CATALOG.copayRates ? SERVICE_CATALOG.copayRates[bucket] : null;
+      if(map && Object.prototype.hasOwnProperty.call(map, status)){
+        const num = Number(map[status]);
+        if(!Number.isNaN(num)) return num;
+      }
+      const fallback = DEFAULT_SERVICE_CATALOG.copayRates && DEFAULT_SERVICE_CATALOG.copayRates[bucket]
+        ? DEFAULT_SERVICE_CATALOG.copayRates[bucket]
+        : null;
+      if(fallback && Object.prototype.hasOwnProperty.call(fallback, status)){
+        const num = Number(fallback[status]);
+        return Number.isNaN(num) ? 0 : num;
+      }
+      return 0;
+    }
+
+    function getBcCopayRate(){
+      return getCopayRate('B/C（照顧及專業服務）');
+    }
+
+    function getTransportCategory(){
+      const category = SERVICE_CATALOG && SERVICE_CATALOG.transportCategory
+        ? SERVICE_CATALOG.transportCategory
+        : DEFAULT_SERVICE_CATALOG.transportCategory;
+      return category || '第二類';
+    }
+
+    function getTransportCopayRate(){
+      const category = getTransportCategory();
+      return getCopayRate(`D-${category}（交通接送）`);
+    }
+
+    function getLevelDetails(level){
+      const key = level ? String(level) : '';
+      if(!key) return null;
+      const fromCatalog = SERVICE_CATALOG && SERVICE_CATALOG.levelDetails ? SERVICE_CATALOG.levelDetails[key] : null;
+      if(fromCatalog) return fromCatalog;
+      const fallback = DEFAULT_SERVICE_CATALOG.levelDetails ? DEFAULT_SERVICE_CATALOG.levelDetails[key] : null;
+      return fallback || null;
+    }
+
+    function getGAnnualCap(level){
+      const details = getLevelDetails(level);
+      if(!details) return 0;
+      return Number(details.gAnnualCap) || 0;
+    }
+
+    function getEfThreeYearCap(level){
+      const details = getLevelDetails(level);
+      if(!details) return 0;
+      return Number(details.efThreeYearCap) || 0;
+    }
+
+    function hasForeignCareFlag(){
+      const field = document.getElementById('hasForeignCare');
+      if(!field) return false;
+      if(field.type === 'checkbox') return field.checked;
+      const value = String(field.value || '').trim();
+      return value === '是' || value === 'Y' || value === 'true';
+    }
+
     function getCmsMonthlyCap(level){
       if(!level) return 0;
       const catalogCaps = SERVICE_CATALOG && SERVICE_CATALOG.needLevelCaps ? SERVICE_CATALOG.needLevelCaps : {};
@@ -5081,6 +5307,11 @@
       entry.autoPlanRemainingCap = null;
       entry.autoPlanUnitLabel = '';
       entry.autoFrequencyText = '';
+      entry.autoWithinCapCopay = null;
+      entry.autoExcessSelfPay = null;
+      entry.autoTotalSelfPay = null;
+      entry.autoPublicExpense = null;
+      updateSelfPayHint(entry.code);
     }
 
     function updateEntryAutoValues(entry, info){
@@ -5108,6 +5339,19 @@
       if(info.unitLabel){
         entry.autoPlanUnitLabel = info.unitLabel;
       }
+      if(Object.prototype.hasOwnProperty.call(info, 'withinCapCopay')){
+        entry.autoWithinCapCopay = info.withinCapCopay === null ? null : toCurrencyInt(info.withinCapCopay);
+      }
+      if(Object.prototype.hasOwnProperty.call(info, 'excessSelfPay')){
+        entry.autoExcessSelfPay = info.excessSelfPay === null ? null : toCurrencyInt(info.excessSelfPay);
+      }
+      if(Object.prototype.hasOwnProperty.call(info, 'totalSelfPay')){
+        entry.autoTotalSelfPay = info.totalSelfPay === null ? null : toCurrencyInt(info.totalSelfPay);
+      }
+      if(Object.prototype.hasOwnProperty.call(info, 'publicExpense')){
+        entry.autoPublicExpense = info.publicExpense === null ? null : toCurrencyInt(info.publicExpense);
+      }
+      updateSelfPayHint(entry.code);
     }
 
     function buildAutoSummaryText(entry){
@@ -5129,6 +5373,15 @@
       }
       if(isFiniteNumber(entry.autoPlanRemainingCap)){
         parts.push(`預估餘額${formatAutoInteger(entry.autoPlanRemainingCap)}元`);
+      }
+      if(isFiniteNumber(entry.autoWithinCapCopay)){
+        parts.push(`上限內自付${formatAutoInteger(entry.autoWithinCapCopay)}元`);
+      }
+      if(isFiniteNumber(entry.autoExcessSelfPay)){
+        parts.push(`超額自付${formatAutoInteger(entry.autoExcessSelfPay)}元`);
+      }
+      if(isFiniteNumber(entry.autoTotalSelfPay)){
+        parts.push(`總自付${formatAutoInteger(entry.autoTotalSelfPay)}元`);
       }
       const freq = (entry.autoFrequencyText || '').trim();
       if(freq && parts.indexOf(freq) === -1){
@@ -5182,22 +5435,46 @@
         return;
       }
 
-      const monthlyVisits = Math.max(0, Math.floor(cap / totalPerVisit));
-      const weeklyVisits = monthlyVisits > 0 ? (monthlyVisits / weeksPerMonth) : 0;
+      const weeklyLimit = 5;
+      const limitMonthly = Math.floor(weeksPerMonth * weeklyLimit);
+      const rawMonthlyVisits = Math.max(0, Math.floor(cap / totalPerVisit));
+      const monthlyVisits = Math.min(rawMonthlyVisits, limitMonthly);
+      const cappedByWeeklyLimit = rawMonthlyVisits > limitMonthly;
+      const weeklyVisits = monthlyVisits > 0 ? Math.min(weeklyLimit, monthlyVisits / weeksPerMonth) : 0;
       const dayCareUsage = basePerVisit * monthlyVisits;
       const transportUsage = transportPerVisit * monthlyVisits;
-      const remaining = cap - dayCareUsage - transportUsage;
+      const totalUsage = dayCareUsage + transportUsage;
+      const copayRate = getBcCopayRate();
+      const financials = computeFinancials({
+        cap: cap,
+        sum: totalUsage,
+        copayRate: copayRate,
+        hasForeignCare: hasForeignCareFlag()
+      });
+      const remainingCap = Math.max(0, financials.effectiveCap - financials.withinCapUsage);
 
       updateEntryAutoValues(dayCareEntry, {
         monthlyVisits: monthlyVisits,
         weeklyVisits: weeklyVisits,
         monthlyUnits: dayCareUsage,
-        remaining: remaining,
-        unitLabel: '次'
+        remaining: remainingCap,
+        unitLabel: '次',
+        withinCapCopay: financials.withinCapCopay,
+        excessSelfPay: financials.excessSelfPay,
+        totalSelfPay: financials.totalSelfPay,
+        publicExpense: financials.publicExpense
       });
-      dayCareEntry.autoFrequencyText = monthlyVisits > 0
-        ? `預估每月${monthlyVisits}次（約每週${formatAutoDecimal(weeklyVisits)}次）`
-        : '額度不足以安排日間照顧，請調整服務組合。';
+      if(monthlyVisits > 0){
+        const weeklyText = formatAutoDecimal(weeklyVisits) || '0';
+        let freqText = `預估每月${monthlyVisits}次（約每週${weeklyText}次）`;
+        freqText += '，每日最多 1 次，每週不超過 5 次';
+        if(cappedByWeeklyLimit){
+          freqText += '（已套用上限）';
+        }
+        dayCareEntry.autoFrequencyText = freqText + '。';
+      }else{
+        dayCareEntry.autoFrequencyText = '額度不足以安排日間照顧，請調整服務組合。';
+      }
 
       if(transportEntry){
         const transportMonthly = monthlyVisits * roundTrips;
@@ -5206,7 +5483,7 @@
           monthlyVisits: transportMonthly,
           weeklyVisits: transportWeekly,
           monthlyUnits: transportUsage,
-          remaining: remaining,
+          remaining: remainingCap,
           unitLabel: '趟'
         });
         transportEntry.autoFrequencyText = monthlyVisits > 0
@@ -5306,6 +5583,10 @@
         if(code === 'BA02'){
           updateBa02WeeklyDisplay(code);
         }
+      }else if(field === 'selfPayAmount'){
+        const value = (entry[field] || '').trim();
+        entry.selfPayManual = value !== '';
+        updateSelfPayHint(code);
       }else if(field === 'frequency'){
         if((entry[field]||'').trim()){
           entry.frequencyManual = true;
@@ -5498,10 +5779,21 @@
             }
           }
           if(isFiniteNumber(entry.autoPlanMonthlyUnits)){
-            lines.push(`預估耗用${formatAutoInteger(entry.autoPlanMonthlyUnits)}元`);
+            lines.push(`預估耗用：${formatAutoInteger(entry.autoPlanMonthlyUnits)} 元`);
           }
           if(isFiniteNumber(entry.autoPlanRemainingCap)){
-            lines.push(`預估餘額${formatAutoInteger(entry.autoPlanRemainingCap)}元`);
+            lines.push(`預估餘額：${formatAutoInteger(entry.autoPlanRemainingCap)} 元`);
+          }
+          if(isFiniteNumber(entry.autoWithinCapCopay) || isFiniteNumber(entry.autoExcessSelfPay) || isFiniteNumber(entry.autoTotalSelfPay)){
+            if(isFiniteNumber(entry.autoWithinCapCopay)){
+              lines.push(`上限內自付：${formatAutoInteger(entry.autoWithinCapCopay)} 元`);
+            }
+            if(isFiniteNumber(entry.autoExcessSelfPay)){
+              lines.push(`超額自付：${formatAutoInteger(entry.autoExcessSelfPay)} 元`);
+            }
+            if(isFiniteNumber(entry.autoTotalSelfPay)){
+              lines.push(`總自付：${formatAutoInteger(entry.autoTotalSelfPay)} 元`);
+            }
           }
           if(lines.length) return lines.join('\n');
         }
@@ -5545,6 +5837,47 @@
       }
       if(entry.extra) lines.push(entry.extra);
       return lines.join('\n');
+    }
+
+    function computeEntrySelfPay(entry){
+      if(!entry) return 0;
+      if(entry.selfPayManual && (entry.selfPayAmount || '').trim()){
+        return toCurrencyInt(parsePlanNumber(entry.selfPayAmount));
+      }
+      if(isFiniteNumber(entry.autoTotalSelfPay)){
+        return toCurrencyInt(entry.autoTotalSelfPay);
+      }
+      return 0;
+    }
+
+    function formatSummarySelfPay(entry){
+      if(!entry) return '';
+      const manualValue = (entry.selfPayAmount || '').trim();
+      const autoTotal = isFiniteNumber(entry.autoTotalSelfPay) ? toCurrencyInt(entry.autoTotalSelfPay) : null;
+      if(entry.selfPayManual && manualValue){
+        const manualInt = toCurrencyInt(parsePlanNumber(manualValue));
+        let text = `${formatAutoInteger(manualInt)} 元`;
+        if(autoTotal !== null && autoTotal !== manualInt){
+          const within = isFiniteNumber(entry.autoWithinCapCopay) ? formatAutoInteger(toCurrencyInt(entry.autoWithinCapCopay)) : null;
+          const excess = isFiniteNumber(entry.autoExcessSelfPay) ? formatAutoInteger(toCurrencyInt(entry.autoExcessSelfPay)) : null;
+          const pieces = [];
+          if(within !== null) pieces.push(`上限內 ${within} 元`);
+          if(excess !== null) pieces.push(`超額 ${excess} 元`);
+          pieces.push(`共 ${formatAutoInteger(autoTotal)} 元`);
+          text += `（系統估算：${pieces.join('；')}）`;
+        }
+        return text;
+      }
+      if(autoTotal !== null){
+        const within = isFiniteNumber(entry.autoWithinCapCopay) ? formatAutoInteger(toCurrencyInt(entry.autoWithinCapCopay)) : null;
+        const excess = isFiniteNumber(entry.autoExcessSelfPay) ? formatAutoInteger(toCurrencyInt(entry.autoExcessSelfPay)) : null;
+        const segments = [];
+        if(within !== null) segments.push(`上限內 ${within} 元`);
+        if(excess !== null) segments.push(`超額 ${excess} 元`);
+        segments.push(`共 ${formatAutoInteger(autoTotal)} 元`);
+        return segments.join('；');
+      }
+      return '';
     }
 
     function getEntryMonthlyUnits(entry){
@@ -5614,14 +5947,33 @@
         if(usageInfo.computed){
           computedEntries++;
           if(usageInfo.points > 0){
-            totalPoints += usageInfo.points;
+            totalPoints += toCurrencyInt(usageInfo.points);
           }
         }
       });
       const uniqueMissing=Array.from(new Set(missingRates));
-      const remaining=(capValue !== null && computedEntries > 0)
-        ? capValue - totalPoints
-        : null;
+      let remaining=null;
+      let withinCopay=null;
+      let excessSelfPay=null;
+      let totalSelfPay=null;
+      let effectiveCap = capValue;
+      let foreignDeduct = 0;
+      if(isFiniteNumber(capValue) && capValue > 0 && computedEntries > 0){
+        const financials = computeFinancials({
+          cap: capValue,
+          sum: totalPoints,
+          copayRate: getBcCopayRate(),
+          hasForeignCare: hasForeignCareFlag()
+        });
+        effectiveCap = financials.effectiveCap;
+        foreignDeduct = financials.foreignDeduct;
+        withinCopay = financials.withinCapCopay;
+        excessSelfPay = financials.excessSelfPay;
+        totalSelfPay = financials.totalSelfPay;
+        remaining = Math.max(0, financials.effectiveCap - financials.withinCapUsage);
+      }else if(capValue !== null && computedEntries > 0){
+        remaining = capValue - totalPoints;
+      }
       return {
         level:level,
         cap:capValue,
@@ -5629,17 +5981,24 @@
         computedEntries:computedEntries,
         totalEntries:totalEntries,
         missingRates:uniqueMissing,
-        remaining:remaining
+        remaining:remaining,
+        withinCopay:withinCopay,
+        excessSelfPay:excessSelfPay,
+        totalSelfPay:totalSelfPay,
+        effectiveCap:effectiveCap,
+        foreignDeduct:foreignDeduct
       };
     }
 
     function formatPointValue(value){
-      if(!isFiniteNumber(value)) return '—';
-      const roundedInt=Math.round(value);
-      if(Math.abs(value - roundedInt) < 1e-4){
-        return `${formatAutoInteger(roundedInt)} 元`;
+      if(value === null || value === undefined || value === '') return '—';
+      const num = typeof value === 'number' ? value : Number(value);
+      if(!Number.isFinite(num)) return '—';
+      const integerCandidate = num < 0 ? Math.ceil(num) : Math.floor(num);
+      if(Math.abs(num - integerCandidate) < 1e-4){
+        return `${formatAutoInteger(integerCandidate)} 元`;
       }
-      const rounded=Math.round(value * 10) / 10;
+      const rounded=Math.round(num * 10) / 10;
       if(Math.abs(rounded - Math.round(rounded)) < 1e-6){
         return `${formatAutoInteger(Math.round(rounded))} 元`;
       }
@@ -5687,6 +6046,30 @@
           remainBox.classList.remove('negative');
         }
       }
+      const withinBox=document.getElementById('planSummaryWithin');
+      if(withinBox){
+        if(isFiniteNumber(totals.withinCopay)){
+          withinBox.textContent=formatPointValue(totals.withinCopay);
+        }else{
+          withinBox.textContent='—';
+        }
+      }
+      const excessBox=document.getElementById('planSummaryExcess');
+      if(excessBox){
+        if(isFiniteNumber(totals.excessSelfPay)){
+          excessBox.textContent=formatPointValue(totals.excessSelfPay);
+        }else{
+          excessBox.textContent='—';
+        }
+      }
+      const selfPayBox=document.getElementById('planSummarySelfPay');
+      if(selfPayBox){
+        if(isFiniteNumber(totals.totalSelfPay)){
+          selfPayBox.textContent=formatPointValue(totals.totalSelfPay);
+        }else{
+          selfPayBox.textContent='—';
+        }
+      }
       const hintBox=document.getElementById('planSummaryTotalsHint');
       if(hintBox){
         const hints=[];
@@ -5696,7 +6079,13 @@
           hints.push('查無對應的 CMS 月額度，請確認服務資料設定。');
         }
         if(totals.missingRates.length){
-          hints.push(`缺少單價：${totals.missingRates.join('、')}，無法納入金額預估。`);
+          hints.push(`缺少 SERVICE_RATES 單價：${totals.missingRates.join('、')}，無法納入金額預估。`);
+        }
+        if(isFiniteNumber(totals.foreignDeduct) && totals.foreignDeduct > 0){
+          const effectiveText = isFiniteNumber(totals.effectiveCap)
+            ? `扣除後可用 ${formatPointValue(totals.effectiveCap)}`
+            : '已依規定扣除';
+          hints.push(`案家聘有外籍看護，上限扣減 ${formatPointValue(totals.foreignDeduct)}，${effectiveText}。`);
         }
         if(hints.length){
           hintBox.textContent=hints.join(' ');
@@ -5718,6 +6107,9 @@
         return;
       }
       const grouped={};
+      const totalSelfPayValue = entries.reduce((sum, entry)=>{
+        return sum + computeEntrySelfPay(entry);
+      }, 0);
       entries.forEach(entry=>{
         if(!entry) return;
         const cat=(entry.category || determineServiceCategory(entry.code) || 'OTHER').toUpperCase();
@@ -5730,7 +6122,7 @@
         const list=grouped[cat];
         if(!list || !list.length) return;
         html += `<div class="summary-section"><div class="summary-title">${escapeHtml(planCategoryLabel(cat))}</div>`;
-        html += '<table class="summary-table"><thead><tr><th>服務代碼</th><th>服務名稱</th><th>承接</th><th>指定單位</th><th>額度／單位</th><th>使用頻率／說明</th></tr></thead><tbody>';
+        html += '<table class="summary-table"><thead><tr><th>服務代碼</th><th>服務名稱</th><th>承接</th><th>指定單位</th><th>額度／單位</th><th>自費金額</th><th>使用頻率／說明</th></tr></thead><tbody>';
         list.sort((a,b)=>{
           const ac=(a && a.code) ? a.code : '';
           const bc=(b && b.code) ? b.code : '';
@@ -5740,6 +6132,7 @@
           const vendorMode = entry && entry.vendorMode ? entry.vendorMode : '輪派';
           const vendorName = formatSummaryVendorName(entry);
           const amount = formatSummaryAmount(entry);
+          const selfPayText = formatSummarySelfPay(entry);
           const usage = formatSummaryUsage(entry);
           html += '<tr>';
           html += `<td>${escapeHtml(entry && entry.code ? entry.code : '')}</td>`;
@@ -5747,6 +6140,7 @@
           html += `<td>${escapeHtml(vendorMode)}</td>`;
           html += `<td>${escapeHtml(vendorName)}</td>`;
           html += `<td>${amount ? nl2br(amount) : '—'}</td>`;
+          html += `<td>${selfPayText ? nl2br(selfPayText) : '—'}</td>`;
           html += `<td>${usage ? nl2br(usage) : '—'}</td>`;
           html += '</tr>';
         });
@@ -5756,13 +6150,77 @@
         host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
         return;
       }
+      html += `<div class="summary-total-selfpay">自費總額：${formatAutoInteger(totalSelfPayValue)} 元</div>`;
       host.innerHTML = html;
+    }
+
+    function buildConsentParties(){
+      const parties=[];
+      const includePrimary = ((document.getElementById('includePrimary')?.value || '').trim().toLowerCase() !== 'false');
+      const primaryRel = (document.getElementById('primaryRel')?.value || '').trim();
+      const primaryName = (document.getElementById('primaryName')?.value || '').trim();
+      if(includePrimary && primaryRel){
+        parties.push({ role: primaryRel, name: primaryName, source: 'primary' });
+      }
+      const extras = collectExtras();
+      if(Array.isArray(extras)){
+        extras.forEach(extra=>{
+          if(extra && extra.role && extra.name){
+            parties.push({ role: extra.role, name: extra.name, source: 'extra' });
+          }
+        });
+      }
+      if(!parties.length){
+        const fallbackName = (document.getElementById('caseName')?.value || '').trim();
+        parties.push({ role:'本人', name:fallbackName, source:'fallback' });
+      }
+      return parties;
+    }
+
+    function formatConsentParty(part){
+      if(!part) return '';
+      const role=(part.role || '').trim();
+      const name=(part.name || '').trim();
+      if(!role && !name) return '';
+      if(role === '本人'){
+        return '本人';
+      }
+      if(part.source === 'primary'){
+        const pieces=[role, name].filter(Boolean).join(' ');
+        return pieces ? `主要照顧者（${pieces}）` : '主要照顧者';
+      }
+      if(name){
+        return role ? `${role}（${name}）` : name;
+      }
+      return role;
+    }
+
+    function buildConsentDisplay(){
+      const parties = buildConsentParties();
+      const seen=new Set();
+      const formatted=[];
+      parties.forEach(part=>{
+        const text=formatConsentParty(part);
+        if(text && !seen.has(text)){
+          seen.add(text);
+          formatted.push({ text:text, isSelf:(part.role || '').trim() === '本人' });
+        }
+      });
+      if(!formatted.length){
+        formatted.push({ text:'本人', isSelf:true });
+      }
+      const notifyText = formatted.map(item=>item.text).join('、');
+      return {
+        notifyText: notifyText,
+        signerText: notifyText
+      };
     }
 
     function renderServicePlanEditor(){
       const host=document.getElementById('planEditor');
       if(!host) return;
       host.innerHTML='';
+      selfPayHintDisplays = {};
       const entries=Object.values(servicePlanState);
       if(!entries.length){
         const empty=document.createElement('div');
@@ -5797,6 +6255,7 @@
           entryBox.appendChild(header);
           const grid=document.createElement('div');
           grid.className='plan-entry-grid';
+          appendSelfPayField(grid, entry);
           if(cat==='B'){
             if(entry.code && entry.code.indexOf('BB') === 0){
               const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
@@ -5962,6 +6421,46 @@
       }
     }
 
+    function updateSelfPayHint(code){
+      if(!code) return;
+      const hint = selfPayHintDisplays[code];
+      if(!hint || !hint.isConnected){
+        if(selfPayHintDisplays[code]) delete selfPayHintDisplays[code];
+        return;
+      }
+      const entry = servicePlanState[code];
+      if(!entry){
+        hint.textContent='';
+        hint.dataset.show='0';
+        return;
+      }
+      const manualValue = parsePlanNumber(entry.selfPayAmount);
+      const hasManual = !!((entry.selfPayManual || false) && manualValue > 0);
+      const within = isFiniteNumber(entry.autoWithinCapCopay) ? toCurrencyInt(entry.autoWithinCapCopay) : 0;
+      const excess = isFiniteNumber(entry.autoExcessSelfPay) ? toCurrencyInt(entry.autoExcessSelfPay) : 0;
+      const total = isFiniteNumber(entry.autoTotalSelfPay) ? toCurrencyInt(entry.autoTotalSelfPay) : 0;
+      if(hasManual){
+        if(total > 0){
+          hint.textContent = `系統估算：上限內 ${formatAutoInteger(within)} 元；超額 ${formatAutoInteger(excess)} 元（共 ${formatAutoInteger(total)} 元）`;
+        }else{
+          hint.textContent = '系統估算尚未完成。';
+        }
+        hint.dataset.show = '1';
+        return;
+      }
+      if(total > 0){
+        hint.textContent = `系統估算：上限內 ${formatAutoInteger(within)} 元；超額 ${formatAutoInteger(excess)} 元（共 ${formatAutoInteger(total)} 元）`;
+        hint.dataset.show = '1';
+      }else{
+        hint.textContent = '';
+        hint.dataset.show = '0';
+      }
+    }
+
+    function updateAllSelfPayHints(){
+      Object.keys(selfPayHintDisplays).forEach(updateSelfPayHint);
+    }
+
     function appendAutoSummaryField(grid, entry, label){
       const wrap=document.createElement('div');
       wrap.className='plan-field full auto-summary';
@@ -5979,6 +6478,19 @@
       }
       wrap.appendChild(box);
       grid.appendChild(wrap);
+    }
+
+    function appendSelfPayField(grid, entry){
+      const field=createPlanInput(entry,'selfPayAmount','自費金額（元）',{type:'number',attrs:{step:'1',min:'0',inputmode:'decimal'}});
+      field.input.placeholder = '例：4500';
+      field.wrap.classList.add('selfpay-field');
+      const hint=document.createElement('div');
+      hint.className='selfpay-hint';
+      hint.dataset.show='0';
+      field.wrap.appendChild(hint);
+      selfPayHintDisplays[entry.code] = hint;
+      grid.appendChild(field.wrap);
+      updateSelfPayHint(entry.code);
     }
 
     function getPlanEntriesByCategory(cat){
@@ -6262,8 +6774,14 @@
       if(mismatchSummary){
         lines.push(mismatchSummary);
       }
+      const consentInfo = buildConsentDisplay();
+      const notifyText = consentInfo.notifyText || formatCaseDisplay();
+      const signerText = consentInfo.signerText || '本人';
       lines.push('告知與同意：');
-      lines.push(`上述計畫，均告知${formatCaseDisplay()}其了解計畫內容並同意服務使用，並簽訂服務使用確認單。（請單位留存確認單備查）`);
+      lines.push(`上述計畫，均告知${notifyText}其了解計畫內容並同意服務使用，並簽訂服務使用確認單。（請單位留存確認單備查）`);
+      if(signerText){
+        lines.push(`簽署人：${signerText}`);
+      }
       const manager=(document.getElementById('caseManagerName')?.value || '').trim() || '（請填寫個管師姓名）';
       lines.push(`個案管理員：${manager}`);
       box.value = lines.join('\n');
@@ -6315,10 +6833,13 @@
         const nextCatalog = JSON.parse(JSON.stringify(DEFAULT_SERVICE_CATALOG));
         if(data && typeof data === 'object'){
           if(data.needLevelCaps) nextCatalog.needLevelCaps = data.needLevelCaps;
+          if(data.levelDetails) nextCatalog.levelDetails = data.levelDetails;
           if(data.dayCareRequirements) nextCatalog.dayCareRequirements = data.dayCareRequirements;
           if(data.dayCareLevels) nextCatalog.dayCareLevels = data.dayCareLevels;
           if(data.serviceRates) nextCatalog.serviceRates = data.serviceRates;
           if(typeof data.transportRoundTrips === 'number') nextCatalog.transportRoundTrips = data.transportRoundTrips;
+          if(data.copayRates) nextCatalog.copayRates = data.copayRates;
+          if(data.transportCategory) nextCatalog.transportCategory = data.transportCategory;
         }
         SERVICE_CATALOG = nextCatalog;
         refreshDayCareAvailability();
@@ -7042,9 +7563,10 @@
     }
 
     /* ===== 送出 ===== */
-    function validateConditionalRequired(msg){
+    function validateConditionalRequired(){
+      const messages=[];
       const items=[...document.querySelectorAll('[data-required-when]')];
-      for(const field of items){
+      items.forEach(field=>{
         const rule=field.dataset.requiredWhen;
         const sourceId=field.dataset.requiredSource;
         let required=false;
@@ -7053,52 +7575,128 @@
           required = source && source.value === '部分協助';
         }
         if(required){
-          if(!field.value || !String(field.value).trim()){
+          const value=field.value !== undefined && field.value !== null ? String(field.value).trim() : '';
+          if(!value){
             field.classList.add('input-invalid');
             const label=field.dataset.requiredLabel || '';
-            if(msg) msg.textContent = label ? `請填寫：${label}` : '請補齊必要欄位';
-            field.focus();
-            return false;
+            const text = label ? `請填寫：${label}` : '請補齊必要欄位';
+            messages.push({ fieldId: field.id, pageId: 'goals', text });
+          }else{
+            field.classList.remove('input-invalid');
           }
-        }
-        if(!required){
+        }else{
           field.classList.remove('input-invalid');
         }
+      });
+      return { ok: messages.length===0, messages };
+    }
+
+    function renderErrorSummary(messages){
+      const box=document.getElementById('errorSummary');
+      if(!box) return;
+      box.innerHTML='';
+      if(!Array.isArray(messages) || !messages.length){
+        box.dataset.show='0';
+        return;
       }
-      return true;
+      const listItems=messages.map(msg=>{
+        const fieldId=msg && msg.fieldId ? msg.fieldId : '';
+        const pageId=msg && msg.pageId ? msg.pageId : '';
+        const text=msg && msg.text ? msg.text : '';
+        const safeText=escapeHtml(text);
+        const attrs=`data-target="${escapeHtml(fieldId)}" data-page="${escapeHtml(pageId)}"`;
+        return `<li><a href="#" ${attrs}>${safeText}</a></li>`;
+      }).join('');
+      box.innerHTML = `<div>請修正以下欄位：</div><ul>${listItems}</ul>`;
+      box.dataset.show='1';
+      box.querySelectorAll('a').forEach(link=>{
+        link.addEventListener('click', handleErrorSummaryClick);
+      });
+    }
+
+    function handleErrorSummaryClick(evt){
+      if(evt) evt.preventDefault();
+      const link=evt && evt.currentTarget ? evt.currentTarget : null;
+      if(!link) return;
+      const pageId=link.dataset.page;
+      const fieldId=link.dataset.target;
+      if(pageId) setActivePage(pageId);
+      focusErrorTarget(fieldId);
+    }
+
+    function focusErrorTarget(fieldId){
+      if(!fieldId) return;
+      const el=document.getElementById(fieldId);
+      if(!el) return;
+      if(typeof el.scrollIntoView === 'function'){
+        el.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+      let focusEl=null;
+      if(typeof el.focus === 'function'){
+        focusEl=el;
+      }else{
+        focusEl=el.querySelector('input,select,textarea,button,[tabindex]');
+      }
+      const highlightTarget=focusEl || el;
+      if(highlightTarget && highlightTarget.classList){
+        highlightTarget.classList.add('input-invalid');
+      }
+      if(focusEl && typeof focusEl.focus === 'function'){
+        focusEl.focus();
+      }
     }
 
     function applyAndSave(){
-      const msg=document.getElementById('msg'); msg.textContent='';
+      const msg=document.getElementById('msg');
+      if(msg) msg.textContent='';
+      renderErrorSummary([]);
       const unitCode=document.getElementById('unitCode').value;
       const caseManagerName=document.getElementById('caseManagerName').value;
       const caseNameInput=document.getElementById('caseName');
       const caseName=(caseNameInput?.value||'').trim();
       const consultName=(document.getElementById('consultName').value||'').trim();
+      const errors=[];
       if(!caseName){
-        if(caseNameInput){ caseNameInput.classList.add('input-invalid'); caseNameInput.focus(); }
-        msg.textContent='請輸入：個案姓名';
-        return;
+        if(caseNameInput){
+          caseNameInput.classList.add('input-invalid');
+        }
+        errors.push({ fieldId:'caseName', pageId:'goals', text:'請輸入：個案姓名' });
+      }else if(caseNameInput){
+        caseNameInput.classList.remove('input-invalid');
       }
-      if(caseNameInput){ caseNameInput.classList.remove('input-invalid'); }
-
       let primaryCaregiverRel = (document.getElementById('primaryRel').value||'').trim();
       let primaryCaregiverName= (document.getElementById('primaryName').value||'').trim();
       if(!primaryCaregiverRel){ primaryCaregiverRel='本人'; if(!primaryCaregiverName) primaryCaregiverName = caseName; }
 
-      if(!validateConditionalRequired(msg)) return;
-      if(!validateParticipantConflicts(msg)) return;
+      const conditionalValidation = validateConditionalRequired();
+      if(!conditionalValidation.ok){
+        errors.push.apply(errors, conditionalValidation.messages);
+      }
+      const participantValidation = validateParticipantConflicts();
+      if(!participantValidation.ok){
+        errors.push.apply(errors, participantValidation.messages);
+      }
       const section1Validation = validateSection1();
       if(!section1Validation.ok){
-        msg.textContent = '請先完成身心概況：' + section1Validation.messages.join('、');
-        return;
+        errors.push.apply(errors, section1Validation.messages);
+      }
+      const mismatchValidation = validateMismatchReasons();
+      if(!mismatchValidation.ok){
+        errors.push.apply(errors, mismatchValidation.messages);
       }
 
-      if(!validateMismatchReasons()){
-        msg.textContent='請完成與照專建議服務不一致原因說明。';
-        document.getElementById('mismatch_diff_block')?.scrollIntoView({behavior:'smooth', block:'center'});
+      if(errors.length){
+        renderErrorSummary(errors);
+        if(msg) msg.textContent='請先修正標記欄位後再產出。';
+        const first=errors[0];
+        if(first){
+          if(first.pageId) setActivePage(first.pageId);
+          focusErrorTarget(first.fieldId);
+        }
         return;
       }
+      renderErrorSummary([]);
+      if(msg) msg.textContent='';
 
       // 組裝各段
       buildSection1(section1Validation);
@@ -7106,6 +7704,7 @@
 
       buildApprovalPlanPreview();
 
+      const consentParties = buildConsentParties();
       const form = {
         unitCode, caseManagerName, caseName, consultName,
         cmsLevel: getCmsLevel(),
@@ -7119,6 +7718,7 @@
         primaryCaregiverName: primaryCaregiverName,
         includePrimary: true,              // 固定預設輸出
         extras: collectExtras(),
+        consentParties: consentParties,
         // 四、個案概況（已組句）
         section1: (document.getElementById('section1_out').value || '').trim().replace(/^（一）身心概況：/, ''),
         section2: (document.getElementById('section2_out').value || '').trim(),
@@ -7227,8 +7827,12 @@
 
       const extrasBox=document.getElementById('extras');
       if(extrasBox){
-        extrasBox.addEventListener('input', updateParticipantConflictHint);
-        extrasBox.addEventListener('change', updateParticipantConflictHint);
+        const extrasHandler=()=>{
+          updateParticipantConflictHint();
+          buildApprovalPlanPreview();
+        };
+        extrasBox.addEventListener('input', extrasHandler);
+        extrasBox.addEventListener('change', extrasHandler);
       }
       updateParticipantConflictHint();
 
@@ -7277,8 +7881,21 @@
 
       // 主照者關係/姓名：自動連動到(四)唯讀展示
       syncSocialPrimary();
-      document.getElementById('primaryRel')?.addEventListener('change', syncSocialPrimary);
-      document.getElementById('primaryName')?.addEventListener('input',  syncSocialPrimary);
+      const primaryRelField=document.getElementById('primaryRel');
+      if(primaryRelField){
+        primaryRelField.addEventListener('change', ()=>{
+          syncSocialPrimary();
+          updateParticipantConflictHint();
+          buildApprovalPlanPreview();
+        });
+      }
+      const primaryNameField=document.getElementById('primaryName');
+      if(primaryNameField){
+        primaryNameField.addEventListener('input', ()=>{
+          syncSocialPrimary();
+          buildApprovalPlanPreview();
+        });
+      }
       const caseNameInput=document.getElementById('caseName');
       if(caseNameInput){
         caseNameInput.addEventListener('input', ()=>{ caseNameInput.classList.remove('input-invalid'); });

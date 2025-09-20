@@ -492,19 +492,22 @@ function applyPlanServiceSummaryPage(body, form){
     return;
   }
   const grouped = groupServicePlanEntries(entries);
+  var totalSelfPay = 0;
   PLAN_CATEGORY_ORDER.forEach(function(cat){
     const list = grouped[cat];
     if (!list || !list.length) return;
     appendHeading(body, planCategoryDisplay(cat), DocumentApp.ParagraphHeading.HEADING2);
     list.sort(function(a,b){ return (a.code || '').localeCompare(b.code || ''); });
-    const rows = [['服務代碼','服務名稱','承接','指定單位','額度／單位','使用頻率／說明']];
+    const rows = [['服務代碼','服務名稱','承接','指定單位','額度／單位','自費金額','使用頻率／說明']];
     list.forEach(function(entry){
+      totalSelfPay += computeEntrySelfPay(entry);
       rows.push([
         entry.code || '',
         entry.name || '',
         formatVendorMode(entry),
         formatVendorName(entry),
         formatPlanAmount(entry),
+        formatPlanSelfPay(entry),
         formatPlanUsage(entry)
       ]);
     });
@@ -515,6 +518,11 @@ function applyPlanServiceSummaryPage(body, form){
     }
     body.appendParagraph('');
   });
+  body.appendParagraph('自費總額：' + formatCurrencyValue(totalSelfPay));
+  const consent = buildConsentSummary(form);
+  if (consent && consent.signerText){
+    body.appendParagraph('簽署人：' + consent.signerText);
+  }
 }
 
 function groupServicePlanEntries(entries){
@@ -587,6 +595,149 @@ function formatWeeklyValue(value){
   const rounded = Math.round(value * 10) / 10;
   if (Math.abs(rounded - Math.round(rounded)) < 1e-6) return String(Math.round(rounded));
   return rounded.toFixed(1).replace(/\.0$/, '');
+}
+
+function parsePlanNumber(value){
+  if (value === undefined || value === null) return 0;
+  const text = String(value).replace(/[^0-9\-\.]/g, '');
+  const num = parseFloat(text);
+  return isNaN(num) ? 0 : num;
+}
+
+function toCurrencyInt(value){
+  if (value === undefined || value === null) return 0;
+  const num = Number(value);
+  if (!isFinite(num)) return 0;
+  if (num >= 0) return Math.floor(num);
+  return Math.ceil(num);
+}
+
+function computeEntrySelfPay(entry){
+  if (!entry) return 0;
+  if (entry.selfPayManual && entry.selfPayAmount){
+    return Math.max(0, toCurrencyInt(parsePlanNumber(entry.selfPayAmount)));
+  }
+  if (isFiniteNumber(entry.autoTotalSelfPay)){
+    return Math.max(0, toCurrencyInt(entry.autoTotalSelfPay));
+  }
+  return 0;
+}
+
+function formatCurrencyValue(value){
+  if (!isFiniteNumber(value)) return '';
+  return formatPointValue(value) + ' 元';
+}
+
+function formatPlanSelfPay(entry){
+  if (!entry) return '';
+  const manualValue = entry.selfPayAmount ? String(entry.selfPayAmount).trim() : '';
+  const autoTotal = isFiniteNumber(entry.autoTotalSelfPay) ? toCurrencyInt(entry.autoTotalSelfPay) : null;
+  if (entry.selfPayManual && manualValue){
+    const manualInt = Math.max(0, toCurrencyInt(parsePlanNumber(manualValue)));
+    let text = formatCurrencyValue(manualInt);
+    if (autoTotal !== null && autoTotal !== manualInt){
+      const pieces=[];
+      if (isFiniteNumber(entry.autoWithinCapCopay)){
+        const withinInt = toCurrencyInt(entry.autoWithinCapCopay);
+        pieces.push('上限內 ' + formatCurrencyValue(withinInt));
+      }
+      if (isFiniteNumber(entry.autoExcessSelfPay)){
+        const excessInt = toCurrencyInt(entry.autoExcessSelfPay);
+        pieces.push('超額 ' + formatCurrencyValue(excessInt));
+      }
+      pieces.push('共 ' + formatCurrencyValue(autoTotal));
+      text += '（系統估算：' + pieces.join('；') + '）';
+    }
+    return text;
+  }
+  if (autoTotal !== null){
+    const segments=[];
+    if (isFiniteNumber(entry.autoWithinCapCopay)){
+      const withinInt = toCurrencyInt(entry.autoWithinCapCopay);
+      segments.push('上限內 ' + formatCurrencyValue(withinInt));
+    }
+    if (isFiniteNumber(entry.autoExcessSelfPay)){
+      const excessInt = toCurrencyInt(entry.autoExcessSelfPay);
+      segments.push('超額 ' + formatCurrencyValue(excessInt));
+    }
+    segments.push('共 ' + formatCurrencyValue(autoTotal));
+    return segments.join('；');
+  }
+  return '';
+}
+
+function collectConsentPartiesFromForm(form){
+  const parties = [];
+  if (form && Array.isArray(form.consentParties) && form.consentParties.length){
+    form.consentParties.forEach(function(item){
+      const role = item && item.role ? String(item.role).trim() : '';
+      const name = item && item.name ? String(item.name).trim() : '';
+      const source = item && item.source ? String(item.source).trim() : '';
+      if (role || name){
+        parties.push({ role: role, name: name, source: source || 'form' });
+      }
+    });
+    if (parties.length) return parties;
+  }
+  const includePrimary = typeof form.includePrimary === 'undefined' ? true : !!form.includePrimary;
+  const primaryRel = form && form.primaryCaregiverRel ? String(form.primaryCaregiverRel).trim() : '';
+  const primaryName = form && form.primaryCaregiverName ? String(form.primaryCaregiverName).trim() : '';
+  if (includePrimary && primaryRel){
+    parties.push({ role: primaryRel, name: primaryName, source: 'primary' });
+  }
+  (Array.isArray(form && form.extras) ? form.extras : []).forEach(function(extra){
+    const role = extra && extra.role ? String(extra.role).trim() : '';
+    const name = extra && extra.name ? String(extra.name).trim() : '';
+    if (role && name){
+      parties.push({ role: role, name: name, source: 'extra' });
+    }
+  });
+  if (!parties.length){
+    const fallbackName = form && form.caseName ? String(form.caseName).trim() : '';
+    parties.push({ role: '本人', name: fallbackName, source: 'fallback' });
+  }
+  return parties;
+}
+
+function formatConsentPartyForServer(part){
+  if (!part) return '';
+  const role = (part.role || '').trim();
+  const name = (part.name || '').trim();
+  if (!role && !name) return '';
+  if (role === '本人'){
+    return '本人';
+  }
+  if (part.source === 'primary'){
+    const segments = [];
+    if (role) segments.push(role);
+    if (name) segments.push(name);
+    return segments.length ? '主要照顧者（' + segments.join(' ') + '）' : '主要照顧者';
+  }
+  if (name){
+    return role ? role + '（' + name + '）' : name;
+  }
+  return role;
+}
+
+function buildConsentSummary(form){
+  const parties = collectConsentPartiesFromForm(form);
+  const seen = {};
+  const names = [];
+  parties.forEach(function(part){
+    const text = formatConsentPartyForServer(part);
+    if (text && !seen[text]){
+      seen[text] = true;
+      names.push(text);
+    }
+  });
+  if (!names.length){
+    names.push('本人');
+  }
+  const joined = names.join('、');
+  return {
+    notifyText: joined,
+    signerText: joined
+  };
 }
 
 function formatPlanAmount(entry){
@@ -832,13 +983,29 @@ function getServiceCatalog(){
     dayCareRequirements: {},
     dayCareLevels: {},
     serviceRates: {},
-    transportRoundTrips: 2
+    transportRoundTrips: 2,
+    levelDetails: {},
+    copayRates: {},
+    transportCategory: ''
   };
 
   const caps = getTaoyuanLtcTable('needLevelsCaps');
   caps.forEach(function(item){
     if (!item || item.needLevel === undefined) return;
-    catalog.needLevelCaps[String(item.needLevel)] = item.bcMonthlyCap || 0;
+    const levelKey = String(item.needLevel);
+    const bcMonthlyCap = Number(item.bcMonthlyCap) || 0;
+    catalog.needLevelCaps[levelKey] = bcMonthlyCap;
+    catalog.levelDetails[levelKey] = {
+      bcMonthlyCap: bcMonthlyCap,
+      dCaps: {
+        '1': Number(item.dCategory1Cap) || 0,
+        '2': Number(item.dCategory2Cap) || 0,
+        '3': Number(item.dCategory3Cap) || 0,
+        '4': Number(item.dCategory4Cap) || 0
+      },
+      gAnnualCap: Number(item.gAnnualCap) || 0,
+      efThreeYearCap: Number(item.efThreeYearCap) || 0
+    };
   });
 
   const dayCareLevels = {};
@@ -870,6 +1037,27 @@ function getServiceCatalog(){
     dayCareLevels[level].sort();
   });
   catalog.dayCareLevels = dayCareLevels;
+
+  const copayRates = getTaoyuanLtcTable('copayRates');
+  const copayMap = {};
+  copayRates.forEach(function(item){
+    if (!item) return;
+    const bucket = (item.serviceBucket || '').trim();
+    const status = (item.householdStatus || '').trim();
+    const percent = Number(item.copayPercent);
+    if (!bucket || !status || isNaN(percent)) return;
+    if (!copayMap[bucket]) copayMap[bucket] = {};
+    copayMap[bucket][status] = percent;
+  });
+  catalog.copayRates = copayMap;
+
+  const transportCategories = getTaoyuanLtcTable('transportAllowanceCategories');
+  const taoyuanCategory = transportCategories.find(function(item){
+    return item && item.region === '桃園市';
+  });
+  if (taoyuanCategory && taoyuanCategory.category) {
+    catalog.transportCategory = String(taoyuanCategory.category);
+  }
 
   return catalog;
 }
