@@ -53,7 +53,15 @@
     html { font-size:18px; -webkit-text-size-adjust:100%; }
     @media (min-width:1440px){ html{ font-size:19px; } }
     @media (min-width:1920px){ html{ font-size:20px; } }
-    @media (max-width:480px){ html{ font-size:clamp(20px, 6.4vw, 24px); } }
+    @media (max-width:480px){ html{ font-size:clamp(18px, 4.8vw, 20px); } }
+
+    @media (max-width:480px){
+      :root{
+        --h-input:52px;
+        --h-button:52px;
+        --h-button-sm:44px;
+      }
+    }
 
     html, body{ background:var(--bg); color:var(--text); }
     body{
@@ -90,11 +98,18 @@
     }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
+    [data-section]{ scroll-margin-top:96px; }
     .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:10px; }
-    .row > div{ flex:1 1 360px; min-width:360px; }      /* ⬅️ 360px 下限，確保不會出現三欄 */
+    .row > div{ flex:1 1 320px; min-width:280px; }
     .grid2, .grid3{ display:grid; gap:var(--gap); align-items:start; }
     .grid2{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-    .grid3{ grid-template-columns:repeat(2, minmax(0,1fr)); } /* ⬅️ 將原本三欄統一限制為兩欄 */
+    .grid3{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+    @media (min-width:1280px){
+      .row > div{ flex:1 1 360px; min-width:320px; }
+    }
+    @media (max-width:1280px){
+      .grid3{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    }
     @media (max-width:1024px){
       .row > div{ flex:1 1 100%; min-width:100%; }
       .grid2, .grid3{ grid-template-columns:1fr; }
@@ -185,6 +200,8 @@
       display:flex;
       flex-direction:column;
       gap:14px;
+      backdrop-filter:saturate(180%) blur(6px);
+      -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
     .page-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin:0; }
     .page-tabs button{
@@ -8071,8 +8088,7 @@
       });
       html += `<div class="summary-total-selfpay">自費總額：${formatAutoInteger(totalSelfPayValue)} 元</div>`;
       host.innerHTML = html;
-      setPlanSummaryClipboard(copyLines.join('
-'));
+      setPlanSummaryClipboard(copyLines.join('\n'));
     }
 
     function writeClipboardText(text){
