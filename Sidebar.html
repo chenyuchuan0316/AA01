@@ -39,21 +39,27 @@
       --radius:12px;
       --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
 
-      --fs-base:1rem;                               /* 由 html 根字級決定（18–20px） */
-      --fs-title:clamp(1.25rem, 1.1rem + .35vw, 1.5rem);
-      --fs-label:1rem;                              /* label ≥16–18px */
+      --fs-base:1rem;                               /* 由 html 根字級決定（18–22px） */
+      --font-scale:1;
+      --fs-title-base:clamp(1.25rem, 1.1rem + .35vw, 1.5rem);
+      --fs-title:calc(var(--fs-title-base) * var(--font-scale));
+      --fs-label-base:1rem;                         /* label ≥16–18px */
+      --fs-label:calc(var(--fs-label-base) * var(--font-scale));
       --fs-ctrl:20px;                               /* input/select/textarea 固定 20px */
       --h-input:56px;                               /* 輸入框高度 */
       --h-button:56px;                              /* 主按鈕高度 */
       --h-button-sm:48px;                           /* 小按鈕（±1天/±5天等） */
       --checkbox:28px;                              /* 核取方塊 */
+      --fab-h:0px;
+      --fab-gap:calc(max(24px, env(safe-area-inset-bottom) + 24px));
+      --scroll-offset:96px;
     }
 
-    /* 根字級：桌機 18→19→20；手機 clamp(18–20) */
+    /* 根字級：桌機 18→19→20；手機 clamp(20–22) */
     html { font-size:18px; -webkit-text-size-adjust:100%; }
     @media (min-width:1440px){ html{ font-size:19px; } }
     @media (min-width:1920px){ html{ font-size:20px; } }
-    @media (max-width:480px){ html{ font-size:clamp(18px, 4.8vw, 20px); } }
+    @media (max-width:480px){ html{ font-size:clamp(20px, 5.2vw, 22px); } }
 
     @media (max-width:480px){
       :root{
@@ -66,16 +72,20 @@
     html, body{ background:var(--bg); color:var(--text); }
     body{
       font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", Arial, sans-serif;
-      font-size:var(--fs-base);
+      font-size:calc(var(--fs-base) * var(--font-scale));
       line-height:1.75;
       letter-spacing:.2px;
       margin:16px;
       -webkit-tap-highlight-color:transparent;
       text-rendering:optimizeLegibility;
     }
+    body[data-fontscale="sm"]{ --font-scale:1; }
+    body[data-fontscale="md"]{ --font-scale:1.1; }
+    body[data-fontscale="lg"]{ --font-scale:1.2; }
     .app-container{
       max-width:1200px;
-      margin:0 auto 120px auto;
+      margin:0 auto;
+      padding-bottom:calc(var(--fab-h, 0px) + 16px);
     }
 
     /* 卡片 */
@@ -98,7 +108,7 @@
     }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
-    [data-section]{ scroll-margin-top:96px; }
+    [data-section]{ scroll-margin-top:var(--scroll-offset); }
     .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:10px; }
     .row > div{ flex:1 1 320px; min-width:280px; }
     .grid2, .grid3{ display:grid; gap:var(--gap); align-items:start; }
@@ -203,6 +213,54 @@
       backdrop-filter:saturate(180%) blur(6px);
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
+    .page-header-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .page-toolbar{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .font-scale-label{
+      font-weight:600;
+      color:var(--label);
+      font-size:0.95rem;
+    }
+    .font-scale-control{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:4px;
+      border-radius:999px;
+      background:rgba(11,87,208,.08);
+      box-shadow:inset 0 0 0 1px rgba(11,87,208,.12);
+    }
+    .font-scale-control button{
+      min-width:38px;
+      height:32px;
+      padding:0 12px;
+      border:none;
+      border-radius:999px;
+      background:transparent;
+      font-weight:600;
+      font-size:0.95rem;
+      color:var(--title);
+      cursor:pointer;
+      transition:background .2s ease, color .2s ease;
+    }
+    .font-scale-control button[data-active="1"]{
+      background:var(--accent);
+      color:#fff;
+    }
+    .font-scale-control button:focus-visible{
+      outline:2px solid var(--accent);
+      outline-offset:2px;
+    }
     .page-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin:0; }
     .page-tabs button{
       height:44px;
@@ -300,7 +358,6 @@
     .page-section{ display:none; }
     .page-section[data-active="1"]{ display:block; }
 
-    .summary-section{ margin-bottom:20px; }
     .summary-title{ font-weight:700; color:var(--title); margin-bottom:8px; }
     .summary-actions{
       display:flex;
@@ -675,12 +732,29 @@
     .plan-summary-totals-hint[data-show="1"]{
       display:block;
     }
-    .plan-meta{
+    .plan-guideline{
+      margin-bottom:16px;
+      padding:12px 16px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#f7f9fc;
+      color:#475569;
+      font-size:0.95rem;
+      line-height:1.6;
+    }
+    .plan-guideline p{ margin:0 0 8px; }
+    .plan-guideline p:last-child{ margin-bottom:0; }
+    .plan-meta-grid{
       display:grid;
       gap:12px;
-      margin-top:12px;
+      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
     }
-    .plan-meta textarea{ min-height:96px; }
+    .plan-meta-grid > div{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .plan-meta-grid textarea{ min-height:96px; }
     .plan-preview{
       width:100%;
       min-height:220px;
@@ -934,7 +1008,7 @@
     .floating-actions{
       position:fixed;
       right:max(18px, env(safe-area-inset-right) + 18px);
-      bottom:max(24px, env(safe-area-inset-bottom) + 24px);
+      bottom:var(--fab-gap);
       display:flex;
       flex-direction:column;
       gap:10px;
@@ -992,7 +1066,7 @@
     #validationToast{
       position:fixed;
       right:24px;
-      bottom:calc(180px + env(safe-area-inset-bottom));
+      bottom:calc(var(--fab-h, 0px) + 120px);
       max-width:360px;
       width:calc(100% - 48px);
       background:#111827;
@@ -1044,7 +1118,7 @@
       .floating-actions{
         left:12px;
         right:12px;
-        bottom:max(16px, env(safe-area-inset-bottom) + 16px);
+        bottom:var(--fab-gap);
         flex-direction:row;
         justify-content:space-between;
         gap:8px;
@@ -1057,7 +1131,7 @@
         left:12px;
         right:12px;
         width:auto;
-        bottom:calc(130px + env(safe-area-inset-bottom));
+        bottom:calc(var(--fab-h, 0px) + 98px);
       }
     }
     .input-invalid{
@@ -1102,16 +1176,26 @@
 
 
 
-<body>
+<body data-fontscale="sm">
 
   <div class="app-container" id="appContainer">
 
   <div class="page-header" id="pageHeader">
     <div class="page-header-inner">
-      <div class="page-tabs" id="pageTabs">
-        <button type="button" data-page="goals" class="active">計畫目標</button>
-        <button type="button" data-page="execution">計畫執行規劃</button>
-        <button type="button" data-page="notes">其他備註</button>
+      <div class="page-header-top">
+        <div class="page-tabs" id="pageTabs">
+          <button type="button" data-page="goals" class="active">計畫目標</button>
+          <button type="button" data-page="execution">計畫執行規劃</button>
+          <button type="button" data-page="notes">其他備註</button>
+        </div>
+        <div class="page-toolbar" id="pageToolbar">
+          <span class="font-scale-label">字級</span>
+          <div class="font-scale-control" id="fontScaleControl" role="group" aria-label="字級設定">
+            <button type="button" data-scale="sm" title="標準字級">A</button>
+            <button type="button" data-scale="md" title="放大字級">A+</button>
+            <button type="button" data-scale="lg" title="特大字級">A++</button>
+          </div>
+        </div>
       </div>
       <div class="wizard" id="wizardSteps" aria-label="填寫進度">
         <button type="button" class="wizard-step" data-step="1" data-page="goals" data-anchor="#basicInfoGroup">
@@ -1126,9 +1210,9 @@
           <span class="wizard-index">3</span>
           <span class="wizard-label">計畫執行規劃</span>
         </button>
-        <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planNotesGroup">
+        <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planOtherGroup">
           <span class="wizard-index">4</span>
-          <span class="wizard-label">附件與備註</span>
+          <span class="wizard-label">其他備註</span>
         </button>
       </div>
     </div>
@@ -2204,36 +2288,58 @@
   </div>
 
   <div class="page-section" data-page="execution">
-  <div class="group" id="planExecutionGroup">
-    <label>計畫執行規劃</label>
-    <div class="hint">請針對核定之服務填寫頻率、使用方式或案主期待，系統將依格式預覽全文。</div>
-    <div id="planEditor" class="plan-editor"></div>
-    <div class="plan-meta">
-      <div>
-        <label>轉介資源補充（選填）</label>
-        <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
+    <div class="group" id="planExecutionGroup">
+      <div class="titlebar">
+        <label>一、長照服務核定項目、頻率</label>
       </div>
-      <div>
-        <label>巷弄長照站資訊（例：站名／地址／電話／距離）</label>
-        <textarea id="plan_station_info" placeholder="例：○○巷弄長照站（地址，距離1.2公里，電話0000-000000）"></textarea>
+      <div class="plan-guideline">
+        <p>請依核定的正式資源填寫承接方式、指定單位、用量與使用方式，系統會同步整理附件二預覽與額度統計。</p>
+        <p>若同一服務由不同單位提供，或同時含自費段，請個別建立明細並清楚標註說明。</p>
       </div>
-      <div>
-        <label>巷弄長照站意願</label>
-        <select id="plan_station_willingness">
-          <option value="">—請選擇—</option>
-          <option value="有意願">有意願</option>
-          <option value="無意願">無意願</option>
-        </select>
+      <div id="planEditor" class="plan-editor"></div>
+    </div>
+
+    <div class="group">
+      <div class="titlebar">
+        <label>二、轉介其他服務資源</label>
       </div>
-      <div>
-        <label>緊急救援服務說明</label>
-        <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
+      <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
+    </div>
+
+    <div class="group">
+      <div class="titlebar">
+        <label>三、巷弄長照站資訊與意願</label>
+      </div>
+      <div class="plan-meta-grid">
+        <div>
+          <label for="plan_station_info">巷弄長照站資訊</label>
+          <textarea id="plan_station_info" placeholder="例：○○巷弄長照站（地址，距離1.2公里，電話0000-000000）"></textarea>
+        </div>
+        <div>
+          <label for="plan_station_willingness">參與意願</label>
+          <select id="plan_station_willingness">
+            <option value="">—請選擇—</option>
+            <option value="有意願">有意願</option>
+            <option value="無意願">無意願</option>
+          </select>
+        </div>
       </div>
     </div>
-    <div class="summary-section">
-      <div class="summary-title">服務計畫明細預覽（附件二）</div>
+
+    <div class="group">
+      <div class="titlebar">
+        <label>四、緊急救援服務說明</label>
+      </div>
+      <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
+    </div>
+
+    <div class="group" id="planSummaryGroup">
+      <div class="titlebar">
+        <label>附件二（服務計畫明細）預覽</label>
+      </div>
       <div class="summary-actions">
         <button type="button" class="small" id="planSummaryCopyBtn">複製表格</button>
+        <button type="button" class="small" id="planSummaryCopyPlainBtn">複製為純文字</button>
       </div>
       <div id="planSummaryTotals" class="plan-summary-totals">
         <div class="plan-summary-total-card">
@@ -2266,25 +2372,31 @@
         <div class="hint">尚未選擇服務項目。</div>
       </div>
     </div>
-  </div>
+
+    <div class="group" id="planTextGroup">
+      <div class="titlebar">
+        <label>附件一：計畫執行規劃預覽</label>
+      </div>
+      <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
+      <textarea id="plan_text" class="plan-preview" readonly></textarea>
+    </div>
+
+    <div class="group">
+      <div class="btnbar">
+        <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
+      </div>
+      <div id="errorSummary" data-show="0"></div>
+      <div id="msg" class="hint" style="margin-top:8px;"></div>
+    </div>
   </div>
 
   <div class="page-section" data-page="notes">
-  <div class="group" id="planNotesGroup">
-    <label>附件預覽</label>
-    <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
-    <textarea id="plan_text" class="plan-preview" readonly></textarea>
-  </div>
-
-  <!-- 動作 -->
-  <div class="group">
-    <div class="btnbar">
-      <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
+    <div class="group" id="planOtherGroup">
+      <div class="titlebar">
+        <label>其他：（個案特殊狀況或其他未盡事宜可備註於此）</label>
+      </div>
+      <textarea id="plan_other" placeholder="如有補充事項請於此敘述"></textarea>
     </div>
-    <div id="errorSummary" data-show="0"></div>
-    <div id="msg" class="hint" style="margin-top:8px;"></div>
-  </div>
-  </div>
   </div>
 
   <div class="floating-actions" id="floatingActions" aria-label="頁面操作">
@@ -2303,6 +2415,105 @@
   </div>
 
   <script>
+    /* ===== 版面配置工具 ===== */
+    const FONT_SCALE_STORAGE_KEY = 'AA01.fontScale';
+    const FONT_SCALE_DEFAULT = 'sm';
+    const FONT_SCALE_OPTIONS = ['sm','md','lg'];
+
+    let currentScrollOffset = 96;
+    let floatingMeasureScheduled = false;
+    let headerMeasureScheduled = false;
+
+    function updateFloatingActionsMetrics(){
+      const actions=document.getElementById('floatingActions');
+      if(!actions){
+        document.documentElement.style.setProperty('--fab-h','0px');
+        return;
+      }
+      const rect=actions.getBoundingClientRect();
+      const visibleHeight=Math.max(0, rect.height || 0);
+      const gap=Math.max(16, Math.ceil(Math.max(0, window.innerHeight - rect.bottom)));
+      const total=Math.max(0, Math.ceil(visibleHeight + gap));
+      document.documentElement.style.setProperty('--fab-h', `${total}px`);
+      document.documentElement.style.setProperty('--fab-gap', `${gap}px`);
+    }
+
+    function scheduleFloatingActionsMeasurement(){
+      if(floatingMeasureScheduled) return;
+      floatingMeasureScheduled = true;
+      window.requestAnimationFrame(()=>{
+        floatingMeasureScheduled = false;
+        updateFloatingActionsMetrics();
+      });
+    }
+
+    function updateScrollOffset(){
+      const header=document.getElementById('pageHeader');
+      let offset=96;
+      if(header){
+        const style=window.getComputedStyle(header);
+        const marginBottom=parseFloat(style.marginBottom) || 0;
+        offset=Math.max(72, Math.ceil(header.offsetHeight + marginBottom + 8));
+      }
+      currentScrollOffset = offset;
+      document.documentElement.style.setProperty('--scroll-offset', `${offset}px`);
+    }
+
+    function scheduleScrollOffsetMeasurement(){
+      if(headerMeasureScheduled) return;
+      headerMeasureScheduled = true;
+      window.requestAnimationFrame(()=>{
+        headerMeasureScheduled = false;
+        updateScrollOffset();
+      });
+    }
+
+    function scheduleLayoutMeasurements(){
+      scheduleFloatingActionsMeasurement();
+      scheduleScrollOffsetMeasurement();
+    }
+
+    function updateFontScaleButtons(active){
+      const control=document.getElementById('fontScaleControl');
+      if(!control) return;
+      const target=active || FONT_SCALE_DEFAULT;
+      control.querySelectorAll('button[data-scale]').forEach(btn=>{
+        const isActive=btn.dataset.scale === target;
+        btn.dataset.active = isActive ? '1' : '0';
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    }
+
+    function applyFontScale(scale, options){
+      const normalized = FONT_SCALE_OPTIONS.indexOf(scale) !== -1 ? scale : FONT_SCALE_DEFAULT;
+      if(document.body){
+        document.body.dataset.fontscale = normalized;
+      }
+      if(!(options && options.skipSave) && window.localStorage){
+        try{ window.localStorage.setItem(FONT_SCALE_STORAGE_KEY, normalized); }catch(err){}
+      }
+      updateFontScaleButtons(normalized);
+      scheduleLayoutMeasurements();
+    }
+
+    function initFontScaleControls(){
+      const control=document.getElementById('fontScaleControl');
+      if(!control) return;
+      control.querySelectorAll('button[data-scale]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{ applyFontScale(btn.dataset.scale); });
+      });
+      let initial = FONT_SCALE_DEFAULT;
+      if(window.localStorage){
+        try{
+          const stored = window.localStorage.getItem(FONT_SCALE_STORAGE_KEY);
+          if(stored && FONT_SCALE_OPTIONS.indexOf(stored) !== -1){
+            initial = stored;
+          }
+        }catch(err){}
+      }
+      applyFontScale(initial, { skipSave:true });
+    }
+
     /* ===== 日期工具 ===== */
     function toYMD(d){const y=d.getFullYear(),m=('0'+(d.getMonth()+1)).slice(-2),da=('0'+d.getDate()).slice(-2);return `${y}-${m}-${da}`;}
     function parseDateInput(value){
@@ -5090,13 +5301,21 @@
         const pageId = section && section.dataset ? section.dataset.page : 'goals';
         setActivePage(pageId || 'goals');
       }
-      if(typeof el.scrollIntoView === 'function'){
-        el.scrollIntoView({ behavior:'smooth', block:'center' });
-      }
-      let focusEl=null;
-      if(typeof el.focus === 'function'){ focusEl=el; }
-      else{ focusEl=el.querySelector('input,select,textarea,button,[tabindex]'); }
-      if(focusEl && typeof focusEl.focus === 'function'){ focusEl.focus({ preventScroll:true }); }
+      const scrollTask=()=>{
+        if(typeof el.scrollIntoView === 'function'){
+          el.scrollIntoView({ behavior:'smooth', block:'start' });
+        }else{
+          const rect=el.getBoundingClientRect();
+          const offset=Math.max(0, currentScrollOffset || 0);
+          const top=window.pageYOffset + rect.top - offset;
+          window.scrollTo({ top: top < 0 ? 0 : top, behavior:'smooth' });
+        }
+        let focusEl=null;
+        if(typeof el.focus === 'function'){ focusEl=el; }
+        else{ focusEl=el.querySelector('input,select,textarea,button,[tabindex]'); }
+        if(focusEl && typeof focusEl.focus === 'function'){ focusEl.focus({ preventScroll:true }); }
+      };
+      window.requestAnimationFrame(()=>{ window.requestAnimationFrame(scrollTask); });
     }
 
 
@@ -6471,6 +6690,20 @@
       emergencyNote: ''
     };
 
+    const PLAN_CATEGORY_GROUPS = [
+      { id:'BC', label:'居家服務（B/C）', includes:['B','C'] },
+      { id:'D', label:'專業服務（D）', includes:['D'] },
+      { id:'G', label:'喘息服務（G）', includes:['G'] },
+      { id:'EF', label:'輔具及無障礙補助（E/F）', includes:['EF'] },
+      { id:'SC', label:'短期照顧（SC）', includes:['SC'] },
+      { id:'MEAL', label:'營養餐飲服務（OT）', includes:['MEAL'] },
+      { id:'OTHER', label:'其他服務', includes:['OTHER'] }
+    ];
+    const PLAN_CATEGORY_LOOKUP = {};
+    PLAN_CATEGORY_GROUPS.forEach(group=>{
+      (group.includes || []).forEach(cat=>{ PLAN_CATEGORY_LOOKUP[String(cat).toUpperCase()] = group.id; });
+    });
+
     function determineServiceCategory(code){
       if(!code) return '';
       if(code.startsWith('SC')) return 'SC';
@@ -6483,6 +6716,11 @@
       if(first === 'E' || first === 'F') return 'EF';
       if(first === 'G') return 'G';
       return '';
+    }
+
+    function getPlanCategoryGroupId(cat){
+      const key = String(cat || '').toUpperCase();
+      return PLAN_CATEGORY_LOOKUP[key] || 'OTHER';
     }
 
     function lookupServiceItem(code){
@@ -7611,16 +7849,9 @@
     }
 
     function planCategoryLabel(cat){
-      switch(cat){
-        case 'B': return 'B碼服務（居家／日照）';
-        case 'C': return 'C碼專業服務';
-        case 'D': return 'D碼／交通接送';
-        case 'EF': return 'E.F碼（輔具與無障礙補助）';
-        case 'G': return 'G碼（喘息服務）';
-        case 'SC': return 'SC碼（短期照顧）';
-        case 'MEAL': return '營養餐飲服務（OT碼）';
-        default: return '其他服務';
-      }
+      const groupId = getPlanCategoryGroupId(cat);
+      const group = PLAN_CATEGORY_GROUPS.find(item=>item.id === groupId);
+      return group ? group.label : '其他服務';
     }
 
     function formatSummaryVendorName(entry){
@@ -7969,25 +8200,97 @@
     }
 
 
-    function collectPlanSummaryGroups(){
-      const grouped={};
-      Object.values(servicePlanState).forEach(entry=>{
+    function aggregatePlanSummaryRows(entries){
+      const aggregated={};
+      (entries || []).forEach(entry=>{
         if(!entry) return;
-        const cat=(entry.category || determineServiceCategory(entry.code) || 'OTHER').toUpperCase();
-        if(!grouped[cat]) grouped[cat]=[];
-        grouped[cat].push(entry);
+        const mode=((entry.vendorMode || '輪派').trim() || '輪派');
+        const name=(entry.vendorName || '').trim();
+        const key=`${mode}||${name}`;
+        if(!aggregated[key]){
+          aggregated[key]={ vendorMode:mode, vendorName:name, entries:[] };
+        }
+        aggregated[key].entries.push(entry);
       });
-      const order=['B','C','D','EF','G','SC','MEAL','OTHER'];
-      const groups=[];
-      order.forEach(cat=>{
-        const list=grouped[cat];
-        if(!list || !list.length) return;
-        const sorted=list.slice().sort((a,b)=>{
+      const groups=Object.keys(aggregated).map(key=>aggregated[key]);
+      groups.forEach(group=>{
+        group.entries = group.entries.slice().sort((a,b)=>{
           const ac=(a && a.code) ? a.code : '';
           const bc=(b && b.code) ? b.code : '';
           return ac.localeCompare(bc);
         });
-        groups.push({ category:cat, label:planCategoryLabel(cat), entries:sorted });
+      });
+      groups.sort((a,b)=>{
+        const ac=(a.entries[0] && a.entries[0].code) ? a.entries[0].code : '';
+        const bc=(b.entries[0] && b.entries[0].code) ? b.entries[0].code : '';
+        return ac.localeCompare(bc);
+      });
+      return groups.map(group=>{
+        const codes=[];
+        const names=[];
+        const amountParts=[];
+        const usageParts=[];
+        const selfPayParts=[];
+        let totalSelfPay=0;
+        group.entries.forEach(entry=>{
+          const code=entry && entry.code ? entry.code : '';
+          const name=entry && entry.name ? entry.name : '';
+          if(code) codes.push(code);
+          if(name) names.push(name);
+          const amount=formatSummaryAmount(entry);
+          if(amount){
+            amountParts.push(code ? `${code}：${amount}` : amount);
+          }
+          const usage=formatSummaryUsage(entry);
+          if(usage){
+            usageParts.push(code ? `${code}：${usage}` : usage);
+          }
+          const selfPay=formatSummarySelfPay(entry);
+          if(selfPay){
+            selfPayParts.push(code ? `${code}：${selfPay}` : selfPay);
+          }
+          totalSelfPay += computeEntrySelfPay(entry);
+        });
+        const amountText=amountParts.join('\n');
+        const usageText=usageParts.join('\n');
+        let selfPayText='';
+        if(totalSelfPay > 0){
+          selfPayText = `合計 ${formatAutoInteger(totalSelfPay)} 元`;
+          if(selfPayParts.length){
+            selfPayText += '\n' + selfPayParts.join('\n');
+          }
+        }else if(selfPayParts.length){
+          selfPayText = selfPayParts.join('\n');
+        }
+        return {
+          vendorMode:group.vendorMode || '輪派',
+          vendorName:group.vendorName || '',
+          codes:codes.join('、'),
+          names:names.join('、'),
+          amountText:amountText,
+          usageText:usageText,
+          selfPayText:selfPayText,
+          totalSelfPay:totalSelfPay
+        };
+      });
+    }
+
+    function collectPlanSummaryGroups(){
+      const groupedById={};
+      Object.values(servicePlanState).forEach(entry=>{
+        if(!entry) return;
+        const category=(entry.category || determineServiceCategory(entry.code) || 'OTHER').toUpperCase();
+        const groupId=getPlanCategoryGroupId(category);
+        if(!groupedById[groupId]) groupedById[groupId]=[];
+        groupedById[groupId].push(entry);
+      });
+      const groups=[];
+      PLAN_CATEGORY_GROUPS.forEach(group=>{
+        const list=groupedById[group.id];
+        if(!list || !list.length) return;
+        const rows=aggregatePlanSummaryRows(list);
+        if(!rows.length) return;
+        groups.push({ id:group.id, label:group.label, rows:rows });
       });
       return groups;
     }
@@ -7996,39 +8299,130 @@
       return (value || '').replace(/\s*\n\s*/g, ' / ').replace(/\t/g, ' ').trim();
     }
 
-    let planSummaryClipboardText = '';
-    let planSummaryCopyTimer = null;
+    const planSummaryCopyState = { buttonId:'planSummaryCopyBtn', defaultLabel:'複製表格', text:'', timer:null };
+    const planSummaryPlainState = { buttonId:'planSummaryCopyPlainBtn', defaultLabel:'複製為純文字', text:'', timer:null };
 
-    function setPlanSummaryClipboard(text){
+    function updateCopyButtonState(state, text){
       const normalized = text ? String(text) : '';
-      const changed = normalized !== planSummaryClipboardText;
-      planSummaryClipboardText = normalized;
-      const btn=document.getElementById('planSummaryCopyBtn');
+      const changed = normalized !== state.text;
+      state.text = normalized;
+      const btn=document.getElementById(state.buttonId);
       if(!btn) return;
       if(!btn.dataset.originalLabel){
-        btn.dataset.originalLabel = btn.textContent || '複製表格';
+        btn.dataset.originalLabel = btn.textContent || state.defaultLabel || '複製';
       }
-      let state = btn.dataset.copyState || '';
-      if(changed && planSummaryCopyTimer){
-        clearTimeout(planSummaryCopyTimer);
-        planSummaryCopyTimer = null;
-        if(state && state !== 'busy'){
+      let copyState = btn.dataset.copyState || '';
+      if(changed && state.timer){
+        clearTimeout(state.timer);
+        state.timer = null;
+        if(copyState && copyState !== 'busy'){
           btn.textContent = btn.dataset.originalLabel;
-          state = '';
+          copyState = '';
           btn.dataset.copyState = '';
         }
       }
-      const hasText = !!planSummaryClipboardText;
-      const isBusy = state === 'busy';
-      if(!hasText){
+      const hasText = !!state.text;
+      if(!hasText && copyState !== 'busy'){
         btn.textContent = btn.dataset.originalLabel;
-        if(state !== 'busy'){
+        if(copyState){
           btn.dataset.copyState = '';
-          state = '';
+          copyState = '';
         }
       }
-      btn.disabled = !hasText || isBusy;
-      btn.setAttribute('aria-disabled', btn.disabled ? 'true' : 'false');
+      const disabled = !hasText || copyState === 'busy';
+      btn.disabled = disabled;
+      btn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    }
+
+    function showCopyFeedback(state, btn, message, isError){
+      if(!btn) return;
+      if(!btn.dataset.originalLabel){
+        btn.dataset.originalLabel = btn.textContent || state.defaultLabel || '複製';
+      }
+      btn.textContent = message;
+      btn.dataset.copyState = isError ? 'error' : 'success';
+      if(state.timer){
+        clearTimeout(state.timer);
+      }
+      state.timer = window.setTimeout(function(){
+        state.timer = null;
+        btn.textContent = btn.dataset.originalLabel;
+        btn.dataset.copyState = '';
+        if(!state.text){
+          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
+        }
+      }, 2000);
+    }
+
+    function setPlanSummaryClipboard(text){
+      updateCopyButtonState(planSummaryCopyState, text);
+    }
+
+    function setPlanSummaryPlainText(text){
+      updateCopyButtonState(planSummaryPlainState, text);
+    }
+
+    function writeClipboardText(text){
+      const value = text ? String(text) : '';
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        return navigator.clipboard.writeText(value);
+      }
+      return new Promise(function(resolve, reject){
+        const textarea=document.createElement('textarea');
+        textarea.value=value;
+        textarea.setAttribute('readonly','');
+        textarea.style.position='fixed';
+        textarea.style.top='-9999px';
+        textarea.style.opacity='0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        let successful=false;
+        try{
+          successful=document.execCommand('copy');
+        }catch(err){
+          document.body.removeChild(textarea);
+          reject(err);
+          return;
+        }
+        document.body.removeChild(textarea);
+        if(successful){
+          resolve();
+        }else{
+          reject(new Error('copy failed'));
+        }
+      });
+    }
+
+    function handleCopyButtonClick(state, evt){
+      if(evt) evt.preventDefault();
+      const btn = evt && evt.currentTarget ? evt.currentTarget : document.getElementById(state.buttonId);
+      if(!btn || !state.text){
+        return;
+      }
+      btn.disabled = true;
+      btn.dataset.copyState = 'busy';
+      btn.setAttribute('aria-disabled', 'true');
+      writeClipboardText(state.text).then(function(){
+        const hasText = !!state.text;
+        btn.disabled = !hasText;
+        btn.setAttribute('aria-disabled', hasText ? 'false' : 'true');
+        showCopyFeedback(state, btn, '已複製', false);
+      }).catch(function(){
+        const hasText = !!state.text;
+        btn.disabled = !hasText;
+        btn.setAttribute('aria-disabled', hasText ? 'false' : 'true');
+        showCopyFeedback(state, btn, '複製失敗', true);
+      });
+    }
+
+    function handlePlanSummaryCopyClick(evt){
+      handleCopyButtonClick(planSummaryCopyState, evt);
+    }
+
+    function handlePlanSummaryPlainCopyClick(evt){
+      handleCopyButtonClick(planSummaryPlainState, evt);
     }
 
     function buildPlanSummaryPreview(){
@@ -8039,152 +8433,77 @@
       if(!groups.length){
         host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
         setPlanSummaryClipboard('');
+        setPlanSummaryPlainText('');
+        scheduleLayoutMeasurements();
         return;
       }
       const header=['服務代碼','服務名稱','承接','指定單位','額度／單位','自費金額','使用頻率／說明'];
       const copyLines=[];
+      const plainLines=[];
       let html='';
       let totalSelfPayValue=0;
       groups.forEach((group,index)=>{
         if(index>0){
           html += '<div class="hr" aria-hidden="true"></div>';
           copyLines.push('');
+          plainLines.push('');
         }
-        html += `<div class="summary-title">${escapeHtml(group.label)}</div>`;
+        html += `<div class=\"summary-title\">${escapeHtml(group.label)}</div>`;
         html += '<div class="summary-table-wrapper">';
         html += '<table class="summary-table"><thead><tr>';
         header.forEach(label=>{ html += `<th>${escapeHtml(label)}</th>`; });
         html += '</tr></thead><tbody>';
         copyLines.push(group.label);
-        copyLines.push(header.join('	'));
-        group.entries.forEach(entry=>{
-          const vendorMode = entry && entry.vendorMode ? entry.vendorMode : '輪派';
-          const vendorName = formatSummaryVendorName(entry);
-          const amount = formatSummaryAmount(entry);
-          const selfPayText = formatSummarySelfPay(entry);
-          const usage = formatSummaryUsage(entry);
+        copyLines.push(header.join('    '));
+        plainLines.push(group.label);
+        plainLines.push(header.join('\t'));
+        group.rows.forEach(row=>{
           html += '<tr>';
-          html += `<td>${escapeHtml(entry && entry.code ? entry.code : '')}</td>`;
-          html += `<td>${escapeHtml(entry && entry.name ? entry.name : '')}</td>`;
-          html += `<td>${escapeHtml(vendorMode)}</td>`;
-          html += `<td>${escapeHtml(vendorName)}</td>`;
-          html += `<td>${amount ? nl2br(amount) : '—'}</td>`;
-          html += `<td>${selfPayText ? nl2br(selfPayText) : '—'}</td>`;
-          html += `<td>${usage ? nl2br(usage) : '—'}</td>`;
+          html += `<td>${escapeHtml(row.codes)}</td>`;
+          html += `<td>${escapeHtml(row.names)}</td>`;
+          html += `<td>${escapeHtml(row.vendorMode)}</td>`;
+          html += `<td>${escapeHtml(row.vendorName)}</td>`;
+          html += `<td>${row.amountText ? nl2br(row.amountText) : '—'}</td>`;
+          html += `<td>${row.selfPayText ? nl2br(row.selfPayText) : '—'}</td>`;
+          html += `<td>${row.usageText ? nl2br(row.usageText) : '—'}</td>`;
           html += '</tr>';
           const copyRow=[
-            entry && entry.code ? entry.code : '',
-            entry && entry.name ? entry.name : '',
-            vendorMode,
-            vendorName,
-            sanitizeSummaryCell(amount),
-            sanitizeSummaryCell(selfPayText),
-            sanitizeSummaryCell(usage)
+            row.codes,
+            row.names,
+            row.vendorMode,
+            row.vendorName,
+            sanitizeSummaryCell(row.amountText),
+            sanitizeSummaryCell(row.selfPayText),
+            sanitizeSummaryCell(row.usageText)
           ];
-          copyLines.push(copyRow.join('	'));
-          totalSelfPayValue += computeEntrySelfPay(entry);
+          copyLines.push(copyRow.join(' '));
+          plainLines.push(copyRow.join('\t'));
+          totalSelfPayValue += row.totalSelfPay || 0;
         });
         html += '</tbody></table></div>';
       });
-      html += `<div class="summary-total-selfpay">自費總額：${formatAutoInteger(totalSelfPayValue)} 元</div>`;
+      const totalLine=`自費總額：${formatAutoInteger(totalSelfPayValue)} 元`;
+      html += `<div class=\"summary-total-selfpay\">${escapeHtml(totalLine)}</div>`;
       host.innerHTML = html;
-      setPlanSummaryClipboard(copyLines.join('\n'));
-    }
-
-    function writeClipboardText(text){
-      if(!text){
-        return Promise.reject(new Error('empty'));
-      }
-      if(navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function'){
-        return navigator.clipboard.writeText(text);
-      }
-      return new Promise(function(resolve, reject){
-        try{
-          const textarea=document.createElement('textarea');
-          textarea.value=text;
-          textarea.setAttribute('readonly','');
-          textarea.style.position='fixed';
-          textarea.style.top='-9999px';
-          textarea.style.left='-9999px';
-          document.body.appendChild(textarea);
-          const selection = document.getSelection && document.getSelection();
-          const previousRange = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
-          textarea.focus();
-          textarea.select();
-          let succeeded=false;
-          try{
-            succeeded = document.execCommand && document.execCommand('copy');
-          }catch(err){
-            succeeded = false;
-          }
-          document.body.removeChild(textarea);
-          if(previousRange && selection){
-            selection.removeAllRanges();
-            selection.addRange(previousRange);
-          }
-          if(succeeded){
-            resolve();
-          }else{
-            reject(new Error('copy-failed'));
-          }
-        }catch(err){
-          reject(err);
-        }
-      });
-    }
-
-    function showPlanSummaryCopyFeedback(btn, message, isError){
-      if(!btn) return;
-      if(!btn.dataset.originalLabel){
-        btn.dataset.originalLabel = btn.textContent || '複製表格';
-      }
-      btn.textContent = message;
-      btn.dataset.copyState = isError ? 'error' : 'success';
-      if(planSummaryCopyTimer){
-        clearTimeout(planSummaryCopyTimer);
-      }
-      planSummaryCopyTimer = window.setTimeout(function(){
-        btn.textContent = btn.dataset.originalLabel;
-        btn.dataset.copyState = '';
-        planSummaryCopyTimer = null;
-        if(!planSummaryClipboardText){
-          btn.disabled = true;
-          btn.setAttribute('aria-disabled', 'true');
-        }
-      }, 2000);
-    }
-
-    function handlePlanSummaryCopyClick(evt){
-      if(evt) evt.preventDefault();
-      const btn = evt && evt.currentTarget ? evt.currentTarget : document.getElementById('planSummaryCopyBtn');
-      if(!btn || !planSummaryClipboardText){
-        return;
-      }
-      btn.disabled = true;
-      btn.dataset.copyState = 'busy';
-      btn.setAttribute('aria-disabled', 'true');
-      writeClipboardText(planSummaryClipboardText).then(function(){
-        showPlanSummaryCopyFeedback(btn, '已複製');
-        const hasText = !!planSummaryClipboardText;
-        btn.disabled = !hasText;
-        btn.setAttribute('aria-disabled', hasText ? 'false' : 'true');
-      }).catch(function(){
-        showPlanSummaryCopyFeedback(btn, '複製失敗', true);
-        const hasText = !!planSummaryClipboardText;
-        btn.disabled = !hasText;
-        btn.setAttribute('aria-disabled', hasText ? 'false' : 'true');
-      });
+      const copyText = copyLines.join('\n');
+      const plainText = plainLines.join('\n');
+      setPlanSummaryClipboard(copyText ? `${copyText}\n${totalLine}` : totalLine);
+      setPlanSummaryPlainText(plainText ? `${plainText}\n${totalLine}` : totalLine);
+      scheduleLayoutMeasurements();
     }
 
     function initPlanSummaryCopy(){
-      const btn=document.getElementById('planSummaryCopyBtn');
-      if(!btn) return;
-      btn.addEventListener('click', handlePlanSummaryCopyClick);
-      setPlanSummaryClipboard(planSummaryClipboardText);
+      const tableBtn=document.getElementById('planSummaryCopyBtn');
+      if(tableBtn){
+        tableBtn.addEventListener('click', handlePlanSummaryCopyClick);
+      }
+      const plainBtn=document.getElementById('planSummaryCopyPlainBtn');
+      if(plainBtn){
+        plainBtn.addEventListener('click', handlePlanSummaryPlainCopyClick);
+      }
+      setPlanSummaryClipboard(planSummaryCopyState.text);
+      setPlanSummaryPlainText(planSummaryPlainState.text);
     }
-
-
-
     function buildConsentParties(){
       const parties=[];
       const includePrimary = ((document.getElementById('includePrimary')?.value || '').trim().toLowerCase() !== 'false');
@@ -8259,26 +8578,31 @@
         empty.className='hint';
         empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
         host.appendChild(empty);
+        scheduleLayoutMeasurements();
         return;
       }
-      const grouped={};
+      const groupedById={};
       entries.forEach(entry=>{
-        const cat=entry.category || 'OTHER';
-        if(!grouped[cat]) grouped[cat]=[];
-        grouped[cat].push(entry);
+        if(!entry) return;
+        const rawCategory=(entry.category || determineServiceCategory(entry.code) || 'OTHER').toUpperCase();
+        const groupId=getPlanCategoryGroupId(rawCategory);
+        if(!groupedById[groupId]) groupedById[groupId]=[];
+        groupedById[groupId].push(entry);
       });
-      const order=['B','C','D','EF','G','SC','MEAL','OTHER'];
-      order.forEach(cat=>{
-        const list=grouped[cat];
+      let renderedSections=0;
+      PLAN_CATEGORY_GROUPS.forEach(group=>{
+        const list=groupedById[group.id];
         if(!list || !list.length) return;
-        list.sort((a,b)=>a.code.localeCompare(b.code));
+        renderedSections++;
+        const sorted=list.slice().sort((a,b)=>(a.code || '').localeCompare(b.code || ''));
         const section=document.createElement('div');
         section.className='plan-category';
+        section.dataset.planGroup = group.id;
         const title=document.createElement('div');
         title.className='plan-category-title';
-        title.textContent=planCategoryLabel(cat);
+        title.textContent=group.label;
         section.appendChild(title);
-        list.forEach(entry=>{
+        sorted.forEach(entry=>{
           const entryBox=document.createElement('div');
           entryBox.className='plan-entry';
           const header=document.createElement('div');
@@ -8288,7 +8612,8 @@
           const grid=document.createElement('div');
           grid.className='plan-entry-grid';
           appendSelfPayField(grid, entry);
-          if(cat==='B'){
+          const entryCategory=(entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
+          if(entryCategory==='B'){
             if(entry.code && entry.code.indexOf('BB') === 0){
               const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
               grid.appendChild(vendorField.wrap);
@@ -8361,30 +8686,7 @@
               const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
               grid.appendChild(usageField.wrap);
             }
-          }else if(cat==='D'){
-            const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
-            grid.appendChild(vendorField.wrap);
-            const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
-            vendorNameField.wrap.dataset.planVendorName=entry.code;
-            grid.appendChild(vendorNameField.wrap);
-            const weeklyField=createPlanInput(entry,'weeklyFreq','每週次數',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-            grid.appendChild(weeklyField.wrap);
-            const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-            grid.appendChild(unitVisitField.wrap);
-            const extraVisitField=createPlanInput(entry,'monthlyExtraVisits','每月額外次數',{type:'number',attrs:{step:'1',min:'0',inputmode:'decimal'}});
-            grid.appendChild(extraVisitField.wrap);
-            const extraUnitField=createPlanInput(entry,'monthlyExtraUnit','額外每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-            grid.appendChild(extraUnitField.wrap);
-            const extraDescField=createPlanInput(entry,'monthlyExtraDesc','額外使用說明',{placeholder:'例：搭配陪同就醫使用'});
-            extraDescField.wrap.classList.add('full');
-            grid.appendChild(extraDescField.wrap);
-            const unitField=createPlanInput(entry,'monthlyUnits','月單位',{placeholder:'例：32',attrs:{inputmode:'decimal'}});
-            grid.appendChild(unitField.wrap);
-            const freqField=createPlanInput(entry,'frequency','頻率／計算說明',{as:'textarea',placeholder:'系統依數值自動產生，可再補充',className:'full'});
-            grid.appendChild(freqField.wrap);
-            const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
-            grid.appendChild(usageField.wrap);
-          }else if(cat==='C'){
+          }else if(entryCategory==='C'){
             const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
             grid.appendChild(vendorField.wrap);
             const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○專業服務單位'});
@@ -8394,7 +8696,7 @@
             grid.appendChild(periodField.wrap);
             const usageField=createPlanInput(entry,'usage','單次規劃說明',{as:'textarea',placeholder:'請描述專業服務內容與案主/家屬配合情況'});
             grid.appendChild(usageField.wrap);
-          }else if(cat==='EF'){
+          }else if(entryCategory==='EF'){
             const periodField=createPlanInput(entry,'period','補助額度期間',{placeholder:'例：113年01月~113年12月'});
             grid.appendChild(periodField.wrap);
             const originalField=createPlanInput(entry,'original','原有額度（元）',{placeholder:'例：20000',attrs:{inputmode:'decimal'}});
@@ -8405,7 +8707,7 @@
             grid.appendChild(remainField.wrap);
             const usageField=createPlanInput(entry,'usage','輔具／無障礙重點（選填）',{as:'textarea',placeholder:'例：浴室增設扶手、防滑墊；家屬可配合施工時程。'});
             grid.appendChild(usageField.wrap);
-          }else if(cat==='G'){
+          }else if(entryCategory==='G'){
             const periodField=createPlanInput(entry,'period','喘息額度期間',{placeholder:'例：113年01月~113年12月'});
             grid.appendChild(periodField.wrap);
             const plannedField=createPlanInput(entry,'planned','本次規劃（時數／單位）',{placeholder:'例：40單位',attrs:{inputmode:'decimal'}});
@@ -8414,12 +8716,12 @@
             grid.appendChild(remainField.wrap);
             const usageField=createPlanInput(entry,'usage','喘息安排與配合狀況',{as:'textarea',placeholder:'例：安排週三全日喘息，主要照顧者於此時段休息並處理家務。'});
             grid.appendChild(usageField.wrap);
-          }else if(cat==='SC'){
+          }else if(entryCategory==='SC'){
             const periodField=createPlanInput(entry,'period','短照額度期間',{placeholder:'例：113年01月~113年12月'});
             grid.appendChild(periodField.wrap);
             const noteField=createPlanInput(entry,'usage','比例或使用說明',{as:'textarea',placeholder:'例：本月短照占比18%，符合政策規範（≦20%）。'});
             grid.appendChild(noteField.wrap);
-          }else if(cat==='MEAL'){
+          }else if(entryCategory==='MEAL'){
             const mealsField=createPlanInput(entry,'mealsPerDay','1日核定餐數',{placeholder:'例：2（午、晚餐）'});
             grid.appendChild(mealsField.wrap);
             const mealTypeField=createPlanInput(entry,'mealType','餐別／質地',{placeholder:'例：午餐、晚餐；軟質餐'});
@@ -8442,8 +8744,14 @@
         });
         host.appendChild(section);
       });
+      if(!renderedSections){
+        const empty=document.createElement('div');
+        empty.className='hint';
+        empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
+        host.appendChild(empty);
+      }
+      scheduleLayoutMeasurements();
     }
-
     function updateSelfPayHint(code){
       if(!code) return;
       const hint = selfPayHintDisplays[code];
@@ -10005,7 +10313,8 @@
         long_goal: (document.getElementById('long_goal').value || '').trim(),
         servicePlan: serializeServicePlan(),
         planMeta: Object.assign({}, planMetaState),
-        planText: (document.getElementById('plan_text').value || '').trim()
+        planText: (document.getElementById('plan_text').value || '').trim(),
+        planOther: (document.getElementById('plan_other')?.value || '').trim()
       };
 
       google.script.run
@@ -10117,14 +10426,14 @@
       if(!anchor) return;
       const element = typeof anchor === 'string' ? document.querySelector(anchor) : anchor;
       if(!element) return;
-      const header = document.querySelector('.page-header');
-      let offset = 16;
-      if(header){
-        offset += header.getBoundingClientRect().height || 0;
+      if(typeof element.scrollIntoView === 'function'){
+        element.scrollIntoView({ behavior: options && options.instant ? 'auto' : 'smooth', block:'start' });
+      }else{
+        const rect = element.getBoundingClientRect();
+        const offset = Math.max(0, (currentScrollOffset || 0));
+        const top = window.pageYOffset + rect.top - offset;
+        window.scrollTo({ top: top < 0 ? 0 : top, behavior: options && options.instant ? 'auto' : 'smooth' });
       }
-      const rect = element.getBoundingClientRect();
-      const top = window.pageYOffset + rect.top - offset;
-      window.scrollTo({ top: top < 0 ? 0 : top, behavior: options && options.instant ? 'auto' : 'smooth' });
     }
 
     function setCurrentWizardStep(step, options){
@@ -10248,6 +10557,7 @@
         currentWizardStep = null;
         updateWizardButtons();
       }
+      scheduleLayoutMeasurements();
     }
 
     function initFloatingActions(){
@@ -10264,6 +10574,7 @@
         saveBtn.addEventListener('click', function(){ applyAndSave(); });
       }
       updateWizardButtons();
+      scheduleFloatingActionsMeasurement();
     }
 
 
@@ -10286,6 +10597,7 @@
       }else{
         updateWizardButtons();
       }
+      scheduleLayoutMeasurements();
     }
 
     function initPageTabs(){
@@ -10331,7 +10643,17 @@
       buildSection1(); // 初次預覽一次
     }
 
+    window.addEventListener('resize', scheduleLayoutMeasurements);
+    window.addEventListener('orientationchange', scheduleLayoutMeasurements);
+    window.addEventListener('focusin', scheduleLayoutMeasurements);
+    window.addEventListener('focusout', scheduleLayoutMeasurements);
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize', scheduleLayoutMeasurements);
+      window.visualViewport.addEventListener('scroll', scheduleLayoutMeasurements);
+    }
+
     window.addEventListener('load', ()=>{
+      initFontScaleControls();
       initWizardFlow();
       initFloatingActions();
       initPlanSummaryCopy();
@@ -10438,6 +10760,8 @@
       buildApprovalPlanPreview();
 
       initSectionViews();
+
+      scheduleLayoutMeasurements();
 
     });
   </script>
