@@ -322,6 +322,12 @@
     }
     .plan-entry-grid textarea,
     .plan-entry-grid .full{ grid-column:1/-1; }
+    .plan-hint{
+      font-size:0.9rem;
+      color:var(--label);
+      opacity:0.85;
+      margin-top:6px;
+    }
     .plan-field.auto-summary .auto-summary-box{
       padding:12px 16px;
       border:1px solid var(--border-strong);
@@ -4286,6 +4292,12 @@
     ];
     const HOME_CARE_MAP = {};
     HOME_CARE_ITEMS.forEach(item => { HOME_CARE_MAP[item.code] = item; });
+    const BA_CODES = HOME_CARE_ITEMS
+      .filter(item => item && item.code && item.code.indexOf('BA') === 0)
+      .map(item => item.code);
+    const BA_CODE_SET = new Set(BA_CODES);
+    const BA_MANUAL_UNIT_CODES = new Set([]);
+    const BA_DEFAULT_UNITS_PER_VISIT = {};
     const DAY_CARE_ITEMS = [
       {
         code: 'BB01',
@@ -4552,7 +4564,7 @@
     function renderFormal(){
       const host=document.getElementById('sp_formal');
       host.innerHTML='';
-      ba02WeeklyDisplays = {};
+      baFrequencyDisplays = {};
       FORMAL.forEach((name)=>{
         const lab=document.createElement('label');
         lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleGoalInputs()"> ${name}`;
@@ -4682,7 +4694,7 @@
       HOME_CARE_ITEMS.forEach(item=>{
         const card=createServiceCard(item, {
           hasQuantity:true,
-          quantityLabel:'月目標',
+          quantityLabel:'月目標次數',
           onToggle:(card, selected)=>{ onHomeCareToggle(card, selected); }
         });
         host.appendChild(card);
@@ -4781,7 +4793,7 @@
 
 
     const servicePlanState = {};
-    let ba02WeeklyDisplays = {};
+    let baFrequencyDisplays = {};
     let selfPayHintDisplays = {};
     const MISMATCH_REASON_OPTIONS = [
       { value:'身體狀況', label:'身體狀況變化', short:'身體狀況' },
@@ -4821,6 +4833,14 @@
         TRANSPORT_SERVICE_MAP[code] || RESPITE_SERVICE_MAP[code] || MEAL_SERVICE_MAP[code] || null;
     }
 
+    function isBaCode(code){
+      return !!(code && BA_CODE_SET.has(code));
+    }
+
+    function requiresBaManualUnits(code){
+      return !!(code && BA_MANUAL_UNIT_CODES.has(code));
+    }
+
     function ensurePlanEntry(code, initialMonthlyUnits){
       if(!code) return null;
       const item = lookupServiceItem(code);
@@ -4854,6 +4874,7 @@
           autoPlanMonthlyVisits: null,
           autoPlanWeeklyVisits: null,
           autoPlanMonthlyUnits: null,
+          autoPlanMonthlyUnitCount: null,
           autoPlanRemainingCap: null,
           autoPlanUnitLabel: '',
           autoUsageText: '',
@@ -4873,6 +4894,12 @@
         // 讓填寫者僅需微調即可完成內容；若使用者之後手動覆寫，
         // onPlanFieldChange 會將 usageManual 標記為 true，避免再被自動更新。
         applyAutoUsage(servicePlanState[code], item.short || '');
+      }
+      if(isBaCode(code) && requiresBaManualUnits(code)){
+        const defaultUnits = getBaDefaultUnitsPerVisit(code);
+        if(defaultUnits > 0 && !servicePlanState[code].unitPerVisit){
+          servicePlanState[code].unitPerVisit = formatPlanNumber(defaultUnits);
+        }
       }
       const entry = servicePlanState[code];
       if(entry.selfPayAmount === undefined) entry.selfPayAmount = '';
@@ -5641,20 +5668,23 @@
       if(!entry) return;
       entry[field] = evt.target.value;
       let skipPreview=false;
+      const isBa=isBaCode(code);
       if(field === 'vendorMode'){
         updatePlanVendorVisibility(code);
       }else if(field === 'monthlyUnits'){
         if((entry[field]||'').trim()){
           entry.monthlyUnitsManual = true;
-          entry.autoMonthlyUnits = null;
+          if(!isBa) entry.autoMonthlyUnits = null;
         }else{
           entry.monthlyUnitsManual = false;
-          entry.autoMonthlyUnits = '';
+          if(!isBa) entry.autoMonthlyUnits = '';
+        }
+        if(isBa){
+          updateBaEntryDerived(code);
+          skipPreview=true;
+        }else{
           updatePlanMonthlyComputation(code);
           skipPreview=true;
-        }
-        if(code === 'BA02'){
-          updateBa02WeeklyDisplay(code);
         }
       }else if(field === 'selfPayAmount'){
         const value = (entry[field] || '').trim();
@@ -5666,12 +5696,22 @@
         }else{
           entry.frequencyManual = false;
           entry.autoFrequencyText = '';
+          if(isBa){
+            updateBaEntryDerived(code);
+            skipPreview=true;
+          }else{
+            updatePlanMonthlyComputation(code);
+            skipPreview=true;
+          }
+        }
+      }else if(field === 'weeklyFreq' || field === 'unitPerVisit' || field === 'monthlyExtraVisits' || field === 'monthlyExtraUnit' || field === 'monthlyExtraDesc'){
+        if(isBa && field === 'unitPerVisit'){
+          updateBaEntryDerived(code);
+          skipPreview=true;
+        }else if(!isBa){
           updatePlanMonthlyComputation(code);
           skipPreview=true;
         }
-      }else if(field === 'weeklyFreq' || field === 'unitPerVisit' || field === 'monthlyExtraVisits' || field === 'monthlyExtraUnit' || field === 'monthlyExtraDesc'){
-        updatePlanMonthlyComputation(code);
-        skipPreview=true;
       }else if(field === 'usage'){
         entry.usageManual = !!((entry.usage || '').trim() && entry.usage !== entry.autoUsageText);
       }
@@ -5695,6 +5735,107 @@
       const fixed = Math.round(num * 100) / 100;
       if(Math.abs(fixed - Math.round(fixed)) < 1e-6) return String(Math.round(fixed));
       return fixed.toFixed(2).replace(/\.00$/, '').replace(/0$/, '');
+    }
+
+    function getBaDefaultUnitsPerVisit(code){
+      if(code && Object.prototype.hasOwnProperty.call(BA_DEFAULT_UNITS_PER_VISIT, code)){
+        const configured = Number(BA_DEFAULT_UNITS_PER_VISIT[code]);
+        if(Number.isFinite(configured) && configured > 0){
+          return configured;
+        }
+      }
+      return 1;
+    }
+
+    function getBaPerVisitUnits(entry){
+      if(!entry) return 1;
+      const code = entry.code || '';
+      if(requiresBaManualUnits(code)){
+        const manual = parsePlanNumber(entry.unitPerVisit);
+        if(manual > 0) return manual;
+      }
+      return getBaDefaultUnitsPerVisit(code);
+    }
+
+    function buildBaWeeklyText(entry){
+      if(!entry || !isBaCode(entry.code)) return '';
+      const weekly = isFiniteNumber(entry.autoPlanWeeklyVisits) ? entry.autoPlanWeeklyVisits : 0;
+      const perVisit = getBaPerVisitUnits(entry);
+      const unitCount = isFiniteNumber(entry.autoPlanMonthlyUnitCount)
+        ? entry.autoPlanMonthlyUnitCount
+        : 0;
+      if(!(weekly > 0 && perVisit > 0 && unitCount > 0)) return '';
+      const weeklyText = formatPlanNumber(weekly);
+      const perVisitText = formatPlanNumber(perVisit);
+      const monthlyText = formatPlanNumber(unitCount);
+      const targetVisits = parsePlanNumber(entry.monthlyUnits);
+      const targetText = targetVisits > 0 ? formatPlanNumber(targetVisits) : '';
+      const suffix = targetText ? `（月目標${targetText}次）` : '';
+      return `每週${weeklyText}次×每次${perVisitText}單位＝約${monthlyText}單位/月${suffix}`;
+    }
+
+    function updateBaFrequencyDisplay(code){
+      if(!code) return;
+      const box = baFrequencyDisplays[code];
+      if(!box || !box.isConnected){
+        if(baFrequencyDisplays[code]) delete baFrequencyDisplays[code];
+        return;
+      }
+      const entry = servicePlanState[code];
+      const text = buildBaWeeklyText(entry);
+      if(text){
+        box.textContent = text;
+        box.classList.remove('empty');
+      }else{
+        box.textContent = '尚未設定月目標';
+        box.classList.add('empty');
+      }
+    }
+
+    function updateBaEntryDerived(code, opts){
+      if(!code || !isBaCode(code)) return;
+      const entry = servicePlanState[code];
+      if(!entry) return;
+      const targetVisits = parsePlanNumber(entry.monthlyUnits);
+      const weeklyVisits = targetVisits > 0 ? Math.ceil(targetVisits / 4.5) : 0;
+      const perVisitUnits = getBaPerVisitUnits(entry);
+      const scheduledMonthlyVisits = weeklyVisits > 0 ? weeklyVisits * 4.5 : 0;
+      const monthlyUnitCount = (weeklyVisits > 0 && perVisitUnits > 0)
+        ? scheduledMonthlyVisits * perVisitUnits
+        : 0;
+      entry.autoPlanUnitLabel = '次';
+      entry.autoPlanWeeklyVisits = weeklyVisits > 0 ? weeklyVisits : null;
+      entry.autoPlanMonthlyVisits = scheduledMonthlyVisits > 0 ? scheduledMonthlyVisits : null;
+      entry.autoPlanMonthlyUnitCount = monthlyUnitCount > 0 ? monthlyUnitCount : null;
+      entry.monthlyUnitsComputed = monthlyUnitCount > 0 ? formatPlanNumber(monthlyUnitCount) : '';
+      entry.autoMonthlyUnits = entry.monthlyUnitsComputed;
+      const rate = getServiceRate(code);
+      let price = 0;
+      if(rate && rate.price !== undefined && rate.price !== null){
+        const numericPrice = Number(rate.price);
+        if(Number.isFinite(numericPrice) && numericPrice > 0){
+          price = numericPrice;
+        }
+      }
+      const monthlyCost = monthlyUnitCount > 0 && price > 0 ? monthlyUnitCount * price : 0;
+      const costInt = monthlyCost > 0 ? toCurrencyInt(monthlyCost) : 0;
+      entry.autoPlanMonthlyUnits = costInt > 0 ? costInt : null;
+      const freqText = buildBaWeeklyText(entry);
+      if(freqText){
+        entry.autoFrequencyText = freqText;
+        if(!entry.frequencyManual || !entry.frequency || entry.frequency === entry.autoFrequencyText){
+          entry.frequency = freqText;
+          entry.frequencyManual = false;
+        }
+      }else if(!entry.frequencyManual){
+        entry.autoFrequencyText = '';
+        entry.frequency = '';
+      }
+      updateBaFrequencyDisplay(code);
+      if(!(opts && opts.skipPreview)){
+        buildApprovalPlanPreview();
+        buildPlanSummaryPreview();
+      }
     }
 
     function updatePlanMonthlyComputation(code, opts){
@@ -5899,8 +6040,8 @@
       if(entry.period) lines.push(`期間：${entry.period}`);
       const freq = entry.frequencyManual ? entry.frequency : (entry.autoFrequencyText || entry.frequency);
       if(freq && category !== 'C') lines.push(freq);
-      if(entry.code === 'BA02'){
-        const weeklyText=buildBa02WeeklyText(entry);
+      if(isBaCode(entry.code)){
+        const weeklyText=buildBaWeeklyText(entry);
         if(weeklyText) lines.push(weeklyText);
       }
       if(entry.usage){
@@ -6294,6 +6435,7 @@
       if(!host) return;
       host.innerHTML='';
       selfPayHintDisplays = {};
+      baFrequencyDisplays = {};
       const entries=Object.values(servicePlanState);
       if(!entries.length){
         const empty=document.createElement('div');
@@ -6348,25 +6490,34 @@
               appendAutoSummaryField(grid, entry, '預估交通安排');
               const usageField=createPlanInput(entry,'usage','交通使用方式',{as:'textarea',placeholder:'系統已提供建議內容，可再補充乘車安排',className:'full'});
               grid.appendChild(usageField.wrap);
-            }else if(entry.code === 'BA02'){
+            }else if(isBaCode(entry.code)){
               const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
               grid.appendChild(vendorField.wrap);
               const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
               vendorNameField.wrap.dataset.planVendorName=entry.code;
               grid.appendChild(vendorNameField.wrap);
-              const unitField=createPlanInput(entry,'monthlyUnits','月目標',{placeholder:'例：10',attrs:{inputmode:'decimal'}});
+              if(requiresBaManualUnits(entry.code)){
+                const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                grid.appendChild(unitVisitField.wrap);
+              }
+              const unitField=createPlanInput(entry,'monthlyUnits','月目標次數',{placeholder:'例：10',attrs:{inputmode:'decimal',min:'0'}});
               grid.appendChild(unitField.wrap);
               const weeklyWrap=document.createElement('div');
-              weeklyWrap.className='plan-field';
+              weeklyWrap.className='plan-field full';
               const weeklyLabel=document.createElement('label');
-              weeklyLabel.textContent='換算每週次數';
+              weeklyLabel.textContent='排程換算';
               weeklyWrap.appendChild(weeklyLabel);
               const weeklyBox=document.createElement('div');
               weeklyBox.className='auto-summary-box empty';
-              weeklyBox.dataset.planBa02Display = entry.code;
+              weeklyBox.dataset.planBaDisplay = entry.code;
               weeklyWrap.appendChild(weeklyBox);
+              const weeklyHint=document.createElement('div');
+              weeklyHint.className='plan-hint';
+              weeklyHint.textContent='每週次數以 4.5 週換算，排程取整；金額計算仍以向下取整（元）。';
+              weeklyWrap.appendChild(weeklyHint);
               grid.appendChild(weeklyWrap);
-              ba02WeeklyDisplays[entry.code] = weeklyBox;
+              baFrequencyDisplays[entry.code] = weeklyBox;
+              appendAutoSummaryField(grid, entry, '預估使用概況');
               const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
               grid.appendChild(usageField.wrap);
             }else{
@@ -6464,34 +6615,16 @@
           }
           entryBox.appendChild(grid);
           section.appendChild(entryBox);
-          if(entry.code === 'BA02'){
-            updateBa02WeeklyDisplay(entry.code);
+          if(isBaCode(entry.code)){
+            updateBaEntryDerived(entry.code, {skipPreview:true});
           }
           updatePlanVendorVisibility(entry.code);
-          if(!(entry.code && entry.code.indexOf('BB') === 0) && entry.code !== 'BD03' && entry.code !== 'BA02'){
+          if(!(entry.code && entry.code.indexOf('BB') === 0) && entry.code !== 'BD03' && !isBaCode(entry.code)){
             updatePlanMonthlyComputation(entry.code, {skipPreview:true});
           }
         });
         host.appendChild(section);
       });
-    }
-
-    function updateBa02WeeklyDisplay(code){
-      if(!code) return;
-      const box=ba02WeeklyDisplays[code];
-      if(!box || !box.isConnected){
-        if(ba02WeeklyDisplays[code]) delete ba02WeeklyDisplays[code];
-        return;
-      }
-      const entry=servicePlanState[code];
-      const text=buildBa02WeeklyText(entry);
-      if(text){
-        box.textContent=text;
-        box.classList.remove('empty');
-      }else{
-        box.textContent='尚未設定月目標';
-        box.classList.add('empty');
-      }
     }
 
     function updateSelfPayHint(code){
@@ -6572,27 +6705,6 @@
         .sort((a,b)=>a.code.localeCompare(b.code));
     }
 
-    function buildBa02WeeklyText(entry){
-      if(!entry || entry.code !== 'BA02') return '';
-      const manualMonthly=(entry.monthlyUnits || '').trim();
-      let monthlyValue=manualMonthly ? parsePlanNumber(manualMonthly) : 0;
-      if(!(monthlyValue > 0)){
-        const computed=(entry.monthlyUnitsComputed || '').trim();
-        if(computed){
-          monthlyValue=parsePlanNumber(computed);
-        }
-      }
-      if(!(monthlyValue > 0) && isFiniteNumber(entry.autoPlanMonthlyVisits)){
-        monthlyValue=entry.autoPlanMonthlyVisits;
-      }
-      if(!(monthlyValue > 0)) return '';
-      const weeklyValue=Math.ceil(monthlyValue / 4.5);
-      if(!(weeklyValue > 0)) return '';
-      const weeklyText=formatPlanNumber(weeklyValue);
-      if(!weeklyText) return '';
-      return `每週 ${weeklyText} 次`;
-    }
-
     function formatPlanEntryB(entry, idx){
       if(!entry) return '';
       let vendor='';
@@ -6605,15 +6717,29 @@
       }else{
         vendor = '（請填輪派或指定單位）';
       }
+      if(isBaCode(entry.code)){
+        const usageText = (entry.usage || entry.autoUsageText || '').trim();
+        const monthlyUnitsText = (entry.monthlyUnitsComputed || entry.autoMonthlyUnits || entry.monthlyUnits || '').trim();
+        const freqText = buildBaWeeklyText(entry);
+        const costText = isFiniteNumber(entry.autoPlanMonthlyUnits)
+          ? `預估耗用${formatAutoInteger(entry.autoPlanMonthlyUnits)} 元`
+          : '';
+        const monthlySegment = monthlyUnitsText
+          ? `核定${monthlyUnitsText}單位/月${costText ? `（${costText}）` : ''}`
+          : `核定（請填月目標）${costText ? `（${costText}）` : ''}`;
+        const freqSegment = freqText || '排程未設定';
+        const usageSegment = usageText || '請補充使用方式或案主期待。';
+        const totalSegment = monthlyUnitsText ? `共 ${monthlyUnitsText} 單位/月` : '共（請填月目標）';
+        let text = `${idx}.${entry.code}[${entry.name || ''}]${vendor}`;
+        text += `｜${monthlySegment}｜${freqSegment}｜${usageSegment}｜${totalSegment}`;
+        if(!text.endsWith('。')) text += '。';
+        return text;
+      }
       const summary = buildAutoSummaryText(entry);
       const usageText = (entry.usage || entry.autoUsageText || '').trim();
       let text=`${idx}.${entry.code}[${entry.name || ''}]${vendor}`;
-      const ba02WeeklyText = buildBa02WeeklyText(entry);
       if(summary){
         text += `，${summary}`;
-        if(ba02WeeklyText){
-          text += `；${ba02WeeklyText}`;
-        }
         if(usageText){
           text += `；${usageText}`;
         }else{
@@ -6623,7 +6749,6 @@
         const monthly = entry.monthlyUnits ? `*${entry.monthlyUnits}` : '*（請填月單位）';
         const parts=[];
         if(entry.frequency) parts.push(entry.frequency);
-        if(ba02WeeklyText) parts.push(ba02WeeklyText);
         if(usageText) parts.push(usageText);
         text=`${idx}.${entry.code}[${entry.name || ''}]${monthly}${vendor}`;
         if(parts.length){
@@ -6951,7 +7076,11 @@
           if(planInput && planInput !== document.activeElement){ planInput.value = value; }
         }
       }
-      buildApprovalPlanPreview();
+      if(isBaCode(code)){
+        updateBaEntryDerived(code);
+      }else{
+        buildApprovalPlanPreview();
+      }
     }
 
     function onDayCareToggle(card, selected){
