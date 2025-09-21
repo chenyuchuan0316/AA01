@@ -787,7 +787,10 @@
       margin-bottom:8px;
       flex-wrap:wrap;
     }
-    .summary-table-wrapper{ overflow-x:auto; }
+    .summary-table-wrapper{
+      overflow:auto;
+      max-height:clamp(280px, 48vh, 520px);
+    }
     .summary-table{ width:100%; border-collapse:collapse; min-width:600px; }
     .summary-table th, .summary-table td{
       border:1px solid var(--border);
@@ -796,6 +799,14 @@
       vertical-align:top;
     }
     .summary-table th{ background:#eef2ff; color:#1f2937; font-weight:700; }
+    .summary-table thead{ position:sticky; top:0; z-index:1; }
+    .summary-table thead th{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:#eef2ff;
+      box-shadow:0 2px 0 rgba(148,163,184,.18);
+    }
 
     .cms-level-group{
       display:flex;
@@ -803,6 +814,17 @@
       row-gap:var(--space-xs);
       flex-wrap:wrap;
       align-items:flex-start;
+    }
+    @media (max-width:640px){
+      .cms-level-group{
+        display:grid;
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+        justify-items:stretch;
+      }
+      .cms-level-group button{
+        min-width:0;
+        width:100%;
+      }
     }
     .cms-level-group button{
       min-width:52px;
@@ -870,18 +892,155 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
+    @media (min-width:1280px){
+      #basicInfoGroup .basic-info-fields{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(var(--intro-colw), 1fr));
+        column-gap:var(--gap);
+        row-gap:var(--space-sm);
+        justify-content:flex-start;
+      }
+      #basicInfoGroup .basic-info-row{
+        display:contents;
+      }
+      #basicInfoGroup .basic-info-field{
+        width:100%;
+        max-width:100%;
+      }
+      #basicInfoGroup .unit-code-field,
+      #basicInfoGroup .case-manager-field,
+      #basicInfoGroup .case-name-field,
+      #basicInfoGroup .consult-name-field{
+        width:100%;
+        max-width:100%;
+      }
+      #basicInfoGroup .cms-level-row{
+        grid-column:1 / -1;
+      }
+    }
     #basicInfoGroup .cms-level-row{
       display:flex;
       flex-direction:column;
       gap:var(--space-xs);
       margin-top:var(--space-xxs);
     }
-    /* 依新需求改為垂直排列：電聯日期、家訪日期、（出院日期）皆縱向堆疊 */
-    #contactVisitGroup .form-row-2col{ grid-template-columns:1fr !important; }
-    #contactVisitGroup .date-row{ display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-xs); }
-    #contactVisitGroup .date-row .datebox{ width:100%; max-width:var(--intro-colw); }
-    #contactVisitGroup .date-row .inline-checkbox{ margin:0; }
-    #contactVisitGroup .datebox input[type="date"]{ max-width:var(--intro-colw); }
+    #contactVisitGroup .contact-visit-cards{
+      display:grid;
+      gap:var(--space-sm);
+    }
+    @media (min-width:960px){
+      #contactVisitGroup .contact-visit-cards{
+        grid-template-columns:repeat(3, minmax(220px, 1fr));
+      }
+    }
+    #contactVisitGroup .contact-visit-card{
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:var(--space-sm);
+      background:#fff;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-xs);
+    }
+    #contactVisitGroup .contact-visit-card-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--space-xs);
+    }
+    #contactVisitGroup .contact-visit-card-body{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-xs);
+    }
+    #contactVisitGroup .contact-visit-card .datebox{
+      width:100%;
+      max-width:var(--intro-colw);
+    }
+    #contactVisitGroup .contact-visit-card .inline-checkbox{
+      margin:0;
+    }
+    #visitPartnersGroup{
+      position:relative;
+    }
+    #visitPartnersGroup .titlebar{
+      padding-right:140px;
+    }
+    #visitPartnersGroup .titlebar.titlebar--mt-xxs{
+      padding-right:0;
+    }
+    #visitPartnersGroup .extra-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:var(--gap);
+      align-items:flex-start;
+      margin-top:var(--space-xs);
+    }
+    #visitPartnersGroup .extra-row .field-intro{
+      flex:0 0 var(--intro-colw);
+      max-width:var(--intro-colw);
+    }
+    @media (max-width:720px){
+      #visitPartnersGroup .extra-row{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      #visitPartnersGroup .extra-row .field-intro{
+        flex:1 1 100%;
+        max-width:100%;
+      }
+    }
+    #visitPartnersGroup .extra-row-actions{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+    }
+    #visitPartnersGroup .extra-remove{
+      width:42px;
+      height:42px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(15,23,42,.04);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.1rem;
+      line-height:1;
+      cursor:pointer;
+      color:#4b5563;
+      transition:background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    #visitPartnersGroup .extra-remove:hover,
+    #visitPartnersGroup .extra-remove:focus{
+      background:rgba(11,87,208,.12);
+      border-color:var(--accent);
+      color:var(--accent);
+      outline:none;
+    }
+    #visitPartnersGroup .extra-remove span{ pointer-events:none; }
+    #extras_conflict{
+      position:absolute;
+      top:var(--group-padding);
+      right:var(--group-padding);
+      max-width:calc(100% - 2 * var(--group-padding));
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid #facc15;
+      background:#fef9c3;
+      color:#854d0e;
+      font-size:0.9rem;
+      line-height:1.5;
+      box-shadow:0 4px 12px rgba(250,204,21,.18);
+      display:none;
+      z-index:2;
+    }
+    #extras_conflict[data-show="1"]{ display:block; }
+    #visitPartnersGroup[data-conflict="1"]{
+      background:linear-gradient(0deg, rgba(254,249,195,.55), rgba(254,249,195,.55)), var(--card);
+      border-color:#facc15;
+    }
     #basicInfoGroup input[type="text"],
     #basicInfoGroup input[type="search"],
     #basicInfoGroup select{
@@ -963,6 +1122,16 @@
     }
     .section-controls button.section-toggle-all{
       background:#f7f9fc;
+    }
+    .section-advanced-count{
+      margin-left:auto;
+      font-size:0.85rem;
+      color:#475569;
+      font-weight:600;
+    }
+    .section-advanced-count[data-hidden="1"]{ display:none; }
+    [data-section][data-show-advanced="0"] .section-advanced-count{
+      color:#b45309;
     }
 
     .section-progress{
@@ -1186,7 +1355,71 @@
     .virtual-checklist-item:last-child{ border-bottom:none; }
     .virtual-checklist-item input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
     .virtual-checklist-print{ display:none; margin-top:var(--space-xs); font-size:0.9rem; line-height:1.45; color:#0f172a; }
+    .virtual-checklist-print ol{ margin:var(--space-xxs) 0 0 1.25em; padding-left:1.25em; }
+    .virtual-checklist-print li{ margin-bottom:4px; }
 
+    #careGoalsGroup .care-goals-layout{
+      display:flex;
+      flex-direction:column;
+      gap:var(--group-spacing);
+    }
+    #careGoalsGroup .care-goals-main{
+      display:flex;
+      flex-direction:column;
+      gap:var(--group-spacing);
+    }
+    #careGoalsGroup .care-goals-side{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
+    }
+    #careGoalsGroup .care-goals-side-inner{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
+    }
+    #careGoalsGroup .care-goal-block{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-xs);
+    }
+    #careGoalsGroup .care-goal-heading{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--space-xs);
+      margin-bottom:var(--space-xs);
+    }
+    #problemCount{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:4px 12px;
+      border-radius:999px;
+      background:rgba(11,87,208,.12);
+      color:#0b1d4d;
+      font-size:0.9rem;
+      font-weight:700;
+      min-width:0;
+    }
+    @media (min-width:1280px){
+      #careGoalsGroup .care-goals-layout{
+        flex-direction:row;
+        align-items:flex-start;
+      }
+      #careGoalsGroup .care-goals-main{
+        flex:1 1 0;
+        min-width:0;
+      }
+      #careGoalsGroup .care-goals-side{
+        flex:0 0 clamp(320px, 38%, 420px);
+        max-width:clamp(320px, 38%, 420px);
+      }
+      #careGoalsGroup .care-goals-side-inner{
+        position:sticky;
+        top:calc(var(--sticky-header-height) + var(--space-lg));
+      }
+    }
 
     .lesion-mode{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
     .lesion-mode button.small{ min-width:112px; }
@@ -1237,6 +1470,46 @@
       flex-direction:column;
       gap:var(--space-md);
       margin-top:var(--space-sm);
+    }
+    .plan-workspace{
+      display:flex;
+      flex-direction:column;
+      gap:var(--group-spacing);
+      width:100%;
+    }
+    .plan-workspace-main,
+    .plan-workspace-side{
+      display:flex;
+      flex-direction:column;
+      gap:var(--group-spacing);
+    }
+    .plan-workspace-main > .group,
+    .plan-workspace-side > .group{
+      margin:0;
+    }
+    @media (min-width:1440px){
+      .plan-workspace{
+        flex-direction:row;
+        align-items:flex-start;
+      }
+      .plan-workspace-main{
+        flex:1 1 0;
+        min-width:0;
+      }
+      .plan-workspace-side{
+        flex:0 0 clamp(320px, 38%, 420px);
+        max-width:clamp(320px, 38%, 420px);
+        position:sticky;
+        top:calc(var(--sticky-header-height) + var(--space-lg));
+        max-height:calc(100vh - (var(--sticky-header-height) + var(--space-lg) + var(--fab-gap) + 48px));
+        overflow:auto;
+        padding-right:4px;
+      }
+      .plan-workspace-side::-webkit-scrollbar{ width:8px; }
+      .plan-workspace-side::-webkit-scrollbar-thumb{
+        background:rgba(148,163,184,.5);
+        border-radius:999px;
+      }
     }
     .plan-category{
       border:1px solid var(--border);
@@ -1326,14 +1599,19 @@
       background:#edf1ff;
     }
     .plan-summary-totals{
-      display:flex;
-      flex-wrap:wrap;
+      display:grid;
+      grid-template-columns:repeat(1, minmax(0, 1fr));
       gap:var(--space-sm);
       margin-bottom:12px;
     }
+    @media (min-width:720px){
+      .plan-summary-totals{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width:1280px){
+      .plan-summary-totals{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
+    }
     .plan-summary-total-card{
-      flex:1 1 220px;
-      min-width:200px;
+      min-width:0;
       background:#f8fafc;
       border:1px solid var(--border);
       border-radius:12px;
@@ -1646,6 +1924,22 @@
     }
     .error-messages ul{ margin:0; padding-left:20px; }
     .error-messages li{ margin-bottom:4px; }
+    .error-summary{
+      display:none;
+      margin:var(--space-xs) 0;
+      padding:12px 14px;
+      border-radius:var(--radius);
+      border:1px solid #fbbf24;
+      background:#fef3c7;
+      color:#92400e;
+      font-size:.95rem;
+      line-height:1.5;
+    }
+    .error-summary a{ color:inherit; text-decoration:underline; }
+    .error-summary a:hover{ text-decoration:none; }
+    .error-summary ul{ margin:0; padding-left:20px; }
+    #section1_block[data-hide-filled="1"] #section1_error_summary[data-show="1"]{ display:block; }
+    #section1_block #section1_error_summary[data-show="0"]{ display:none; }
     .side-nav{
       position:fixed;
       right:max(var(--space-md), env(safe-area-inset-right) + var(--space-md));
@@ -1765,18 +2059,77 @@
     .floating-actions button[data-variant="ghost"]{
       background:rgba(248,250,252,.9);
     }
+    #wizardMoreWrapper{
+      position:relative;
+      display:none;
+    }
+    #wizardMoreBtn{
+      display:none;
+      min-width:52px;
+      height:52px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      padding:0;
+      font-size:1.5rem;
+      line-height:1;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    #wizardMoreBtn:hover{
+      background:#eef2ff;
+    }
+    .floating-more-menu{
+      position:absolute;
+      bottom:calc(100% + 6px);
+      right:0;
+      min-width:180px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      box-shadow:0 16px 32px rgba(15,23,42,.16);
+      padding:var(--space-xs);
+      display:none;
+      flex-direction:column;
+      gap:var(--space-xs);
+      z-index:90;
+    }
+    .floating-more-menu[data-open="1"]{ display:flex; }
+    .floating-more-menu button{ min-width:0; width:100%; }
     @media (max-width:640px){
       .floating-actions{
-        justify-content:center;
-        gap:var(--space-sm);
+        display:grid;
+        grid-template-columns:minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items:center;
+        gap:var(--space-xs);
       }
       .floating-actions button{
-        flex:1 1 140px;
+        min-width:0;
+      }
+      #wizardSaveBtn{
+        grid-column:1;
+        justify-self:stretch;
+      }
+      #wizardNextBtn{
+        grid-column:3;
+        justify-self:stretch;
+      }
+      #wizardPrevBtn{ display:none; }
+      #wizardMoreWrapper{
+        display:flex;
+        justify-content:center;
+        grid-column:2;
+      }
+      #wizardMoreBtn{
+        display:inline-flex;
       }
     }
     #wizardSaveBtn{ order:1; }
-    #wizardNextBtn{ order:2; }
-    #wizardPrevBtn{ order:3; }
+    #wizardMoreWrapper{ order:2; }
+    #wizardNextBtn{ order:3; }
+    #wizardPrevBtn{ order:4; }
     #errorSummary{
       display:none;
       margin-top:var(--space-sm);
@@ -1941,6 +2294,7 @@
       .checkcol label{ border:none; padding:var(--space-xxs) var(--space-xs); }
       .checkcol label::before{ content:'□ '; }
       .checkcol label[data-checked="1"]::before{ content:'■ '; }
+      .checkcol-selected-chips{ display:none !important; }
       textarea, input, select{ border:none; background:transparent; box-shadow:none; }
       .virtual-checklist-print{ display:block !important; }
     }
@@ -2095,50 +2449,59 @@
 
       <div class="group" id="contactVisitGroup">
         <span class="h1">計畫目標</span>
-        <div class="titlebar">
-          <label class="h2">一、電聯日期</label>
-        </div>
-        <div class="grid2 form-row-2col">
-          <div>
-            <label class="h3" for="callDate">電聯日期</label>
-            <div id="callDateControls" class="datebox">
-              <input id="callDate" type="date">
-              <div class="date-controls">
-                <button type="button" class="small" aria-label="前一天" onclick="shiftDate('callDate', -1)">−</button>
-                <button type="button" class="small" aria-label="後一天" onclick="shiftDate('callDate',  1)">+</button>
-              </div>
+        <div class="contact-visit-cards">
+          <div class="contact-visit-card" data-card="call">
+            <div class="contact-visit-card-header">
+              <span class="h2">一、電聯日期</span>
             </div>
-            <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
-              <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
-            </label>
-            <div id="consultVisitText" class="subtle" style="display:none; margin-top:var(--space-xs);"></div>
-          </div>
-        </div>
-        <div class="titlebar">
-          <label class="h2">二、家訪日期</label>
-        </div>
-        <div class="grid2 form-row-2col">
-          <div>
-            <label class="h3" for="visitDate">家訪日期</label>
-            <div class="datebox">
-              <input id="visitDate" type="date">
-              <div class="date-controls">
-                <button type="button" class="small" aria-label="前一天" onclick="shiftDate('visitDate', -1)">−</button>
-                <button type="button" class="small" aria-label="後一天" onclick="shiftDate('visitDate',  1)">+</button>
-              </div>
-            </div>
-          </div>
-          <div>
-            <label class="h3">出準日期</label>
-            <label class="inline-checkbox" style="display:block; margin-top:var(--space-xxs);">
-              <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出準日期
-            </label>
-            <div id="dischargeBox" style="display:none; margin-top:var(--space-xs);">
-              <div class="datebox">
-                <input id="dischargeDate" type="date">
+            <div class="contact-visit-card-body">
+              <label class="h3" for="callDate">電聯日期</label>
+              <div id="callDateControls" class="datebox">
+                <input id="callDate" type="date">
                 <div class="date-controls">
-                  <button type="button" class="small" aria-label="前一天" onclick="shiftDate('dischargeDate', -1)">−</button>
-                  <button type="button" class="small" aria-label="後一天" onclick="shiftDate('dischargeDate',  1)">+</button>
+                  <button type="button" class="small" aria-label="減一天" aria-controls="callDate" title="減一天" onclick="shiftDate('callDate', -1)">−</button>
+                  <button type="button" class="small" aria-label="加一天" aria-controls="callDate" title="加一天" onclick="shiftDate('callDate', 1)">+</button>
+                </div>
+              </div>
+              <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
+                <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
+              </label>
+              <div id="consultVisitText" class="subtle" style="display:none; margin-top:var(--space-xs);"></div>
+            </div>
+          </div>
+
+          <div class="contact-visit-card" data-card="visit">
+            <div class="contact-visit-card-header">
+              <span class="h2">二、家訪日期</span>
+            </div>
+            <div class="contact-visit-card-body">
+              <label class="h3" for="visitDate">家訪日期</label>
+              <div class="datebox">
+                <input id="visitDate" type="date">
+                <div class="date-controls">
+                  <button type="button" class="small" aria-label="減一天" aria-controls="visitDate" title="減一天" onclick="shiftDate('visitDate', -1)">−</button>
+                  <button type="button" class="small" aria-label="加一天" aria-controls="visitDate" title="加一天" onclick="shiftDate('visitDate', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="contact-visit-card" data-card="discharge">
+            <div class="contact-visit-card-header">
+              <span class="h2">三、出準日期</span>
+            </div>
+            <div class="contact-visit-card-body">
+              <label class="inline-checkbox" style="display:block;">
+                <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出準日期
+              </label>
+              <div id="dischargeBox" style="display:none; margin-top:var(--space-xs);">
+                <label class="h3" for="dischargeDate">出準日期</label>
+                <div class="datebox">
+                  <input id="dischargeDate" type="date">
+                  <div class="date-controls">
+                    <button type="button" class="small" aria-label="減一天" aria-controls="dischargeDate" title="減一天" onclick="shiftDate('dischargeDate', -1)">−</button>
+                    <button type="button" class="small" aria-label="加一天" aria-controls="dischargeDate" title="加一天" onclick="shiftDate('dischargeDate', 1)">+</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2175,7 +2538,7 @@
           <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
         </div>
         <div id="extras"></div>
-        <div class="field-error" id="extras_conflict"></div>
+        <div id="extras_conflict" role="status" aria-live="polite"></div>
       </div>
     </div>
 
@@ -2192,6 +2555,8 @@
         <div class="titlebar">
           <label class="h3">（一）身心概況</label>
         </div>
+
+        <div id="section1_error_summary" class="error-summary" data-show="0" aria-live="polite"></div>
 
         <div class="titlebar">
           <label class="h4">基本資料</label>
@@ -3080,46 +3445,54 @@
   <div class="group" id="careGoalsGroup" data-span="full">
     <span class="h2">五、照顧目標</span>
 
-    <div class="row"><div>
-      <label class="h3">（一）照顧問題（最多選 5 項）</label>
-      <div class="checkcol" id="problemList"></div>
-      <div class="count" id="problemCount">已選 0 / 5</div>
-      <div class="virtual-checklist-print" id="problemListPrint" aria-hidden="true"></div>
-      <label class="h4" style="margin-top:var(--space-xs);">補充說明（可選）</label>
-      <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
-    </div></div>
+    <div class="care-goals-layout">
+      <div class="care-goals-main">
+        <div class="care-goal-block">
+          <div class="care-goal-heading">
+            <label class="h3">（一）照顧問題（最多選 5 項）</label>
+            <div id="problemCount">已選 0 / 5</div>
+          </div>
+          <div class="checkcol" id="problemList"></div>
+          <div class="virtual-checklist-print" id="problemListPrint" aria-hidden="true"></div>
+          <label class="h4" style="margin-top:var(--space-xs);">補充說明（可選）</label>
+          <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
+        </div>
 
-    <div class="row"><div>
-      <label class="h3">（二）短期目標（0–3 個月）</label>
-      <div class="grid2 form-row-2col">
-        <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
-        <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
-        <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
-        <div id="short_resp_wrap"><label class="h4">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
-        <div id="short_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
-        <div id="short_meal_wrap"><label class="h4">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
+        <div class="care-goal-block">
+          <label class="h3">（二）短期目標（0–3 個月）</label>
+          <div class="grid2 form-row-2col">
+            <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
+            <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
+            <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
+            <div id="short_resp_wrap"><label class="h4">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
+            <div id="short_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
+            <div id="short_meal_wrap"><label class="h4">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
+          </div>
+        </div>
+
+        <div class="care-goal-block">
+          <label class="h3">（三）中期目標（3–4 個月）</label>
+          <div class="grid2 form-row-2col">
+            <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
+            <div id="mid_resp_wrap"><label class="h4">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_meal_wrap"><label class="h4">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
+          </div>
+        </div>
       </div>
-    </div></div>
 
-    <div class="row"><div>
-      <label class="h3">（三）中期目標（3–4 個月）</label>
-      <div class="grid2 form-row-2col">
-        <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
-        <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
-        <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
-        <div id="mid_resp_wrap"><label class="h4">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
-        <div id="mid_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
-        <div id="mid_meal_wrap"><label class="h4">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
+      <div class="care-goals-side">
+        <div class="care-goals-side-inner">
+          <label class="h3">（四）長期目標（4–6 個月）</label>
+          <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
+          <div class="hr"></div>
+          <label class="h4">目標文字預覽（含碼別與各期結構）</label>
+          <div id="goalPreview" class="preview goal-preview-empty">（尚未選擇服務或填寫內容）</div>
+        </div>
       </div>
-    </div></div>
-
-    <div class="row"><div>
-      <label class="h3">（四）長期目標（4–6 個月）</label>
-      <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
-      <div class="hr"></div>
-      <label class="h4">目標文字預覽（含碼別與各期結構）</label>
-      <div id="goalPreview" class="preview goal-preview-empty">（尚未選擇服務或填寫內容）</div>
-    </div></div>
+    </div>
   </div>
 
   <!-- 六、與照專…（原功能保留） -->
@@ -3163,97 +3536,103 @@
     <div class="group" data-span="full">
       <span class="h1">計畫執行規劃</span>
     </div>
-    <div class="group" id="planExecutionGroup" data-span="full">
-      <div class="titlebar">
-        <label class="h2">一、長照服務核定項目、頻率</label>
-      </div>
-      <div class="plan-guideline">
-        <p>請依核定的正式資源填寫承接方式、指定單位、用量與使用方式，系統會同步整理附件二預覽與額度統計。</p>
-        <p>若同一服務由不同單位提供，或同時含自費段，請個別建立明細並清楚標註說明。</p>
-      </div>
-      <div id="planEditor" class="plan-editor"></div>
-    </div>
+    <div class="plan-workspace">
+      <div class="plan-workspace-main">
+        <div class="group" id="planExecutionGroup" data-span="full">
+          <div class="titlebar">
+            <label class="h2">一、長照服務核定項目、頻率</label>
+          </div>
+          <div class="plan-guideline">
+            <p>請依核定的正式資源填寫承接方式、指定單位、用量與使用方式，系統會同步整理附件二預覽與額度統計。</p>
+            <p>若同一服務由不同單位提供，或同時含自費段，請個別建立明細並清楚標註說明。</p>
+          </div>
+          <div id="planEditor" class="plan-editor"></div>
+        </div>
 
-    <div class="group">
-      <div class="titlebar">
-        <label class="h2">二、轉介其他服務資源</label>
-      </div>
-      <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
-    </div>
+        <div class="group">
+          <div class="titlebar">
+            <label class="h2">二、轉介其他服務資源</label>
+          </div>
+          <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
+        </div>
 
-    <div class="group">
-      <div class="titlebar">
-        <label class="h2">三、巷弄長照站資訊與意願</label>
-      </div>
-      <div class="plan-meta-grid">
-        <div>
-          <label class="h4" for="plan_station_info">巷弄長照站資訊</label>
-          <textarea id="plan_station_info" placeholder="例：○○巷弄長照站（地址，距離1.2公里，電話0000-000000）"></textarea>
+        <div class="group">
+          <div class="titlebar">
+            <label class="h2">三、巷弄長照站資訊與意願</label>
+          </div>
+          <div class="plan-meta-grid">
+            <div>
+              <label class="h4" for="plan_station_info">巷弄長照站資訊</label>
+              <textarea id="plan_station_info" placeholder="例：○○巷弄長照站（地址，距離1.2公里，電話0000-000000）"></textarea>
+            </div>
+            <div>
+              <label class="h4" for="plan_station_willingness">參與意願</label>
+              <select id="plan_station_willingness">
+                <option value="">—請選擇—</option>
+                <option value="有意願">有意願</option>
+                <option value="無意願">無意願</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="h4" for="plan_station_willingness">參與意願</label>
-          <select id="plan_station_willingness">
-            <option value="">—請選擇—</option>
-            <option value="有意願">有意願</option>
-            <option value="無意願">無意願</option>
-          </select>
-        </div>
-      </div>
-    </div>
 
-    <div class="group">
-      <div class="titlebar">
-        <label class="h2">四、緊急救援服務說明</label>
+        <div class="group">
+          <div class="titlebar">
+            <label class="h2">四、緊急救援服務說明</label>
+          </div>
+          <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
+        </div>
       </div>
-      <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
-    </div>
 
-    <div class="group" id="planSummaryGroup" data-span="full">
-      <div class="titlebar">
-        <label class="h2">附件二（服務計畫明細）預覽</label>
-      </div>
-      <div class="summary-actions">
-        <button type="button" class="small" id="planSummaryCopyBtn">複製表格</button>
-        <button type="button" class="small" id="planSummaryCopyPlainBtn">複製為純文字</button>
-      </div>
-      <div id="planSummaryTotals" class="plan-summary-totals">
-        <div class="plan-summary-total-card">
-          <div class="plan-summary-total-label">CMS 等級月額度</div>
-          <div class="plan-summary-total-value" id="planSummaryCap">—</div>
+      <div class="plan-workspace-side">
+        <div class="group" id="planSummaryGroup" data-span="full">
+          <div class="titlebar">
+            <label class="h2">附件二（服務計畫明細）預覽</label>
+          </div>
+          <div class="summary-actions">
+            <button type="button" class="small" id="planSummaryCopyBtn">複製表格</button>
+            <button type="button" class="small" id="planSummaryCopyPlainBtn">複製為純文字</button>
+          </div>
+          <div id="planSummaryTotals" class="plan-summary-totals">
+            <div class="plan-summary-total-card">
+              <div class="plan-summary-total-label">CMS 等級月額度</div>
+              <div class="plan-summary-total-value" id="planSummaryCap">—</div>
+            </div>
+            <div class="plan-summary-total-card">
+              <div class="plan-summary-total-label">B/C 預估耗用</div>
+              <div class="plan-summary-total-value" id="planSummaryUsage">—</div>
+            </div>
+            <div class="plan-summary-total-card">
+              <div class="plan-summary-total-label">預估餘額</div>
+              <div class="plan-summary-total-value" id="planSummaryRemaining">—</div>
+            </div>
+            <div class="plan-summary-total-card">
+              <div class="plan-summary-total-label">上限內自付</div>
+              <div class="plan-summary-total-value" id="planSummaryWithin">—</div>
+            </div>
+            <div class="plan-summary-total-card">
+              <div class="plan-summary-total-label">超額自付</div>
+              <div class="plan-summary-total-value" id="planSummaryExcess">—</div>
+            </div>
+            <div class="plan-summary-total-card">
+              <div class="plan-summary-total-label">總自付</div>
+              <div class="plan-summary-total-value" id="planSummarySelfPay">—</div>
+            </div>
+          </div>
+          <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
+          <div id="planSummaryPreview" class="summary-table-wrapper">
+            <div class="hint">尚未選擇服務項目。</div>
+          </div>
         </div>
-        <div class="plan-summary-total-card">
-          <div class="plan-summary-total-label">B/C 預估耗用</div>
-          <div class="plan-summary-total-value" id="planSummaryUsage">—</div>
-        </div>
-        <div class="plan-summary-total-card">
-          <div class="plan-summary-total-label">預估餘額</div>
-          <div class="plan-summary-total-value" id="planSummaryRemaining">—</div>
-        </div>
-        <div class="plan-summary-total-card">
-          <div class="plan-summary-total-label">上限內自付</div>
-          <div class="plan-summary-total-value" id="planSummaryWithin">—</div>
-        </div>
-        <div class="plan-summary-total-card">
-          <div class="plan-summary-total-label">超額自付</div>
-          <div class="plan-summary-total-value" id="planSummaryExcess">—</div>
-        </div>
-        <div class="plan-summary-total-card">
-          <div class="plan-summary-total-label">總自付</div>
-          <div class="plan-summary-total-value" id="planSummarySelfPay">—</div>
-        </div>
-      </div>
-      <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
-      <div id="planSummaryPreview" class="summary-table-wrapper">
-        <div class="hint">尚未選擇服務項目。</div>
-      </div>
-    </div>
 
-    <div class="group" id="planTextGroup" data-span="full">
-      <div class="titlebar">
-        <label class="h2">附件一：計畫執行規劃預覽</label>
+        <div class="group" id="planTextGroup" data-span="full">
+          <div class="titlebar">
+            <label class="h2">附件一：計畫執行規劃預覽</label>
+          </div>
+          <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
+          <textarea id="plan_text" class="plan-preview" readonly></textarea>
+        </div>
       </div>
-      <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
-      <textarea id="plan_text" class="plan-preview" readonly></textarea>
     </div>
 
     <div class="group">
@@ -3279,6 +3658,12 @@
 
   <div class="floating-actions" id="floatingActions" aria-label="頁面操作">
     <button type="button" class="primary" id="wizardSaveBtn">存檔</button>
+    <div id="wizardMoreWrapper">
+      <button type="button" id="wizardMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="wizardMoreMenu" aria-label="更多操作" title="更多操作">⋯</button>
+      <div class="floating-more-menu" id="wizardMoreMenu" role="menu" data-open="0">
+        <button type="button" class="small" id="wizardPrevCompactBtn" role="menuitem">返回</button>
+      </div>
+    </div>
     <button type="button" id="wizardNextBtn">下一步</button>
     <button type="button" data-variant="ghost" id="wizardPrevBtn">返回</button>
   </div>
@@ -3370,6 +3755,7 @@
     let currentVerticalDensityMode = '';
     let planStateSyncScheduled = false;
     let planStateSyncOptions = null;
+    const wizardMoreMenuState = { outsideHandler:null, keydownHandler:null };
 
     function getSafeLocalStorage(){
       if(typeof window === 'undefined') return null;
@@ -4353,14 +4739,30 @@
           chipsHost.appendChild(chip);
         }
       });
+      const prevCollapsed = wrapper.dataset.collapsed;
+      const hadSelection = wrapper.dataset.hasSelection === '1';
       wrapper.dataset.hasSelection = selectedCount ? '1' : '0';
+      let collapseChanged = false;
       if(selectedCount === 0){
-        wrapper.dataset.collapsed = '0';
+        if(wrapper.dataset.collapsed !== '0'){
+          wrapper.dataset.collapsed = '0';
+          collapseChanged = prevCollapsed !== '0';
+        }
+        wrapper.dataset.manualToggle = '0';
+      }else{
+        const autoCollapse = shouldUseMobileDefaults() && wrapper.dataset.manualToggle !== '1';
+        if(autoCollapse && wrapper.dataset.collapsed !== '1'){
+          wrapper.dataset.collapsed = '1';
+          collapseChanged = true;
+        }
       }
       if(summaryLabel) summaryLabel.textContent = `已選（${selectedCount}）`;
       if(toggle){
         const collapsed = wrapper.dataset.collapsed === '1';
         toggle.textContent = collapsed ? '展開清單' : '收合清單';
+      }
+      if(collapseChanged || hadSelection !== (wrapper.dataset.hasSelection === '1')){
+        scheduleLayoutMeasurements();
       }
     }
 
@@ -4370,6 +4772,7 @@
       wrapper.className='checkcol-wrapper';
       wrapper.dataset.collapsed='0';
       wrapper.dataset.hasSelection='0';
+      wrapper.dataset.manualToggle='0';
       const parent = box.parentNode;
       if(parent){ parent.insertBefore(wrapper, box); }
       wrapper.appendChild(box);
@@ -4387,6 +4790,7 @@
       toggle.addEventListener('click', ()=>{
         const collapsed = wrapper.dataset.collapsed === '1';
         wrapper.dataset.collapsed = collapsed ? '0' : '1';
+        wrapper.dataset.manualToggle='1';
         toggle.textContent = collapsed ? '收合清單' : '展開清單';
         scheduleLayoutMeasurements();
       });
@@ -5153,9 +5557,13 @@
       });
       let requiredCount = 0;
       let filledCount = 0;
+      let advancedCount = 0;
       containers.forEach(container=>{
         const required = evaluateContainerRequirement(section, container);
         const filled = updateContainerFilled(section, container);
+        if(container && container.dataset && container.dataset.level === 'advanced'){
+          advancedCount++;
+        }
         if(required){
           requiredCount++;
           if(filled) filledCount++;
@@ -5168,6 +5576,8 @@
       });
       section.__progressCounts = { required: requiredCount, filled: filledCount };
       section.__groupStats = groupStats;
+      section.__advancedCount = advancedCount;
+      updateSectionAdvancedCount(section);
       if(progress){
         let percent = requiredCount ? Math.round((filledCount / requiredCount) * 100) : 100;
         if(!Number.isFinite(percent)) percent = 100;
@@ -5235,6 +5645,19 @@
       }
     }
 
+    function updateSectionAdvancedCount(section){
+      if(!section || !section.__controls || !section.__controls.advancedCount) return;
+      const label = section.__controls.advancedCount;
+      const count = Number(section.__advancedCount || 0);
+      if(!count){
+        label.textContent='';
+        label.dataset.hidden='1';
+        return;
+      }
+      label.textContent = `進階 ${count} 項`;
+      label.dataset.hidden='0';
+    }
+
     function createSectionControls(section){
       const header = section.querySelector('.titlebar');
       if(!header) return;
@@ -5251,11 +5674,15 @@
       toggleAllBtn.type = 'button';
       toggleAllBtn.className = 'section-toggle-all';
       toggleAllBtn.textContent = '全部收合';
+      const advancedCount = document.createElement('span');
+      advancedCount.className = 'section-advanced-count';
+      advancedCount.dataset.hidden = '1';
       controls.appendChild(onlyBtn);
       controls.appendChild(advancedBtn);
       controls.appendChild(toggleAllBtn);
+      controls.appendChild(advancedCount);
       header.appendChild(controls);
-      section.__controls = { onlyBtn, advancedBtn, toggleAllBtn };
+      section.__controls = { onlyBtn, advancedBtn, toggleAllBtn, advancedCount };
       onlyBtn.addEventListener('click', ()=>{
         const state = section.__state || (section.__state = readSectionState(section.dataset.section));
         state.hideFilled = !state.hideFilled;
@@ -5467,21 +5894,24 @@
       const host=document.getElementById('extras');
       const idx=extraIdx++;
       const wrap=document.createElement('div');
-      wrap.className='row'; wrap.id=`extra-${idx}`;
+      wrap.className='extra-row';
+      wrap.id=`extra-${idx}`;
       wrap.innerHTML=`
-      <div class="field-intro">
-        <label class="h3">其他參與者關係</label>
+      <div class="field-intro" data-field-size="short">
+        <label class="h3" for="ex-role-${idx}">其他參與者關係</label>
         <select id="ex-role-${idx}" onchange="toggleCustomRole(${idx}, 'ex')">
           ${roleOptionsHTML(true)}
         </select>
         <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
       </div>
-      <div class="field-intro">
-        <label class="h3">其他參與者姓名</label>
+      <div class="field-intro" data-field-size="medium">
+        <label class="h3" for="ex-name-${idx}">其他參與者姓名</label>
         <input id="ex-name-${idx}" type="text" placeholder="姓名，例如：李○○">
       </div>
-      <div style="flex:0; align-self:flex-end;">
-        <button class="small" onclick="removeExtraRow(${idx})">移除</button>
+      <div class="extra-row-actions">
+        <button type="button" class="extra-remove" aria-label="移除參與者" title="移除參與者" onclick="removeExtraRow(${idx})">
+          <span aria-hidden="true">×</span>
+        </button>
       </div>`;
       host.appendChild(wrap);
       enforcePrimaryExclusionOnSelect(document.getElementById(`ex-role-${idx}`));
@@ -5579,14 +6009,20 @@
     }
     function updateParticipantConflictHint(){
       const box=document.getElementById('extras_conflict');
-      if(!box) return {hasConflict:false, roles:[]};
+      const group=document.getElementById('visitPartnersGroup');
+      if(!box){
+        if(group) group.dataset.conflict='0';
+        return {hasConflict:false, roles:[]};
+      }
       const result=computeParticipantConflicts();
       if(result.hasConflict){
         box.textContent=`其他參與者不可與主要照顧者角色重覆（重覆角色：${result.roles.join('、')}）`;
         box.dataset.show='1';
+        if(group) group.dataset.conflict='1';
       }else{
         box.textContent='';
         box.dataset.show='0';
+        if(group) group.dataset.conflict='0';
       }
       return result;
     }
@@ -6717,6 +7153,57 @@
       document.querySelectorAll('#section1_block .field-error').forEach(el=>{ el.textContent=''; el.dataset.show='0'; });
       const box=document.getElementById('section1_errors');
       if(box){ box.innerHTML=''; box.style.display='none'; }
+      updateSection1ErrorSummary();
+    }
+
+    function updateSection1ErrorSummary(){
+      const summary=document.getElementById('section1_error_summary');
+      if(!summary) return;
+      const messages=[];
+      const manualBox=document.getElementById('section1_errors');
+      if(manualBox){
+        manualBox.querySelectorAll('li').forEach(li=>{
+          const text=(li.textContent||'').trim();
+          if(text) messages.push({ type:'text', text });
+        });
+      }
+      const ruleBox=document.getElementById('section1_rule_errors');
+      if(ruleBox){
+        ruleBox.querySelectorAll('li').forEach(li=>{
+          const link=li.querySelector('a');
+          if(link){
+            const text=(link.textContent||'').trim();
+            const target=link.dataset ? link.dataset.target : '';
+            if(text) messages.push({ type:'link', text, target });
+          }else{
+            const text=(li.textContent||'').trim();
+            if(text) messages.push({ type:'text', text });
+          }
+        });
+      }
+      if(!messages.length){
+        summary.innerHTML='';
+        summary.dataset.show='0';
+        return;
+      }
+      const list=document.createElement('ul');
+      messages.forEach(item=>{
+        const li=document.createElement('li');
+        if(item.type==='link' && item.target){
+          const a=document.createElement('a');
+          a.href='#';
+          a.textContent=item.text;
+          a.dataset.target=item.target;
+          a.addEventListener('click', handleRuleErrorClick);
+          li.appendChild(a);
+        }else{
+          li.textContent=item.text;
+        }
+        list.appendChild(li);
+      });
+      summary.innerHTML='';
+      summary.appendChild(list);
+      summary.dataset.show='1';
     }
     function markSection1Invalid(id){
       const el=document.getElementById(id);
@@ -7067,6 +7554,8 @@
           box.style.display='none';
         }
       }
+
+      updateSection1ErrorSummary();
 
       return { ok: messages.length===0, messages };
     }
@@ -7556,6 +8045,7 @@
       if(!Array.isArray(blocks) || !blocks.length){
         box.style.display='none';
         box.dataset.show='0';
+        updateSection1ErrorSummary();
         return;
       }
       const itemsHtml = blocks.map(function(block){
@@ -7569,6 +8059,7 @@
       box.querySelectorAll('a').forEach(function(link){
         link.addEventListener('click', handleRuleErrorClick);
       });
+      updateSection1ErrorSummary();
     }
 
     function handleRuleErrorClick(evt){
@@ -12206,15 +12697,27 @@
     function updateProblemListPrintSummary(){
       const box=document.getElementById('problemListPrint');
       if(!box) return;
+      box.innerHTML='';
       if(!problemSelection.size){
         box.textContent='（尚未選擇照顧問題）';
         return;
       }
-      const texts = Array.from(problemSelection).map(code=>{
+      const items = Array.from(problemSelection).map(code=>{
         const label = PROBLEMS && PROBLEMS[code] ? PROBLEMS[code] : '';
-        return label ? `${code}.${label}` : code;
+        return { code:String(code), label };
       });
-      box.textContent = `已選問題：${texts.join('、')}`;
+      items.sort((a,b)=>Number(a.code) - Number(b.code));
+      const list=document.createElement('ol');
+      items.forEach(item=>{
+        const li=document.createElement('li');
+        if(item.label){
+          li.textContent = `${item.code}.${item.label}`;
+        }else{
+          li.textContent = item.code;
+        }
+        list.appendChild(li);
+      });
+      box.appendChild(list);
     }
 
     function toggleProblemSelection(code, checked, input){
@@ -12961,10 +13464,94 @@
       return -1;
     }
 
+    function getWizardMoreElements(){
+      return {
+        button: document.getElementById('wizardMoreBtn'),
+        menu: document.getElementById('wizardMoreMenu')
+      };
+    }
+
+    function detachWizardMoreMenuEvents(){
+      if(wizardMoreMenuState.outsideHandler){
+        document.removeEventListener('mousedown', wizardMoreMenuState.outsideHandler, true);
+        document.removeEventListener('touchstart', wizardMoreMenuState.outsideHandler, true);
+        wizardMoreMenuState.outsideHandler = null;
+      }
+      if(wizardMoreMenuState.keydownHandler){
+        document.removeEventListener('keydown', wizardMoreMenuState.keydownHandler, true);
+        wizardMoreMenuState.keydownHandler = null;
+      }
+    }
+
+    function attachWizardMoreMenuEvents(){
+      if(wizardMoreMenuState.outsideHandler || wizardMoreMenuState.keydownHandler) return;
+      wizardMoreMenuState.outsideHandler = evt=>{
+        const { button, menu } = getWizardMoreElements();
+        if(!menu || !button) return;
+        const target = evt && evt.target;
+        if(target && (menu.contains(target) || button.contains(target))){
+          return;
+        }
+        closeWizardMoreMenu();
+      };
+      wizardMoreMenuState.keydownHandler = evt=>{
+        if(!evt) return;
+        if(evt.key === 'Escape' || evt.key === 'Esc'){
+          const { button } = getWizardMoreElements();
+          closeWizardMoreMenu();
+          if(button && typeof button.focus === 'function'){
+            button.focus({ preventScroll:true });
+          }
+        }
+      };
+      document.addEventListener('mousedown', wizardMoreMenuState.outsideHandler, true);
+      document.addEventListener('touchstart', wizardMoreMenuState.outsideHandler, true);
+      document.addEventListener('keydown', wizardMoreMenuState.keydownHandler, true);
+    }
+
+    function openWizardMoreMenu(){
+      const { button, menu } = getWizardMoreElements();
+      if(!button || !menu) return;
+      const wasOpen = menu.dataset.open === '1';
+      if(!wasOpen){
+        menu.dataset.open='1';
+        button.setAttribute('aria-expanded','true');
+        attachWizardMoreMenuEvents();
+        scheduleFloatingActionsMeasurement();
+      }
+    }
+
+    function closeWizardMoreMenu(){
+      const { button, menu } = getWizardMoreElements();
+      const wasOpen = menu && menu.dataset.open === '1';
+      if(menu){
+        menu.dataset.open='0';
+      }
+      if(button){
+        button.setAttribute('aria-expanded','false');
+      }
+      detachWizardMoreMenuEvents();
+      if(wasOpen){
+        scheduleFloatingActionsMeasurement();
+      }
+    }
+
+    function toggleWizardMoreMenu(force){
+      const { menu } = getWizardMoreElements();
+      if(!menu) return;
+      const shouldOpen = typeof force === 'boolean' ? force : menu.dataset.open !== '1';
+      if(shouldOpen){
+        openWizardMoreMenu();
+      }else{
+        closeWizardMoreMenu();
+      }
+    }
+
     function updateWizardButtons(){
       const prevBtn=document.getElementById('wizardPrevBtn');
       const nextBtn=document.getElementById('wizardNextBtn');
       const saveBtn=document.getElementById('wizardSaveBtn');
+      const prevCompact=document.getElementById('wizardPrevCompactBtn');
       const total=wizardStepsMeta.length;
       const index=getWizardIndex(currentWizardStep);
       const hasSteps = total > 0 && index !== -1;
@@ -12981,6 +13568,13 @@
       if(saveBtn){
         saveBtn.disabled = false;
         saveBtn.setAttribute('aria-disabled', 'false');
+      }
+      if(prevCompact){
+        prevCompact.disabled = !canPrev;
+        prevCompact.setAttribute('aria-disabled', canPrev ? 'false' : 'true');
+      }
+      if(!canPrev){
+        closeWizardMoreMenu();
       }
     }
 
@@ -13042,6 +13636,7 @@
         meta.element.setAttribute('aria-current', status === 'active' ? 'step' : 'false');
       });
       currentWizardStep = targetStep;
+      closeWizardMoreMenu();
       updateWizardButtons();
       syncTabStatuses();
     }
@@ -13202,14 +13797,34 @@
       const prevBtn=document.getElementById('wizardPrevBtn');
       const nextBtn=document.getElementById('wizardNextBtn');
       const saveBtn=document.getElementById('wizardSaveBtn');
+      const moreBtn=document.getElementById('wizardMoreBtn');
+      const prevCompact=document.getElementById('wizardPrevCompactBtn');
       if(prevBtn){
-        prevBtn.addEventListener('click', function(){ goWizardRelative(-1); });
+        prevBtn.addEventListener('click', function(){
+          closeWizardMoreMenu();
+          goWizardRelative(-1);
+        });
       }
       if(nextBtn){
-        nextBtn.addEventListener('click', function(){ goWizardRelative(1); });
+        nextBtn.addEventListener('click', function(){
+          closeWizardMoreMenu();
+          goWizardRelative(1);
+        });
       }
       if(saveBtn){
         saveBtn.addEventListener('click', function(){ applyAndSave(); });
+      }
+      if(prevCompact){
+        prevCompact.addEventListener('click', function(){
+          closeWizardMoreMenu();
+          goWizardRelative(-1);
+        });
+      }
+      if(moreBtn){
+        moreBtn.addEventListener('click', function(evt){
+          if(evt) evt.preventDefault();
+          toggleWizardMoreMenu();
+        });
       }
       updateWizardButtons();
       scheduleFloatingActionsMeasurement();
