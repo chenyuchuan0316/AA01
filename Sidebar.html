@@ -14,10 +14,10 @@
   <style>
     /* ===== AA01 表單 — 放大字級、強對比、兩欄桌機、單欄手機、觸控友善 =====
        尺寸基準（依需求可再調）：
-       - 根字級（html）：桌機 19→20px（視寬度），手機依檔位 clamp(20px~26px)
-       - 內文/標籤：≥16–18px（隨 font-scale 比例放大）
-       - 控制元件字級：標準 18px；大字約 22px；特大約 24px（避免 iOS 聚焦放大）
-       - 輸入框高度：標準 52px 起，依檔位漸增；主按鈕同步放大；核取方塊 26→34px（觸控）
+       - 根字級（html）：桌機 17→18px（視寬度），手機依檔位 clamp(16px~18px)
+       - 內文/標籤：16–18px（隨 font-scale 比例放大）
+       - 控制元件字級：標準 16px；放大約 18px／20px（避免 iOS 聚焦放大）
+       - 輸入框高度：以字級＋padding 決定，桌機約 40~48px、手機約 36~44px；核取方塊 24→30px（觸控）
     */
 
     :root{
@@ -35,39 +35,43 @@
       --accent-weak:rgba(11,87,208,.12); /* Focus ring */
 
       /* 尺寸系統 */
-      --gap-base:10px;
+      --gap-base:8px;
       --gap:var(--gap-base);
-      --group-padding-base:16px;
+      --group-padding-base:14px;
       --group-padding:var(--group-padding-base);
-      --group-spacing-base:12px;
+      --group-spacing-base:10px;
       --group-spacing:var(--group-spacing-base);
       --radius:12px;
       --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
 
-      --fs-base:1rem;                               /* 由 html 根字級決定（19–22px） */
+      --fs-base:1rem;                               /* 由 html 根字級決定（16–18px） */
       --font-scale:1;
-      --line-height:1.65;
+      --line-height:1.6;
       --fs-title-base:clamp(1.25rem, 1.1rem + .35vw, 1.5rem);
       --fs-title:calc(var(--fs-title-base) * var(--font-scale));
-      --fs-label-base:1rem;                         /* label ≥16–18px */
+      --fs-label-base:0.95rem;                      /* label 字級比輸入框小 1px */
       --fs-label:calc(var(--fs-label-base) * var(--font-scale));
-      --fs-ctrl:18px;                               /* input/select/textarea 固定 18px */
-      --fs-button:calc(var(--fs-ctrl) - 1px);
-      --h-input:52px;                               /* 輸入框高度 */
-      --h-button:52px;                              /* 主按鈕高度 */
-      --h-button-sm:44px;                           /* 小按鈕（±1天/±5天等） */
-      --checkbox:26px;                              /* 核取方塊 */
+      --fs-ctrl:16px;                               /* input/select/textarea 字級 */
+      --fs-button:var(--fs-ctrl);
+      --control-padding-y:8px;
+      --control-padding-x:12px;
+      --button-padding-y:8px;
+      --button-padding-x:16px;
+      --h-button:44px;                              /* 主按鈕高度 */
+      --h-button-sm:38px;                           /* 小按鈕（±1天/±5天等） */
+      --checkbox:24px;                              /* 核取方塊 */
+      --label-gap:4px;
       --layout-max:1280px;
-      --section-col-min:340px;
-      --section-col-max:560px;
+      --section-col-min:320px;
+      --section-col-max:520px;
       --section-col-preferred:50%;
-      --grid-col-min-2:240px;
-      --grid-col-min-3:200px;
+      --grid-col-min-2:220px;
+      --grid-col-min-3:180px;
       --checkcol-min:190px;
-      --textarea-min:110px;
-      --mobile-font-min:18px;
-      --mobile-font-fluid:4.8vw;
-      --mobile-font-max:20px;
+      --textarea-min:100px;
+      --mobile-font-min:16px;
+      --mobile-font-fluid:4.5vw;
+      --mobile-font-max:18px;
       --fab-h:0px;
       --fab-gap:calc(max(24px, env(safe-area-inset-bottom) + 24px));
       --sticky-header-height:96px;
@@ -75,9 +79,9 @@
       --scroll-offset:calc(var(--sticky-header-height) + var(--summary-bar-gap));
     }
 
-    /* 根字級：桌機 19→20；手機 clamp(20–26) */
-    html { font-size:19px; -webkit-text-size-adjust:100%; }
-    @media (min-width:1920px){ html{ font-size:20px; } }
+    /* 根字級：桌機 17→18；手機 clamp(16–18) */
+    html { font-size:17px; -webkit-text-size-adjust:100%; }
+    @media (min-width:1600px){ html{ font-size:18px; } }
     @media (max-width:480px){ html{ font-size:clamp(var(--mobile-font-min), var(--mobile-font-fluid), var(--mobile-font-max)); } }
 
     html, body{ background:var(--bg); color:var(--text); }
@@ -92,39 +96,48 @@
     }
     body[data-fontscale="sm"]{
       --font-scale:1;
+      --fs-ctrl:16px;
+      --control-padding-y:8px;
+      --control-padding-x:12px;
+      --button-padding-y:8px;
+      --button-padding-x:16px;
+      --h-button:44px;
+      --h-button-sm:38px;
+      --checkbox:24px;
+      --line-height:1.6;
+      --mobile-font-min:16px;
+      --mobile-font-fluid:4.3vw;
+      --mobile-font-max:17px;
+    }
+    body[data-fontscale="xl"]{
+      --font-scale:1.12;
       --fs-ctrl:18px;
-      --h-input:52px;
-      --h-button:52px;
-      --h-button-sm:44px;
-      --checkbox:26px;
-      --line-height:1.65;
+      --control-padding-y:9px;
+      --control-padding-x:14px;
+      --button-padding-y:10px;
+      --button-padding-x:18px;
+      --h-button:48px;
+      --h-button-sm:42px;
+      --checkbox:28px;
+      --line-height:1.68;
       --mobile-font-min:18px;
       --mobile-font-fluid:4.8vw;
       --mobile-font-max:20px;
     }
-    body[data-fontscale="xl"]{
-      --font-scale:1.18;
-      --fs-ctrl:22px;
-      --h-input:58px;
-      --h-button:58px;
-      --h-button-sm:50px;
-      --checkbox:32px;
-      --line-height:1.72;
-      --mobile-font-min:20px;
-      --mobile-font-fluid:5.4vw;
-      --mobile-font-max:22px;
-    }
     body[data-fontscale="xxl"]{
-      --font-scale:1.3;
-      --fs-ctrl:24px;
-      --h-input:64px;
-      --h-button:64px;
-      --h-button-sm:56px;
-      --checkbox:34px;
-      --line-height:1.78;
-      --mobile-font-min:22px;
-      --mobile-font-fluid:5.9vw;
-      --mobile-font-max:24px;
+      --font-scale:1.24;
+      --fs-ctrl:20px;
+      --control-padding-y:10px;
+      --control-padding-x:16px;
+      --button-padding-y:12px;
+      --button-padding-x:20px;
+      --h-button:52px;
+      --h-button-sm:46px;
+      --checkbox:30px;
+      --line-height:1.74;
+      --mobile-font-min:19px;
+      --mobile-font-fluid:5.2vw;
+      --mobile-font-max:22px;
     }
     body[data-uimode="comfort"]{
       --gap:calc(var(--gap-base) * 0.9);
@@ -166,8 +179,8 @@
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section]{ scroll-margin-top:var(--scroll-offset); }
-    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:6px; }
-    .row > div{ flex:1 1 min(100%, 320px); min-width:min(100%, 240px); }
+    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:var(--gap); }
+    .row > div{ flex:1 1 min(100%, 280px); min-width:min(100%, 200px); max-width:100%; }
     .grid2, .grid3{ display:grid; gap:var(--gap); align-items:start; }
     .grid2{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
     .grid3{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-3), 1fr)); }
@@ -177,20 +190,20 @@
     }
 
     /* 標籤與 Placeholder（加大字、提升對比） */
-    label{ display:block; font-size:var(--fs-label); margin-bottom:6px; color:var(--label); }
+    label{ display:block; font-size:var(--fs-label); margin-bottom:var(--label-gap); color:var(--label); }
     :where(input,select,textarea)::placeholder{ color:var(--placeholder); opacity:1; }
 
-    /* 表單元件：20px 字級，56px 高度（iOS 聚焦不縮放） */
+    /* 表單元件：維持 16px 起跳的字級與 8px padding，透過 font-scale 調整 */
     input[type="text"], input[type="number"], input[type="tel"], input[type="email"],
     input[type="search"], input[type="date"], input[type="time"],
     select, textarea{
       width:100%; box-sizing:border-box;
-      min-height:var(--h-input);
-      padding:12px 16px;
-      font-size:var(--fs-ctrl); line-height:1.4;
+      padding:var(--control-padding-y) var(--control-padding-x);
+      font-size:var(--fs-ctrl); line-height:1.45;
+      min-height:0;
       background:#fff;
       border:1px solid var(--border);
-      border-radius:12px;
+      border-radius:10px;
       transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
       appearance:none;
     }
@@ -209,7 +222,7 @@
     }
 
     /* 日期顯示盒（更清楚） */
-    .datebox{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .datebox{ display:flex; align-items:center; gap:var(--gap); flex-wrap:wrap; }
     .datebox input[type="date"]{
       width:auto;
       min-width:176px;
@@ -228,19 +241,23 @@
       line-height:1;
     }
 
-    /* 按鈕與操作面積（主按鈕 56px，小按鈕 48px） */
-    .btnbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    /* 按鈕與操作面積（主按鈕約 44px，依字級放大；小按鈕約 38px） */
+    .btnbar{ display:flex; gap:var(--gap); flex-wrap:wrap; margin-top:8px; }
     button{
-      height:var(--h-button);
-      padding:0 18px;
-      border-radius:12px;
+      min-height:var(--h-button);
+      padding:var(--button-padding-y) var(--button-padding-x);
+      border-radius:10px;
       border:1px solid var(--border);
       background:#fff; color:#111; font-weight:700; cursor:pointer;
-      line-height:1; touch-action:manipulation; font-size:var(--fs-button);
+      line-height:1.1; touch-action:manipulation; font-size:var(--fs-button);
     }
     button:hover{ background:#f7f7f7; }
     button.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
-    button.small{ height:var(--h-button-sm); padding:0 14px; font-size:var(--fs-button); }
+    button.small{
+      min-height:var(--h-button-sm);
+      padding:calc(var(--button-padding-y) - 2px) calc(var(--button-padding-x) - 2px);
+      font-size:var(--fs-button);
+    }
     /* 可選：若於按鈕加入 data-ic="plus"/"minus"，會自動加上 + / - 圖示 */
     button[data-ic="plus"]::before{ content:"+"; margin-right:.25em; font-weight:900; }
     button[data-ic="minus"]::before{ content:"–"; margin-right:.25em; font-weight:900; }
@@ -386,8 +403,8 @@
     }
     .page-tabs{ display:flex; flex-wrap:wrap; gap:6px; margin:0; }
     .page-tabs button{
-      height:40px;
-      padding:0 16px;
+      min-height:calc(var(--h-button-sm) - 2px);
+      padding:calc(var(--button-padding-y) - 2px) var(--button-padding-x);
       border-radius:999px;
       border:1px solid var(--border);
       background:#fff;
@@ -705,14 +722,14 @@
     }
 
     /* 勾選清單（點擊面積提升） */
-    .checkcol{ display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(min(var(--checkcol-min), 48%), 1fr)); }
+    .checkcol{ display:grid; gap:var(--gap); grid-template-columns:repeat(auto-fit, minmax(min(var(--checkcol-min), 48%), 1fr)); }
     .checkcol label{
-      display:flex; align-items:center; gap:10px; padding:10px 12px;
+      display:flex; align-items:center; gap:var(--gap); padding:calc(var(--control-padding-y) + 2px) calc(var(--control-padding-x) + 2px);
       border:1px solid var(--border); border-radius:12px; background:#fff; color:#222; font-size:var(--fs-base);
       margin:0;
     }
     .inline-checkbox{
-      display:flex; align-items:center; gap:10px; font-size:var(--fs-label); color:var(--label);
+      display:flex; align-items:center; gap:var(--gap); font-size:var(--fs-label); color:var(--label);
     }
     .inline-checkbox input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
     .checkcol input[type=checkbox]{ width:var(--checkbox); height:var(--checkbox); }
@@ -730,13 +747,13 @@
     @media (pointer:coarse){
       body[data-fontscale="sm"]{ --checkbox:32px; }
     } /* 觸控設備放大到 32px */
-    body[data-vertical-density="compact"] .checkcol{ gap:10px; }
-    body[data-vertical-density="compact"] .checkcol label{ padding:10px 12px; }
+    body[data-vertical-density="compact"] .checkcol{ gap:var(--gap); }
+    body[data-vertical-density="compact"] .checkcol label{ padding:calc(var(--control-padding-y) + 1px) calc(var(--control-padding-x) + 1px); }
 
-    .checkcol-wrapper{ display:flex; flex-direction:column; gap:8px; }
+    .checkcol-wrapper{ display:flex; flex-direction:column; gap:var(--gap); }
     .checkcol-wrapper > .checkcol{ width:100%; }
     .checkcol-wrapper[data-collapsed="1"] > .checkcol{ display:none; }
-    .checkcol-footer{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:space-between; }
+    .checkcol-footer{ display:flex; align-items:center; gap:var(--gap); flex-wrap:wrap; justify-content:space-between; }
     .checkcol-summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
     .checkcol-selected-chips{ display:flex; flex-wrap:wrap; gap:6px; }
     .checkcol-chip{ display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; background:rgba(11,87,208,.12); color:#0b1d4d; font-size:0.9rem; font-weight:600; }
@@ -750,7 +767,7 @@
     .virtual-checklist-viewport{ position:relative; max-height:320px; overflow-y:auto; }
     .virtual-checklist-visible{ position:absolute; top:0; left:0; right:0; display:flex; flex-direction:column; }
     .virtual-checklist-spacer{ height:0; width:1px; }
-    .virtual-checklist-item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid rgba(15,23,42,.08); background:#fff; }
+    .virtual-checklist-item{ display:flex; align-items:center; gap:var(--gap); padding:calc(var(--control-padding-y) + 2px) calc(var(--control-padding-x) + 2px); border-bottom:1px solid rgba(15,23,42,.08); background:#fff; }
     .virtual-checklist-item:last-child{ border-bottom:none; }
     .virtual-checklist-item input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
     .virtual-checklist-print{ display:none; margin-top:8px; font-size:0.9rem; line-height:1.45; color:#0f172a; }
@@ -768,9 +785,9 @@
     .lesion-size-field input{ padding-right:42px; }
     .lesion-size-field .unit{ position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--label); font-weight:600; pointer-events:none; }
     .lesion-area{ margin-top:6px; font-weight:600; color:var(--label); }
-    .action-list{ display:flex; flex-direction:column; gap:12px; }
-    .action-item{ border:1px dashed var(--border); border-radius:var(--radius); padding:14px; background:#fff; display:flex; flex-direction:column; gap:10px; }
-    .action-item-fields{ display:flex; flex-direction:column; gap:10px; }
+    .action-list{ display:flex; flex-direction:column; gap:var(--group-spacing); }
+    .action-item{ border:1px dashed var(--border); border-radius:var(--radius); padding:calc(var(--group-padding) - 2px); background:#fff; display:flex; flex-direction:column; gap:var(--gap); }
+    .action-item-fields{ display:flex; flex-direction:column; gap:var(--gap); }
     .action-item textarea{ resize:vertical; min-height:96px; }
     .action-item select{ font-size:var(--fs-ctrl); }
     .action-item-controls{ display:flex; justify-content:flex-end; }
@@ -797,20 +814,26 @@
     .field-error[data-show="1"]{ display:block; }
 
     @media (pointer:coarse){
-      select{ min-height:64px; padding-top:14px; padding-bottom:14px; }
+      input[type="text"], input[type="number"], input[type="tel"], input[type="email"],
+      input[type="search"], input[type="date"], input[type="time"],
+      select{
+        min-height:calc(var(--fs-ctrl) + 20px);
+        padding-top:calc(var(--control-padding-y) + 2px);
+        padding-bottom:calc(var(--control-padding-y) + 2px);
+      }
     }
 
     .plan-editor{
       display:flex;
       flex-direction:column;
-      gap:18px;
-      margin-top:12px;
+      gap:var(--group-spacing);
+      margin-top:var(--group-spacing);
     }
     .plan-category{
       border:1px solid var(--border);
       border-radius:var(--radius);
       background:#fff;
-      padding:16px;
+      padding:calc(var(--group-padding) + 2px);
     }
     .plan-category-title{
       font-weight:700;
@@ -880,9 +903,9 @@
       margin-right:4px;
     }
     button.tiny{
-      height:44px;
-      padding:0 12px;
-      font-size:17px;
+      min-height:calc(var(--h-button-sm) - 2px);
+      padding:calc(var(--button-padding-y) - 3px) calc(var(--button-padding-x) - 4px);
+      font-size:calc(var(--fs-button) - 1px);
       border-radius:10px;
     }
     .plan-qty-toolbar button[data-variant="ghost"]{
@@ -1070,7 +1093,7 @@
     .home-care-qty-wrap{
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:var(--gap);
     }
     .home-care-qty-label{
       font-weight:600;
@@ -1079,8 +1102,8 @@
     }
     .home-care-qty{
       width:120px;
-      height:46px;
-      padding:8px 10px;
+      min-height:calc(var(--fs-ctrl) + 16px);
+      padding:var(--control-padding-y) 10px;
       font-size:var(--fs-ctrl);
       border:1px solid var(--border);
       border-radius:12px;
