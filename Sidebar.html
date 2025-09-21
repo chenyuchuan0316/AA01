@@ -62,7 +62,9 @@
       --mobile-font-max:22px;
       --fab-h:0px;
       --fab-gap:calc(max(24px, env(safe-area-inset-bottom) + 24px));
-      --scroll-offset:96px;
+      --sticky-header-height:96px;
+      --summary-bar-gap:12px;
+      --scroll-offset:calc(var(--sticky-header-height) + var(--summary-bar-gap));
     }
 
     /* 根字級：桌機 19→20；手機 clamp(20–26) */
@@ -149,7 +151,7 @@
     .titlebar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .group > label:first-child, .titlebar > label:first-child{
       display:block; font-weight:800; font-size:var(--fs-title); color:var(--title);
-      margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-strong);
+      margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border-strong);
     }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
@@ -258,6 +260,20 @@
       backdrop-filter:saturate(180%) blur(6px);
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
+    .page-summary{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:12px;
+      align-items:center;
+      padding-top:4px;
+      border-top:1px solid rgba(15,23,42,.06);
+    }
+    .summary-item{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
+    .summary-value{ font-size:1.1rem; font-weight:700; color:var(--title); word-break:break-word; }
+    .summary-progress-bar{ position:relative; height:10px; border-radius:999px; background:#e2e8f0; overflow:hidden; }
+    .summary-progress-fill{ position:absolute; inset:0; width:0%; border-radius:999px; background:var(--accent); transition:width .3s ease; }
+    .summary-progress-text, .summary-last-saved{ font-weight:600; color:#475569; font-size:0.95rem; }
     .page-header-top{
       display:flex;
       align-items:flex-start;
@@ -633,11 +649,16 @@
     }
 
     /* 勾選清單（點擊面積提升） */
-    .checkcol{ columns:auto; column-gap:0; }
+    .checkcol{ display:grid; gap:12px; grid-template-columns:repeat(2, minmax(0, 1fr)); }
     .checkcol label{
       display:flex; align-items:center; gap:12px; padding:12px 14px;
-      border:1px solid var(--border); border-radius:12px; margin-bottom:12px; background:#fff; color:#222; font-size:var(--fs-base);
+      border:1px solid var(--border); border-radius:12px; background:#fff; color:#222; font-size:var(--fs-base);
+      margin:0;
     }
+    .inline-checkbox{
+      display:flex; align-items:center; gap:10px; font-size:var(--fs-label); color:var(--label);
+    }
+    .inline-checkbox input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
     .checkcol input[type=checkbox]{ width:var(--checkbox); height:var(--checkbox); }
     .checkcol label[data-auto="1"]{
       border-color:rgba(11,87,208,.4);
@@ -650,9 +671,36 @@
       font-size:.9rem;
       font-weight:600;
     }
+    @media (max-width:1024px){
+      .checkcol{ grid-template-columns:1fr; }
+    }
     @media (pointer:coarse){
       body[data-fontscale="sm"]{ --checkbox:32px; }
     } /* 觸控設備放大到 32px */
+    body[data-vertical-density="compact"] .checkcol{ gap:10px; }
+    body[data-vertical-density="compact"] .checkcol label{ padding:10px 12px; }
+
+    .checkcol-wrapper{ display:flex; flex-direction:column; gap:8px; }
+    .checkcol-wrapper > .checkcol{ width:100%; }
+    .checkcol-wrapper[data-collapsed="1"] > .checkcol{ display:none; }
+    .checkcol-footer{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:space-between; }
+    .checkcol-summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
+    .checkcol-selected-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+    .checkcol-chip{ display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; background:rgba(11,87,208,.12); color:#0b1d4d; font-size:0.9rem; font-weight:600; }
+    .checkcol-toggle{ height:auto; padding:4px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:var(--label); font-size:0.85rem; cursor:pointer; }
+    .checkcol-toggle:hover{ background:#eef2ff; }
+    .checkcol-wrapper[data-has-selection="0"] .checkcol-summary-label,
+    .checkcol-wrapper[data-has-selection="0"] .checkcol-selected-chips,
+    .checkcol-wrapper[data-has-selection="0"] .checkcol-toggle{ display:none; }
+
+    .virtual-checklist{ position:relative; border:1px solid var(--border); border-radius:var(--radius); background:#fff; }
+    .virtual-checklist-viewport{ position:relative; max-height:320px; overflow-y:auto; }
+    .virtual-checklist-visible{ position:absolute; top:0; left:0; right:0; display:flex; flex-direction:column; }
+    .virtual-checklist-spacer{ height:0; width:1px; }
+    .virtual-checklist-item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid rgba(15,23,42,.08); background:#fff; }
+    .virtual-checklist-item:last-child{ border-bottom:none; }
+    .virtual-checklist-item input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
+    .virtual-checklist-print{ display:none; margin-top:8px; font-size:0.9rem; line-height:1.45; color:#0f172a; }
 
     .lesion-mode{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
     .lesion-mode button.small{ min-width:112px; }
@@ -674,7 +722,24 @@
     .action-item-controls{ display:flex; justify-content:flex-end; }
     .mismatch-diff{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
     .mismatch-diff .badge{ background:var(--accent-weak); color:var(--accent); }
-    .field-error{ color:#b3261e; font-size:0.95rem; margin-top:6px; display:none; }
+    [data-field-container="1"]{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      position:relative;
+    }
+    [data-field-container="1"] > label{
+      margin-bottom:0;
+    }
+    .field-error{
+      color:#b3261e;
+      font-size:0.9rem;
+      margin-top:0;
+      align-self:flex-end;
+      text-align:right;
+      display:none;
+      line-height:1.4;
+    }
     .field-error[data-show="1"]{ display:block; }
 
     @media (pointer:coarse){
@@ -1094,6 +1159,42 @@
     }
     .error-messages ul{ margin:0; padding-left:20px; }
     .error-messages li{ margin-bottom:4px; }
+    .side-nav{
+      position:fixed;
+      right:max(16px, env(safe-area-inset-right) + 16px);
+      top:calc(var(--sticky-header-height, 120px) + 24px);
+      width:240px;
+      background:rgba(255,255,255,.94);
+      border:1px solid var(--border);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      z-index:38;
+    }
+    .side-nav[data-empty="1"]{ display:none; }
+    .side-nav-title{ font-weight:700; color:var(--title); font-size:1rem; }
+    .side-nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+    .side-nav-item{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .side-nav-link{
+      flex:1;
+      text-align:left;
+      background:none;
+      border:none;
+      padding:6px 0;
+      color:var(--label);
+      font-size:0.95rem;
+      cursor:pointer;
+      transition:color .2s ease;
+    }
+    .side-nav-link:hover,
+    .side-nav-link:focus{ color:var(--title); outline:none; }
+    .side-nav-count{ font-size:0.85rem; font-weight:600; color:#1f2937; min-width:64px; text-align:right; }
+    @media (max-width:1280px){
+      .side-nav{ display:none; }
+    }
     .floating-actions{
       position:fixed;
       right:max(18px, env(safe-area-inset-right) + 18px);
@@ -1264,6 +1365,19 @@
       .datebox input[type="date"]{ min-width:150px; font-size:var(--fs-ctrl); }
       .preview{ font-size:calc(var(--fs-base) * var(--font-scale) * 0.95); }
     }
+    @media print{
+      body{ margin:12px; font-size:12px; line-height:1.45; color:#000; }
+      .page-header, .page-tabs, .page-toolbar, .wizard, .floating-actions, .side-nav, .checkcol-toggle, .font-scale-control, .mobile-mode-control, #validationToast{ display:none !important; }
+      button, .btnbar, .preview-toolbar, .section-controls, .error-messages, .validation-toast, .page-tabs{ display:none !important; }
+      .group{ box-shadow:none; border:1px solid #cbd5f5; background:#fff; page-break-inside:avoid; }
+      .checkcol-wrapper{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
+      .checkcol-wrapper > .checkcol{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
+      .checkcol label{ border:none; padding:4px 6px; }
+      .checkcol label::before{ content:'□ '; }
+      .checkcol label[data-checked="1"]::before{ content:'■ '; }
+      textarea, input, select{ border:none; background:transparent; box-shadow:none; }
+      .virtual-checklist-print{ display:block !important; }
+    }
 </style>
 </head>
 
@@ -1314,8 +1428,34 @@
           <span class="wizard-label">其他備註</span>
         </button>
       </div>
+      <div class="page-summary" id="stickySummary" aria-live="polite">
+        <div class="summary-item">
+          <span class="summary-label">個案</span>
+          <span class="summary-value" id="summaryCaseName">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">CMS 等級</span>
+          <span class="summary-value" id="summaryCmsLevel">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">完成度</span>
+          <div class="summary-progress-bar" role="presentation">
+            <div class="summary-progress-fill" id="summaryProgressFill"></div>
+          </div>
+          <span class="summary-progress-text" id="summaryProgressText">—</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">最近儲存</span>
+          <span class="summary-last-saved" id="summaryLastSaved">—</span>
+        </div>
+      </div>
     </div>
   </div>
+
+  <nav class="side-nav" id="sideNav" aria-label="群組導覽" data-empty="1">
+    <div class="side-nav-title">群組導覽</div>
+    <ul class="side-nav-list" id="sideNavList"></ul>
+  </nav>
 
   <div class="page-section" data-page="goals" data-active="1">
   <!-- 基本資訊 -->
@@ -1333,7 +1473,7 @@
         <select id="caseManagerName"></select>
       </div>
     </div>
-    <div class="row">
+    <div class="grid3">
       <div>
         <label>個案姓名</label>
         <input id="caseName" type="text" placeholder="請輸入">
@@ -1343,8 +1483,6 @@
         <select id="consultName">
         </select>
       </div>
-    </div>
-    <div class="row">
       <div>
         <label>CMS 等級</label>
         <div id="cmsLevelGroup" class="cms-level-group">
@@ -1361,45 +1499,44 @@
     </div>
   </div>
 
-  <!-- 一、電聯日期 -->
-  <div class="group">
-    <label>一、電聯日期</label>
-    <div id="callDateControls" class="datebox">
-      <input id="callDate" type="date">
-      <div class="date-controls">
-        <button type="button" class="small" aria-label="前一天" onclick="shiftDate('callDate', -1)">−</button>
-        <button type="button" class="small" aria-label="後一天" onclick="shiftDate('callDate',  1)">+</button>
-      </div>
-    </div>
-    <div class="row" style="margin-top:8px;">
+  <!-- 一、電聯日期 + 二、家訪日期 -->
+  <div class="group" id="contactVisitGroup">
+    <label>一、電聯日期／二、家訪日期</label>
+    <div class="grid2">
       <div>
-        <label><input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪</label>
+        <label>電聯日期</label>
+        <div id="callDateControls" class="datebox">
+          <input id="callDate" type="date">
+          <div class="date-controls">
+            <button type="button" class="small" aria-label="前一天" onclick="shiftDate('callDate', -1)">−</button>
+            <button type="button" class="small" aria-label="後一天" onclick="shiftDate('callDate',  1)">+</button>
+          </div>
+        </div>
+        <label class="inline-checkbox" style="display:block; margin-top:10px;">
+          <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
+        </label>
+        <div id="consultVisitText" class="subtle" style="display:none; margin-top:6px;"></div>
       </div>
-    </div>
-    <div id="consultVisitText" class="subtle" style="display:none; margin-top:4px;"></div>
-  </div>
-
-  <!-- 二、家訪日期 + 出院 -->
-  <div class="group">
-    <label>二、家訪日期</label>
-    <div class="datebox">
-      <input id="visitDate" type="date">
-      <div class="date-controls">
-        <button type="button" class="small" aria-label="前一天" onclick="shiftDate('visitDate', -1)">−</button>
-        <button type="button" class="small" aria-label="後一天" onclick="shiftDate('visitDate',  1)">+</button>
-      </div>
-    </div>
-    <div class="row" style="margin-top:8px;">
       <div>
-        <label><input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出院準備（勾選後顯示出院日期）</label>
-      </div>
-    </div>
-    <div id="dischargeBox" style="display:none;">
-      <div class="datebox">
-        <input id="dischargeDate" type="date">
-        <div class="date-controls">
-          <button type="button" class="small" aria-label="前一天" onclick="shiftDate('dischargeDate', -1)">−</button>
-          <button type="button" class="small" aria-label="後一天" onclick="shiftDate('dischargeDate',  1)">+</button>
+        <label>家訪日期</label>
+        <div class="datebox">
+          <input id="visitDate" type="date">
+          <div class="date-controls">
+            <button type="button" class="small" aria-label="前一天" onclick="shiftDate('visitDate', -1)">−</button>
+            <button type="button" class="small" aria-label="後一天" onclick="shiftDate('visitDate',  1)">+</button>
+          </div>
+        </div>
+        <label class="inline-checkbox" style="display:block; margin-top:10px;">
+          <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出院準備（勾選後顯示出院日期）
+        </label>
+        <div id="dischargeBox" style="display:none; margin-top:6px;">
+          <div class="datebox">
+            <input id="dischargeDate" type="date">
+            <div class="date-controls">
+              <button type="button" class="small" aria-label="前一天" onclick="shiftDate('dischargeDate', -1)">−</button>
+              <button type="button" class="small" aria-label="後一天" onclick="shiftDate('dischargeDate',  1)">+</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1407,7 +1544,9 @@
 
   <!-- 三、偕同訪視者 -->
   <div class="group">
-    <label><strong>三、偕同訪視者</strong></label>
+    <div class="titlebar">
+      <label>三、偕同訪視者</label>
+    </div>
     <div class="row">
       <div>
         <label>主要照顧者關係</label>
@@ -1432,12 +1571,12 @@
     <input type="hidden" id="includePrimary" value="true">
 
     <div class="hr"></div>
-    <label>其他參與者</label>
+    <div class="titlebar" style="margin-top:4px;">
+      <label>其他參與者</label>
+      <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
+    </div>
     <div id="extras"></div>
     <div class="field-error" id="extras_conflict"></div>
-    <div class="btnbar">
-      <button class="small" onclick="addExtraRow()">新增參與者</button>
-    </div>
     <!-- （已移除原「輸出格式：個案(姓名)…」說明） -->
   </div>
 
@@ -2028,20 +2167,24 @@
             <div class="checkcol" id="s2_sources"></div>
           </div>
           <div>
-            <label>戶籍/福利身分</label>
-            <select id="s2_id">
-              <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
-            </select>
-          </div>
-          <div><!-- 等級欄位 -->
-            <label>身障等級</label>
-            <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身障等級 -->
-              <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
-            </select>
-          </div>
-          <div id="disCatBox" style="display:none;"><!-- 類別欄位，預設隱藏 -->
-            <label>身障類別（等級≠無才需選）</label>
-            <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身障類別 --></select>
+            <div class="grid2">
+              <div>
+                <label>戶籍/福利身分</label>
+                <select id="s2_id">
+                  <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
+                </select>
+              </div>
+              <div>
+                <label>身障等級</label>
+                <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身障等級 -->
+                  <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
+                </select>
+              </div>
+            </div>
+            <div id="disCatBox" style="display:none; margin-top:10px;"><!-- 類別欄位，預設隱藏 -->
+              <label>身障類別（等級≠無才需選）</label>
+              <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身障類別 --></select>
+            </div>
           </div>
         </div>
         <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
@@ -2066,6 +2209,12 @@
             <label>居住權屬</label>
             <select id="s3_own" onchange="toggleRentFields()"><option>自有</option><option>租賃</option><option>借住</option></select>
           </div>
+          <div>
+            <label>整潔度</label>
+            <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
+          </div>
+        </div>
+        <div class="grid3" style="margin-top:8px;">
           <div id="s3_rent_amount_wrap" style="display:none;">
             <label>租金金額（元/月）</label>
             <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
@@ -2079,13 +2228,11 @@
             </select>
           </div>
           <div>
-            <label>整潔度</label>
-            <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
-          </div>
-          <div>
             <label>異味</label>
             <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
           </div>
+        </div>
+        <div class="grid2" style="margin-top:8px;">
           <div>
             <label>無障礙設施</label>
             <div class="checkcol" id="s3_fac"></div>
@@ -2106,7 +2253,7 @@
           <label>(四) 社會支持</label>
         </div>
 
-        <div class="grid2">
+        <div class="grid3">
           <div>
             <label>主照者關係</label>
             <div id="sp_primaryRel_text" class="badge">—</div>
@@ -2128,7 +2275,7 @@
           <label>主要聯繫人/決策者</label>
           <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
         </div>
-        <div class="grid2">
+        <div class="grid3">
           <div>
             <label>關係</label>
             <select id="sp_deciderRel">
@@ -2146,7 +2293,7 @@
             <label>姓名</label>
             <input id="sp_deciderName" type="text" placeholder="請選擇">
           </div>
-          <div style="grid-column:1 / -1;">
+          <div>
             <label>聯絡電話</label>
             <input id="sp_deciderPhone" type="tel" placeholder="例如：0912-345678">
           </div>
@@ -2154,9 +2301,11 @@
 
         <div class="hr"></div>
 
-        <label>共同照顧者（可多筆）</label>
+        <div class="titlebar" style="margin-top:12px;">
+          <label>共同照顧者（可多筆）</label>
+          <button type="button" class="small" onclick="addCoCare()">＋新增共同照顧者</button>
+        </div>
         <div id="coCare"></div>
-        <div class="btnbar"><button class="small" onclick="addCoCare()">＋新增共同照顧者</button></div>
 
         <div class="hr"></div>
 
@@ -2312,6 +2461,7 @@
       <label>(一) 照顧問題（最多選 5 項）</label>
       <div class="checkcol" id="problemList"></div>
       <div class="count" id="problemCount">已選 0 / 5</div>
+      <div class="virtual-checklist-print" id="problemListPrint" aria-hidden="true"></div>
       <label style="margin-top:8px;">補充說明（可選）</label>
       <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
     </div></div>
@@ -2529,12 +2679,345 @@
     const UI_MODE_DEFAULT = 'custom';
     const UI_MODE_OPTIONS = ['clear','comfort','review','custom'];
 
+    const SUMMARY_ELEMENT_IDS = {
+      root:'stickySummary',
+      caseName:'summaryCaseName',
+      cmsLevel:'summaryCmsLevel',
+      progressFill:'summaryProgressFill',
+      progressText:'summaryProgressText',
+      lastSaved:'summaryLastSaved'
+    };
+    let summaryElements = null;
+    let summaryUpdateScheduled = false;
+    let lastSavedTimestamp = null;
+
+    const SIDE_NAV_STATE = {
+      root:null,
+      list:null,
+      items:[],
+      renderScheduled:false
+    };
+
+    const PROBLEM_MAX_SELECTION = 5;
+    const problemSelection = new Set();
+    let problemListVirtual = null;
+
+    const AUTO_SAVE_STORAGE_KEY = 'AA01.formDraft';
+    const AUTO_SAVE_VERSION = 1;
+    const AUTO_SAVE_DELAY = 4000;
+    let autoSaveTimer = null;
+    let isRestoringDraft = false;
+    let draftLoadComplete = false;
+
+    let executionPageInitialized = false;
+
     let currentUiMode = UI_MODE_DEFAULT;
+    let currentPageId = 'goals';
     let currentScrollOffset = 96;
     let floatingMeasureScheduled = false;
-    let headerMeasureScheduled = false;
+    let stickyMeasureScheduled = false;
     let sectionViewsReady = false;
     let currentVerticalDensityMode = '';
+    let planStateSyncScheduled = false;
+    let planStateSyncOptions = null;
+
+    function getSafeLocalStorage(){
+      if(typeof window === 'undefined') return null;
+      try{ return window.localStorage || null; }catch(err){ return null; }
+    }
+
+    function readAutoSaveDraft(){
+      const store = getSafeLocalStorage();
+      if(!store) return null;
+      try{
+        const raw = store.getItem(AUTO_SAVE_STORAGE_KEY);
+        if(!raw) return null;
+        const parsed = JSON.parse(raw);
+        if(!parsed || parsed.version !== AUTO_SAVE_VERSION) return null;
+        return parsed;
+      }catch(err){
+        return null;
+      }
+    }
+
+    function writeAutoSaveDraft(data){
+      const store = getSafeLocalStorage();
+      if(!store) return false;
+      try{
+        store.setItem(AUTO_SAVE_STORAGE_KEY, JSON.stringify(data));
+        return true;
+      }catch(err){
+        return false;
+      }
+    }
+
+    function clearAutoSaveDraft(){
+      const store = getSafeLocalStorage();
+      if(!store) return;
+      try{ store.removeItem(AUTO_SAVE_STORAGE_KEY); }catch(err){}
+    }
+
+    function readExtrasRows(){
+      const rows=[];
+      document.querySelectorAll('[id^="extra-"]').forEach(row=>{
+        const idx = row.id.split('-')[1];
+        const roleEl=document.getElementById(`ex-role-${idx}`);
+        const customEl=document.getElementById(`ex-custom-${idx}`);
+        const nameEl=document.getElementById(`ex-name-${idx}`);
+        rows.push({
+          role: roleEl ? roleEl.value : '',
+          customRole: customEl ? customEl.value : '',
+          name: nameEl ? nameEl.value : ''
+        });
+      });
+      return rows;
+    }
+
+    function readCoCareRows(){
+      const rows=[];
+      document.querySelectorAll('[id^="cc-"]').forEach(row=>{
+        const idx=row.id.split('-')[1];
+        const relEl=document.getElementById(`cc-rel-${idx}`);
+        const customEl=document.getElementById(`cc-custom-${idx}`);
+        const nameEl=document.getElementById(`cc-name-${idx}`);
+        rows.push({
+          rel: relEl ? relEl.value : '',
+          customRel: customEl ? customEl.value : '',
+          name: nameEl ? nameEl.value : ''
+        });
+      });
+      return rows;
+    }
+
+    function collectActionDraft(){
+      return readActionEntries().map(entry=>({ source: entry.source || '', text: entry.text || '' }));
+    }
+
+    function collectDraftSnapshot(){
+      const snapshot={
+        version:AUTO_SAVE_VERSION,
+        timestamp:Date.now(),
+        fields:{},
+        extrasDraft:readExtrasRows(),
+        coCareDraft:readCoCareRows(),
+        actionsDraft:collectActionDraft(),
+        problems:Array.from(problemSelection),
+        servicePlan:serializeServicePlan(),
+        planMeta:Object.assign({}, planMetaState)
+      };
+      const root=document.getElementById('appContainer') || document;
+      const inputs=root.querySelectorAll('input, select, textarea');
+      inputs.forEach(field=>{
+        if(!field || !field.id) return;
+        if(field.dataset.autosaveIgnore === '1') return;
+        if(/^ex-/.test(field.id) || /^cc-/.test(field.id)) return;
+        if(field.closest('.virtual-checklist')) return;
+        const type=(field.type || '').toLowerCase();
+        if(type === 'checkbox' || type === 'radio'){
+          snapshot.fields[field.id] = { type, checked: !!field.checked };
+        }else{
+          snapshot.fields[field.id] = { type, value: field.value };
+        }
+      });
+      return snapshot;
+    }
+
+    function applyFieldEntry(id, entry){
+      const el=document.getElementById(id);
+      if(!el) return false;
+      const type=(entry && entry.type ? entry.type.toLowerCase() : '').replace(/[^a-z]/g,'');
+      if(type === 'checkbox' || type === 'radio'){
+        const targetChecked = !!entry.checked;
+        if(el.checked !== targetChecked){
+          el.checked = targetChecked;
+        }
+        try{ el.dispatchEvent(new Event('change', { bubbles:true })); }catch(err){}
+        return true;
+      }
+      const value = entry && entry.value !== undefined ? entry.value : '';
+      if(el.value !== value){
+        el.value = value;
+      }
+      const tag=(el.tagName || '').toLowerCase();
+      const eventName = tag === 'select' ? 'change' : 'input';
+      try{ el.dispatchEvent(new Event(eventName, { bubbles:true })); }catch(err){}
+      if(eventName !== 'change'){
+        try{ el.dispatchEvent(new Event('change', { bubbles:true })); }catch(err){}
+      }
+      return true;
+    }
+
+    function applyDraftFields(map){
+      if(!map || typeof map !== 'object') return;
+      let entries = Object.keys(map).map(id=>({ id, entry: map[id] }));
+      let attempt = 0;
+      while(entries.length && attempt < 3){
+        const pending=[];
+        entries.forEach(item=>{
+          if(!applyFieldEntry(item.id, item.entry)) pending.push(item);
+        });
+        entries = pending;
+        attempt++;
+      }
+    }
+
+    function restoreProblemSelection(list){
+      problemSelection.clear();
+      if(Array.isArray(list)){
+        list.forEach(code=>{
+          if(code !== undefined && code !== null){
+            problemSelection.add(String(code));
+          }
+        });
+      }
+      renderProblems();
+    }
+
+    function getServiceCardConfig(card){
+      if(!card) return null;
+      const host = card.closest('#homeCareList, #dayCareList, #profServiceList, #transportServiceList, #respServiceList, #mealServiceList');
+      if(!host) return null;
+      const id = host.id || '';
+      if(id === 'homeCareList') return { hasQty:true };
+      if(id === 'dayCareList') return { hasQty:false };
+      if(id === 'profServiceList') return { hasQty:false };
+      if(id === 'transportServiceList') return { hasQty:false };
+      if(id === 'respServiceList') return { hasQty:false };
+      if(id === 'mealServiceList') return { hasQty:false };
+      return null;
+    }
+
+    function restoreServicePlan(entries){
+      const list=Array.isArray(entries) ? entries : [];
+      const codeSet=new Set(list.map(entry=>String(entry && entry.code ? entry.code : '')).filter(Boolean));
+      const entryMap=new Map();
+      list.forEach(item=>{
+        const code = item && item.code ? String(item.code) : '';
+        if(code) entryMap.set(code, item);
+      });
+      document.querySelectorAll('.home-care-item').forEach(card=>{
+        const code = card.dataset ? (card.dataset.code || '') : '';
+        const config = getServiceCardConfig(card) || { hasQty:false };
+        setServiceCardSelected(card, codeSet.has(code));
+        const qty=card.querySelector('.home-care-qty');
+        if(config.hasQty){
+          if(codeSet.has(code)){
+            const saved = entryMap.get(code);
+            if(qty){ qty.value = saved && saved.monthlyUnits ? saved.monthlyUnits : (saved && saved.monthlyUnitsComputed ? saved.monthlyUnitsComputed : ''); }
+          }else if(qty){
+            qty.value='';
+          }
+        }
+      });
+      updateCareServicePhrases();
+      updateProfessionalServicePhrases();
+      updateTransportServicePhrases();
+      updateRespiteServicePhrases();
+      updateMealServicePhrases();
+      syncPlanStateWithSelections({ force:true, skipPreview:true });
+      list.forEach(entry=>{
+        const code=entry && entry.code ? String(entry.code) : '';
+        if(!code) return;
+        const state=ensurePlanEntry(code);
+        if(!state) return;
+        Object.keys(entry).forEach(key=>{
+          if(key === 'code') return;
+          state[key] = entry[key];
+        });
+      });
+      applyAutomaticPlanning();
+      renderServicePlanEditor();
+      updateMismatchReasons({ skipPreview:true });
+      buildPlanSummaryPreview();
+      buildApprovalPlanPreview();
+    }
+
+    function applyDraftSnapshot(draft){
+      if(!draft || typeof draft !== 'object') return;
+      if(Array.isArray(draft.extrasDraft)){ restoreExtras(draft.extrasDraft); }
+      if(Array.isArray(draft.coCareDraft)){ restoreCoCare(draft.coCareDraft); }
+      if(Array.isArray(draft.actionsDraft)){ restoreActionEntries(draft.actionsDraft); }
+      applyDraftFields(draft.fields || {});
+      if(Array.isArray(draft.problems)) restoreProblemSelection(draft.problems);
+      if(Array.isArray(draft.servicePlan)) restoreServicePlan(draft.servicePlan);
+      if(draft.planMeta && typeof draft.planMeta === 'object'){
+        Object.assign(planMetaState, draft.planMeta);
+      }
+      updateParticipantConflictHint();
+      syncSocialPrimary();
+      updateConsultVisitText();
+      toggleCallDateByConsultVisit();
+      toggleDischarge();
+      buildSection1();
+      buildS2();
+      buildS3();
+      buildSection4();
+      buildLongGoal();
+      buildApprovalPlanPreview();
+      buildPlanSummaryPreview();
+      renderSection1Preview(section1PreviewState.segments || []);
+      refreshCheckcols(document);
+      scheduleLayoutMeasurements();
+      scheduleSummaryUpdate();
+    }
+
+    function scheduleAutoSave(){
+      if(isRestoringDraft || !draftLoadComplete) return;
+      if(autoSaveTimer) clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(()=>{
+        autoSaveTimer = null;
+        performAutoSave();
+      }, AUTO_SAVE_DELAY);
+    }
+
+    function performAutoSave(){
+      if(isRestoringDraft || !draftLoadComplete) return;
+      const snapshot = collectDraftSnapshot();
+      if(!snapshot) return;
+      if(writeAutoSaveDraft(snapshot)){
+        lastSavedTimestamp = snapshot.timestamp;
+        scheduleSummaryUpdate();
+      }
+    }
+
+    function restoreAutoSaveDraft(){
+      const draft = readAutoSaveDraft();
+      if(!draft) return;
+      isRestoringDraft = true;
+      try{
+        applyDraftSnapshot(draft);
+        lastSavedTimestamp = draft.timestamp || null;
+      }finally{
+        isRestoringDraft = false;
+      }
+    }
+
+    function handleDraftChangeEvent(){
+      if(isRestoringDraft) return;
+      scheduleAutoSave();
+    }
+
+    function initAutoSave(){
+      const host=document.getElementById('appContainer') || document;
+      host.addEventListener('input', handleDraftChangeEvent, true);
+      host.addEventListener('change', handleDraftChangeEvent, true);
+      restoreAutoSaveDraft();
+      draftLoadComplete = true;
+      scheduleSummaryUpdate();
+    }
+
+    function schedulePlanStateSync(options){
+      if(!planStateSyncOptions){ planStateSyncOptions = Object.assign({}, options); }
+      else if(options){ planStateSyncOptions = Object.assign(planStateSyncOptions, options); }
+      if(planStateSyncScheduled) return;
+      planStateSyncScheduled = true;
+      window.requestAnimationFrame(()=>{
+        planStateSyncScheduled = false;
+        const opts = planStateSyncOptions || {};
+        planStateSyncOptions = null;
+        syncPlanStateWithSelections(Object.assign({ force:true }, opts));
+      });
+    }
 
     function updateFloatingActionsMetrics(){
       const actions=document.getElementById('floatingActions');
@@ -2559,24 +3042,38 @@
       });
     }
 
-    function updateScrollOffset(){
+    function measureStickyElements(){
       const header=document.getElementById('pageHeader');
-      let offset=96;
+      let headerHeight=0;
       if(header){
-        const style=window.getComputedStyle(header);
-        const marginBottom=parseFloat(style.marginBottom) || 0;
-        offset=Math.max(72, Math.ceil(header.offsetHeight + marginBottom + 8));
+        const rect=header.getBoundingClientRect();
+        headerHeight=Math.max(0, Math.ceil(rect.height));
       }
+      const summary=document.getElementById(SUMMARY_ELEMENT_IDS.root);
+      let summaryGap=12;
+      if(summary){
+        const style=window.getComputedStyle(summary);
+        const marginBottom=parseFloat(style.marginBottom) || 0;
+        summaryGap=Math.max(summaryGap, Math.ceil(marginBottom));
+      }
+      if(header){
+        const headerStyle=window.getComputedStyle(header);
+        const headerMargin=parseFloat(headerStyle.marginBottom) || 0;
+        summaryGap=Math.max(summaryGap, Math.ceil(headerMargin));
+      }
+      const offset=Math.max(72, headerHeight + summaryGap);
       currentScrollOffset = offset;
+      document.documentElement.style.setProperty('--sticky-header-height', `${headerHeight}px`);
+      document.documentElement.style.setProperty('--summary-bar-gap', `${summaryGap}px`);
       document.documentElement.style.setProperty('--scroll-offset', `${offset}px`);
     }
 
-    function scheduleScrollOffsetMeasurement(){
-      if(headerMeasureScheduled) return;
-      headerMeasureScheduled = true;
+    function scheduleStickyMeasurement(){
+      if(stickyMeasureScheduled) return;
+      stickyMeasureScheduled = true;
       window.requestAnimationFrame(()=>{
-        headerMeasureScheduled = false;
-        updateScrollOffset();
+        stickyMeasureScheduled = false;
+        measureStickyElements();
       });
     }
 
@@ -2602,8 +3099,370 @@
 
     function scheduleLayoutMeasurements(){
       scheduleFloatingActionsMeasurement();
-      scheduleScrollOffsetMeasurement();
+      scheduleStickyMeasurement();
       updateVerticalDensityMode();
+    }
+
+    function getSummaryElements(){
+      if(summaryElements) return summaryElements;
+      summaryElements = {
+        root:document.getElementById(SUMMARY_ELEMENT_IDS.root),
+        caseName:document.getElementById(SUMMARY_ELEMENT_IDS.caseName),
+        cmsLevel:document.getElementById(SUMMARY_ELEMENT_IDS.cmsLevel),
+        progressFill:document.getElementById(SUMMARY_ELEMENT_IDS.progressFill),
+        progressText:document.getElementById(SUMMARY_ELEMENT_IDS.progressText),
+        lastSaved:document.getElementById(SUMMARY_ELEMENT_IDS.lastSaved)
+      };
+      return summaryElements;
+    }
+
+    function getGlobalProgressState(){
+      let totalRequired = 0;
+      let totalFilled = 0;
+      document.querySelectorAll('[data-section]').forEach(section=>{
+        const counts = section && section.__progressCounts ? section.__progressCounts : null;
+        if(!counts) return;
+        totalRequired += counts.required || 0;
+        totalFilled += counts.filled || 0;
+      });
+      let percent = totalRequired ? Math.round((totalFilled / totalRequired) * 100) : 100;
+      if(!Number.isFinite(percent)) percent = 100;
+      percent = Math.max(0, Math.min(100, percent));
+      return { required: totalRequired, filled: totalFilled, percent };
+    }
+
+    function pad2(num){
+      return String(num).padStart(2, '0');
+    }
+
+    function formatLastSavedDisplay(timestamp){
+      if(!timestamp) return '尚未儲存';
+      const now = Date.now();
+      let diff = now - timestamp;
+      if(!Number.isFinite(diff)) diff = 0;
+      if(diff < 0) diff = 0;
+      if(diff < 60000) return '剛剛';
+      if(diff < 3600000){
+        const minutes = Math.round(diff / 60000);
+        return `${minutes} 分鐘前`;
+      }
+      if(diff < 86400000){
+        const hours = Math.round(diff / 3600000);
+        return `${hours} 小時前`;
+      }
+      const date = new Date(timestamp);
+      if(Number.isNaN(date.getTime())) return '剛剛';
+      return `${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+    }
+
+    function refreshStickySummary(){
+      const els = getSummaryElements();
+      if(!els.root) return;
+      const nameInput=document.getElementById('caseName');
+      const caseNameValue = nameInput ? (nameInput.value || '').trim() : '';
+      if(els.caseName) els.caseName.textContent = caseNameValue || '—';
+      const cmsLevel = typeof getCmsLevel === 'function' ? (getCmsLevel() || '') : '';
+      if(els.cmsLevel) els.cmsLevel.textContent = cmsLevel || '—';
+      const progress = getGlobalProgressState();
+      if(els.progressFill) els.progressFill.style.width = `${progress.percent || 0}%`;
+      if(els.progressText){
+        if(progress.required){
+          els.progressText.textContent = `已完成 ${progress.filled} / ${progress.required}（${progress.percent}%）`;
+        }else if(sectionViewsReady){
+          els.progressText.textContent = '無必填欄位';
+        }else{
+          els.progressText.textContent = '—';
+        }
+      }
+      if(els.lastSaved) els.lastSaved.textContent = formatLastSavedDisplay(lastSavedTimestamp);
+    }
+
+    function scheduleSummaryUpdate(){
+      if(summaryUpdateScheduled) return;
+      summaryUpdateScheduled = true;
+      window.requestAnimationFrame(()=>{
+        summaryUpdateScheduled = false;
+        refreshStickySummary();
+      });
+    }
+
+    function getSideNavElements(){
+      if(!SIDE_NAV_STATE.root){
+        SIDE_NAV_STATE.root = document.getElementById('sideNav');
+        SIDE_NAV_STATE.list = document.getElementById('sideNavList');
+      }
+      return SIDE_NAV_STATE;
+    }
+
+    function formatSideNavCount(filled, required){
+      if(!required) return '—';
+      return `${filled}/${required}`;
+    }
+
+    function handleSideNavClick(event){
+      const target=event && event.currentTarget ? event.currentTarget : null;
+      if(!target) return;
+      const anchorId = target.dataset ? target.dataset.target : '';
+      if(!anchorId) return;
+      const anchor = document.getElementById(anchorId);
+      if(!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      const nextTop = rect.top + window.pageYOffset - currentScrollOffset + 4;
+      window.scrollTo({ top: Math.max(0, nextTop), behavior:'smooth' });
+    }
+
+    function renderSideNav(){
+      const state = getSideNavElements();
+      if(!state.root || !state.list) return;
+      state.list.innerHTML='';
+      const activePage = currentPageId || '';
+      state.root.dataset.page = activePage;
+      if(state.items && state.items.length){
+        state.items.forEach(item=>{
+          if(!item) return;
+          item.element = null;
+          item.button = null;
+          item.countEl = null;
+        });
+      }
+      const visibleItems = (state.items || []).filter(item=>{
+        if(!item) return false;
+        if(!item.pageId || !activePage) return true;
+        return item.pageId === activePage;
+      });
+      if(!visibleItems.length){
+        state.root.dataset.empty = '1';
+        return;
+      }
+      state.root.dataset.empty = '0';
+      visibleItems.forEach(item=>{
+        const li=document.createElement('li');
+        li.className='side-nav-item';
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='side-nav-link';
+        btn.textContent=item.label || '未命名群組';
+        btn.dataset.target=item.anchorId || '';
+        btn.addEventListener('click', handleSideNavClick);
+        const count=document.createElement('span');
+        count.className='side-nav-count';
+        const stats=item.stats || { filled:0, required:0 };
+        count.textContent = formatSideNavCount(stats.filled || 0, stats.required || 0);
+        li.appendChild(btn);
+        li.appendChild(count);
+        state.list.appendChild(li);
+        item.element = li;
+        item.button = btn;
+        item.countEl = count;
+      });
+      scheduleLayoutMeasurements();
+    }
+
+    function scheduleSideNavRender(){
+      if(SIDE_NAV_STATE.renderScheduled) return;
+      SIDE_NAV_STATE.renderScheduled = true;
+      window.requestAnimationFrame(()=>{
+        SIDE_NAV_STATE.renderScheduled = false;
+        renderSideNav();
+      });
+    }
+
+    function registerSideNavGroups(){
+      const state = getSideNavElements();
+      if(!state.root || !state.list) return;
+      state.items = [];
+      document.querySelectorAll('[data-section]').forEach(section=>{
+        const sectionId = section.dataset ? section.dataset.section || '' : '';
+        const pageSection = section.closest('.page-section');
+        const pageId = pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '';
+        (section.__groups || []).forEach(group=>{
+          if(!group || !group.element) return;
+          if(!group.element.id){
+            const navId = `${sectionId || 'section'}-group-${group.id}`;
+            group.element.id = navId;
+          }
+          const label = group.toggle ? group.toggle.textContent.trim() : '';
+          const stats = section.__groupStats && section.__groupStats[group.id]
+            ? section.__groupStats[group.id]
+            : { filled:0, required:0 };
+          const item = {
+            sectionId,
+            pageId,
+            groupId: group.id,
+            anchorId: group.element.id,
+            label: label || `群組 ${group.id}`,
+            stats: { filled: stats.filled || 0, required: stats.required || 0 },
+            element:null,
+            button:null,
+            countEl:null
+          };
+          group.navItem = item;
+          state.items.push(item);
+        });
+      });
+      scheduleSideNavRender();
+    }
+
+    function updateSideNavForSection(section){
+      if(!section) return;
+      const sectionId = section.dataset ? section.dataset.section || '' : '';
+      if(!sectionId) return;
+      const state = getSideNavElements();
+      if(!state.items.length) return;
+      (section.__groups || []).forEach(group=>{
+        if(!group || !group.navItem) return;
+        const stats = section.__groupStats && section.__groupStats[group.id] ? section.__groupStats[group.id] : { filled:0, required:0 };
+        group.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
+        if(group.navItem.countEl){
+          group.navItem.countEl.textContent = formatSideNavCount(group.navItem.stats.filled, group.navItem.stats.required);
+        }
+        if(group.toggle && group.navItem.button){
+          const text = group.toggle.textContent.trim();
+          if(text) group.navItem.button.textContent = text;
+        }
+      });
+    }
+
+    const CHECKCOL_PRIORITY_MAP = {
+      s1_vision_note_box:['配戴眼鏡','老花','白內障術後','單眼視力不佳'],
+      s1_lang_box:['國語','台語','客語'],
+      s1_swallow_sx_box:['嗆咳','吞嚥延遲','殘留'],
+      s1_diet_texture_box:['一般','軟質','碎食','泥狀'],
+      s1_feeding_tube_box:['鼻胃管（NGT）','胃造口（PEG）'],
+      s1_oral_box:['自然牙完整','缺牙','口腔衛生不佳','口乾'],
+      s1_lesion_sx_box:['無不適','疼痛','紅腫','出血'],
+      s1_balance_box:['站立不穩','頭暈','TUG>12s'],
+      s1_sitting_support_box:['需安全帶','需托盤／擋板','坐墊／防滑具'],
+      s1_excretion_aids_box:['紙尿褲','便盆椅','留置導尿管','間歇導尿管'],
+      s1_phone_note_box:['易受詐騙','重聽需擴音'],
+      s1_mood_behaviors_box:['焦慮','憂鬱','易怒','遊走','日夜顛倒'],
+      s1_devices_box:['鼻胃管','胃造口管（PEG）','氣切管','氧氣機'],
+      s1_dhx_box:['高血壓','糖尿病','心臟病','腦中風','失智症'],
+      s1_med_classes_box:['降壓藥','降脂藥','抗血栓／抗凝','降血糖／胰島素','利尿劑','睡眠用藥'],
+      s2_sources:['子女/親屬支持','退休金（軍公教/勞退）','勞保/農保年金','老人福利津貼'],
+      s3_fac:['扶手','止滑','斜坡'],
+      s3_aids:['輪椅','助行器','拐杖','照顧床'],
+      sp_formal:['居家服務','日間照顧','專業服務','喘息服務','交通接送','營養送餐','無障礙及輔具'],
+      sp_risks:['被照顧者嚴重情緒/干擾行為','高齡照顧者','沒有照顧替手','資源不符/變動或突發緊急需求'],
+      mismatch_reason_box:['身體狀況','資源限制','個案意願','經濟考量','其他']
+    };
+
+    function getCheckcolLabelValue(label){
+      if(!label) return '';
+      const input = label.querySelector('input[type=checkbox]');
+      if(input && input.value !== undefined) return String(input.value).trim();
+      return label.textContent.trim();
+    }
+
+    function applyCheckcolPriority(box){
+      if(!box) return;
+      const id = box.id || '';
+      const priorities = CHECKCOL_PRIORITY_MAP[id];
+      if(!priorities || !priorities.length) return;
+      const labels = Array.from(box.querySelectorAll('label'));
+      if(!labels.length) return;
+      const orderMap = new Map();
+      priorities.forEach((value,index)=>{ orderMap.set(String(value), index); });
+      labels.sort((a,b)=>{
+        const aValue = getCheckcolLabelValue(a);
+        const bValue = getCheckcolLabelValue(b);
+        const aOrder = orderMap.has(aValue) ? orderMap.get(aValue) : Infinity;
+        const bOrder = orderMap.has(bValue) ? orderMap.get(bValue) : Infinity;
+        if(aOrder !== bOrder) return aOrder - bOrder;
+        const aOther = /其他/.test(aValue) ? 1 : 0;
+        const bOther = /其他/.test(bValue) ? 1 : 0;
+        if(aOther !== bOther) return aOther - bOther;
+        return aValue.localeCompare(bValue, 'zh-Hant');
+      });
+      labels.forEach(label=>box.appendChild(label));
+    }
+
+    function updateCheckcolEnhancements(box){
+      if(!box || !box.__checkcolState) return;
+      const state = box.__checkcolState;
+      const wrapper = state.wrapper;
+      const chipsHost = state.chips;
+      const summaryLabel = state.summaryLabel;
+      const toggle = state.toggle;
+      const labels = Array.from(box.querySelectorAll('label'));
+      chipsHost.innerHTML='';
+      let selectedCount = 0;
+      labels.forEach(label=>{
+        const input = label.querySelector('input[type=checkbox]');
+        const checked = !!(input && input.checked);
+        label.dataset.checked = checked ? '1' : '0';
+        if(checked){
+          selectedCount++;
+          const chip=document.createElement('span');
+          chip.className='checkcol-chip';
+          chip.textContent = getCheckcolLabelValue(label) || (input ? input.value : '');
+          chipsHost.appendChild(chip);
+        }
+      });
+      wrapper.dataset.hasSelection = selectedCount ? '1' : '0';
+      if(selectedCount === 0){
+        wrapper.dataset.collapsed = '0';
+      }
+      if(summaryLabel) summaryLabel.textContent = `已選（${selectedCount}）`;
+      if(toggle){
+        const collapsed = wrapper.dataset.collapsed === '1';
+        toggle.textContent = collapsed ? '展開清單' : '收合清單';
+      }
+    }
+
+    function enhanceCheckcol(box){
+      if(!box || box.__checkcolState) return;
+      const wrapper=document.createElement('div');
+      wrapper.className='checkcol-wrapper';
+      wrapper.dataset.collapsed='0';
+      wrapper.dataset.hasSelection='0';
+      const parent = box.parentNode;
+      if(parent){ parent.insertBefore(wrapper, box); }
+      wrapper.appendChild(box);
+      const footer=document.createElement('div');
+      footer.className='checkcol-footer';
+      const summaryLabel=document.createElement('span');
+      summaryLabel.className='checkcol-summary-label';
+      summaryLabel.textContent='已選（0）';
+      const chips=document.createElement('div');
+      chips.className='checkcol-selected-chips';
+      const toggle=document.createElement('button');
+      toggle.type='button';
+      toggle.className='checkcol-toggle';
+      toggle.textContent='收合清單';
+      toggle.addEventListener('click', ()=>{
+        const collapsed = wrapper.dataset.collapsed === '1';
+        wrapper.dataset.collapsed = collapsed ? '0' : '1';
+        toggle.textContent = collapsed ? '收合清單' : '展開清單';
+        scheduleLayoutMeasurements();
+      });
+      footer.appendChild(summaryLabel);
+      footer.appendChild(chips);
+      footer.appendChild(toggle);
+      wrapper.appendChild(footer);
+      box.__checkcolState = { wrapper, footer, summaryLabel, chips, toggle };
+      box.dataset.checkcolEnhanced = '1';
+      box.addEventListener('change', ()=>updateCheckcolEnhancements(box));
+      box.addEventListener('input', ()=>updateCheckcolEnhancements(box));
+      applyCheckcolPriority(box);
+      updateCheckcolEnhancements(box);
+    }
+
+    function refreshCheckcol(target){
+      const box = typeof target === 'string' ? document.getElementById(target) : target;
+      if(!box || box.dataset.virtualChecklist === '1') return;
+      if(!box.__checkcolState){
+        enhanceCheckcol(box);
+      }else{
+        applyCheckcolPriority(box);
+        updateCheckcolEnhancements(box);
+      }
+    }
+
+    function refreshCheckcols(scope){
+      const root = typeof scope === 'string' ? document.getElementById(scope) : (scope || document);
+      if(!root) return;
+      root.querySelectorAll('.checkcol').forEach(el=>refreshCheckcol(el));
     }
 
     function isCoarsePointer(){
@@ -3032,6 +3891,12 @@
       }
       if(!title) title = `群組 ${group.id || ''}`.trim();
       group.toggle.textContent = title;
+      if(group.navItem){
+        group.navItem.label = title;
+        if(group.navItem.button){
+          group.navItem.button.textContent = title;
+        }
+      }
     }
 
     function buildSectionGroups(section){
@@ -3317,17 +4182,29 @@
       if(!section) return;
       const progress = section.__progress;
       const containers = section.__fieldContainers || [];
+      const groupStats = {};
+      (section.__groups || []).forEach(group=>{
+        if(group && group.id){
+          groupStats[group.id] = { required:0, filled:0 };
+        }
+      });
       let requiredCount = 0;
       let filledCount = 0;
       containers.forEach(container=>{
         const required = evaluateContainerRequirement(section, container);
+        const filled = updateContainerFilled(section, container);
         if(required){
           requiredCount++;
-          if(updateContainerFilled(section, container)) filledCount++;
-        }else{
-          updateContainerFilled(section, container);
+          if(filled) filledCount++;
+        }
+        const groupId = container && container.dataset ? container.dataset.groupId : '';
+        if(groupId && groupStats[groupId]){
+          if(required) groupStats[groupId].required++;
+          if(required && filled) groupStats[groupId].filled++;
         }
       });
+      section.__progressCounts = { required: requiredCount, filled: filledCount };
+      section.__groupStats = groupStats;
       if(progress){
         let percent = requiredCount ? Math.round((filledCount / requiredCount) * 100) : 100;
         if(!Number.isFinite(percent)) percent = 100;
@@ -3335,6 +4212,8 @@
         progress.bar.style.width = `${percent}%`;
       }
       updateAllGroupEmptyStates(section);
+      updateSideNavForSection(section);
+      scheduleSummaryUpdate();
     }
 
     function createSectionProgress(section){
@@ -3527,6 +4406,10 @@
       const sections = document.querySelectorAll('[data-section]');
       sections.forEach(section=>setupSection(section));
       sectionViewsReady = true;
+      registerSideNavGroups();
+      sections.forEach(section=>updateSideNavForSection(section));
+      scheduleSideNavRender();
+      scheduleSummaryUpdate();
     }
 
     /* ===== 個管師名單 ===== */
@@ -3595,7 +4478,56 @@
     function removeExtraRow(idx){
       const el=document.getElementById(`extra-${idx}`);
       if(el) el.remove();
+      enforcePrimaryExclusionOnExtras();
       updateParticipantConflictHint();
+      buildApprovalPlanPreview();
+      if(!isRestoringDraft) scheduleAutoSave();
+    }
+
+    function resetExtras(){
+      document.querySelectorAll('[id^="extra-"]').forEach(el=>el.remove());
+      extraIdx = 0;
+    }
+
+    function restoreExtras(list){
+      resetExtras();
+      if(!Array.isArray(list) || !list.length) return;
+      list.forEach(entry=>{
+        const rawRole = entry && entry.role !== undefined ? String(entry.role).trim() : '';
+        const customRole = entry && entry.customRole !== undefined ? String(entry.customRole).trim() : '';
+        const name = entry && entry.name !== undefined ? String(entry.name).trim() : '';
+        if(!rawRole && !customRole && !name) return;
+        const currentIndex = extraIdx;
+        addExtraRow();
+        const select=document.getElementById(`ex-role-${currentIndex}`);
+        const custom=document.getElementById(`ex-custom-${currentIndex}`);
+        const nameInput=document.getElementById(`ex-name-${currentIndex}`);
+        let appliedCustom = false;
+        if(select){
+          const hasOption = rawRole && [...select.options].some(opt=>opt.value===rawRole);
+          if(hasOption){
+            select.value = rawRole;
+          }else if(rawRole){
+            select.value = '自訂角色';
+            appliedCustom = true;
+          }else if(customRole){
+            select.value = '自訂角色';
+            appliedCustom = true;
+          }
+          if(select.value === '自訂角色' && custom){
+            custom.style.display='';
+            custom.value = customRole || (!hasOption ? rawRole : '');
+          }else if(custom){
+            custom.style.display='none';
+            custom.value='';
+          }
+        }
+        if(appliedCustom && custom && !custom.value){
+          custom.value = rawRole;
+        }
+        if(nameInput) nameInput.value = name;
+      });
+      enforcePrimaryExclusionOnExtras();
     }
     function enforcePrimaryExclusionOnSelect(sel){
       if(!sel) return;
@@ -3876,6 +4808,7 @@
         });
       }
 
+      refreshCheckcols(document.getElementById('section1_block'));
     }
 
     function setupLesionSymptomsBox(){
@@ -3890,6 +4823,7 @@
       });
       box.dataset.mode = lesionSymptomMode;
       setLesionSymptomMode(lesionSymptomMode);
+      refreshCheckcol('s1_lesion_sx_box');
     }
 
     // 連動
@@ -3918,6 +4852,7 @@
       toggleVisionOther();
       toggleGlassesAdherence();
       updateVisionAutoHint();
+      refreshCheckcol('s1_vision_note_box');
     }
     function onVisionNoteChange(event){
       const target=event && event.target;
@@ -3983,6 +4918,7 @@
       });
       wrap.style.display='';
       toggleHearingDeviceAdherence();
+      refreshCheckcol('s1_hearing_detail_box');
     }
 
     function toggleHearingDeviceAdherence(){
@@ -4319,6 +5255,9 @@
           document.querySelectorAll('#s1_feeding_tube_box input[type=checkbox]').forEach(c=>{ c.checked=false; });
         }
       }
+      refreshCheckcol('s1_swallow_sx_box');
+      refreshCheckcol('s1_diet_texture_box');
+      refreshCheckcol('s1_feeding_tube_box');
     }
 
     function toggleFallDetail(){
@@ -4340,6 +5279,7 @@
       if(!show){
         box.querySelectorAll('input[type=checkbox]').forEach(c=>{ c.checked=false; });
       }
+      refreshCheckcol('s1_sitting_support_box');
     }
 
     function togglePhoneNotes(){
@@ -4352,6 +5292,7 @@
         wrap.querySelectorAll('input[type=checkbox]').forEach(c=>{ c.checked=false; });
       }
       togglePhoneNoteOther();
+      refreshCheckcol('s1_phone_note_box');
     }
 
     function togglePhoneNoteOther(){
@@ -4504,6 +5445,22 @@
       updateActionRemoveButtons();
       updateActionHint();
       buildSection1();
+      if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
+    }
+
+    function restoreActionEntries(list){
+      const host=document.getElementById('s1_actions_list');
+      if(!host) return;
+      host.innerHTML='';
+      actionEntryCounter = 0;
+      if(Array.isArray(list) && list.length){
+        list.forEach(entry=>addActionEntry(entry));
+      }
+      if(host.childElementCount===0){
+        addActionEntry();
+      }
+      updateActionRemoveButtons();
+      updateActionHint();
     }
 
     function readActionEntries(){
@@ -4553,6 +5510,7 @@
       if(none && none.checked){
         others.forEach(c=>{ c.checked=false; });
       }
+      refreshCheckcol(containerId);
     }
 
     function updateLesionModeControls(){
@@ -6230,6 +7188,7 @@
           const o=document.createElement('option'); o.textContent=c; catSel.appendChild(o); // 段二加入選項
         });
       }
+      refreshCheckcol('s2_sources');
     }
     function toggleDisCategory(){
       const levelEl=document.getElementById('s2_dis_level');
@@ -6271,6 +7230,8 @@
       S3_FAC.forEach((name)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS3()"> ${name}`; facHost.appendChild(lab);});
       const aidsHost=document.getElementById('s3_aids'); aidsHost.innerHTML='';
       S3_AIDS.forEach((name)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS3()"> ${name}`; aidsHost.appendChild(lab);});
+      refreshCheckcol('s3_fac');
+      refreshCheckcol('s3_aids');
     }
     function toggleOtherType(){
       const sel=document.getElementById('s3_type'); const on= sel.value==='其他';
@@ -6840,6 +7801,8 @@
         rHost.appendChild(lab);
       });
       toggleGoalInputs();
+      refreshCheckcol('sp_formal');
+      refreshCheckcol('sp_risks');
     }
 
     function setServiceCardSelected(card, selected){
@@ -7213,6 +8176,7 @@
         host.appendChild(label);
       });
       mismatchReasonInitialized = true;
+      refreshCheckcol('mismatch_reason_box');
     }
 
     function getSelectedMismatchReasons(){
@@ -7419,7 +8383,13 @@
       return Array.from(codes);
     }
 
-    function syncPlanStateWithSelections(){
+    function syncPlanStateWithSelections(options){
+      options = options || {};
+      if(isRestoringDraft && !options.force){
+        schedulePlanStateSync(options);
+        return;
+      }
+      const skipPreview = !!options.skipPreview;
       const selected = new Set(getAllSelectedServiceCodes());
       Object.keys(servicePlanState).forEach(code=>{
         if(!selected.has(code)) delete servicePlanState[code];
@@ -7434,9 +8404,12 @@
       });
       applyAutomaticPlanning();
       renderServicePlanEditor();
-      updateMismatchReasons({skipPreview:true});
-      buildPlanSummaryPreview();
-      buildApprovalPlanPreview();
+      updateMismatchReasons({ skipPreview: skipPreview });
+      if(!skipPreview){
+        buildPlanSummaryPreview();
+        buildApprovalPlanPreview();
+      }
+      if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
     }
 
     function isFiniteNumber(value){
@@ -9365,10 +10338,56 @@
       return caseName ? `${prefix}-${caseName}` : prefix;
     }
 
+    function formatSummaryDate(value){
+      if(!value) return '';
+      if(/^(\d{4})-(\d{2})-(\d{2})$/.test(value)){
+        const parts=value.split('-');
+        return `${parts[0]}/${parts[1]}/${parts[2]}`;
+      }
+      const parsed = typeof parseDateInput === 'function' ? parseDateInput(value) : null;
+      if(parsed && !Number.isNaN(parsed.getTime())){
+        return `${parsed.getFullYear()}/${pad2(parsed.getMonth()+1)}/${pad2(parsed.getDate())}`;
+      }
+      return value;
+    }
+
+    function buildExportSummaryLines(){
+      const lines=[];
+      const caseName=(document.getElementById('caseName')?.value || '').trim();
+      const caseDisplay = caseName ? formatCaseDisplay() : '';
+      lines.push(`案主：${caseDisplay || '尚未填寫'}`);
+      const cmsLevel = getCmsLevel();
+      lines.push(`CMS 等級：${cmsLevel || '尚未設定'}`);
+      const callDate = formatSummaryDate(getDateBox('callDate'));
+      const visitDate = formatSummaryDate(getDateBox('visitDate'));
+      lines.push(`電聯日期：${callDate || '—'}；家訪日期：${visitDate || '—'}`);
+      const primaryRel=(document.getElementById('primaryRel')?.value || '').trim();
+      const primaryName=(document.getElementById('primaryName')?.value || '').trim();
+      const primaryLine = primaryRel || primaryName ? `${primaryRel || '—'}${primaryName ? `－${primaryName}` : ''}` : '尚未填寫';
+      lines.push(`主照者：${primaryLine}`);
+      const deciderRel=(document.getElementById('sp_deciderRel')?.value || '').trim();
+      const deciderName=(document.getElementById('sp_deciderName')?.value || '').trim();
+      const deciderPhone=(document.getElementById('sp_deciderPhone')?.value || '').trim();
+      const deciderParts=[];
+      if(deciderRel) deciderParts.push(deciderRel);
+      if(deciderName) deciderParts.push(deciderName);
+      if(deciderPhone) deciderParts.push(deciderPhone);
+      lines.push(`主要聯繫人：${deciderParts.length ? deciderParts.join('／') : '尚未指定'}`);
+      const manager=(document.getElementById('caseManagerName')?.value || '').trim();
+      lines.push(`個案管理員：${manager || '尚未填寫'}`);
+      return lines;
+    }
+
     function buildApprovalPlanPreview(){
       const box=document.getElementById('plan_text');
       if(!box) return;
       const lines=[];
+      const summaryLines = buildExportSummaryLines();
+      if(summaryLines.length){
+        lines.push('【摘要】');
+        summaryLines.forEach(text=>lines.push(text));
+        lines.push('');
+      }
       lines.push('一、長照服務核定項目、頻率：');
       const bEntries=getPlanEntriesByCategory('B');
       if(bEntries.length){
@@ -9521,6 +10540,8 @@
       });
       refreshDayCareAvailability();
       syncPlanStateWithSelections();
+      scheduleSummaryUpdate();
+      if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
     }
 
     function getCmsLevel(){
@@ -9965,9 +10986,61 @@
           <input id="cc-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:6px;">
         </div>
         <div><label>姓名</label><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
-        <div style="flex:0; align-self:flex-end;"><button class="small" onclick="document.getElementById('cc-${idx}').remove()">移除</button></div>
+        <div style="flex:0; align-self:flex-end;"><button class="small" onclick="removeCoCareRow(${idx})">移除</button></div>
       `;
       host.appendChild(wrap);
+    }
+
+    function removeCoCareRow(idx){
+      const row=document.getElementById(`cc-${idx}`);
+      if(row) row.remove();
+      buildSection4();
+      if(!isRestoringDraft) scheduleAutoSave();
+    }
+
+    function resetCoCare(){
+      document.querySelectorAll('[id^="cc-"]').forEach(el=>el.remove());
+      coCareIdx = 0;
+    }
+
+    function restoreCoCare(list){
+      resetCoCare();
+      if(!Array.isArray(list) || !list.length) return;
+      list.forEach(entry=>{
+        const rel = entry && entry.rel !== undefined ? String(entry.rel).trim() : '';
+        const customRel = entry && entry.customRel !== undefined ? String(entry.customRel).trim() : '';
+        const name = entry && entry.name !== undefined ? String(entry.name).trim() : '';
+        if(!rel && !customRel && !name) return;
+        const currentIndex = coCareIdx;
+        addCoCare();
+        const select=document.getElementById(`cc-rel-${currentIndex}`);
+        const custom=document.getElementById(`cc-custom-${currentIndex}`);
+        const nameInput=document.getElementById(`cc-name-${currentIndex}`);
+        let appliedCustom=false;
+        if(select){
+          const hasOption = rel && [...select.options].some(opt=>opt.value===rel);
+          if(hasOption){
+            select.value = rel;
+          }else if(rel){
+            select.value = '自訂角色';
+            appliedCustom = true;
+          }else if(customRel){
+            select.value = '自訂角色';
+            appliedCustom = true;
+          }
+          if(select.value === '自訂角色' && custom){
+            custom.style.display='';
+            custom.value = customRel || (!hasOption ? rel : '');
+          }else if(custom){
+            custom.style.display='none';
+            custom.value='';
+          }
+        }
+        if(appliedCustom && custom && !custom.value){
+          custom.value = rel;
+        }
+        if(nameInput) nameInput.value = name;
+      });
     }
     function collectCoCare(){
       const out=[]; const rows=[...document.querySelectorAll('[id^="cc-"]')];
@@ -10067,23 +11140,143 @@
       26:'跌倒風險',27:'安全疑慮',28:'居住環境障礙',29:'社會參與需協助',30:'困擾行為',
       31:'照顧負荷過重',32:'輔具使用問題',33:'感染問題',34:'其他問題'
     };
-    function renderProblems(){
-      const host=document.getElementById('problemList'); host.innerHTML='';
-      for(let n=1;n<=34;n++){
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${n}" onchange="limitProblems()"> ${n}.${PROBLEMS[n]}`;
-        host.appendChild(lab);
+
+    function createVirtualChecklist(host, items, options){
+      if(!host) return null;
+      options = options || {};
+      const rowHeight = options.rowHeight || 48;
+      const buffer = options.buffer || 3;
+      const wrapper=document.createElement('div');
+      wrapper.className='virtual-checklist';
+      const viewport=document.createElement('div');
+      viewport.className='virtual-checklist-viewport';
+      const spacer=document.createElement('div');
+      spacer.className='virtual-checklist-spacer';
+      spacer.style.height = `${items.length * rowHeight}px`;
+      const visible=document.createElement('div');
+      visible.className='virtual-checklist-visible';
+      viewport.appendChild(spacer);
+      viewport.appendChild(visible);
+      wrapper.appendChild(viewport);
+      host.appendChild(wrapper);
+      const state={ host, wrapper, viewport, spacer, visible, items, rowHeight, buffer };
+      function render(){
+        const scrollTop = viewport.scrollTop || 0;
+        const viewportHeight = viewport.clientHeight || 0;
+        const start = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
+        const end = Math.min(items.length, Math.ceil((scrollTop + viewportHeight) / rowHeight) + buffer);
+        visible.style.transform = `translateY(${start * rowHeight}px)`;
+        visible.innerHTML='';
+        for(let i=start; i<end; i++){
+          const item = items[i];
+          if(!item) continue;
+          const node = typeof options.renderItem === 'function' ? options.renderItem(item, i, state) : null;
+          if(node) visible.appendChild(node);
+        }
       }
+      const handleScroll = ()=>render();
+      const handleResize = ()=>render();
+      viewport.addEventListener('scroll', handleScroll);
+      window.addEventListener('resize', handleResize);
+      state.render = render;
+      state.destroy = ()=>{
+        viewport.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', handleResize);
+      };
+      render();
+      return state;
     }
+
+    function updateProblemListPrintSummary(){
+      const box=document.getElementById('problemListPrint');
+      if(!box) return;
+      if(!problemSelection.size){
+        box.textContent='（尚未選擇照顧問題）';
+        return;
+      }
+      const texts = Array.from(problemSelection).map(code=>{
+        const label = PROBLEMS && PROBLEMS[code] ? PROBLEMS[code] : '';
+        return label ? `${code}.${label}` : code;
+      });
+      box.textContent = `已選問題：${texts.join('、')}`;
+    }
+
+    function toggleProblemSelection(code, checked, input){
+      const value = String(code);
+      if(checked){
+        if(!problemSelection.has(value) && problemSelection.size >= PROBLEM_MAX_SELECTION){
+          if(input) input.checked = false;
+          return false;
+        }
+        problemSelection.add(value);
+      }else{
+        problemSelection.delete(value);
+      }
+      if(problemListVirtual && typeof problemListVirtual.render === 'function'){
+        problemListVirtual.render();
+      }
+      limitProblems();
+      return true;
+    }
+
+    function renderProblems(){
+      const host=document.getElementById('problemList');
+      if(!host) return;
+      if(problemListVirtual && typeof problemListVirtual.destroy === 'function'){
+        problemListVirtual.destroy();
+      }
+      problemListVirtual = null;
+      host.innerHTML='';
+      host.dataset.virtualChecklist='1';
+      const items=[];
+      for(let n=1;n<=34;n++){
+        items.push({ code:String(n), label:`${n}.${PROBLEMS[n]}` });
+      }
+      problemListVirtual = createVirtualChecklist(host, items, {
+        rowHeight:48,
+        buffer:4,
+        renderItem:(item)=>{
+          const label=document.createElement('label');
+          label.className='virtual-checklist-item';
+          const input=document.createElement('input');
+          input.type='checkbox';
+          input.value=item.code;
+          input.id=`problem_item_${item.code}`;
+          input.checked = problemSelection.has(item.code);
+          input.disabled = !input.checked && problemSelection.size >= PROBLEM_MAX_SELECTION;
+          input.addEventListener('change', evt=>{ toggleProblemSelection(item.code, evt.target.checked, evt.target); });
+          const text=document.createElement('span');
+          text.textContent=item.label;
+          label.appendChild(input);
+          label.appendChild(text);
+          return label;
+        }
+      });
+      updateProblemListPrintSummary();
+      limitProblems();
+    }
+
     function limitProblems(){
-      const boxes=[...document.querySelectorAll('#problemList input[type=checkbox]')];
-      const selected=boxes.filter(b=>b.checked);
-      document.getElementById('problemCount').textContent=`已選 ${selected.length} / 5`;
-      if (selected.length>=5){ boxes.forEach(b=>{ if(!b.checked) b.disabled=true; }); } else { boxes.forEach(b=>b.disabled=false); }
+      const counter=document.getElementById('problemCount');
+      if(counter) counter.textContent=`已選 ${problemSelection.size} / ${PROBLEM_MAX_SELECTION}`;
+      const reached = problemSelection.size >= PROBLEM_MAX_SELECTION;
+      if(problemListVirtual && problemListVirtual.visible){
+        problemListVirtual.visible.querySelectorAll('input[type=checkbox]').forEach(input=>{
+          if(!input) return;
+          const code = String(input.value || '');
+          if(problemSelection.has(code)){
+            input.disabled = false;
+          }else{
+            input.disabled = reached;
+          }
+        });
+      }
+      updateProblemListPrintSummary();
       buildApprovalPlanPreview();
     }
+
     function getSelectedProblems(){
-      return [...document.querySelectorAll('#problemList input[type=checkbox]')].filter(b=>b.checked).map(b=>parseInt(b.value,10));
+      return Array.from(problemSelection).map(code=>parseInt(code,10)).filter(num=>!Number.isNaN(num));
     }
     function buildLongGoal(){
       const careEntries = getSelectedCareEntries();
@@ -10709,6 +11902,9 @@
           persistSection1Previous();
           clearStyleCheckerMarks();
           renderSection1Preview(section1PreviewState.segments);
+          clearAutoSaveDraft();
+          lastSavedTimestamp = Date.now();
+          scheduleSummaryUpdate();
           if (res && res.file && res.file.url) openProducedFile(res.file.url);
         })
         .withFailureHandler(err=>{
@@ -10968,6 +12164,7 @@
     function setActivePage(pageId, options){
       if(!pageId) return;
       const opts = options || {};
+      currentPageId = pageId;
       const sections=document.querySelectorAll('.page-section');
       sections.forEach(section=>{
         const active = section.dataset.page === pageId ? '1' : '0';
@@ -10983,6 +12180,7 @@
       }else{
         updateWizardButtons();
       }
+      scheduleSideNavRender();
       scheduleLayoutMeasurements();
     }
 
@@ -11134,6 +12332,7 @@
         caseNameInput.addEventListener('input', syncSocialPrimary);
         caseNameInput.addEventListener('input', updateConsultVisitText);
         caseNameInput.addEventListener('input', buildApprovalPlanPreview);
+        caseNameInput.addEventListener('input', scheduleSummaryUpdate);
       }
       const consultSelect=document.getElementById('consultName');
       if(consultSelect){
@@ -11149,6 +12348,8 @@
       initSectionViews();
 
       applyInitialUiPreferences();
+
+      initAutoSave();
 
       scheduleLayoutMeasurements();
 
