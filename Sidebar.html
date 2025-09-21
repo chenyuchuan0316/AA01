@@ -2303,6 +2303,40 @@
       .datebox input[type="date"]{ min-width:150px; font-size:var(--fs-ctrl); }
       .preview{ font-size:calc(var(--fs-base) * var(--font-scale) * 0.95); }
     }
+    /* === Section card 通用網格（大卡內的 H2~H6 分節自動排欄） === */
+    .section-card-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+      gap:var(--gap);
+      align-items:start;
+    }
+    .section-card{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      break-inside:avoid;
+      -webkit-column-break-inside:avoid;
+      page-break-inside:avoid;
+    }
+    @media (max-width:1024px){
+      .section-card-grid{ grid-template-columns:1fr; }
+    }
+    @media (min-width:1025px) and (max-width:1439px){
+      .section-card-grid{ grid-template-columns:repeat(2, minmax(320px, 1fr)); }
+    }
+    @media (min-width:1440px){
+      .section-card-grid{ grid-template-columns:repeat(3, minmax(320px, 1fr)); }
+    }
+
+    /* 停用舊的 intro grid 三欄比例，避免右側留白 */
+    .section-intro-grid{ display:contents; }
+    .page-section[data-active="1"] > .section-intro-grid{
+      display:contents !important;
+      grid-template-columns:none !important;
+      row-gap:0 !important;
+      column-gap:0 !important;
+    }
+
     @media print{
       body{ margin:var(--space-sm); font-size:12px; line-height:1.45; color:#000; }
       .page-header, .page-tabs, .page-toolbar, .wizard, .floating-actions, .side-nav, .checkcol-toggle, .font-scale-control, .mobile-mode-control, #validationToast{ display:none !important; }
@@ -2426,141 +2460,143 @@
   </nav>
 
   <div class="page-section" data-page="goals" data-active="1" data-columns="2">
-    <div class="section-intro-grid">
-      <div class="group" id="basicInfoGroup">
-        <span class="h1">基本資訊</span>
-        <div class="basic-info-fields">
-          <div class="basic-info-row" data-row="1">
-            <div class="basic-info-field unit-code-field field-intro" data-field-size="short">
-              <label class="h2" for="unitCode">單位代碼</label>
-              <select id="unitCode" onchange="loadManagers(); loadConsultants();">
-                <option>FNA1</option><option>FNA2</option><option>FNA3</option>
+    <div class="group" id="basicInfoGroup">
+      <span class="h1">基本資訊</span>
+      <div class="section-card-grid">
+        <section class="section-card" id="basicInfoSection">
+          <div class="basic-info-fields">
+            <div class="basic-info-row" data-row="1">
+              <div class="basic-info-field unit-code-field field-intro" data-field-size="short">
+                <label class="h2" for="unitCode">單位代碼</label>
+                <select id="unitCode" onchange="loadManagers(); loadConsultants();">
+                  <option>FNA1</option><option>FNA2</option><option>FNA3</option>
+                </select>
+              </div>
+              <div class="basic-info-field case-manager-field field-intro" data-field-size="medium">
+                <label class="h2" for="caseManagerName">個案管理師</label>
+                <input id="caseManagerName" type="search" list="caseManagerList" autocomplete="off" placeholder="搜尋或輸入個管師">
+                <datalist id="caseManagerList"></datalist>
+              </div>
+            </div>
+            <div class="basic-info-row" data-row="2">
+              <div class="basic-info-field case-name-field field-intro" data-field-size="medium">
+                <label class="h2" for="caseName">個案姓名</label>
+                <input id="caseName" type="text" placeholder="請輸入">
+              </div>
+              <div class="basic-info-field consult-name-field field-intro" data-field-size="medium">
+                <label class="h2" for="consultName">照專姓名</label>
+                <select id="consultName"></select>
+              </div>
+            </div>
+            <div class="cms-level-row" data-row="3">
+              <label class="h2" for="cmsLevelValue">CMS 等級</label>
+              <div id="cmsLevelGroup" class="cms-level-group">
+                <button type="button" data-level="2">2</button>
+                <button type="button" data-level="3">3</button>
+                <button type="button" data-level="4">4</button>
+                <button type="button" data-level="5">5</button>
+                <button type="button" data-level="6">6</button>
+                <button type="button" data-level="7">7</button>
+                <button type="button" data-level="8">8</button>
+              </div>
+              <input type="hidden" id="cmsLevelValue" value="">
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="group" id="contactVisitGroup">
+      <span class="h1">計畫目標</span>
+      <div class="section-card-grid">
+        <section class="section-card contact-visit-card" data-card="call">
+          <div class="contact-visit-card-header">
+            <span class="h2">一、電聯日期</span>
+          </div>
+          <div class="contact-visit-card-body">
+            <label class="h3" for="callDate">電聯日期</label>
+            <div id="callDateControls" class="datebox">
+              <input id="callDate" type="date">
+              <div class="date-controls">
+                <button type="button" class="small" aria-label="減一天" aria-controls="callDate" title="減一天" onclick="shiftDate('callDate', -1)">−</button>
+                <button type="button" class="small" aria-label="加一天" aria-controls="callDate" title="加一天" onclick="shiftDate('callDate', 1)">+</button>
+              </div>
+            </div>
+            <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
+              <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
+            </label>
+            <div id="consultVisitText" class="subtle" style="display:none; margin-top:var(--space-xs);"></div>
+          </div>
+        </section>
+
+        <section class="section-card contact-visit-card" data-card="visit">
+          <div class="contact-visit-card-header">
+            <span class="h2">二、家訪日期</span>
+          </div>
+          <div class="contact-visit-card-body">
+            <label class="h3" for="visitDate">家訪日期</label>
+            <div class="datebox">
+              <input id="visitDate" type="date">
+              <div class="date-controls">
+                <button type="button" class="small" aria-label="減一天" aria-controls="visitDate" title="減一天" onclick="shiftDate('visitDate', -1)">−</button>
+                <button type="button" class="small" aria-label="加一天" aria-controls="visitDate" title="加一天" onclick="shiftDate('visitDate', 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card contact-visit-card" data-card="discharge">
+          <div class="contact-visit-card-header">
+            <span class="h2">三、出準日期</span>
+          </div>
+          <div class="contact-visit-card-body">
+            <label class="inline-checkbox" style="display:block;">
+              <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出準日期
+            </label>
+            <div id="dischargeBox" style="display:none; margin-top:var(--space-xs);">
+              <label class="h3" for="dischargeDate">出準日期</label>
+              <div class="datebox">
+                <input id="dischargeDate" type="date">
+                <div class="date-controls">
+                  <button type="button" class="small" aria-label="減一天" aria-controls="dischargeDate" title="減一天" onclick="shiftDate('dischargeDate', -1)">−</button>
+                  <button type="button" class="small" aria-label="加一天" aria-controls="dischargeDate" title="加一天" onclick="shiftDate('dischargeDate', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-card" id="visitPartnersGroup">
+          <div class="titlebar">
+            <label class="h2">三、偕同訪視者</label>
+          </div>
+          <div class="row">
+            <div class="field-intro" data-field-size="short">
+              <label class="h3" for="primaryRel">主要照顧者關係</label>
+              <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
+                <option value="" class="placeholder-option" disabled selected>請選擇</option>
+                <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
+                <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
+                <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
+                <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
+                <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
+                <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
+                <optgroup label="自訂"><option>自訂角色</option></optgroup>
               </select>
             </div>
-            <div class="basic-info-field case-manager-field field-intro" data-field-size="medium">
-              <label class="h2" for="caseManagerName">個案管理師</label>
-              <input id="caseManagerName" type="search" list="caseManagerList" autocomplete="off" placeholder="搜尋或輸入個管師">
-              <datalist id="caseManagerList"></datalist>
+            <div class="field-intro" data-field-size="medium">
+              <label class="h3" for="primaryName">主要照顧者姓名</label>
+              <input id="primaryName" type="text" placeholder="請輸入">
             </div>
           </div>
-          <div class="basic-info-row" data-row="2">
-            <div class="basic-info-field case-name-field field-intro" data-field-size="medium">
-              <label class="h2" for="caseName">個案姓名</label>
-              <input id="caseName" type="text" placeholder="請輸入">
-            </div>
-            <div class="basic-info-field consult-name-field field-intro" data-field-size="medium">
-              <label class="h2" for="consultName">照專姓名</label>
-              <select id="consultName"></select>
-            </div>
+          <input type="hidden" id="includePrimary" value="true">
+          <div class="titlebar titlebar--mt-xxs">
+            <label class="h3">其他參與者</label>
+            <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
           </div>
-          <div class="cms-level-row" data-row="3">
-            <label class="h2" for="cmsLevelValue">CMS 等級</label>
-            <div id="cmsLevelGroup" class="cms-level-group">
-              <button type="button" data-level="2">2</button>
-              <button type="button" data-level="3">3</button>
-              <button type="button" data-level="4">4</button>
-              <button type="button" data-level="5">5</button>
-              <button type="button" data-level="6">6</button>
-              <button type="button" data-level="7">7</button>
-              <button type="button" data-level="8">8</button>
-            </div>
-            <input type="hidden" id="cmsLevelValue" value="">
-          </div>
-        </div>
-      </div>
-
-      <div class="group" id="contactVisitGroup">
-        <span class="h1">計畫目標</span>
-        <div class="contact-visit-cards">
-          <div class="contact-visit-card" data-card="call">
-            <div class="contact-visit-card-header">
-              <span class="h2">一、電聯日期</span>
-            </div>
-            <div class="contact-visit-card-body">
-              <label class="h3" for="callDate">電聯日期</label>
-              <div id="callDateControls" class="datebox">
-                <input id="callDate" type="date">
-                <div class="date-controls">
-                  <button type="button" class="small" aria-label="減一天" aria-controls="callDate" title="減一天" onclick="shiftDate('callDate', -1)">−</button>
-                  <button type="button" class="small" aria-label="加一天" aria-controls="callDate" title="加一天" onclick="shiftDate('callDate', 1)">+</button>
-                </div>
-              </div>
-              <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
-                <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
-              </label>
-              <div id="consultVisitText" class="subtle" style="display:none; margin-top:var(--space-xs);"></div>
-            </div>
-          </div>
-
-          <div class="contact-visit-card" data-card="visit">
-            <div class="contact-visit-card-header">
-              <span class="h2">二、家訪日期</span>
-            </div>
-            <div class="contact-visit-card-body">
-              <label class="h3" for="visitDate">家訪日期</label>
-              <div class="datebox">
-                <input id="visitDate" type="date">
-                <div class="date-controls">
-                  <button type="button" class="small" aria-label="減一天" aria-controls="visitDate" title="減一天" onclick="shiftDate('visitDate', -1)">−</button>
-                  <button type="button" class="small" aria-label="加一天" aria-controls="visitDate" title="加一天" onclick="shiftDate('visitDate', 1)">+</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="contact-visit-card" data-card="discharge">
-            <div class="contact-visit-card-header">
-              <span class="h2">三、出準日期</span>
-            </div>
-            <div class="contact-visit-card-body">
-              <label class="inline-checkbox" style="display:block;">
-                <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出準日期
-              </label>
-              <div id="dischargeBox" style="display:none; margin-top:var(--space-xs);">
-                <label class="h3" for="dischargeDate">出準日期</label>
-                <div class="datebox">
-                  <input id="dischargeDate" type="date">
-                  <div class="date-controls">
-                    <button type="button" class="small" aria-label="減一天" aria-controls="dischargeDate" title="減一天" onclick="shiftDate('dischargeDate', -1)">−</button>
-                    <button type="button" class="small" aria-label="加一天" aria-controls="dischargeDate" title="加一天" onclick="shiftDate('dischargeDate', 1)">+</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="group" id="visitPartnersGroup">
-        <div class="titlebar">
-          <label class="h2">三、偕同訪視者</label>
-        </div>
-        <div class="row">
-          <div class="field-intro" data-field-size="short">
-            <label class="h3" for="primaryRel">主要照顧者關係</label>
-            <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
-              <option value="" class="placeholder-option" disabled selected>請選擇</option>
-              <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
-              <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
-              <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
-              <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
-              <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
-              <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
-              <optgroup label="自訂"><option>自訂角色</option></optgroup>
-            </select>
-          </div>
-          <div class="field-intro" data-field-size="medium">
-            <label class="h3" for="primaryName">主要照顧者姓名</label>
-            <input id="primaryName" type="text" placeholder="請輸入">
-          </div>
-        </div>
-        <input type="hidden" id="includePrimary" value="true">
-        <div class="titlebar titlebar--mt-xxs">
-          <label class="h3">其他參與者</label>
-          <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
-        </div>
-        <div id="extras"></div>
-        <div id="extras_conflict" role="status" aria-live="polite"></div>
+          <div id="extras"></div>
+          <div id="extras_conflict" role="status" aria-live="polite"></div>
+        </section>
       </div>
     </div>
 
@@ -3557,10 +3593,8 @@
   <div class="page-section" data-page="execution" data-columns="2">
     <div class="group" data-span="full">
       <span class="h1">計畫執行規劃</span>
-    </div>
-    <div class="plan-workspace">
-      <div class="plan-workspace-main">
-        <div class="group" id="planExecutionGroup" data-span="full">
+      <div class="section-card-grid">
+        <section class="section-card" id="planExecutionGroup">
           <div class="titlebar">
             <label class="h2">一、長照服務核定項目、頻率</label>
           </div>
@@ -3569,16 +3603,16 @@
             <p>若同一服務由不同單位提供，或同時含自費段，請個別建立明細並清楚標註說明。</p>
           </div>
           <div id="planEditor" class="plan-editor"></div>
-        </div>
+        </section>
 
-        <div class="group">
+        <section class="section-card" id="planReferralSection">
           <div class="titlebar">
             <label class="h2">二、轉介其他服務資源</label>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
-        </div>
+        </section>
 
-        <div class="group">
+        <section class="section-card" id="planStationSection">
           <div class="titlebar">
             <label class="h2">三、巷弄長照站資訊與意願</label>
           </div>
@@ -3596,18 +3630,16 @@
               </select>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="group">
+        <section class="section-card" id="planEmergencySection">
           <div class="titlebar">
             <label class="h2">四、緊急救援服務說明</label>
           </div>
           <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
-        </div>
-      </div>
+        </section>
 
-      <div class="plan-workspace-side">
-        <div class="group" id="planSummaryGroup" data-span="full">
+        <section class="section-card" id="planSummaryGroup">
           <div class="titlebar">
             <label class="h2">附件二（服務計畫明細）預覽</label>
           </div>
@@ -3645,18 +3677,17 @@
           <div id="planSummaryPreview" class="summary-table-wrapper">
             <div class="hint">尚未選擇服務項目。</div>
           </div>
-        </div>
+        </section>
 
-        <div class="group" id="planTextGroup" data-span="full">
+        <section class="section-card" id="planTextGroup">
           <div class="titlebar">
             <label class="h2">附件一：計畫執行規劃預覽</label>
           </div>
           <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
           <textarea id="plan_text" class="plan-preview" readonly></textarea>
-        </div>
+        </section>
       </div>
     </div>
-
     <div class="group">
       <div class="btnbar">
         <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
@@ -3667,14 +3698,14 @@
   </div>
 
   <div class="page-section" data-page="notes" data-columns="1">
-    <div class="group" data-span="full">
-      <span class="h1">其他備註</span>
-    </div>
     <div class="group" id="planOtherGroup" data-span="full">
-      <div class="titlebar">
-        <label class="h2">其他（個案特殊狀況或其他未盡事宜可備註於此）</label>
+      <span class="h1">其他備註</span>
+      <div class="section-card-grid">
+        <section class="section-card">
+          <label class="h2">其他（個案特殊狀況或其他未盡事宜可備註於此）</label>
+          <textarea id="plan_other" placeholder="如有補充事項請於此敘述"></textarea>
+        </section>
       </div>
-      <textarea id="plan_other" placeholder="如有補充事項請於此敘述"></textarea>
     </div>
   </div>
 
