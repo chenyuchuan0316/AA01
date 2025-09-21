@@ -35,11 +35,17 @@
       --accent-weak:rgba(11,87,208,.12); /* Focus ring */
 
       /* 尺寸系統 */
-      --gap-base:8px;
+      --space-unit:4px;
+      --space-xxs:calc(var(--space-unit) * 1);   /* 4px */
+      --space-xs:calc(var(--space-unit) * 2);    /* 8px */
+      --space-sm:calc(var(--space-unit) * 3);    /* 12px */
+      --space-md:calc(var(--space-unit) * 4);    /* 16px */
+      --space-lg:calc(var(--space-unit) * 6);    /* 24px */
+      --gap-base:var(--space-xs);
       --gap:var(--gap-base);
-      --group-padding-base:10px;
+      --group-padding-base:var(--space-md);
       --group-padding:var(--group-padding-base);
-      --group-spacing-base:10px;
+      --group-spacing-base:var(--space-md);
       --group-spacing:var(--group-spacing-base);
       --radius:10px;
       --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
@@ -78,7 +84,7 @@
       --fab-h:0px;
       --fab-gap:calc(max(24px, env(safe-area-inset-bottom) + 24px));
       --sticky-header-height:96px;
-      --summary-bar-gap:10px;
+      --summary-bar-gap:var(--space-md);
       --scroll-offset:calc(var(--sticky-header-height) + var(--summary-bar-gap));
       --side-nav-w:280px; /* 右側側欄寬度（可依需求調整） */
       /* 標題層級間距（Token） */
@@ -106,7 +112,7 @@
       font-size:calc(var(--fs-base) * var(--font-scale));
       line-height:var(--line-height);
       letter-spacing:.2px;
-      margin:10px;
+      margin:var(--space-md);
       -webkit-tap-highlight-color:transparent;
       text-rendering:optimizeLegibility;
     }
@@ -163,9 +169,12 @@
     .app-container{
       max-width:min(90vw, var(--layout-max));
       margin:0 auto;
-      padding-bottom:calc(var(--fab-h, 0px) + 16px);
+      padding-bottom:calc(var(--fab-h, 0px) + var(--space-md));
       width:100%;
-      padding-right:calc(var(--side-nav-w) + 16px); /* 預留側欄空間（桌機） */
+      padding-right:calc(var(--side-nav-w) + var(--space-md)); /* 預留側欄空間（桌機） */
+    }
+    @media (max-width:1279px){
+      .app-container{ padding-right:var(--space-md); }
     }
 
     /* 卡片 */
@@ -178,24 +187,23 @@
       width:100%;
       box-sizing:border-box;
     }
-    /* 交錯輕底以分區（不改 HTML 的情況下給予溫和導引） */
-    .group:nth-of-type(odd){ background:var(--card-alt); }
+    /* 交錯輕底以分區（依 page-section 容器交錯） */
+    .page-section[data-active="1"] > .group:nth-of-type(odd){ background:var(--card-alt); }
 
-    /* 標題列與標題字（加粗 + 底線 + 顏色導引） */
-    .titlebar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-    .group > label:first-child, .titlebar > label:first-child{
-      display:block; font-weight:800; font-size:var(--fs-title); color:var(--title);
-      margin-bottom:6px; padding-bottom:3px; border-bottom:1px solid var(--border-strong);
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+    /* 標題列與標題字（以 H 系列為主） */
+    .titlebar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:var(--space-xs);
+      row-gap:var(--space-xxs);
+      margin:0 0 var(--space-sm);
     }
-    /* 當使用新標題系統時，覆寫預設 group 樣式 */
-    .group > label.h1, .titlebar > label.h1,
-    .group > label.h2, .titlebar > label.h2,
-    .group > label.h3, .titlebar > label.h3,
-    .group > label.h4, .titlebar > label.h4{
-      font-size:inherit; font-weight:inherit; color:inherit;
-      margin-bottom:unset; padding-bottom:unset; border-bottom:none;
-    }
+    .titlebar--mt-xxs{ margin-top:var(--space-xxs); }
+    .titlebar--mt-xs{ margin-top:var(--space-xs); }
+    .titlebar--mt-sm{ margin-top:var(--space-sm); }
+    .titlebar--mt-md{ margin-top:var(--space-md); }
 
     /* ===== Headings System (H1–H6) ===== */
     .h1{
@@ -236,9 +244,9 @@
       font-size:16px;
       margin-top:var(--space-h4-top);
       margin-bottom:var(--space-h4-bottom);
-      padding:6px 8px;
+      padding:var(--space-xxs) var(--space-xs);
       background:#F9FAFB; /* 淺灰底 */
-      border-radius:6px;
+      border-radius:8px;
     }
     /* 段落（H5對應） */
     .paragraph{ font-size:16px; font-weight:400; color:#111827; line-height:1.5; }
@@ -248,7 +256,7 @@
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section]{ scroll-margin-top:var(--scroll-offset); }
-    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:6px; }
+    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:var(--space-sm); }
     .row > div{ flex:1 1 min(100%, 360px); min-width:min(100%, 240px); max-width:720px; }
     .row > [data-field-size="short"],
     .section-group-body > [data-field-size="short"]{
@@ -274,7 +282,7 @@
     }
 
     /* 標籤與 Placeholder（加大字、提升對比） */
-    label{ display:block; font-size:var(--fs-label); margin-bottom:3px; color:var(--label); }
+    label{ display:block; font-size:var(--fs-label); margin-bottom:var(--space-xxs); color:var(--label); }
     :where(input,select,textarea)::placeholder{ color:var(--placeholder); opacity:1; }
 
     /* 表單元件：20px 字級，56px 高度（iOS 聚焦不縮放） */
@@ -340,14 +348,14 @@
       .date-controls{
         position:static;
         transform:none;
-        margin-top:6px;
+        margin-top:var(--space-xs);
         justify-content:flex-end;
         width:100%;
       }
     }
 
     /* 按鈕與操作面積（以 padding 控制高度） */
-    .btnbar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .btnbar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:var(--space-xs); }
     button{
       min-height:var(--h-button);
       padding:var(--button-padding-block) var(--button-padding-inline);
@@ -371,7 +379,7 @@
       position:sticky;
       top:0;
       z-index:40;
-      padding-top:6px;
+      padding-top:var(--space-xs);
       margin-bottom:var(--group-spacing);
     }
     .page-header-inner{
@@ -379,10 +387,10 @@
       border:1px solid var(--border);
       border-radius:18px;
       box-shadow:var(--shadow);
-      padding:12px 16px;
+      padding:var(--space-sm) var(--space-md);
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:var(--space-sm);
       backdrop-filter:saturate(180%) blur(6px);
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
@@ -393,26 +401,26 @@
       background:rgba(255,255,255,.86);
       backdrop-filter:saturate(120%) blur(6px);
       border-bottom:1px solid #e6eaf0;
-      padding:10px 12px;
+      padding:var(--space-sm) var(--space-md);
       display:grid;
       grid-template-columns:repeat(12, 1fr);
-      gap:8px 12px;
+      gap:var(--space-xs) var(--space-md);
       align-items:center;
     }
     @media (max-width:1279px){
       .page-summary{ grid-template-columns:repeat(8, 1fr); }
     }
     @media (max-width:1023px){
-      .page-summary{ grid-template-columns:repeat(4, 1fr); gap:6px 8px; }
+      .page-summary{ grid-template-columns:repeat(4, 1fr); gap:var(--space-xs); }
     }
-    .summary-item{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .summary-item{ display:flex; flex-direction:column; gap:var(--space-xxs); min-width:0; }
     .summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
     .summary-value{ font-size:1.1rem; font-weight:700; color:var(--title); word-break:break-word; }
     .summary-progress-bar{ position:relative; height:10px; border-radius:999px; background:#e2e8f0; overflow:hidden; }
     .summary-progress-fill{ position:absolute; inset:0; width:0%; border-radius:999px; background:var(--accent); transition:width .3s ease; }
     .summary-progress-text, .summary-last-saved{ font-weight:600; color:#475569; font-size:0.95rem; }
     .summary-remaining-text{ font-weight:600; color:#64748b; font-size:0.9rem; }
-    .summary-jump{ gap:6px; }
+    .summary-jump{ gap:var(--space-xs); }
     .summary-jump select{
       min-height:var(--h-button-sm);
       padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
@@ -425,16 +433,16 @@
     .summary-progress-list{
       display:flex;
       flex-wrap:wrap;
-      gap:6px;
+      gap:var(--space-xs);
       align-items:center;
-      margin-top:6px;
+      margin-top:var(--space-xs);
     }
     .summary-progress-list[data-empty="1"]{ display:none; }
     .summary-progress-chip{
       display:inline-flex;
       align-items:center;
-      gap:6px;
-      padding:6px 12px;
+      gap:var(--space-xxs);
+      padding:var(--space-xs) var(--space-sm);
       border-radius:999px;
       border:1px solid var(--border);
       background:#fff;
@@ -454,7 +462,7 @@
     .summary-progress-chip[data-status="optional"]{ background:rgba(226,232,240,.3); border-color:rgba(203,213,225,.6); color:#475569; }
     .summary-progress-chip:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
     @media (max-width:768px){
-      .summary-progress-list{ overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
+      .summary-progress-list{ overflow-x:auto; flex-wrap:nowrap; padding-bottom:var(--space-xxs); }
       .summary-progress-list::-webkit-scrollbar{ height:6px; }
       .summary-progress-chip{ flex:0 0 auto; }
     }
@@ -467,7 +475,7 @@
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:12px;
+      gap:var(--space-sm);
       flex-wrap:wrap;
     }
     .page-toolbar{
@@ -553,7 +561,7 @@
       .mobile-mode-label{ display:inline-block; }
       .mobile-mode-control{ display:inline-flex; flex-wrap:wrap; }
     }
-    .page-tabs{ display:flex; flex-wrap:wrap; gap:6px; margin:0; }
+    .page-tabs{ display:flex; flex-wrap:wrap; gap:var(--space-xs); margin:0; }
     .page-tabs button{
       min-height:var(--h-button-sm);
       padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
@@ -583,7 +591,7 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap:6px;
+      gap:var(--space-xs);
       border:none;
       background:none;
       cursor:pointer;
@@ -637,7 +645,7 @@
     @media (max-width:720px){
       .wizard{
         overflow-x:auto;
-        gap:12px;
+        gap:var(--space-sm);
         padding-bottom:6px;
         scroll-snap-type:x proximity;
         -webkit-overflow-scrolling:touch;
@@ -655,6 +663,8 @@
     .page-section{
       display:none;
       width:100%;
+      container-type:inline-size;
+      container-name:page-section;
     }
     .page-section[data-columns="1"]{
       --section-col-min:100%;
@@ -686,11 +696,28 @@
       min-width:100%;
     }
 
+    @container page-section (min-width:900px) and (max-width:1200px){
+      .page-section[data-columns="2"][data-active="1"]{
+        display:grid;
+        grid-template-columns:minmax(var(--section-col-min), .4fr) minmax(var(--section-col-min), .6fr);
+        align-items:start;
+        gap:var(--group-spacing);
+      }
+      .page-section[data-columns="2"][data-active="1"] > .group{
+        min-width:0;
+        width:100%;
+      }
+      .page-section[data-columns="2"][data-active="1"] > .group[data-span="full"],
+      .page-section[data-columns="2"][data-active="1"] > .section-intro-grid{
+        grid-column:1 / -1;
+      }
+    }
+
     .page-section[data-active="1"] > .section-intro-grid{
       display:grid;
       grid-template-columns:1fr;
-      row-gap:12px;
-      column-gap:12px;
+      row-gap:var(--space-sm);
+      column-gap:var(--space-sm);
       flex:1 1 100%;
       min-width:100%;
       align-items:stretch;
@@ -707,14 +734,14 @@
     .section-intro-grid > .group .row{ flex:1 1 auto; }
     @media (max-width:1023px){
       .page-section[data-active="1"] > .section-intro-grid{
-        row-gap:8px;
+        row-gap:var(--space-xs);
       }
     }
     @media (min-width:1024px) and (max-width:1279px){
       .page-section[data-active="1"] > .section-intro-grid{
         grid-template-columns:60% 40%;
-        column-gap:14px;
-        row-gap:14px;
+        column-gap:var(--space-md);
+        row-gap:var(--space-md);
       }
       .page-section[data-active="1"] > .section-intro-grid > #visitPartnersGroup{
         grid-column:1 / -1;
@@ -723,7 +750,7 @@
     @media (min-width:1280px){
       .page-section[data-active="1"] > .section-intro-grid{
         grid-template-columns:40% 35% 25%;
-        column-gap:16px;
+        column-gap:var(--space-md);
       }
       .page-section[data-active="1"] > .section-intro-grid > #visitPartnersGroup{
         grid-column:auto;
@@ -743,7 +770,7 @@
     .summary-table{ width:100%; border-collapse:collapse; min-width:600px; }
     .summary-table th, .summary-table td{
       border:1px solid var(--border);
-      padding:8px 10px;
+      padding:var(--space-xs) var(--space-sm);
       text-align:left;
       vertical-align:top;
     }
@@ -751,8 +778,8 @@
 
     .cms-level-group{
       display:flex;
-      gap:6px;
-      row-gap:6px;
+      gap:var(--space-xs);
+      row-gap:var(--space-xs);
       flex-wrap:wrap;
       align-items:flex-start;
     }
@@ -776,7 +803,7 @@
     #basicInfoGroup .basic-info-fields{
       display:flex;
       flex-direction:column;
-      gap:calc(var(--gap) + 2px);
+      gap:var(--space-sm);
     }
     #basicInfoGroup .basic-info-row{
       display:flex;
@@ -787,7 +814,7 @@
     #basicInfoGroup .basic-info-field{
       display:flex;
       flex-direction:column;
-      gap:5px;
+      gap:var(--space-xxs);
       min-width:0;
     }
     #basicInfoGroup .basic-info-field label{ margin-bottom:0; }
@@ -825,12 +852,12 @@
     #basicInfoGroup .cms-level-row{
       display:flex;
       flex-direction:column;
-      gap:6px;
-      margin-top:2px;
+      gap:var(--space-xs);
+      margin-top:var(--space-xxs);
     }
     /* 依新需求改為垂直排列：電聯日期、家訪日期、（出院日期）皆縱向堆疊 */
     #contactVisitGroup .form-row-2col{ grid-template-columns:1fr !important; }
-    #contactVisitGroup .date-row{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+    #contactVisitGroup .date-row{ display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-xs); }
     #contactVisitGroup .date-row .datebox{ width:100%; max-width:var(--intro-colw); }
     #contactVisitGroup .date-row .inline-checkbox{ margin:0; }
     #contactVisitGroup .datebox input[type="date"]{ max-width:var(--intro-colw); }
@@ -859,7 +886,7 @@
     @media (max-width:720px){
       #basicInfoGroup .basic-info-row{
         flex-direction:column;
-        gap:6px;
+        gap:var(--space-xs);
       }
       #basicInfoGroup .basic-info-field{
         flex:1 1 100%;
@@ -878,7 +905,7 @@
       align-items:center;
       justify-content:space-between;
       margin:12px 0 8px;
-      gap:12px;
+      gap:var(--space-sm);
       flex-wrap:wrap;
     }
     .location-toolbar .location-current{ font-weight:600; color:var(--label); }
@@ -1011,10 +1038,10 @@
       color:#475569;
     }
     .section-group-body{
-      margin-top:10px;
+      margin-top:var(--space-xs);
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:var(--space-xs);
     }
     .section-group[data-collapsed="1"] .section-group-body{
       display:none;
@@ -1023,7 +1050,7 @@
       display:none;
       font-size:.95rem;
       color:#6b7280;
-      padding:8px 10px;
+      padding:var(--space-xs) var(--space-sm);
       border-radius:8px;
       background:#f3f4f6;
     }
@@ -1047,22 +1074,23 @@
     /* 黏底主要動作列（避開 iOS 底部工具列） */
     .group:last-of-type .btnbar{
       position:sticky; bottom:max(18px, env(safe-area-inset-bottom));
-      padding:12px; background:rgba(255,255,255,.92);
+      padding:var(--space-sm);
+      background:rgba(255,255,255,.92);
       border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow);
     }
 
     /* 勾選清單（點擊面積提升） */
-    .checkcol{ display:grid; gap:10px; grid-template-columns:1fr; }
+    .checkcol{ display:grid; gap:var(--space-sm); grid-template-columns:1fr; }
     @media (min-width:720px){
       .checkcol{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
     }
     .checkcol label{
-      display:flex; align-items:center; gap:10px; padding:10px 12px;
+      display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-xs) var(--space-sm);
       border:1px solid var(--border); border-radius:12px; background:#fff; color:#222; font-size:var(--fs-base);
       margin:0;
     }
     .inline-checkbox{
-      display:flex; align-items:center; gap:10px; font-size:var(--fs-label); color:var(--label);
+      display:flex; align-items:center; gap:var(--space-xs); font-size:var(--fs-label); color:var(--label);
     }
     .inline-checkbox input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
     .checkcol input[type=checkbox]{ width:var(--checkbox); height:var(--checkbox); }
@@ -1093,15 +1121,15 @@
     @media (pointer:coarse){
       body[data-fontscale="sm"]{ --checkbox:32px; }
     } /* 觸控設備放大到 32px */
-    body[data-vertical-density="compact"] .checkcol{ gap:10px; }
-    body[data-vertical-density="compact"] .checkcol label{ padding:10px 12px; }
+    body[data-vertical-density="compact"] .checkcol{ gap:var(--space-xs); }
+    body[data-vertical-density="compact"] .checkcol label{ padding:var(--space-xs) var(--space-sm); }
 
     .checkcol-wrapper{ display:flex; flex-direction:column; gap:8px; }
     .checkcol-wrapper > .checkcol{ width:100%; }
     .checkcol-wrapper[data-collapsed="1"] > .checkcol{ display:none; }
     .checkcol-footer{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:space-between; }
     .checkcol-summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
-    .checkcol-selected-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+    .checkcol-selected-chips{ display:flex; flex-wrap:wrap; gap:var(--space-xs); }
     .checkcol-chip{ display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; background:rgba(11,87,208,.12); color:#0b1d4d; font-size:0.9rem; font-weight:600; }
     .checkcol-toggle{ height:auto; padding:4px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:var(--label); font-size:0.85rem; cursor:pointer; }
     .checkcol-toggle:hover{ background:#eef2ff; }
@@ -1113,10 +1141,10 @@
     .virtual-checklist-viewport{ position:relative; max-height:320px; overflow-y:auto; }
     .virtual-checklist-visible{ position:absolute; top:0; left:0; right:0; display:flex; flex-direction:column; }
     .virtual-checklist-spacer{ height:0; width:1px; }
-    .virtual-checklist-item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid rgba(15,23,42,.08); background:#fff; }
+    .virtual-checklist-item{ display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-xs) var(--space-sm); border-bottom:1px solid rgba(15,23,42,.08); background:#fff; }
     .virtual-checklist-item:last-child{ border-bottom:none; }
     .virtual-checklist-item input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
-    .virtual-checklist-print{ display:none; margin-top:8px; font-size:0.9rem; line-height:1.45; color:#0f172a; }
+    .virtual-checklist-print{ display:none; margin-top:var(--space-xs); font-size:0.9rem; line-height:1.45; color:#0f172a; }
 
 
     .lesion-mode{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
@@ -1126,14 +1154,14 @@
       color:#fff;
       border-color:var(--accent);
     }
-    .lesion-size-grid{ display:flex; gap:12px; flex-wrap:wrap; }
+    .lesion-size-grid{ display:flex; gap:var(--space-sm); flex-wrap:wrap; }
     .lesion-size-field{ flex:1 1 140px; position:relative; }
     .lesion-size-field input{ padding-right:42px; }
     .lesion-size-field .unit{ position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--label); font-weight:600; pointer-events:none; }
-    .lesion-area{ margin-top:6px; font-weight:600; color:var(--label); }
-    .action-list{ display:flex; flex-direction:column; gap:12px; }
-    .action-item{ border:1px dashed var(--border); border-radius:var(--radius); padding:14px; background:#fff; display:flex; flex-direction:column; gap:10px; }
-    .action-item-fields{ display:flex; flex-direction:column; gap:10px; }
+    .lesion-area{ margin-top:var(--space-xs); font-weight:600; color:var(--label); }
+    .action-list{ display:flex; flex-direction:column; gap:var(--space-sm); }
+    .action-item{ border:1px dashed var(--border); border-radius:var(--radius); padding:var(--space-sm); background:#fff; display:flex; flex-direction:column; gap:var(--space-xs); }
+    .action-item-fields{ display:flex; flex-direction:column; gap:var(--space-xs); }
     .action-item textarea{ resize:vertical; min-height:96px; }
     .action-item select{ font-size:var(--fs-ctrl); }
     .action-item-controls{ display:flex; justify-content:flex-end; }
@@ -1142,7 +1170,7 @@
     [data-field-container="1"]{
       display:flex;
       flex-direction:column;
-      gap:5px;
+      gap:var(--space-xxs);
       position:relative;
     }
     [data-field-container="1"] > label{
@@ -1166,8 +1194,8 @@
     .plan-editor{
       display:flex;
       flex-direction:column;
-      gap:18px;
-      margin-top:12px;
+      gap:var(--space-md);
+      margin-top:var(--space-sm);
     }
     .plan-category{
       border:1px solid var(--border);
@@ -1179,23 +1207,23 @@
       font-weight:700;
       font-size:1.05rem;
       color:var(--title);
-      margin-bottom:12px;
+      margin-bottom:var(--space-sm);
     }
     .plan-entry{
       border:1px dashed var(--border);
       border-radius:var(--radius);
-      padding:12px;
+      padding:var(--space-sm);
       background:var(--card-alt);
     }
-    .plan-entry + .plan-entry{ margin-top:12px; }
+    .plan-entry + .plan-entry{ margin-top:var(--space-sm); }
     .plan-entry-header{
       font-weight:700;
-      margin-bottom:10px;
+      margin-bottom:var(--space-xs);
     }
     .plan-entry-grid{
       display:grid;
       grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
-      gap:12px;
+      gap:var(--space-sm);
       align-items:start;
     }
     .plan-entry-grid textarea,
@@ -1204,7 +1232,7 @@
       font-size:0.9rem;
       color:var(--label);
       opacity:0.85;
-      margin-top:6px;
+      margin-top:var(--space-xs);
     }
     .plan-field.auto-summary .auto-summary-box{
       padding:12px 16px;
@@ -1223,7 +1251,7 @@
       border-style:dashed;
     }
     .selfpay-field .selfpay-hint{
-      margin-top:6px;
+      margin-top:var(--space-xs);
       font-size:0.95rem;
       color:#475569;
       display:none;
@@ -1234,7 +1262,7 @@
       align-items:center;
       flex-wrap:wrap;
       gap:8px;
-      margin-top:8px;
+      margin-top:var(--space-xs);
     }
     .plan-qty-hint{
       font-weight:600;
@@ -1259,7 +1287,7 @@
     .plan-summary-totals{
       display:flex;
       flex-wrap:wrap;
-      gap:12px;
+      gap:var(--space-sm);
       margin-bottom:12px;
     }
     .plan-summary-total-card{
@@ -1274,7 +1302,7 @@
     .plan-summary-total-label{
       font-size:0.95rem;
       color:#475569;
-      margin-bottom:6px;
+      margin-bottom:var(--space-xs);
       font-weight:600;
     }
     .plan-summary-total-value{
@@ -1286,8 +1314,8 @@
       color:#b3261e;
     }
     .summary-total-selfpay{
-      margin-top:12px;
-      padding-top:8px;
+      margin-top:var(--space-sm);
+      padding-top:var(--space-xs);
       border-top:1px solid var(--border);
       text-align:right;
       font-weight:700;
@@ -1297,15 +1325,15 @@
     .plan-summary-totals-hint{
       font-size:0.95rem;
       color:#b3261e;
-      margin-bottom:12px;
+      margin-bottom:var(--space-sm);
       display:none;
     }
     .plan-summary-totals-hint[data-show="1"]{
       display:block;
     }
     .plan-guideline{
-      margin-bottom:16px;
-      padding:12px 16px;
+      margin-bottom:var(--space-md);
+      padding:var(--space-sm) var(--space-md);
       border-radius:12px;
       border:1px solid var(--border);
       background:#f7f9fc;
@@ -1313,11 +1341,11 @@
       font-size:0.95rem;
       line-height:1.6;
     }
-    .plan-guideline p{ margin:0 0 8px; }
+    .plan-guideline p{ margin:0 0 var(--space-xs); }
     .plan-guideline p:last-child{ margin-bottom:0; }
     .plan-meta-grid{
       display:grid;
-      gap:12px;
+      gap:var(--space-sm);
       grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
     }
     .plan-meta-grid > div{
@@ -1352,12 +1380,12 @@
     }
 
     /* Home care 卡式清單（維持放大字與輸入） */
-    .home-care-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; }
+    .home-care-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:var(--space-sm); }
     .home-care-item{
       position:relative;
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:var(--space-sm);
       padding:16px;
       border:1px solid var(--border);
       border-radius:14px;
@@ -1394,7 +1422,7 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
+      gap:var(--space-sm);
     }
     .home-care-title{
       display:flex;
@@ -1433,7 +1461,7 @@
     .home-care-qty-wrap{
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:var(--space-xs);
     }
     .home-care-qty-label{
       font-weight:600;
@@ -1443,7 +1471,7 @@
     .home-care-qty{
       width:120px;
       min-height:var(--h-input);
-      padding:var(--ctrl-padding-block) 10px;
+      padding:var(--ctrl-padding-block) var(--space-sm);
       font-size:var(--fs-ctrl);
       border:1px solid var(--border);
       border-radius:10px;
@@ -1455,7 +1483,8 @@
 
     /* 預覽框：顏色加深以凸顯區塊 */
     .preview{
-      padding:14px 16px; background:#eef4ff;
+      padding:var(--space-sm) var(--space-md);
+      background:#eef4ff;
       border:1px solid #cdd9ff; border-radius:12px;
       white-space:pre-wrap; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       color:#0f172a; max-height:55vh; overflow:auto; font-size:calc(var(--fs-base) * var(--font-scale) * 0.95);
@@ -1471,8 +1500,8 @@
     .preview-card-container{
       display:flex;
       flex-direction:column;
-      gap:12px;
-      margin-top:10px;
+      gap:var(--space-sm);
+      margin-top:var(--space-xs);
     }
     .preview-card-container[data-empty="1"]{
       border:1px dashed var(--border);
@@ -1485,11 +1514,11 @@
       border:1px solid var(--border);
       border-radius:12px;
       background:#fff;
-      padding:14px 16px;
+      padding:var(--space-sm) var(--space-md);
       box-shadow:var(--shadow);
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:var(--space-xs);
     }
     .preview-card[data-changed="1"]{
       border-color:#f97316;
@@ -1500,7 +1529,7 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
+      gap:var(--space-sm);
     }
     .preview-card-title{
       font-weight:700;
@@ -1533,8 +1562,8 @@
       color:#6b7280;
     }
     .preview-card-previous{
-      margin-top:6px;
-      padding:10px 12px;
+      margin-top:var(--space-xs);
+      padding:var(--space-xs) var(--space-sm);
       border-radius:10px;
       background:#f8fafc;
       color:#4b5563;
@@ -1578,23 +1607,18 @@
     .error-messages li{ margin-bottom:4px; }
     .side-nav{
       position:fixed;
-      right:max(16px, env(safe-area-inset-right) + 16px);
-      top:calc(var(--sticky-header-height, 120px) + 18px);
+      right:max(var(--space-md), env(safe-area-inset-right) + var(--space-md));
+      top:calc(var(--sticky-header-height, 120px) + var(--space-md));
       width:var(--side-nav-w);
       background:rgba(255,255,255,.94);
       border:1px solid var(--border);
       border-radius:14px;
       box-shadow:var(--shadow);
-      padding:12px;
+      padding:var(--space-sm);
       display:flex;
       flex-direction:column;
-      gap:8px;
+      gap:var(--space-xs);
       z-index:38;
-    }
-    /* 1280 以下：縮小預留；1024 以下：隱藏側欄並釋放主內容寬度 */
-    @media (max-width:1279px){
-      .app-container{ padding-right:220px; }
-      .side-nav{ width:220px; }
     }
     @media (max-width:1023px){
       .app-container{ padding-right:0; }
@@ -1603,18 +1627,18 @@
     .side-nav[data-empty="1"]{ display:none; }
     .side-nav[data-empty="1"] .side-nav-summary{ display:none; }
     .side-nav-title{ font-weight:700; color:var(--title); font-size:1rem; }
-    .side-nav-summary{ display:flex; flex-direction:column; gap:6px; padding:6px 0 8px; border-bottom:1px solid rgba(15,23,42,.08); }
-    .side-nav-summary-item{ display:flex; flex-direction:column; gap:2px; }
+    .side-nav-summary{ display:flex; flex-direction:column; gap:var(--space-xs); padding:var(--space-xs) 0 var(--space-sm); border-bottom:1px solid rgba(15,23,42,.08); }
+    .side-nav-summary-item{ display:flex; flex-direction:column; gap:var(--space-xxs); }
     .side-nav-summary-label{ font-size:0.8rem; color:#64748b; font-weight:600; }
     .side-nav-summary-value{ font-size:1rem; font-weight:700; color:#0b1d4d; word-break:break-word; }
-    .side-nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
-    .side-nav-item{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .side-nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:var(--space-xs); }
+    .side-nav-item{ display:flex; align-items:center; justify-content:space-between; gap:var(--space-xs); }
     .side-nav-link{
       flex:1;
       text-align:left;
       background:none;
       border:none;
-      padding:6px 0;
+      padding:var(--space-xs) 0;
       color:var(--label);
       font-size:0.95rem;
       cursor:pointer;
@@ -1627,8 +1651,8 @@
     .side-nav-item[data-status="partial"] .side-nav-count{ color:#b45309; }
     .side-nav-item[data-status="pending"] .side-nav-count{ color:#1f2937; }
     .side-nav-item[data-status="optional"] .side-nav-count{ color:#475569; }
-    @media (max-width:1280px){
-      .side-nav{ display:none; }
+    @media (max-width:1279px){
+      .side-nav{ display:none !important; }
     }
     .floating-actions{
       position:fixed;
@@ -1640,11 +1664,11 @@
       align-items:center;
       justify-content:flex-end;
       flex-wrap:wrap;
-      gap:10px;
-      padding:12px 18px;
-      padding-left:max(18px, calc(env(safe-area-inset-left) + 18px));
-      padding-right:max(18px, calc(env(safe-area-inset-right) + 18px));
-      padding-bottom:max(12px, calc(env(safe-area-inset-bottom) + 12px));
+      gap:var(--space-xs);
+      padding:var(--space-sm) var(--space-md);
+      padding-left:max(var(--space-md), calc(env(safe-area-inset-left) + var(--space-md)));
+      padding-right:max(var(--space-md), calc(env(safe-area-inset-right) + var(--space-md)));
+      padding-bottom:max(var(--space-sm), calc(env(safe-area-inset-bottom) + var(--space-sm)));
       background:rgba(255,255,255,.95);
       border-top:1px solid rgba(148,163,184,.35);
       box-shadow:0 -6px 18px rgba(15,23,42,.08);
@@ -1662,7 +1686,7 @@
     @media (max-width:640px){
       .floating-actions{
         justify-content:center;
-        gap:12px;
+        gap:var(--space-sm);
       }
       .floating-actions button{
         flex:1 1 140px;
@@ -1673,7 +1697,7 @@
     #wizardPrevBtn{ order:3; }
     #errorSummary{
       display:none;
-      margin-top:12px;
+      margin-top:var(--space-sm);
       padding:16px;
       border:1px solid #fca5a5;
       border-radius:var(--radius);
@@ -1684,11 +1708,11 @@
     #errorSummary[data-show="1"]{ display:block; }
     #errorSummary .error-panel-title{
       font-weight:700;
-      margin-bottom:8px;
+      margin-bottom:var(--space-xs);
     }
     #errorSummary .error-panel-section{
-      padding-top:12px;
-      margin-top:12px;
+      padding-top:var(--space-sm);
+      margin-top:var(--space-sm);
       border-top:1px solid rgba(185,38,38,.2);
     }
     #errorSummary .error-panel-section:first-of-type{
@@ -1699,10 +1723,10 @@
     #errorSummary .error-panel-section-title{
       font-weight:700;
       font-size:1rem;
-      margin-bottom:6px;
+      margin-bottom:var(--space-xs);
     }
     #errorSummary ul{ margin:0; padding-left:20px; }
-    #errorSummary li{ margin-bottom:6px; }
+    #errorSummary li{ margin-bottom:var(--space-xs); }
     #errorSummary a{
       color:#b3261e;
       text-decoration:underline;
@@ -1722,7 +1746,7 @@
       box-shadow:0 18px 40px rgba(15,23,42,.25);
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:var(--space-sm);
       opacity:0;
       transform:translateY(12px);
       pointer-events:none;
@@ -1812,10 +1836,10 @@
     /* 行動端微調 */
     @media (max-width:480px){
       body{
-        margin:12px;
-        --gap-base:10px;
-        --group-padding-base:14px;
-        --group-spacing-base:10px;
+        margin:var(--space-sm);
+        --gap-base:var(--space-xs);
+        --group-padding-base:var(--space-sm);
+        --group-spacing-base:var(--space-sm);
         --checkcol-min:160px;
       }
       .row, .grid2, .grid3{ gap:var(--gap); }
@@ -1823,16 +1847,16 @@
       .preview{ font-size:calc(var(--fs-base) * var(--font-scale) * 0.95); }
     }
     @media print{
-      body{ margin:12px; font-size:12px; line-height:1.45; color:#000; }
+      body{ margin:var(--space-sm); font-size:12px; line-height:1.45; color:#000; }
       .page-header, .page-tabs, .page-toolbar, .wizard, .floating-actions, .side-nav, .checkcol-toggle, .font-scale-control, .mobile-mode-control, #validationToast{ display:none !important; }
       button, .btnbar, .preview-toolbar, .section-controls, .error-messages, .validation-toast, .page-tabs{ display:none !important; }
-      .page-section{ display:block !important; margin:0 0 12px !important; }
-      .page-section > .group{ margin-bottom:12px !important; }
+      .page-section{ display:block !important; margin:0 0 var(--space-sm) !important; }
+      .page-section > .group{ margin-bottom:var(--space-sm) !important; }
       .page-section > .group:last-child{ margin-bottom:0 !important; }
       .group{ box-shadow:none; border:1px solid #cbd5f5; background:#fff; page-break-inside:avoid; }
-      .checkcol-wrapper{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
-      .checkcol-wrapper > .checkcol{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
-      .checkcol label{ border:none; padding:4px 6px; }
+      .checkcol-wrapper{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--space-xs); }
+      .checkcol-wrapper > .checkcol{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--space-xs); }
+      .checkcol label{ border:none; padding:var(--space-xxs) var(--space-xs); }
       .checkcol label::before{ content:'□ '; }
       .checkcol label[data-checked="1"]::before{ content:'■ '; }
       textarea, input, select{ border:none; background:transparent; box-shadow:none; }
@@ -2002,10 +2026,10 @@
                 <button type="button" class="small" aria-label="後一天" onclick="shiftDate('callDate',  1)">+</button>
               </div>
             </div>
-            <label class="inline-checkbox" style="display:block; margin-top:10px;">
+            <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
               <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
             </label>
-            <div id="consultVisitText" class="subtle" style="display:none; margin-top:6px;"></div>
+            <div id="consultVisitText" class="subtle" style="display:none; margin-top:var(--space-xs);"></div>
           </div>
         </div>
         <div class="titlebar">
@@ -2024,10 +2048,10 @@
           </div>
           <div>
             <label class="h3">出準日期</label>
-            <label class="inline-checkbox" style="display:block; margin-top:4px;">
+            <label class="inline-checkbox" style="display:block; margin-top:var(--space-xxs);">
               <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出準日期
             </label>
-            <div id="dischargeBox" style="display:none; margin-top:6px;">
+            <div id="dischargeBox" style="display:none; margin-top:var(--space-xs);">
               <div class="datebox">
                 <input id="dischargeDate" type="date">
                 <div class="date-controls">
@@ -2064,7 +2088,7 @@
           </div>
         </div>
         <input type="hidden" id="includePrimary" value="true">
-        <div class="titlebar" style="margin-top:4px;">
+        <div class="titlebar titlebar--mt-xxs">
           <label class="h3">其他參與者</label>
           <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
         </div>
@@ -2076,7 +2100,7 @@
     <!-- 四、個案概況 -->
   <div class="group" data-span="full">
     <div class="titlebar">
-      <label>四、個案概況</label>
+      <span class="h1">四、個案概況</span>
       <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
     </div>
 
@@ -2138,8 +2162,8 @@
           <div>
             <label class="h5">視力補充</label>
             <div class="checkcol" id="s1_vision_note_box"></div>
-            <input id="s1_vision_other" type="text" placeholder="其他說明" style="display:none; margin-top:6px;">
-            <div id="s1_glasses_adherence_wrap" style="display:none; margin-top:6px;">
+            <input id="s1_vision_other" type="text" placeholder="其他說明" style="display:none; margin-top:var(--space-xs);">
+            <div id="s1_glasses_adherence_wrap" style="display:none; margin-top:var(--space-xs);">
               <select id="s1_glasses_adherence">
                 <option value="" class="placeholder-option" disabled selected>配戴情形</option>
                 <option>常態配戴</option>
@@ -2147,7 +2171,7 @@
                 <option>不配戴</option>
               </select>
             </div>
-            <div id="s1_vision_auto_hint" class="hint auto-hint" style="display:none; margin-top:6px;">
+            <div id="s1_vision_auto_hint" class="hint auto-hint" style="display:none; margin-top:var(--space-xs);">
               <span>已依視力狀態預選建議補充（標記為「系統預選」）。</span>
               <button type="button" class="small" onclick="resetVisionSuggestions()">還原為預設</button>
             </div>
@@ -2167,7 +2191,7 @@
         <div id="s1_hearing_detail_wrap" style="display:none;">
           <label class="h5">聽力狀態說明</label>
           <div class="checkcol" id="s1_hearing_detail_box"></div>
-          <div id="s1_hearing_device_wrap" style="display:none; margin-top:6px;">
+          <div id="s1_hearing_device_wrap" style="display:none; margin-top:var(--space-xs);">
             <select id="s1_hearing_device_adherence">
               <option value="" class="placeholder-option" disabled selected>助聽／擴音依從性</option>
               <option>持續使用</option>
@@ -2180,7 +2204,7 @@
           <div>
             <label class="h5">溝通語言／方式</label>
             <div class="checkcol" id="s1_lang_box"></div>
-            <input id="s1_lang_note" type="text" placeholder="備註（例如：以台語為主）" style="margin-top:6px;">
+            <input id="s1_lang_note" type="text" placeholder="備註（例如：以台語為主）" style="margin-top:var(--space-xs);">
           </div>
         </div>
 
@@ -2205,7 +2229,7 @@
           <div id="s1_diet_wrap" style="display:none;">
             <label class="h5">飲食質地</label>
             <div class="checkcol" id="s1_diet_texture_box"></div>
-            <label class="h5" style="margin-top:12px; display:block;">管灌方式</label>
+            <label class="h5" style="margin-top:var(--space-sm); display:block;">管灌方式</label>
             <div class="checkcol" id="s1_feeding_tube_box"></div>
           </div>
         </div>
@@ -2217,7 +2241,7 @@
           <div>
             <label class="h5">口腔牙齒／假牙</label>
             <div class="checkcol" id="s1_oral_box"></div>
-            <input id="s1_oral_note" type="text" placeholder="備註" style="margin-top:6px;">
+            <input id="s1_oral_note" type="text" placeholder="備註" style="margin-top:var(--space-xs);">
           </div>
         </div>
 
@@ -2261,7 +2285,7 @@
               <select id="s1_location_subregion" onchange="onSharedSubregionChange()">
                 <option value="" class="placeholder-option" disabled selected>請選擇</option>
               </select>
-              <input id="s1_location_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:6px;" oninput="onSharedSubregionOtherInput()">
+              <input id="s1_location_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:var(--space-xs);" oninput="onSharedSubregionOtherInput()">
             </div>
             <div>
               <label class="h5" for="s1_location_laterality">側別</label>
@@ -2284,7 +2308,7 @@
             <select id="s1_lesion_layer" onchange="toggleLesionLayerOther()">
               <option>無</option><option>表皮</option><option>皮下</option><option>關節附近</option><option>其他</option>
             </select>
-            <input id="s1_lesion_layer_other" type="text" placeholder="請填寫" style="display:none; margin-top:6px;">
+            <input id="s1_lesion_layer_other" type="text" placeholder="請填寫" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div id="s1_lesion_size_wrap" style="display:none;">
             <label class="h5">病灶大小</label>
@@ -2318,7 +2342,7 @@
               <select id="s1_lesion_eval" onchange="toggleLesionHospital()">
                 <option>未評估</option><option>醫師評估無大礙</option><option>已安排追蹤</option><option>持續治療中</option>
               </select>
-              <input id="s1_lesion_hospital" type="text" placeholder="醫療院所名稱" style="display:none; margin-top:6px;">
+              <input id="s1_lesion_hospital" type="text" placeholder="醫療院所名稱" style="display:none; margin-top:var(--space-xs);">
             </div>
           </div>
         </div>
@@ -2333,7 +2357,7 @@
             <select id="s1_transfer" onchange="toggleAdlHow('s1_transfer')">
               <option selected>獨立</option><option>需要輕扶</option><option>中度協助</option><option>重度協助</option><option>完全依賴</option>
             </select>
-            <input id="s1_transfer_how" type="text" placeholder="請說明協助方式" style="display:none; margin-top:6px;" data-show-values="中度協助,重度協助">
+            <input id="s1_transfer_how" type="text" placeholder="請說明協助方式" style="display:none; margin-top:var(--space-xs);" data-show-values="中度協助,重度協助">
           </div>
           <div>
             <label class="h5" for="s1_walk_indoor">室內行走</label>
@@ -2370,7 +2394,7 @@
               <option>過去1年≧2次</option>
               <option>不明</option>
             </select>
-            <input id="s1_fall_times" type="number" min="0" placeholder="次數" style="display:none; margin-top:6px;">
+            <input id="s1_fall_times" type="number" min="0" placeholder="次數" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div style="grid-column:1 / -1;">
             <label class="h5">平衡狀態</label>
@@ -2384,7 +2408,7 @@
               <option>易前傾</option>
               <option>易滑落</option>
             </select>
-            <div class="checkcol" id="s1_sitting_support_box" style="display:none; margin-top:6px;"></div>
+            <div class="checkcol" id="s1_sitting_support_box" style="display:none; margin-top:var(--space-xs);"></div>
           </div>
           <div>
             <label class="h5" for="s1_gait">步態</label>
@@ -2398,33 +2422,33 @@
               <option>跨步不穩</option>
               <option>其他</option>
             </select>
-            <input id="s1_gait_note" type="text" placeholder="備註" style="margin-top:6px;">
+            <input id="s1_gait_note" type="text" placeholder="備註" style="margin-top:var(--space-xs);">
           </div>
         </div>
 
         <div class="titlebar">
           <label class="h4">排泄與輔具</label>
         </div>
-        <div class="row" style="margin-top:8px;">
+        <div class="row" style="margin-top:var(--space-xs);">
           <div>
             <label class="h5">排泄輔具</label>
             <div class="checkcol" id="s1_excretion_aids_box"></div>
           </div>
         </div>
-        <div class="grid3 form-row-3col" style="margin-top:8px;">
+        <div class="grid3 form-row-3col" style="margin-top:var(--space-xs);">
           <div>
             <label class="h5" for="s1_urine_day">白天排尿</label>
             <select id="s1_urine_day" onchange="toggleUrineOther('day')">
               <option selected>正常（4–6次）</option><option>偏少（少於3次）</option><option>偏多（7–9次）</option><option>失禁</option><option>其他</option>
             </select>
-            <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
+            <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div id="s1_urine_night_wrap">
             <label class="h5" for="s1_urine_night">夜間排尿</label>
             <select id="s1_urine_night" onchange="toggleUrineOther('night')">
               <option selected>夜間未起夜</option><option>夜間起夜1次</option><option>夜間起夜2–3次</option><option>夜間起夜≥4次</option><option>夜間有尿失禁</option><option>其他</option>
             </select>
-            <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
+            <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div id="s1_nocturia_wrap" style="display:none;">
             <label class="h5" for="s1_nocturia_count">夜尿數值</label>
@@ -2436,41 +2460,41 @@
         <div class="titlebar">
           <label class="h4">ADL（日常生活活動）</label>
         </div>
-        <div class="grid3 form-row-3col" style="margin-top:8px;">
+        <div class="grid3 form-row-3col" style="margin-top:var(--space-xs);">
           <div>
             <label class="h5" for="s1_adl_eating">進食</label>
             <select id="s1_adl_eating" onchange="toggleAdlHow('s1_adl_eating')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_adl_eating_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_adl_eating" data-required-label="進食的部分協助方式">
+            <input id="s1_adl_eating_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_eating" data-required-label="進食的部分協助方式">
           </div>
           <div>
             <label class="h5" for="s1_adl_groom">盥洗（刷牙／洗臉）</label>
             <select id="s1_adl_groom" onchange="toggleAdlHow('s1_adl_groom')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_adl_groom_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_adl_groom" data-required-label="刷牙/洗臉的部分協助方式">
+            <input id="s1_adl_groom_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_groom" data-required-label="刷牙/洗臉的部分協助方式">
           </div>
           <div>
             <label class="h5" for="s1_adl_bathing">洗澡</label>
             <select id="s1_adl_bathing" onchange="toggleAdlHow('s1_adl_bathing')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_adl_bathing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_adl_bathing" data-required-label="洗澡的部分協助方式">
+            <input id="s1_adl_bathing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_bathing" data-required-label="洗澡的部分協助方式">
           </div>
           <div>
             <label class="h5" for="s1_adl_dressing">穿脫衣</label>
             <select id="s1_adl_dressing" onchange="toggleAdlHow('s1_adl_dressing')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_adl_dressing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_adl_dressing" data-required-label="穿脫衣的部分協助方式">
+            <input id="s1_adl_dressing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_dressing" data-required-label="穿脫衣的部分協助方式">
           </div>
           <div>
             <label class="h5" for="s1_post_toilet">如廁後清潔</label>
             <select id="s1_post_toilet" onchange="toggleAdlHow('s1_post_toilet')">
               <option selected>獨立</option><option>部分協助</option><option>完全協助</option>
             </select>
-            <input id="s1_post_toilet_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_post_toilet" data-required-label="如廁後清潔的部分協助方式">
+            <input id="s1_post_toilet_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_post_toilet" data-required-label="如廁後清潔的部分協助方式">
           </div>
         </div>
 
@@ -2483,9 +2507,9 @@
             <select id="s1_phone" onchange="togglePhoneNotes()">
               <option selected>會撥打與接聽</option><option>僅能接聽</option><option>不會使用</option>
             </select>
-            <div id="s1_phone_note_wrap" style="display:none; margin-top:6px;">
+            <div id="s1_phone_note_wrap" style="display:none; margin-top:var(--space-xs);">
               <div class="checkcol" id="s1_phone_note_box"></div>
-              <input id="s1_phone_note_other" type="text" placeholder="其他說明" style="display:none; margin-top:6px;">
+              <input id="s1_phone_note_other" type="text" placeholder="其他說明" style="display:none; margin-top:var(--space-xs);">
             </div>
           </div>
           <div>
@@ -2493,42 +2517,42 @@
             <select id="s1_shopping" onchange="toggleShoppingHow()">
               <option>可獨立</option><option selected>需陪同</option><option>不外出</option>
             </select>
-            <select id="s1_shopping_how" style="display:none; margin-top:6px;" onchange="toggleShoppingHow()">
+            <select id="s1_shopping_how" style="display:none; margin-top:var(--space-xs);" onchange="toggleShoppingHow()">
               <option value="" class="placeholder-option" disabled selected>方式/說明</option>
               <option>家屬陪同購物</option><option>由家屬代購</option><option>使用外送平台</option><option>居服員陪同／代購</option><option>外看（看護／志工）代購</option><option>其他</option>
             </select>
-            <input id="s1_shopping_how_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
+            <input id="s1_shopping_how_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div>
             <label class="h5" for="s1_meal_prep">備餐</label>
             <select id="s1_meal_prep" onchange="toggleAdlHow('s1_meal_prep')">
               <option>獨立</option><option selected>部分協助</option><option>完全由家屬</option>
             </select>
-            <input id="s1_meal_prep_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_meal_prep" data-required-label="備餐的部分協助方式">
+            <input id="s1_meal_prep_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_meal_prep" data-required-label="備餐的部分協助方式">
           </div>
           <div>
             <label class="h5" for="s1_dishwash">餐具清洗</label>
             <select id="s1_dishwash" onchange="toggleDishwashHow()">
               <option>乾淨</option><option selected>尚可或不一定乾淨</option><option>無法自行清洗</option>
             </select>
-            <select id="s1_dishwash_how" style="display:none; margin-top:6px;" onchange="toggleDishwashHow()">
+            <select id="s1_dishwash_how" style="display:none; margin-top:var(--space-xs);" onchange="toggleDishwashHow()">
               <option>由他人代辦</option><option>其他</option>
             </select>
-            <input id="s1_dishwash_how_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
+            <input id="s1_dishwash_how_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div>
             <label class="h5" for="s1_housework">家務整理</label>
             <select id="s1_housework" onchange="toggleAdlHow('s1_housework')">
               <option>獨立</option><option selected>部分協助</option><option>完全由家屬</option>
             </select>
-            <input id="s1_housework_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_housework" data-required-label="家務整理的部分協助方式">
+            <input id="s1_housework_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_housework" data-required-label="家務整理的部分協助方式">
           </div>
           <div>
             <label class="h5" for="s1_finance">財務管理</label>
             <select id="s1_finance" onchange="toggleAdlHow('s1_finance')">
               <option selected>獨立</option><option>部分協助</option><option>他人代辦</option>
             </select>
-            <input id="s1_finance_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:6px;" data-required-when="partial" data-required-source="s1_finance" data-required-label="財務管理的部分協助方式">
+            <input id="s1_finance_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_finance" data-required-label="財務管理的部分協助方式">
           </div>
         </div>
 
@@ -2558,7 +2582,7 @@
           <div>
             <label class="h5">慢性病史</label>
             <div class="checkcol" id="s1_dhx_box"></div>
-            <input id="s1_dhx_other" type="text" placeholder="其他慢性病" style="display:none; margin-top:6px;">
+            <input id="s1_dhx_other" type="text" placeholder="其他慢性病" style="display:none; margin-top:var(--space-xs);">
           </div>
         </div>
         <div class="grid3 form-row-3col">
@@ -2580,27 +2604,27 @@
             <select id="s1_visit_transport" onchange="toggleTransportOther()">
               <option>計程車</option><option>家屬接送</option><option>交通接送服務</option><option>其他</option>
             </select>
-            <input id="s1_visit_transport_other" type="text" placeholder="請填寫其他交通方式" style="display:none; margin-top:6px;">
+            <input id="s1_visit_transport_other" type="text" placeholder="請填寫其他交通方式" style="display:none; margin-top:var(--space-xs);">
           </div>
         </div>
         <div class="row">
           <div>
             <label class="h5">現用藥別</label>
             <div class="checkcol" id="s1_med_classes_box"></div>
-            <input id="s1_med_classes_other" type="text" placeholder="其他用藥" style="display:none; margin-top:6px;">
+            <input id="s1_med_classes_other" type="text" placeholder="其他用藥" style="display:none; margin-top:var(--space-xs);">
           </div>
         </div>
 
         <div class="titlebar">
           <label class="h4">睡眠與日間活動</label>
         </div>
-        <div class="grid3 form-row-3col" style="margin-top:8px;">
+        <div class="grid3 form-row-3col" style="margin-top:var(--space-xs);">
           <div>
             <label class="h5" for="s1_sleep">睡眠品質</label>
             <select id="s1_sleep" onchange="toggleSleepReason()">
               <option>良好</option><option>尚可</option><option selected>不佳</option>
             </select>
-            <select id="s1_sleep_reason" style="display:none; margin-top:6px;" onchange="toggleSleepReasonDetail()">
+            <select id="s1_sleep_reason" style="display:none; margin-top:var(--space-xs);" onchange="toggleSleepReasonDetail()">
               <option value="" class="placeholder-option" disabled selected>失眠原因</option>
               <option>疼痛</option>
               <option>頻尿</option>
@@ -2615,8 +2639,8 @@
               <option>酒精</option>
               <option>其他</option>
             </select>
-            <select id="s1_sleep_reason_detail" style="display:none; margin-top:6px;"></select>
-            <input id="s1_sleep_reason_other" type="text" placeholder="請說明" style="display:none; margin-top:6px;">
+            <select id="s1_sleep_reason_detail" style="display:none; margin-top:var(--space-xs);"></select>
+            <input id="s1_sleep_reason_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div>
             <label class="h5" for="s1_daytime">白天活動（選填）</label>
@@ -2627,11 +2651,11 @@
         <div class="titlebar">
           <label class="h4">管路／裝置</label>
         </div>
-        <div class="row" style="margin-top:8px;">
+        <div class="row" style="margin-top:var(--space-xs);">
           <div>
             <label class="h5">管路／裝置</label>
             <div class="checkcol" id="s1_devices_box"></div>
-            <input id="s1_devices_note" type="text" placeholder="備註" style="margin-top:6px;">
+            <input id="s1_devices_note" type="text" placeholder="備註" style="margin-top:var(--space-xs);">
           </div>
         </div>
 
@@ -2648,9 +2672,9 @@
             <div id="s1_dis_cat_text" class="badge">—</div>
           </div>
         </div>
-        <div class="hint" style="margin-top:6px;">身障資訊同步自(二)經濟收入，此處為唯讀顯示。</div>
+        <div class="hint" style="margin-top:var(--space-xs);">身障資訊同步自(二)經濟收入，此處為唯讀顯示。</div>
 
-        <div class="titlebar" style="margin-top:18px;">
+        <div class="titlebar titlebar--mt-md">
           <label class="h4">建議措施與補充</label>
           <button type="button" class="small" onclick="addActionEntry()">＋新增</button>
         </div>
@@ -2661,7 +2685,7 @@
         <textarea id="s1_notes" placeholder="其他未涵蓋重點（限簡要）；將附加於段落末端。"></textarea>
         <textarea id="section1_out" style="display:none;" data-progress-ignore="1"></textarea>
         <div id="section1_errors" class="error-messages" data-progress-ignore="1"></div>
-        <div class="preview-toolbar" style="margin-top:6px;">
+        <div class="preview-toolbar" style="margin-top:var(--space-xs);">
           <span class="hint">預覽（主題分段）：</span>
           <button type="button" class="small preview-toggle" id="section1_diff_toggle" data-active="0">只看變更</button>
         </div>
@@ -2698,7 +2722,7 @@
                 </select>
               </div>
             </div>
-            <div id="disCatBox" style="display:none; margin-top:10px;"><!-- 類別欄位，預設隱藏 -->
+            <div id="disCatBox" style="display:none; margin-top:var(--space-xs);"><!-- 類別欄位，預設隱藏 -->
               <label class="h4">身障類別（等級≠無才需選）</label>
               <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身障類別 --></select>
             </div>
@@ -2720,7 +2744,7 @@
             <select id="s3_type" onchange="toggleOtherType()">
               <option>透天</option><option>鐵皮屋</option><option>公寓</option><option>大樓</option><option>套房</option><option>其他</option>
             </select>
-            <input id="s3_type_other" type="text" placeholder="請輸入其他型態" style="display:none; margin-top:6px;">
+            <input id="s3_type_other" type="text" placeholder="請輸入其他型態" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div>
             <label class="h4">居住權屬</label>
@@ -2731,7 +2755,7 @@
             <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
           </div>
         </div>
-        <div class="grid3 form-row-3col" style="margin-top:8px;">
+        <div class="grid3 form-row-3col" style="margin-top:var(--space-xs);">
           <div id="s3_rent_amount_wrap" style="display:none;">
             <label class="h5">租金金額（元/月）</label>
             <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
@@ -2749,7 +2773,7 @@
             <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
           </div>
         </div>
-        <div class="grid2 form-row-2col" style="margin-top:8px;">
+        <div class="grid2 form-row-2col" style="margin-top:var(--space-xs);">
           <div>
             <label class="h4">無障礙設施</label>
             <div class="checkcol" id="s3_fac"></div>
@@ -2772,15 +2796,15 @@
 
         <div class="grid3 form-row-3col">
           <div>
-            <label>主照者關係</label>
+            <label class="h4">主照者關係</label>
             <div id="sp_primaryRel_text" class="badge">—</div>
           </div>
           <div>
-            <label>主照者姓名</label>
+            <label class="h4">主照者姓名</label>
             <div id="sp_primaryName_text" class="badge">—</div>
           </div>
           <div>
-            <label>同住狀態</label>
+            <label class="h4">同住狀態</label>
             <select id="sp_cohabit"><option value="">—不選—</option><option>同住</option><option>不同住</option></select>
           </div>
         </div>
@@ -2788,8 +2812,8 @@
 
         <div class="hr"></div>
 
-        <div class="titlebar" style="margin-top:12px;">
-          <label>主要聯繫人/決策者</label>
+        <div class="titlebar titlebar--mt-sm">
+          <label class="h4">主要聯繫人/決策者</label>
           <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
         </div>
         <div class="grid3 form-row-3col">
@@ -2818,8 +2842,8 @@
 
         <div class="hr"></div>
 
-        <div class="titlebar" style="margin-top:12px;">
-          <label>共同照顧者（可多筆）</label>
+        <div class="titlebar titlebar--mt-sm">
+          <label class="h4">共同照顧者（可多筆）</label>
           <button type="button" class="small" onclick="addCoCare()">＋新增共同照顧者</button>
         </div>
         <div id="coCare"></div>
@@ -2830,49 +2854,49 @@
           <label class="h4">正式資源（多選）</label>
           <div class="muted">固定：<span class="badge">社區整合型服務中心為福安</span></div>
           <div class="checkcol" id="sp_formal"></div>
-          <div id="homeCareWrap" style="display:none; margin-top:8px;">
+          <div id="homeCareWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label>居家服務項目（多選）</label>
+              <label class="h4">居家服務項目（多選）</label>
               <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
             </div>
             <div id="homeCareList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整；如需記錄用量，請於右側欄位輸入數量。</div>
           </div>
-          <div id="dayCareWrap" style="display:none; margin-top:8px;">
+          <div id="dayCareWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label>日間照顧服務項目（多選）</label>
+              <label class="h4">日間照顧服務項目（多選）</label>
               <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
             </div>
             <div id="dayCareList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
-          <div id="profServiceWrap" style="display:none; margin-top:8px;">
+          <div id="profServiceWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label>專業服務項目（多選）</label>
+              <label class="h4">專業服務項目（多選）</label>
               <button class="small" type="button" onclick="resetProfessionalPhrases()">重新套用片語</button>
             </div>
             <div id="profServiceList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
-          <div id="transportServiceWrap" style="display:none; margin-top:8px;">
+          <div id="transportServiceWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label>交通接送項目（多選）</label>
+              <label class="h4">交通接送項目（多選）</label>
               <button class="small" type="button" onclick="resetTransportPhrases()">重新套用片語</button>
             </div>
             <div id="transportServiceList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
-          <div id="respServiceWrap" style="display:none; margin-top:8px;">
+          <div id="respServiceWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label>喘息服務項目（多選）</label>
+              <label class="h4">喘息服務項目（多選）</label>
               <button class="small" type="button" onclick="resetRespitePhrases()">重新套用片語</button>
             </div>
             <div id="respServiceList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
-          <div id="mealServiceWrap" style="display:none; margin-top:8px;">
+          <div id="mealServiceWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label>營養送餐項目（多選）</label>
+              <label class="h4">營養送餐項目（多選）</label>
               <button class="small" type="button" onclick="resetMealPhrases()">重新套用片語</button>
             </div>
             <div id="mealServiceList" class="home-care-grid"></div>
@@ -2887,7 +2911,7 @@
           <div>
             <label class="h5 inline"><input type="checkbox" id="sp_inf_pt" onchange="toggleInfInput('pt')"> 據點</label>
             <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-            <select id="sp_inf_pt_freq" style="display:none; margin-top:6px;"><!-- 據點頻率 -->
+            <select id="sp_inf_pt_freq" style="display:none; margin-top:var(--space-xs);"><!-- 據點頻率 -->
             <option value="">—請選擇頻率—</option>
             <option>每週</option>
             <option>每月</option>
@@ -2899,7 +2923,7 @@
           <div>
             <label class="h5 inline"><input type="checkbox" id="sp_inf_nb" onchange="toggleInfInput('nb')"> 鄰里</label>
             <input id="sp_inf_nb_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-            <select id="sp_inf_nb_freq" style="display:none; margin-top:6px;"><!-- 鄰里頻率 -->
+            <select id="sp_inf_nb_freq" style="display:none; margin-top:var(--space-xs);"><!-- 鄰里頻率 -->
             <option value="">—請選擇頻率—</option>
             <option>每週</option>
             <option>每月</option>
@@ -2911,7 +2935,7 @@
           <div>
             <label class="h5 inline"><input type="checkbox" id="sp_inf_rg" onchange="toggleInfInput('rg')"> 宗教社團</label>
             <input id="sp_inf_rg_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-            <select id="sp_inf_rg_freq" style="display:none; margin-top:6px;"><!-- 宗教社團頻率 -->
+            <select id="sp_inf_rg_freq" style="display:none; margin-top:var(--space-xs);"><!-- 宗教社團頻率 -->
             <option value="">—請選擇頻率—</option>
             <option>每週</option>
             <option>每月</option>
@@ -2923,7 +2947,7 @@
           <div>
             <label class="h5 inline"><input type="checkbox" id="sp_inf_fw" onchange="toggleInfInput('fw')"> 財團／社會福利</label>
             <input id="sp_inf_fw_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-            <select id="sp_inf_fw_freq" style="display:none; margin-top:6px;"><!-- 財團頻率 -->
+            <select id="sp_inf_fw_freq" style="display:none; margin-top:var(--space-xs);"><!-- 財團頻率 -->
             <option value="">—請選擇頻率—</option>
             <option>每週</option>
             <option>每月</option>
@@ -2963,7 +2987,7 @@
         </div>
         <div class="grid2 form-row-2col">
           <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
-          <div><label>介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
+          <div><label class="h4">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
         </div>
         <textarea id="section6_struct" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
@@ -2979,7 +3003,7 @@
       <div class="checkcol" id="problemList"></div>
       <div class="count" id="problemCount">已選 0 / 5</div>
       <div class="virtual-checklist-print" id="problemListPrint" aria-hidden="true"></div>
-      <label class="h4" style="margin-top:8px;">補充說明（可選）</label>
+      <label class="h4" style="margin-top:var(--space-xs);">補充說明（可選）</label>
       <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
     </div></div>
 
@@ -3032,20 +3056,20 @@
       <textarea id="reason3" placeholder="填寫欄位"></textarea>
       <div class="hr"></div>
       <label class="h4">常用快捷（勾選即加入第 3 格）</label>
-      <div style="margin:6px 0;">
+      <div style="margin:var(--space-xs) 0;">
         <input id="rq1_no" type="text" placeholder="原服務，例如：備餐" style="margin-right:4px;">
         <input id="rq1_alt" type="text" placeholder="替代服務，例如：代購服務">
       </div>
-      <label><input type="checkbox" id="rq1"> 1.經與<span id="rq1_who">案○</span>討論，目前暫無<span id="rq1_no_preview" data-def="備餐">備餐</span>之需求，改為<span id="rq1_alt_preview" data-def="代購服務">代購服務</span>。</label>
-      <div style="margin:6px 0;">
+      <label class="h5 inline"><input type="checkbox" id="rq1"> 1.經與<span id="rq1_who">案○</span>討論，目前暫無<span id="rq1_no_preview" data-def="備餐">備餐</span>之需求，改為<span id="rq1_alt_preview" data-def="代購服務">代購服務</span>。</label>
+      <div style="margin:var(--space-xs) 0;">
         <input id="rq2_service" type="text" placeholder="服務，例如：專業服務">
       </div>
-      <label><input type="checkbox" id="rq2"> 2.經與<span id="rq2_who">案○</span>討論，目前因個案身體狀況，暫無<span id="rq2_service_preview" data-def="專業服務">專業服務</span>需求，日後待個案狀況好轉後，依當下狀況核定，續追蹤。</label>
-      <div id="mismatch_diff_block" style="display:none; margin-top:12px;">
+      <label class="h5 inline"><input type="checkbox" id="rq2"> 2.經與<span id="rq2_who">案○</span>討論，目前因個案身體狀況，暫無<span id="rq2_service_preview" data-def="專業服務">專業服務</span>需求，日後待個案狀況好轉後，依當下狀況核定，續追蹤。</label>
+      <div id="mismatch_diff_block" style="display:none; margin-top:var(--space-sm);">
         <div class="hint" id="mismatch_diff_text">與照專建議服務不一致項目：</div>
         <div class="mismatch-diff" id="mismatch_diff_list"></div>
         <div class="checkcol" id="mismatch_reason_box"></div>
-        <input id="mismatch_reason_other" type="text" placeholder="請說明其他原因" style="display:none; margin-top:6px;">
+        <input id="mismatch_reason_other" type="text" placeholder="請說明其他原因" style="display:none; margin-top:var(--space-xs);">
         <div class="field-error" id="mismatch_reason_error"></div>
       </div>
     </div></div>
@@ -3155,7 +3179,7 @@
         <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
       </div>
       <div id="errorSummary" data-show="0"></div>
-      <div id="msg" class="hint" style="margin-top:8px;"></div>
+      <div id="msg" class="hint" style="margin-top:var(--space-xs);"></div>
     </div>
   </div>
 
@@ -5366,7 +5390,7 @@
         <select id="ex-role-${idx}" onchange="toggleCustomRole(${idx}, 'ex')">
           ${roleOptionsHTML(true)}
         </select>
-        <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:6px;">
+        <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
       </div>
       <div>
         <label class="h3">其他參與者姓名</label>
@@ -11891,9 +11915,9 @@
           <select id="cc-rel-${idx}" onchange="toggleCustomRole(${idx}, 'cc')">
             ${roleOptionsHTML()}
           </select>
-          <input id="cc-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:6px;">
+          <input id="cc-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
         </div>
-        <div><label>姓名</label><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
+        <div><label class="h4">姓名</label><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
         <div style="flex:0; align-self:flex-end;"><button class="small" onclick="removeCoCareRow(${idx})">移除</button></div>
       `;
       host.appendChild(wrap);
