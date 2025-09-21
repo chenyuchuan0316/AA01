@@ -16,8 +16,8 @@
        尺寸基準（依需求可再調）：
        - 根字級（html）：桌機 19→20px（視寬度），手機依檔位 clamp(20px~26px)
        - 內文/標籤：≥16–18px（隨 font-scale 比例放大）
-       - 控制元件字級：標準 20px；大字 24px；特大字 26px（避免 iOS 聚焦放大）
-       - 輸入框高度：標準 56px 起，依檔位漸增；主按鈕同步放大；核取方塊 28→36px（觸控）
+       - 控制元件字級：標準 18px；大字約 22px；特大約 24px（避免 iOS 聚焦放大）
+       - 輸入框高度：標準 52px 起，依檔位漸增；主按鈕同步放大；核取方塊 26→34px（觸控）
     */
 
     :root{
@@ -35,35 +35,43 @@
       --accent-weak:rgba(11,87,208,.12); /* Focus ring */
 
       /* 尺寸系統 */
-      --gap-base:14px;
+      --gap-base:12px;
       --gap:var(--gap-base);
-      --group-padding-base:22px;
+      --group-padding-base:18px;
       --group-padding:var(--group-padding-base);
-      --group-spacing-base:16px;
+      --group-spacing-base:14px;
       --group-spacing:var(--group-spacing-base);
       --radius:12px;
       --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
 
       --fs-base:1rem;                               /* 由 html 根字級決定（19–22px） */
       --font-scale:1;
-      --line-height:1.75;
+      --line-height:1.65;
       --fs-title-base:clamp(1.25rem, 1.1rem + .35vw, 1.5rem);
       --fs-title:calc(var(--fs-title-base) * var(--font-scale));
       --fs-label-base:1rem;                         /* label ≥16–18px */
       --fs-label:calc(var(--fs-label-base) * var(--font-scale));
-      --fs-ctrl:20px;                               /* input/select/textarea 固定 20px */
-      --fs-button:calc(var(--fs-ctrl) - 2px);
-      --h-input:56px;                               /* 輸入框高度 */
-      --h-button:56px;                              /* 主按鈕高度 */
-      --h-button-sm:48px;                           /* 小按鈕（±1天/±5天等） */
-      --checkbox:28px;                              /* 核取方塊 */
+      --fs-ctrl:18px;                               /* input/select/textarea 固定 18px */
+      --fs-button:calc(var(--fs-ctrl) - 1px);
+      --h-input:52px;                               /* 輸入框高度 */
+      --h-button:52px;                              /* 主按鈕高度 */
+      --h-button-sm:44px;                           /* 小按鈕（±1天/±5天等） */
+      --checkbox:26px;                              /* 核取方塊 */
+      --layout-max:1280px;
+      --section-col-min:340px;
+      --section-col-max:560px;
+      --section-col-preferred:50%;
+      --grid-col-min-2:240px;
+      --grid-col-min-3:200px;
+      --checkcol-min:220px;
+      --textarea-min:110px;
       --mobile-font-min:20px;
       --mobile-font-fluid:5.2vw;
       --mobile-font-max:22px;
       --fab-h:0px;
       --fab-gap:calc(max(24px, env(safe-area-inset-bottom) + 24px));
       --sticky-header-height:96px;
-      --summary-bar-gap:12px;
+      --summary-bar-gap:10px;
       --scroll-offset:calc(var(--sticky-header-height) + var(--summary-bar-gap));
     }
 
@@ -78,44 +86,44 @@
       font-size:calc(var(--fs-base) * var(--font-scale));
       line-height:var(--line-height);
       letter-spacing:.2px;
-      margin:16px;
+      margin:12px;
       -webkit-tap-highlight-color:transparent;
       text-rendering:optimizeLegibility;
     }
     body[data-fontscale="sm"]{
       --font-scale:1;
-      --fs-ctrl:20px;
-      --h-input:56px;
-      --h-button:56px;
-      --h-button-sm:48px;
-      --checkbox:28px;
-      --line-height:1.75;
+      --fs-ctrl:18px;
+      --h-input:52px;
+      --h-button:52px;
+      --h-button-sm:44px;
+      --checkbox:26px;
+      --line-height:1.65;
       --mobile-font-min:20px;
-      --mobile-font-fluid:5.2vw;
+      --mobile-font-fluid:5.1vw;
       --mobile-font-max:22px;
     }
     body[data-fontscale="xl"]{
-      --font-scale:1.2;
-      --fs-ctrl:24px;
-      --h-input:62px;
-      --h-button:62px;
-      --h-button-sm:54px;
-      --checkbox:34px;
-      --line-height:1.82;
-      --mobile-font-min:23px;
-      --mobile-font-fluid:5.9vw;
-      --mobile-font-max:24.2px;
+      --font-scale:1.18;
+      --fs-ctrl:22px;
+      --h-input:58px;
+      --h-button:58px;
+      --h-button-sm:50px;
+      --checkbox:32px;
+      --line-height:1.72;
+      --mobile-font-min:22px;
+      --mobile-font-fluid:5.6vw;
+      --mobile-font-max:24px;
     }
     body[data-fontscale="xxl"]{
-      --font-scale:1.32;
-      --fs-ctrl:26px;
-      --h-input:68px;
-      --h-button:68px;
-      --h-button-sm:60px;
-      --checkbox:36px;
-      --line-height:1.88;
-      --mobile-font-min:25px;
-      --mobile-font-fluid:6.6vw;
+      --font-scale:1.3;
+      --fs-ctrl:24px;
+      --h-input:64px;
+      --h-button:64px;
+      --h-button-sm:56px;
+      --checkbox:34px;
+      --line-height:1.78;
+      --mobile-font-min:24px;
+      --mobile-font-fluid:6.3vw;
       --mobile-font-max:26px;
     }
     body[data-uimode="comfort"]{
@@ -130,9 +138,10 @@
       line-height:calc(var(--line-height) * 0.95);
     }
     .app-container{
-      max-width:1200px;
+      max-width:var(--layout-max);
       margin:0 auto;
       padding-bottom:calc(var(--fab-h, 0px) + 16px);
+      width:100%;
     }
 
     /* 卡片 */
@@ -141,32 +150,27 @@
       border:1px solid var(--border);
       border-radius:var(--radius);
       padding:var(--group-padding);
-      margin-bottom:var(--group-spacing);
       box-shadow:var(--shadow);
+      width:100%;
+      box-sizing:border-box;
     }
     /* 交錯輕底以分區（不改 HTML 的情況下給予溫和導引） */
     .group:nth-of-type(odd){ background:var(--card-alt); }
 
     /* 標題列與標題字（加粗 + 底線 + 顏色導引） */
-    .titlebar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .titlebar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .group > label:first-child, .titlebar > label:first-child{
       display:block; font-weight:800; font-size:var(--fs-title); color:var(--title);
-      margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border-strong);
+      margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--border-strong);
     }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section]{ scroll-margin-top:var(--scroll-offset); }
-    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:10px; }
-    .row > div{ flex:1 1 320px; min-width:280px; }
+    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:8px; }
+    .row > div{ flex:1 1 min(100%, 320px); min-width:min(100%, 240px); }
     .grid2, .grid3{ display:grid; gap:var(--gap); align-items:start; }
-    .grid2{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-    .grid3{ grid-template-columns:repeat(3, minmax(0,1fr)); }
-    @media (min-width:1280px){
-      .row > div{ flex:1 1 360px; min-width:320px; }
-    }
-    @media (max-width:1280px){
-      .grid3{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-    }
+    .grid2{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
+    .grid3{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-3), 1fr)); }
     @media (max-width:1024px){
       .row > div{ flex:1 1 100%; min-width:100%; }
       .grid2, .grid3{ grid-template-columns:1fr; }
@@ -190,7 +194,7 @@
       transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
       appearance:none;
     }
-    textarea{ min-height:132px; height:auto; resize:vertical; }
+    textarea{ min-height:var(--textarea-min); height:auto; resize:vertical; }
 
     /* Focus 樣式：清楚但不刺眼 */
     input:focus, select:focus, textarea:focus{
@@ -245,25 +249,25 @@
       position:sticky;
       top:0;
       z-index:40;
-      padding-top:8px;
-      margin-bottom:16px;
+      padding-top:6px;
+      margin-bottom:var(--group-spacing);
     }
     .page-header-inner{
       background:rgba(255,255,255,.94);
       border:1px solid var(--border);
-      border-radius:20px;
+      border-radius:18px;
       box-shadow:var(--shadow);
-      padding:16px;
+      padding:12px 16px;
       display:flex;
       flex-direction:column;
-      gap:14px;
+      gap:12px;
       backdrop-filter:saturate(180%) blur(6px);
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
     .page-summary{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
-      gap:12px;
+      gap:10px;
       align-items:center;
       padding-top:4px;
       border-top:1px solid rgba(15,23,42,.06);
@@ -364,10 +368,10 @@
       .mobile-mode-label{ display:inline-block; }
       .mobile-mode-control{ display:inline-flex; flex-wrap:wrap; }
     }
-    .page-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin:0; }
+    .page-tabs{ display:flex; flex-wrap:wrap; gap:6px; margin:0; }
     .page-tabs button{
-      height:44px;
-      padding:0 18px;
+      height:40px;
+      padding:0 16px;
       border-radius:999px;
       border:1px solid var(--border);
       background:#fff;
@@ -458,8 +462,39 @@
       .wizard-step::before{ display:none; }
       .wizard-label{ text-align:left; }
     }
-    .page-section{ display:none; }
-    .page-section[data-active="1"]{ display:block; }
+    .page-section{
+      display:none;
+      width:100%;
+    }
+    .page-section[data-columns="1"]{
+      --section-col-min:100%;
+      --section-col-max:100%;
+      --section-col-preferred:100%;
+    }
+    .page-section[data-columns="3"]{
+      --section-col-min:300px;
+      --section-col-max:420px;
+      --section-col-preferred:33.333%;
+    }
+    .page-section[data-active="1"]{
+      display:flex;
+      flex-wrap:wrap;
+      gap:var(--group-spacing);
+      align-items:stretch;
+      justify-content:flex-start;
+      margin-bottom:var(--group-spacing);
+    }
+    .page-section[data-columns="1"][data-active="1"]{
+      flex-direction:column;
+    }
+    .page-section[data-active="1"] > .group{
+      flex:1 1 clamp(var(--section-col-min), var(--section-col-preferred), var(--section-col-max));
+      min-width:min(100%, var(--section-col-min));
+    }
+    .page-section[data-active="1"] > .group[data-span="full"]{
+      flex:1 1 100%;
+      min-width:100%;
+    }
 
     .summary-title{ font-weight:700; color:var(--title); margin-bottom:8px; }
     .summary-actions{
@@ -649,7 +684,7 @@
     }
 
     /* 勾選清單（點擊面積提升） */
-    .checkcol{ display:grid; gap:12px; grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .checkcol{ display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(var(--checkcol-min), 1fr)); }
     .checkcol label{
       display:flex; align-items:center; gap:12px; padding:12px 14px;
       border:1px solid var(--border); border-radius:12px; background:#fff; color:#222; font-size:var(--fs-base);
@@ -1163,16 +1198,16 @@
     .side-nav{
       position:fixed;
       right:max(16px, env(safe-area-inset-right) + 16px);
-      top:calc(var(--sticky-header-height, 120px) + 24px);
-      width:240px;
+      top:calc(var(--sticky-header-height, 120px) + 18px);
+      width:220px;
       background:rgba(255,255,255,.94);
       border:1px solid var(--border);
-      border-radius:16px;
+      border-radius:14px;
       box-shadow:var(--shadow);
-      padding:14px;
+      padding:12px;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:8px;
       z-index:38;
     }
     .side-nav[data-empty="1"]{ display:none; }
@@ -1370,6 +1405,9 @@
       body{ margin:12px; font-size:12px; line-height:1.45; color:#000; }
       .page-header, .page-tabs, .page-toolbar, .wizard, .floating-actions, .side-nav, .checkcol-toggle, .font-scale-control, .mobile-mode-control, #validationToast{ display:none !important; }
       button, .btnbar, .preview-toolbar, .section-controls, .error-messages, .validation-toast, .page-tabs{ display:none !important; }
+      .page-section{ display:block !important; margin:0 0 12px !important; }
+      .page-section > .group{ margin-bottom:12px !important; }
+      .page-section > .group:last-child{ margin-bottom:0 !important; }
       .group{ box-shadow:none; border:1px solid #cbd5f5; background:#fff; page-break-inside:avoid; }
       .checkcol-wrapper{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
       .checkcol-wrapper > .checkcol{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
@@ -1458,7 +1496,7 @@
     <ul class="side-nav-list" id="sideNavList"></ul>
   </nav>
 
-  <div class="page-section" data-page="goals" data-active="1">
+  <div class="page-section" data-page="goals" data-active="1" data-columns="2">
   <!-- 基本資訊 -->
   <div class="group" id="basicInfoGroup">
     <label>★基本資訊</label>
@@ -1582,7 +1620,7 @@
   </div>
 
   <!-- 四、個案概況 -->
-  <div class="group">
+  <div class="group" data-span="full">
     <div class="titlebar">
       <label>四、個案概況</label>
       <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
@@ -2455,7 +2493,7 @@
   </div>
 
   <!-- 五、照顧目標（原功能保留） -->
-  <div class="group" id="careGoalsGroup">
+  <div class="group" id="careGoalsGroup" data-span="full">
     <label>五、照顧目標</label>
 
     <div class="row"><div>
@@ -2501,7 +2539,7 @@
   </div>
 
   <!-- 六、與照專…（原功能保留） -->
-  <div class="group">
+  <div class="group" data-span="full">
     <label>六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃</label>
     <div class="row"><div>
       <label>1. 目標達成的狀況以及未達成的差距</label>
@@ -2537,8 +2575,8 @@
 
   </div>
 
-  <div class="page-section" data-page="execution">
-    <div class="group" id="planExecutionGroup">
+  <div class="page-section" data-page="execution" data-columns="2">
+    <div class="group" id="planExecutionGroup" data-span="full">
       <div class="titlebar">
         <label>一、長照服務核定項目、頻率</label>
       </div>
@@ -2583,7 +2621,7 @@
       <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
     </div>
 
-    <div class="group" id="planSummaryGroup">
+    <div class="group" id="planSummaryGroup" data-span="full">
       <div class="titlebar">
         <label>附件二（服務計畫明細）預覽</label>
       </div>
@@ -2623,7 +2661,7 @@
       </div>
     </div>
 
-    <div class="group" id="planTextGroup">
+    <div class="group" id="planTextGroup" data-span="full">
       <div class="titlebar">
         <label>附件一：計畫執行規劃預覽</label>
       </div>
@@ -2640,8 +2678,8 @@
     </div>
   </div>
 
-  <div class="page-section" data-page="notes">
-    <div class="group" id="planOtherGroup">
+  <div class="page-section" data-page="notes" data-columns="1">
+    <div class="group" id="planOtherGroup" data-span="full">
       <div class="titlebar">
         <label>其他：（個案特殊狀況或其他未盡事宜可備註於此）</label>
       </div>
