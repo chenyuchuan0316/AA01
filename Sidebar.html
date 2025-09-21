@@ -171,6 +171,7 @@
     .group > label:first-child, .titlebar > label:first-child{
       display:block; font-weight:800; font-size:var(--fs-title); color:var(--title);
       margin-bottom:6px; padding-bottom:3px; border-bottom:1px solid var(--border-strong);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
     }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
@@ -600,6 +601,43 @@
     .page-section[data-active="1"] > .group[data-span="full"]{
       flex:1 1 100%;
       min-width:100%;
+    }
+
+    .page-section[data-active="1"] > .section-intro-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      row-gap:12px;
+      column-gap:12px;
+      flex:1 1 100%;
+      min-width:100%;
+      align-items:stretch;
+    }
+    .section-intro-grid > .group{
+      height:100%;
+    }
+    @media (max-width:1023px){
+      .page-section[data-active="1"] > .section-intro-grid{
+        row-gap:8px;
+      }
+    }
+    @media (min-width:1024px) and (max-width:1279px){
+      .page-section[data-active="1"] > .section-intro-grid{
+        grid-template-columns:60% 40%;
+        column-gap:14px;
+        row-gap:14px;
+      }
+      .page-section[data-active="1"] > .section-intro-grid > #visitPartnersGroup{
+        grid-column:1 / -1;
+      }
+    }
+    @media (min-width:1280px){
+      .page-section[data-active="1"] > .section-intro-grid{
+        grid-template-columns:40% 35% 25%;
+        column-gap:16px;
+      }
+      .page-section[data-active="1"] > .section-intro-grid > #visitPartnersGroup{
+        grid-column:auto;
+      }
     }
 
     .summary-title{ font-weight:700; color:var(--title); margin-bottom:8px; }
@@ -1782,129 +1820,131 @@
   </nav>
 
   <div class="page-section" data-page="goals" data-active="1" data-columns="2">
-  <!-- 基本資訊 -->
-  <div class="group" id="basicInfoGroup">
-    <label>★基本資訊</label>
-    <div class="basic-info-fields">
-      <div class="basic-info-row" data-row="1">
-        <div class="basic-info-field unit-code-field" data-field-size="short">
-          <label>單位代碼</label>
-          <select id="unitCode" onchange="loadManagers(); loadConsultants();">
-            <option>FNA1</option><option>FNA2</option><option>FNA3</option>
-          </select>
-        </div>
-        <div class="basic-info-field case-manager-field" data-field-size="medium">
-          <label>個案管理師</label>
-          <input id="caseManagerName" type="search" list="caseManagerList" autocomplete="off" placeholder="搜尋或輸入個管師">
-          <datalist id="caseManagerList"></datalist>
+    <div class="section-intro-grid">
+      <!-- 基本資訊 -->
+      <div class="group" id="basicInfoGroup">
+        <label title="★基本資訊">★基本資訊</label>
+        <div class="basic-info-fields">
+          <div class="basic-info-row" data-row="1">
+            <div class="basic-info-field unit-code-field" data-field-size="short">
+              <label>單位代碼</label>
+              <select id="unitCode" onchange="loadManagers(); loadConsultants();">
+                <option>FNA1</option><option>FNA2</option><option>FNA3</option>
+              </select>
+            </div>
+            <div class="basic-info-field case-manager-field" data-field-size="medium">
+              <label>個案管理師</label>
+              <input id="caseManagerName" type="search" list="caseManagerList" autocomplete="off" placeholder="搜尋或輸入個管師">
+              <datalist id="caseManagerList"></datalist>
+            </div>
+          </div>
+          <div class="basic-info-row" data-row="2">
+            <div class="basic-info-field case-name-field" data-field-size="medium">
+              <label>個案姓名</label>
+              <input id="caseName" type="text" placeholder="請輸入">
+            </div>
+            <div class="basic-info-field consult-name-field" data-field-size="medium">
+              <label>照專姓名</label>
+              <select id="consultName"></select>
+            </div>
+          </div>
+          <div class="cms-level-row" data-row="3">
+            <label>CMS 等級</label>
+            <div id="cmsLevelGroup" class="cms-level-group">
+              <button type="button" data-level="2">2</button>
+              <button type="button" data-level="3">3</button>
+              <button type="button" data-level="4">4</button>
+              <button type="button" data-level="5">5</button>
+              <button type="button" data-level="6">6</button>
+              <button type="button" data-level="7">7</button>
+              <button type="button" data-level="8">8</button>
+            </div>
+            <input type="hidden" id="cmsLevelValue" value="">
+          </div>
         </div>
       </div>
-      <div class="basic-info-row" data-row="2">
-        <div class="basic-info-field case-name-field" data-field-size="medium">
-          <label>個案姓名</label>
-          <input id="caseName" type="text" placeholder="請輸入">
-        </div>
-        <div class="basic-info-field consult-name-field" data-field-size="medium">
-          <label>照專姓名</label>
-          <select id="consultName"></select>
-        </div>
-      </div>
-      <div class="cms-level-row" data-row="3">
-        <label>CMS 等級</label>
-        <div id="cmsLevelGroup" class="cms-level-group">
-          <button type="button" data-level="2">2</button>
-          <button type="button" data-level="3">3</button>
-          <button type="button" data-level="4">4</button>
-          <button type="button" data-level="5">5</button>
-          <button type="button" data-level="6">6</button>
-          <button type="button" data-level="7">7</button>
-          <button type="button" data-level="8">8</button>
-        </div>
-        <input type="hidden" id="cmsLevelValue" value="">
-      </div>
-    </div>
-  </div>
 
-  <!-- 一、電聯日期 + 二、家訪日期 -->
-  <div class="group" id="contactVisitGroup">
-    <label>一、電聯日期／二、家訪日期</label>
-    <div class="grid2 form-row-2col">
-      <div>
-        <label>電聯日期</label>
-        <div id="callDateControls" class="datebox">
-          <input id="callDate" type="date">
-          <div class="date-controls">
-            <button type="button" class="small" aria-label="前一天" onclick="shiftDate('callDate', -1)">−</button>
-            <button type="button" class="small" aria-label="後一天" onclick="shiftDate('callDate',  1)">+</button>
+      <!-- 一、電聯日期 + 二、家訪日期 -->
+      <div class="group" id="contactVisitGroup">
+        <label title="一、電聯日期／二、家訪日期">一、電聯日期／二、家訪日期</label>
+        <div class="grid2 form-row-2col">
+          <div>
+            <label>電聯日期</label>
+            <div id="callDateControls" class="datebox">
+              <input id="callDate" type="date">
+              <div class="date-controls">
+                <button type="button" class="small" aria-label="前一天" onclick="shiftDate('callDate', -1)">−</button>
+                <button type="button" class="small" aria-label="後一天" onclick="shiftDate('callDate',  1)">+</button>
+              </div>
+            </div>
+            <label class="inline-checkbox" style="display:block; margin-top:10px;">
+              <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
+            </label>
+            <div id="consultVisitText" class="subtle" style="display:none; margin-top:6px;"></div>
           </div>
-        </div>
-        <label class="inline-checkbox" style="display:block; margin-top:10px;">
-          <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
-        </label>
-        <div id="consultVisitText" class="subtle" style="display:none; margin-top:6px;"></div>
-      </div>
-      <div>
-        <label>家訪日期</label>
-        <div class="datebox">
-          <input id="visitDate" type="date">
-          <div class="date-controls">
-            <button type="button" class="small" aria-label="前一天" onclick="shiftDate('visitDate', -1)">−</button>
-            <button type="button" class="small" aria-label="後一天" onclick="shiftDate('visitDate',  1)">+</button>
-          </div>
-        </div>
-        <label class="inline-checkbox" style="display:block; margin-top:10px;">
-          <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出院準備（勾選後顯示出院日期）
-        </label>
-        <div id="dischargeBox" style="display:none; margin-top:6px;">
-          <div class="datebox">
-            <input id="dischargeDate" type="date">
-            <div class="date-controls">
-              <button type="button" class="small" aria-label="前一天" onclick="shiftDate('dischargeDate', -1)">−</button>
-              <button type="button" class="small" aria-label="後一天" onclick="shiftDate('dischargeDate',  1)">+</button>
+          <div>
+            <label>家訪日期</label>
+            <div class="datebox">
+              <input id="visitDate" type="date">
+              <div class="date-controls">
+                <button type="button" class="small" aria-label="前一天" onclick="shiftDate('visitDate', -1)">−</button>
+                <button type="button" class="small" aria-label="後一天" onclick="shiftDate('visitDate',  1)">+</button>
+              </div>
+            </div>
+            <label class="inline-checkbox" style="display:block; margin-top:10px;">
+              <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出院準備（勾選後顯示出院日期）
+            </label>
+            <div id="dischargeBox" style="display:none; margin-top:6px;">
+              <div class="datebox">
+                <input id="dischargeDate" type="date">
+                <div class="date-controls">
+                  <button type="button" class="small" aria-label="前一天" onclick="shiftDate('dischargeDate', -1)">−</button>
+                  <button type="button" class="small" aria-label="後一天" onclick="shiftDate('dischargeDate',  1)">+</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- 三、偕同訪視者 -->
-  <div class="group">
-    <div class="titlebar">
-      <label>三、偕同訪視者</label>
-    </div>
-    <div class="row">
-      <div data-field-size="short">
-        <label>主要照顧者關係</label>
-        <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
-          <option value="" class="placeholder-option" disabled selected>請選擇</option>
-          <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
-          <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
-          <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
-          <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
-          <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
-          <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
-          <optgroup label="自訂"><option>自訂角色</option></optgroup>
-        </select>
+      <!-- 三、偕同訪視者 -->
+      <div class="group" id="visitPartnersGroup">
+        <div class="titlebar">
+          <label title="三、偕同訪視者">三、偕同訪視者</label>
+        </div>
+        <div class="row">
+          <div data-field-size="short">
+            <label>主要照顧者關係</label>
+            <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
+              <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
+              <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
+              <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
+              <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
+              <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
+              <optgroup label="自訂"><option>自訂角色</option></optgroup>
+            </select>
+          </div>
+          <div data-field-size="medium">
+            <label>主要照顧者姓名</label>
+            <input id="primaryName" type="text" placeholder="請輸入">
+          </div>
+        </div>
+
+        <!-- 預設輸出主照者：移除勾選框，改用 hidden 固定為 true -->
+        <input type="hidden" id="includePrimary" value="true">
+
+        <div class="hr"></div>
+        <div class="titlebar" style="margin-top:4px;">
+          <label>其他參與者</label>
+          <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
+        </div>
+        <div id="extras"></div>
+        <div class="field-error" id="extras_conflict"></div>
+        <!-- （已移除原「輸出格式：個案(姓名)…」說明） -->
       </div>
-      <div data-field-size="medium">
-        <label>主要照顧者姓名</label>
-        <input id="primaryName" type="text" placeholder="請輸入">
-      </div>
     </div>
-
-    <!-- 預設輸出主照者：移除勾選框，改用 hidden 固定為 true -->
-    <input type="hidden" id="includePrimary" value="true">
-
-    <div class="hr"></div>
-    <div class="titlebar" style="margin-top:4px;">
-      <label>其他參與者</label>
-      <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
-    </div>
-    <div id="extras"></div>
-    <div class="field-error" id="extras_conflict"></div>
-    <!-- （已移除原「輸出格式：個案(姓名)…」說明） -->
-  </div>
 
   <!-- 四、個案概況 -->
   <div class="group" data-span="full">
@@ -12948,6 +12988,21 @@
       window.visualViewport.addEventListener('scroll', scheduleLayoutMeasurements);
     }
 
+    function applyEllipsisTooltips(){
+      const selector='.group > label:first-child, .titlebar > label:first-child';
+      document.querySelectorAll(selector).forEach(label=>{
+        if(!label) return;
+        const text=(label.textContent || '').trim();
+        if(text){
+          if(label.getAttribute('title') !== text){
+            label.setAttribute('title', text);
+          }
+        }else{
+          label.removeAttribute('title');
+        }
+      });
+    }
+
     window.addEventListener('load', ()=>{
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
@@ -13067,6 +13122,8 @@
       applyInitialUiPreferences();
 
       initAutoSave();
+
+      applyEllipsisTooltips();
 
       scheduleLayoutMeasurements();
 
