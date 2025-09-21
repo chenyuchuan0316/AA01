@@ -117,6 +117,12 @@
       --intro-colw:clamp(260px, 28vw, 360px);
     }
 
+    @media (max-width:400px){
+      :root{
+        --intro-colw:clamp(220px, 60vw, 300px);
+      }
+    }
+
     /* 根字級：桌機 19→20；手機 clamp(20–26) */
     html { font-size:19px; -webkit-text-size-adjust:100%; }
     @media (min-width:1920px){ html{ font-size:20px; } }
@@ -131,6 +137,18 @@
       margin:var(--space-md);
       -webkit-tap-highlight-color:transparent;
       text-rendering:optimizeLegibility;
+    }
+
+    .sr-only{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0 0 0 0);
+      white-space:nowrap;
+      border:0;
     }
     body[data-fontscale="sm"]{
       --font-scale:1;
@@ -187,10 +205,13 @@
       margin:0 auto;
       padding-bottom:calc(var(--fab-h, 0px) + var(--space-md));
       width:100%;
-      padding-right:calc(var(--side-nav-w) + var(--space-md)); /* 預留側欄空間（桌機） */
+      padding-right:var(--space-md);
     }
-    @media (max-width:1279px){
-      .app-container{ padding-right:var(--space-md); }
+    @media (max-width:1023px){
+      .app-container{ padding-right:0; }
+    }
+    @media (min-width:1280px){
+      .app-container{ padding-right:calc(var(--side-nav-w) + 16px); }
     }
 
     /* 卡片 */
@@ -481,7 +502,8 @@
     .summary-progress-chip[data-status="pending"] .chip-count{ color:var(--status-pending-strong); }
     .summary-progress-chip[data-status="optional"]{ background:var(--status-optional-bg); border-color:var(--status-optional-border); color:var(--status-optional-text); }
     .summary-progress-chip[data-status="optional"] .chip-count{ color:var(--status-optional-strong); }
-    .summary-progress-chip:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+    .summary-progress-chip:focus-visible,
+    .side-nav-link:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
     @media (max-width:768px){
       .summary-progress-list{ overflow-x:auto; flex-wrap:nowrap; padding-bottom:var(--space-xxs); }
       .summary-progress-list::-webkit-scrollbar{ height:6px; }
@@ -676,7 +698,7 @@
         flex:0 0 auto;
         min-width:160px;
         align-items:flex-start;
-        scroll-snap-align:start;
+        scroll-snap-align:center;
       }
       .wizard-step::before{ display:none; }
       .wizard-label{ text-align:left; white-space:normal; }
@@ -1270,6 +1292,7 @@
     }
 
     /* 勾選清單（點擊面積提升） */
+    fieldset.checkcol{ border:0; margin:0; padding:0; min-inline-size:0; }
     .checkcol{ display:grid; gap:var(--space-sm); grid-template-columns:1fr; }
     @media (min-width:720px){
       .checkcol{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
@@ -1955,10 +1978,6 @@
       gap:var(--space-xs);
       z-index:38;
     }
-    @media (max-width:1023px){
-      .app-container{ padding-right:0; }
-      .side-nav{ display:none !important; }
-    }
     .side-nav[data-empty="1"]{ display:none; }
     .side-nav[data-empty="1"] .side-nav-summary{ display:none; }
     .side-nav-title{ font-weight:700; color:var(--title); font-size:1rem; }
@@ -2029,6 +2048,9 @@
     .side-nav-item[data-status="optional"] .side-nav-count{ color:var(--status-optional-strong); }
     @media (max-width:1279px){
       .side-nav{ display:none !important; }
+    }
+    @media (min-width:1280px){
+      .side-nav{ display:flex; width:var(--side-nav-w); }
     }
     .floating-actions{
       position:fixed;
@@ -3523,7 +3545,7 @@
       <div id="mismatch_diff_block" style="display:none; margin-top:var(--space-sm);">
         <div class="hint" id="mismatch_diff_text">與照專建議服務不一致項目：</div>
         <div class="mismatch-diff" id="mismatch_diff_list"></div>
-        <div class="checkcol" id="mismatch_reason_box"></div>
+        <div class="checkcol" id="mismatch_reason_box" data-legend="與照專建議服務不一致項目"></div>
         <input id="mismatch_reason_other" type="text" placeholder="請說明其他原因" style="display:none; margin-top:var(--space-xs);">
         <div class="field-error" id="mismatch_reason_error"></div>
       </div>
@@ -4687,6 +4709,74 @@
       mismatch_reason_box:['身體狀況','資源限制','個案意願','經濟考量','其他']
     };
 
+    function findCheckcolLegendSource(element){
+      let current = element;
+      while(current){
+        let prev = current.previousElementSibling;
+        while(prev){
+          if(prev.matches && prev.matches('label, .h1, .h2, .h3, .h4, .h5, .h6')){
+            return prev;
+          }
+          prev = prev.previousElementSibling;
+        }
+        current = current.parentElement;
+      }
+      return null;
+    }
+
+    function deriveCheckcolLegend(element){
+      if(!element) return '';
+      if(element.dataset && element.dataset.legend){
+        return element.dataset.legend.trim();
+      }
+      const ariaLabel = element.getAttribute ? element.getAttribute('aria-label') : '';
+      if(ariaLabel){
+        return ariaLabel.trim();
+      }
+      const source = findCheckcolLegendSource(element);
+      if(source){
+        return (source.textContent || '').replace(/\s+/g, ' ').trim();
+      }
+      return '選項';
+    }
+
+    function ensureCheckcolFieldset(element){
+      if(!element) return null;
+      let target = element;
+      const legendText = deriveCheckcolLegend(element);
+      if(element.tagName !== 'FIELDSET'){
+        const fieldset = document.createElement('fieldset');
+        Array.prototype.slice.call(element.attributes).forEach(attr=>{
+          fieldset.setAttribute(attr.name, attr.value);
+        });
+        while(element.firstChild){
+          fieldset.appendChild(element.firstChild);
+        }
+        if(element.parentNode){
+          element.parentNode.replaceChild(fieldset, element);
+        }
+        target = fieldset;
+      }
+      if(legendText){
+        let legend = null;
+        let child = target.firstElementChild;
+        while(child){
+          if(child.tagName === 'LEGEND' && child.classList.contains('checkcol-legend')){
+            legend = child;
+            break;
+          }
+          child = child.nextElementSibling;
+        }
+        if(!legend){
+          legend = document.createElement('legend');
+          legend.className = 'sr-only checkcol-legend';
+          target.insertBefore(legend, target.firstChild || null);
+        }
+        legend.textContent = legendText;
+      }
+      return target;
+    }
+
     function getCheckcolLabelValue(label){
       if(!label) return '';
       const input = label.querySelector('input[type=checkbox]');
@@ -4760,6 +4850,10 @@
       if(toggle){
         const collapsed = wrapper.dataset.collapsed === '1';
         toggle.textContent = collapsed ? '展開清單' : '收合清單';
+        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        if(box.id && !toggle.getAttribute('aria-controls')){
+          toggle.setAttribute('aria-controls', box.id);
+        }
       }
       if(collapseChanged || hadSelection !== (wrapper.dataset.hasSelection === '1')){
         scheduleLayoutMeasurements();
@@ -4767,6 +4861,8 @@
     }
 
     function enhanceCheckcol(box){
+      if(!box) return;
+      box = ensureCheckcolFieldset(box);
       if(!box || box.__checkcolState) return;
       const wrapper=document.createElement('div');
       wrapper.className='checkcol-wrapper';
@@ -4787,11 +4883,16 @@
       toggle.type='button';
       toggle.className='checkcol-toggle';
       toggle.textContent='收合清單';
+      if(box.id){
+        toggle.setAttribute('aria-controls', box.id);
+      }
+      toggle.setAttribute('aria-expanded', 'true');
       toggle.addEventListener('click', ()=>{
         const collapsed = wrapper.dataset.collapsed === '1';
         wrapper.dataset.collapsed = collapsed ? '0' : '1';
         wrapper.dataset.manualToggle='1';
         toggle.textContent = collapsed ? '收合清單' : '展開清單';
+        toggle.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
         scheduleLayoutMeasurements();
       });
       footer.appendChild(summaryLabel);
@@ -4807,7 +4908,9 @@
     }
 
     function refreshCheckcol(target){
-      const box = typeof target === 'string' ? document.getElementById(target) : target;
+      let box = typeof target === 'string' ? document.getElementById(target) : target;
+      if(!box) return;
+      box = ensureCheckcolFieldset(box);
       if(!box || box.dataset.virtualChecklist === '1') return;
       if(!box.__checkcolState){
         enhanceCheckcol(box);
@@ -4835,6 +4938,27 @@
 
     function shouldUseMobileDefaults(){
       return isCoarsePointer() || isMobileViewport();
+    }
+
+    function ensureElementId(el, prefix){
+      if(!el) return '';
+      if(el.id) return el.id;
+      let base = prefix || 'el';
+      base = String(base);
+      if(!base){
+        base = 'el';
+      }
+      base = base.replace(/[^a-zA-Z0-9_-]/g, '_');
+      if(!base){
+        base = 'el';
+      }
+      let candidate = base;
+      let counter = 1;
+      while(document.getElementById(candidate)){
+        candidate = `${base}_${counter++}`;
+      }
+      el.id = candidate;
+      return candidate;
     }
 
     function updateFontScaleButtons(active){
@@ -5261,6 +5385,8 @@
     function buildSectionGroups(section){
       const groups = [];
       if(!section) return groups;
+      const sectionKey = section.dataset && section.dataset.section ? section.dataset.section : 'section';
+      const sectionId = ensureElementId(section, `section_${sectionKey}`);
       const children = Array.from(section.children);
       if(!children.length) return groups;
       const mainTitle = children.find(child => child.classList && child.classList.contains('titlebar'));
@@ -5292,6 +5418,8 @@
           header.appendChild(progress);
           const body = document.createElement('div');
           body.className = 'section-group-body';
+          const bodyId = ensureElementId(body, `${sectionId}_group_${groupId}`);
+          toggle.setAttribute('aria-controls', bodyId);
           const empty = document.createElement('div');
           empty.className = 'section-group-empty';
           empty.textContent = '此群組皆已完成';
@@ -5642,6 +5770,7 @@
         const groups = section.__groups || [];
         const allCollapsed = groups.length ? groups.every(group=>group.element.dataset.collapsed === '1') : false;
         controls.toggleAllBtn.textContent = allCollapsed ? '全部展開' : '全部收合';
+        controls.toggleAllBtn.setAttribute('aria-expanded', allCollapsed ? 'false' : 'true');
       }
     }
 
@@ -5663,17 +5792,31 @@
       if(!header) return;
       const controls = document.createElement('div');
       controls.className = 'section-controls';
+      const sectionKey = section.dataset && section.dataset.section ? section.dataset.section : 'section';
+      const sectionId = ensureElementId(section, `section_${sectionKey}`);
       const onlyBtn = document.createElement('button');
       onlyBtn.type = 'button';
       onlyBtn.textContent = '只看未填';
       onlyBtn.title = '系統會記住這個設定，重新整理後仍保留';
+      onlyBtn.setAttribute('aria-pressed', 'false');
+      if(sectionId){
+        onlyBtn.setAttribute('aria-controls', sectionId);
+      }
       const advancedBtn = document.createElement('button');
       advancedBtn.type = 'button';
       advancedBtn.textContent = '顯示進階';
+      advancedBtn.setAttribute('aria-pressed', 'false');
+      if(sectionId){
+        advancedBtn.setAttribute('aria-controls', sectionId);
+      }
       const toggleAllBtn = document.createElement('button');
       toggleAllBtn.type = 'button';
       toggleAllBtn.className = 'section-toggle-all';
       toggleAllBtn.textContent = '全部收合';
+      if(sectionId){
+        toggleAllBtn.setAttribute('aria-controls', sectionId);
+      }
+      toggleAllBtn.setAttribute('aria-expanded', 'true');
       const advancedCount = document.createElement('span');
       advancedCount.className = 'section-advanced-count';
       advancedCount.dataset.hidden = '1';
@@ -5715,6 +5858,7 @@
         scheduleSideNavRender();
         scheduleSummaryProgressRender();
       });
+      updateToggleButtons(section);
     }
 
     function applyMobileSectionDefaults(section, state){
