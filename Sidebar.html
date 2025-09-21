@@ -149,7 +149,7 @@
     .titlebar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .group > label:first-child, .titlebar > label:first-child{
       display:block; font-weight:800; font-size:var(--fs-title); color:var(--title);
-      margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-strong);
+      margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border-strong);
     }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
@@ -633,11 +633,16 @@
     }
 
     /* 勾選清單（點擊面積提升） */
-    .checkcol{ columns:auto; column-gap:0; }
+    .checkcol{ display:grid; gap:12px; grid-template-columns:repeat(2, minmax(0, 1fr)); }
     .checkcol label{
       display:flex; align-items:center; gap:12px; padding:12px 14px;
-      border:1px solid var(--border); border-radius:12px; margin-bottom:12px; background:#fff; color:#222; font-size:var(--fs-base);
+      border:1px solid var(--border); border-radius:12px; background:#fff; color:#222; font-size:var(--fs-base);
+      margin:0;
     }
+    .inline-checkbox{
+      display:flex; align-items:center; gap:10px; font-size:var(--fs-label); color:var(--label);
+    }
+    .inline-checkbox input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
     .checkcol input[type=checkbox]{ width:var(--checkbox); height:var(--checkbox); }
     .checkcol label[data-auto="1"]{
       border-color:rgba(11,87,208,.4);
@@ -650,9 +655,14 @@
       font-size:.9rem;
       font-weight:600;
     }
+    @media (max-width:1024px){
+      .checkcol{ grid-template-columns:1fr; }
+    }
     @media (pointer:coarse){
       body[data-fontscale="sm"]{ --checkbox:32px; }
     } /* 觸控設備放大到 32px */
+    body[data-vertical-density="compact"] .checkcol{ gap:10px; }
+    body[data-vertical-density="compact"] .checkcol label{ padding:10px 12px; }
 
     .lesion-mode{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
     .lesion-mode button.small{ min-width:112px; }
@@ -1333,7 +1343,7 @@
         <select id="caseManagerName"></select>
       </div>
     </div>
-    <div class="row">
+    <div class="grid3">
       <div>
         <label>個案姓名</label>
         <input id="caseName" type="text" placeholder="請輸入">
@@ -1343,8 +1353,6 @@
         <select id="consultName">
         </select>
       </div>
-    </div>
-    <div class="row">
       <div>
         <label>CMS 等級</label>
         <div id="cmsLevelGroup" class="cms-level-group">
@@ -1361,45 +1369,44 @@
     </div>
   </div>
 
-  <!-- 一、電聯日期 -->
-  <div class="group">
-    <label>一、電聯日期</label>
-    <div id="callDateControls" class="datebox">
-      <input id="callDate" type="date">
-      <div class="date-controls">
-        <button type="button" class="small" aria-label="前一天" onclick="shiftDate('callDate', -1)">−</button>
-        <button type="button" class="small" aria-label="後一天" onclick="shiftDate('callDate',  1)">+</button>
-      </div>
-    </div>
-    <div class="row" style="margin-top:8px;">
+  <!-- 一、電聯日期 + 二、家訪日期 -->
+  <div class="group" id="contactVisitGroup">
+    <label>一、電聯日期／二、家訪日期</label>
+    <div class="grid2">
       <div>
-        <label><input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪</label>
+        <label>電聯日期</label>
+        <div id="callDateControls" class="datebox">
+          <input id="callDate" type="date">
+          <div class="date-controls">
+            <button type="button" class="small" aria-label="前一天" onclick="shiftDate('callDate', -1)">−</button>
+            <button type="button" class="small" aria-label="後一天" onclick="shiftDate('callDate',  1)">+</button>
+          </div>
+        </div>
+        <label class="inline-checkbox" style="display:block; margin-top:10px;">
+          <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
+        </label>
+        <div id="consultVisitText" class="subtle" style="display:none; margin-top:6px;"></div>
       </div>
-    </div>
-    <div id="consultVisitText" class="subtle" style="display:none; margin-top:4px;"></div>
-  </div>
-
-  <!-- 二、家訪日期 + 出院 -->
-  <div class="group">
-    <label>二、家訪日期</label>
-    <div class="datebox">
-      <input id="visitDate" type="date">
-      <div class="date-controls">
-        <button type="button" class="small" aria-label="前一天" onclick="shiftDate('visitDate', -1)">−</button>
-        <button type="button" class="small" aria-label="後一天" onclick="shiftDate('visitDate',  1)">+</button>
-      </div>
-    </div>
-    <div class="row" style="margin-top:8px;">
       <div>
-        <label><input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出院準備（勾選後顯示出院日期）</label>
-      </div>
-    </div>
-    <div id="dischargeBox" style="display:none;">
-      <div class="datebox">
-        <input id="dischargeDate" type="date">
-        <div class="date-controls">
-          <button type="button" class="small" aria-label="前一天" onclick="shiftDate('dischargeDate', -1)">−</button>
-          <button type="button" class="small" aria-label="後一天" onclick="shiftDate('dischargeDate',  1)">+</button>
+        <label>家訪日期</label>
+        <div class="datebox">
+          <input id="visitDate" type="date">
+          <div class="date-controls">
+            <button type="button" class="small" aria-label="前一天" onclick="shiftDate('visitDate', -1)">−</button>
+            <button type="button" class="small" aria-label="後一天" onclick="shiftDate('visitDate',  1)">+</button>
+          </div>
+        </div>
+        <label class="inline-checkbox" style="display:block; margin-top:10px;">
+          <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出院準備（勾選後顯示出院日期）
+        </label>
+        <div id="dischargeBox" style="display:none; margin-top:6px;">
+          <div class="datebox">
+            <input id="dischargeDate" type="date">
+            <div class="date-controls">
+              <button type="button" class="small" aria-label="前一天" onclick="shiftDate('dischargeDate', -1)">−</button>
+              <button type="button" class="small" aria-label="後一天" onclick="shiftDate('dischargeDate',  1)">+</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1407,7 +1414,9 @@
 
   <!-- 三、偕同訪視者 -->
   <div class="group">
-    <label><strong>三、偕同訪視者</strong></label>
+    <div class="titlebar">
+      <label>三、偕同訪視者</label>
+    </div>
     <div class="row">
       <div>
         <label>主要照顧者關係</label>
@@ -1432,12 +1441,12 @@
     <input type="hidden" id="includePrimary" value="true">
 
     <div class="hr"></div>
-    <label>其他參與者</label>
+    <div class="titlebar" style="margin-top:4px;">
+      <label>其他參與者</label>
+      <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
+    </div>
     <div id="extras"></div>
     <div class="field-error" id="extras_conflict"></div>
-    <div class="btnbar">
-      <button class="small" onclick="addExtraRow()">新增參與者</button>
-    </div>
     <!-- （已移除原「輸出格式：個案(姓名)…」說明） -->
   </div>
 
@@ -2028,20 +2037,24 @@
             <div class="checkcol" id="s2_sources"></div>
           </div>
           <div>
-            <label>戶籍/福利身分</label>
-            <select id="s2_id">
-              <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
-            </select>
-          </div>
-          <div><!-- 等級欄位 -->
-            <label>身障等級</label>
-            <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身障等級 -->
-              <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
-            </select>
-          </div>
-          <div id="disCatBox" style="display:none;"><!-- 類別欄位，預設隱藏 -->
-            <label>身障類別（等級≠無才需選）</label>
-            <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身障類別 --></select>
+            <div class="grid2">
+              <div>
+                <label>戶籍/福利身分</label>
+                <select id="s2_id">
+                  <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
+                </select>
+              </div>
+              <div>
+                <label>身障等級</label>
+                <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身障等級 -->
+                  <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
+                </select>
+              </div>
+            </div>
+            <div id="disCatBox" style="display:none; margin-top:10px;"><!-- 類別欄位，預設隱藏 -->
+              <label>身障類別（等級≠無才需選）</label>
+              <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身障類別 --></select>
+            </div>
           </div>
         </div>
         <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
@@ -2066,6 +2079,12 @@
             <label>居住權屬</label>
             <select id="s3_own" onchange="toggleRentFields()"><option>自有</option><option>租賃</option><option>借住</option></select>
           </div>
+          <div>
+            <label>整潔度</label>
+            <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
+          </div>
+        </div>
+        <div class="grid3" style="margin-top:8px;">
           <div id="s3_rent_amount_wrap" style="display:none;">
             <label>租金金額（元/月）</label>
             <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
@@ -2079,13 +2098,11 @@
             </select>
           </div>
           <div>
-            <label>整潔度</label>
-            <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
-          </div>
-          <div>
             <label>異味</label>
             <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
           </div>
+        </div>
+        <div class="grid2" style="margin-top:8px;">
           <div>
             <label>無障礙設施</label>
             <div class="checkcol" id="s3_fac"></div>
@@ -2106,7 +2123,7 @@
           <label>(四) 社會支持</label>
         </div>
 
-        <div class="grid2">
+        <div class="grid3">
           <div>
             <label>主照者關係</label>
             <div id="sp_primaryRel_text" class="badge">—</div>
@@ -2128,7 +2145,7 @@
           <label>主要聯繫人/決策者</label>
           <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
         </div>
-        <div class="grid2">
+        <div class="grid3">
           <div>
             <label>關係</label>
             <select id="sp_deciderRel">
@@ -2146,7 +2163,7 @@
             <label>姓名</label>
             <input id="sp_deciderName" type="text" placeholder="請選擇">
           </div>
-          <div style="grid-column:1 / -1;">
+          <div>
             <label>聯絡電話</label>
             <input id="sp_deciderPhone" type="tel" placeholder="例如：0912-345678">
           </div>
@@ -2154,9 +2171,11 @@
 
         <div class="hr"></div>
 
-        <label>共同照顧者（可多筆）</label>
+        <div class="titlebar" style="margin-top:12px;">
+          <label>共同照顧者（可多筆）</label>
+          <button type="button" class="small" onclick="addCoCare()">＋新增共同照顧者</button>
+        </div>
         <div id="coCare"></div>
-        <div class="btnbar"><button class="small" onclick="addCoCare()">＋新增共同照顧者</button></div>
 
         <div class="hr"></div>
 
