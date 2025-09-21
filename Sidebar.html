@@ -37,7 +37,7 @@
       /* 尺寸系統 */
       --gap-base:8px;
       --gap:var(--gap-base);
-      --group-padding-base:12px;
+      --group-padding-base:10px;
       --group-padding:var(--group-padding-base);
       --group-spacing-base:10px;
       --group-spacing:var(--group-spacing-base);
@@ -201,7 +201,7 @@
     }
 
     /* 標籤與 Placeholder（加大字、提升對比） */
-    label{ display:block; font-size:var(--fs-label); margin-bottom:4px; color:var(--label); }
+    label{ display:block; font-size:var(--fs-label); margin-bottom:3px; color:var(--label); }
     :where(input,select,textarea)::placeholder{ color:var(--placeholder); opacity:1; }
 
     /* 表單元件：20px 字級，56px 高度（iOS 聚焦不縮放） */
@@ -623,19 +623,115 @@
 
     .cms-level-group{
       display:flex;
-      gap:8px;
+      gap:6px;
+      row-gap:6px;
       flex-wrap:wrap;
+      align-items:flex-start;
     }
     .cms-level-group button{
-      min-width:54px;
-      min-height:var(--h-button-sm);
-      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
+      min-width:52px;
+      min-height:52px;
+      padding:0 16px;
       border-radius:999px;
+      font-size:var(--fs-ctrl);
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
     .cms-level-group button[data-active="1"]{
       background:var(--accent);
       color:#fff;
       border-color:var(--accent);
+    }
+
+    #basicInfoGroup .basic-info-fields{
+      display:flex;
+      flex-direction:column;
+      gap:calc(var(--gap) + 2px);
+    }
+    #basicInfoGroup .basic-info-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:var(--gap);
+      align-items:flex-start;
+    }
+    #basicInfoGroup .basic-info-field{
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+      min-width:0;
+    }
+    #basicInfoGroup .basic-info-field label{ margin-bottom:0; }
+    #basicInfoGroup .unit-code-field{
+      flex:0 0 248px;
+      max-width:260px;
+    }
+    #basicInfoGroup .unit-code-field select{
+      width:100%;
+      min-width:0;
+    }
+    #basicInfoGroup .case-manager-field{
+      flex:1 1 420px;
+      min-width:320px;
+      max-width:520px;
+    }
+    #basicInfoGroup .case-name-field,
+    #basicInfoGroup .consult-name-field{
+      flex:1 1 420px;
+      min-width:300px;
+      max-width:480px;
+    }
+    #basicInfoGroup .case-manager-field input,
+    #basicInfoGroup .case-manager-field select,
+    #basicInfoGroup .case-name-field input,
+    #basicInfoGroup .consult-name-field select{
+      width:100%;
+      max-width:100%;
+    }
+    #basicInfoGroup .cms-level-row{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:2px;
+    }
+    #basicInfoGroup input[type="text"],
+    #basicInfoGroup input[type="search"],
+    #basicInfoGroup select{
+      min-height:52px;
+      font-size:var(--fs-ctrl);
+    }
+    #basicInfoGroup input[type="search"],
+    #basicInfoGroup select{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    #basicInfoGroup input[type="search"]::-webkit-search-cancel-button{
+      cursor:pointer;
+    }
+    @media (max-width:960px){
+      #basicInfoGroup .case-manager-field,
+      #basicInfoGroup .case-name-field,
+      #basicInfoGroup .consult-name-field{
+        min-width:260px;
+      }
+    }
+    @media (max-width:720px){
+      #basicInfoGroup .basic-info-row{
+        flex-direction:column;
+        gap:6px;
+      }
+      #basicInfoGroup .basic-info-field{
+        flex:1 1 100%;
+        max-width:100% !important;
+        min-width:0 !important;
+      }
+      #basicInfoGroup .case-manager-field,
+      #basicInfoGroup .case-name-field,
+      #basicInfoGroup .consult-name-field{
+        width:100%;
+      }
     }
 
     .location-toolbar{
@@ -894,7 +990,7 @@
     [data-field-container="1"]{
       display:flex;
       flex-direction:column;
-      gap:6px;
+      gap:5px;
       position:relative;
     }
     [data-field-container="1"] > label{
@@ -1689,14 +1785,31 @@
   <!-- 基本資訊 -->
   <div class="group" id="basicInfoGroup">
     <label>★基本資訊</label>
-    <div class="row">
-      <div data-field-size="short">
-        <label>單位代碼</label>
-        <select id="unitCode" onchange="loadManagers(); loadConsultants();">
-          <option>FNA1</option><option>FNA2</option><option>FNA3</option>
-        </select>
+    <div class="basic-info-fields">
+      <div class="basic-info-row" data-row="1">
+        <div class="basic-info-field unit-code-field" data-field-size="short">
+          <label>單位代碼</label>
+          <select id="unitCode" onchange="loadManagers(); loadConsultants();">
+            <option>FNA1</option><option>FNA2</option><option>FNA3</option>
+          </select>
+        </div>
+        <div class="basic-info-field case-manager-field" data-field-size="medium">
+          <label>個案管理師</label>
+          <input id="caseManagerName" type="search" list="caseManagerList" autocomplete="off" placeholder="搜尋或輸入個管師">
+          <datalist id="caseManagerList"></datalist>
+        </div>
       </div>
-      <div data-field-size="short">
+      <div class="basic-info-row" data-row="2">
+        <div class="basic-info-field case-name-field" data-field-size="medium">
+          <label>個案姓名</label>
+          <input id="caseName" type="text" placeholder="請輸入">
+        </div>
+        <div class="basic-info-field consult-name-field" data-field-size="medium">
+          <label>照專姓名</label>
+          <select id="consultName"></select>
+        </div>
+      </div>
+      <div class="cms-level-row" data-row="3">
         <label>CMS 等級</label>
         <div id="cmsLevelGroup" class="cms-level-group">
           <button type="button" data-level="2">2</button>
@@ -1708,20 +1821,6 @@
           <button type="button" data-level="8">8</button>
         </div>
         <input type="hidden" id="cmsLevelValue" value="">
-      </div>
-      <div data-field-size="medium">
-        <label>個案管理師</label>
-        <select id="caseManagerName"></select>
-      </div>
-    </div>
-    <div class="row">
-      <div data-field-size="medium">
-        <label>個案姓名</label>
-        <input id="caseName" type="text" placeholder="請輸入">
-      </div>
-      <div data-field-size="medium">
-        <label>照專姓名</label>
-        <select id="consultName"></select>
       </div>
     </div>
   </div>
@@ -5016,8 +5115,20 @@
     function loadManagers(){
       const unit=document.getElementById('unitCode').value;
       google.script.run.withSuccessHandler(list=>{
-        const sel=document.getElementById('caseManagerName'); sel.innerHTML='';
-        (list && list.length? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);});
+        const input=document.getElementById('caseManagerName');
+        const dataList=document.getElementById('caseManagerList');
+        const options=(list && list.length? list : ['（無資料）']);
+        if(dataList){
+          dataList.innerHTML='';
+          options.forEach(name=>{ const option=document.createElement('option'); option.value=name; dataList.appendChild(option); });
+        }
+        if(input){
+          const current=(input.value||'').trim();
+          const hasCurrent=options.indexOf(current) !== -1;
+          const fallback=options[0] || '';
+          input.value=hasCurrent? current : fallback;
+          input.setAttribute('placeholder', options[0] === '（無資料）' ? '無個管師資料' : '搜尋或輸入個管師');
+        }
         buildApprovalPlanPreview();
       }).getCaseManagersByUnit(unit);
     }
