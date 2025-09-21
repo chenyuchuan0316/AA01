@@ -33,6 +33,22 @@
       --title:#0B57D0;               /* 區塊標題與主色（可改為 #222 深灰） */
       --accent:#0B57D0;              /* 主要行為色（按鈕/Focus） */
       --accent-weak:rgba(11,87,208,.12); /* Focus ring */
+      --status-complete-bg:rgba(34,197,94,.14);
+      --status-complete-border:rgba(22,163,74,.45);
+      --status-complete-text:#065f46;
+      --status-complete-strong:#047857;
+      --status-partial-bg:rgba(253,224,71,.18);
+      --status-partial-border:rgba(217,119,6,.45);
+      --status-partial-text:#92400e;
+      --status-partial-strong:#b45309;
+      --status-pending-bg:rgba(226,232,240,.7);
+      --status-pending-border:rgba(148,163,184,.6);
+      --status-pending-text:#1f2937;
+      --status-pending-strong:#1f2937;
+      --status-optional-bg:rgba(226,232,240,.3);
+      --status-optional-border:rgba(203,213,225,.6);
+      --status-optional-text:#475569;
+      --status-optional-strong:#475569;
 
       /* 尺寸系統 */
       --space-unit:4px;
@@ -187,18 +203,21 @@
       width:100%;
       box-sizing:border-box;
     }
+    body[data-uimode="review"] .group{ border-radius:8px; }
     /* 交錯輕底以分區（依 page-section 容器交錯） */
     .page-section[data-active="1"] > .group:nth-of-type(odd){ background:var(--card-alt); }
 
     /* 標題列與標題字（以 H 系列為主） */
     .titlebar{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      flex-wrap:wrap;
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) auto;
+      align-items:center;
       gap:var(--space-xs);
       row-gap:var(--space-xxs);
       margin:0 0 var(--space-sm);
+    }
+    @media (min-width:1280px){
+      .titlebar{ grid-template-columns:minmax(0, 1fr) auto auto; }
     }
     .titlebar--mt-xxs{ margin-top:var(--space-xxs); }
     .titlebar--mt-xs{ margin-top:var(--space-xs); }
@@ -454,12 +473,14 @@
     }
     .summary-progress-chip .chip-label{ white-space:nowrap; }
     .summary-progress-chip .chip-count{ font-variant-numeric:tabular-nums; color:#1f2937; }
-    .summary-progress-chip[data-status="complete"]{ background:rgba(34,197,94,.14); border-color:rgba(22,163,74,.45); color:#065f46; }
-    .summary-progress-chip[data-status="complete"] .chip-count{ color:#047857; }
-    .summary-progress-chip[data-status="partial"]{ background:rgba(253,224,71,.18); border-color:rgba(217,119,6,.45); color:#92400e; }
-    .summary-progress-chip[data-status="partial"] .chip-count{ color:#b45309; }
-    .summary-progress-chip[data-status="pending"]{ background:rgba(226,232,240,.7); border-color:rgba(148,163,184,.6); color:#1f2937; }
-    .summary-progress-chip[data-status="optional"]{ background:rgba(226,232,240,.3); border-color:rgba(203,213,225,.6); color:#475569; }
+    .summary-progress-chip[data-status="complete"]{ background:var(--status-complete-bg); border-color:var(--status-complete-border); color:var(--status-complete-text); }
+    .summary-progress-chip[data-status="complete"] .chip-count{ color:var(--status-complete-strong); }
+    .summary-progress-chip[data-status="partial"]{ background:var(--status-partial-bg); border-color:var(--status-partial-border); color:var(--status-partial-text); }
+    .summary-progress-chip[data-status="partial"] .chip-count{ color:var(--status-partial-strong); }
+    .summary-progress-chip[data-status="pending"]{ background:var(--status-pending-bg); border-color:var(--status-pending-border); color:var(--status-pending-text); }
+    .summary-progress-chip[data-status="pending"] .chip-count{ color:var(--status-pending-strong); }
+    .summary-progress-chip[data-status="optional"]{ background:var(--status-optional-bg); border-color:var(--status-optional-border); color:var(--status-optional-text); }
+    .summary-progress-chip[data-status="optional"] .chip-count{ color:var(--status-optional-strong); }
     .summary-progress-chip:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
     @media (max-width:768px){
       .summary-progress-list{ overflow-x:auto; flex-wrap:nowrap; padding-bottom:var(--space-xxs); }
@@ -1099,16 +1120,36 @@
       background:rgba(11,87,208,.08);
     }
 
-    /* 偕同訪視者：第一列欄位固定一致寬度 */
-    #visitPartnersGroup .row > [data-field-size="short"],
-    #visitPartnersGroup .row > [data-field-size="medium"]{
+    /* 需要固定欄寬的首欄位（關係/姓名等） */
+    .field-intro{
       flex:0 0 var(--intro-colw);
       max-width:var(--intro-colw);
       min-width:0;
+      width:var(--intro-colw);
     }
-    #visitPartnersGroup select,
-    #visitPartnersGroup input[type="text"]{
-      width:100%; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    .field-intro-grid{
+      grid-template-columns:minmax(var(--intro-colw), var(--intro-colw)) minmax(var(--intro-colw), var(--intro-colw)) minmax(0, 1fr);
+    }
+    .field-intro select,
+    .field-intro input[type="text"],
+    .field-intro input[type="tel"],
+    .field-intro input[type="number"],
+    .field-intro input[type="email"]{
+      width:100%;
+      max-width:100%;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    @media (max-width:1024px){
+      .field-intro{
+        flex:1 1 100%;
+        max-width:100%;
+        width:100%;
+      }
+      .field-intro-grid{
+        grid-template-columns:1fr;
+      }
     }
 
     .checkcol label[data-auto="1"]::after{
@@ -1632,25 +1673,66 @@
     .side-nav-summary-label{ font-size:0.8rem; color:#64748b; font-weight:600; }
     .side-nav-summary-value{ font-size:1rem; font-weight:700; color:#0b1d4d; word-break:break-word; }
     .side-nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:var(--space-xs); }
-    .side-nav-item{ display:flex; align-items:center; justify-content:space-between; gap:var(--space-xs); }
+    .side-nav-item{
+      display:flex;
+      align-items:center;
+      gap:var(--space-xs);
+      padding:var(--space-xs) var(--space-sm);
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      transition:background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .side-nav-item:focus-within{ box-shadow:0 0 0 2px var(--accent-weak); }
     .side-nav-link{
       flex:1;
+      min-width:0;
       text-align:left;
       background:none;
       border:none;
-      padding:var(--space-xs) 0;
+      padding:0;
       color:var(--label);
       font-size:0.95rem;
       cursor:pointer;
       transition:color .2s ease;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .side-nav-link:hover,
     .side-nav-link:focus{ color:var(--title); outline:none; }
-    .side-nav-count{ font-size:0.85rem; font-weight:600; color:#1f2937; min-width:64px; text-align:right; }
-    .side-nav-item[data-status="complete"] .side-nav-count{ color:#047857; }
-    .side-nav-item[data-status="partial"] .side-nav-count{ color:#b45309; }
-    .side-nav-item[data-status="pending"] .side-nav-count{ color:#1f2937; }
-    .side-nav-item[data-status="optional"] .side-nav-count{ color:#475569; }
+    .side-nav-count{
+      margin-left:auto;
+      font-size:0.85rem;
+      font-weight:600;
+      color:#1f2937;
+      font-variant-numeric:tabular-nums;
+      text-align:right;
+    }
+    .side-nav-item[data-status="complete"]{
+      background:var(--status-complete-bg);
+      border-color:var(--status-complete-border);
+    }
+    .side-nav-item[data-status="complete"] .side-nav-link{ color:var(--status-complete-text); }
+    .side-nav-item[data-status="complete"] .side-nav-count{ color:var(--status-complete-strong); }
+    .side-nav-item[data-status="partial"]{
+      background:var(--status-partial-bg);
+      border-color:var(--status-partial-border);
+    }
+    .side-nav-item[data-status="partial"] .side-nav-link{ color:var(--status-partial-text); }
+    .side-nav-item[data-status="partial"] .side-nav-count{ color:var(--status-partial-strong); }
+    .side-nav-item[data-status="pending"]{
+      background:var(--status-pending-bg);
+      border-color:var(--status-pending-border);
+    }
+    .side-nav-item[data-status="pending"] .side-nav-link{ color:var(--status-pending-text); }
+    .side-nav-item[data-status="pending"] .side-nav-count{ color:var(--status-pending-strong); }
+    .side-nav-item[data-status="optional"]{
+      background:var(--status-optional-bg);
+      border-color:var(--status-optional-border);
+    }
+    .side-nav-item[data-status="optional"] .side-nav-link{ color:var(--status-optional-text); }
+    .side-nav-item[data-status="optional"] .side-nav-count{ color:var(--status-optional-strong); }
     @media (max-width:1279px){
       .side-nav{ display:none !important; }
     }
@@ -1973,24 +2055,24 @@
         <span class="h1">基本資訊</span>
         <div class="basic-info-fields">
           <div class="basic-info-row" data-row="1">
-            <div class="basic-info-field unit-code-field" data-field-size="short">
+            <div class="basic-info-field unit-code-field field-intro" data-field-size="short">
               <label class="h2" for="unitCode">單位代碼</label>
               <select id="unitCode" onchange="loadManagers(); loadConsultants();">
                 <option>FNA1</option><option>FNA2</option><option>FNA3</option>
               </select>
             </div>
-            <div class="basic-info-field case-manager-field" data-field-size="medium">
+            <div class="basic-info-field case-manager-field field-intro" data-field-size="medium">
               <label class="h2" for="caseManagerName">個案管理師</label>
               <input id="caseManagerName" type="search" list="caseManagerList" autocomplete="off" placeholder="搜尋或輸入個管師">
               <datalist id="caseManagerList"></datalist>
             </div>
           </div>
           <div class="basic-info-row" data-row="2">
-            <div class="basic-info-field case-name-field" data-field-size="medium">
+            <div class="basic-info-field case-name-field field-intro" data-field-size="medium">
               <label class="h2" for="caseName">個案姓名</label>
               <input id="caseName" type="text" placeholder="請輸入">
             </div>
-            <div class="basic-info-field consult-name-field" data-field-size="medium">
+            <div class="basic-info-field consult-name-field field-intro" data-field-size="medium">
               <label class="h2" for="consultName">照專姓名</label>
               <select id="consultName"></select>
             </div>
@@ -2069,7 +2151,7 @@
           <label class="h2">三、偕同訪視者</label>
         </div>
         <div class="row">
-          <div data-field-size="short">
+          <div class="field-intro" data-field-size="short">
             <label class="h3" for="primaryRel">主要照顧者關係</label>
             <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
               <option value="" class="placeholder-option" disabled selected>請選擇</option>
@@ -2082,7 +2164,7 @@
               <optgroup label="自訂"><option>自訂角色</option></optgroup>
             </select>
           </div>
-          <div data-field-size="medium">
+          <div class="field-intro" data-field-size="medium">
             <label class="h3" for="primaryName">主要照顧者姓名</label>
             <input id="primaryName" type="text" placeholder="請輸入">
           </div>
@@ -2114,7 +2196,7 @@
         <div class="titlebar">
           <label class="h4">基本資料</label>
         </div>
-        <div class="grid3 form-row-3col">
+        <div class="grid3 form-row-3col field-intro-grid">
           <div>
             <label class="h5" for="s1_age">年齡（年紀）</label>
             <input id="s1_age" type="number" min="1" max="120" value="70">
@@ -2148,7 +2230,7 @@
         <div class="titlebar">
           <label class="h4">感官功能</label>
         </div>
-        <div class="grid3 form-row-3col">
+        <div class="grid3 form-row-3col field-intro-grid">
           <div>
             <label class="h5" for="s1_vision">視力狀態</label>
             <select id="s1_vision" onchange="toggleVisionNotes()">
@@ -2817,7 +2899,7 @@
           <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
         </div>
         <div class="grid3 form-row-3col">
-          <div>
+          <div class="field-intro">
             <label class="h4">關係</label>
             <select id="sp_deciderRel">
               <option value="">—不選—</option>
@@ -2830,7 +2912,7 @@
               <optgroup label="自訂"><option>自訂角色</option></optgroup>
             </select>
           </div>
-          <div>
+          <div class="field-intro">
             <label class="h4">姓名</label>
             <input id="sp_deciderName" type="text" placeholder="請選擇">
           </div>
@@ -3941,6 +4023,7 @@
       visibleItems.forEach(item=>{
         const li=document.createElement('li');
         li.className='side-nav-item';
+        li.dataset.page = item.pageId || '';
         const btn=document.createElement('button');
         btn.type='button';
         btn.className='side-nav-link';
@@ -4671,6 +4754,7 @@
     let wizardStepsMeta = [];
     let wizardStepLookup = {};
     let currentWizardStep = null;
+    const TAB_STATUS_PRIORITY = { todo:0, done:1, active:2 };
 
 
     /* ===== 段落視圖（分層/收合/進度） ===== */
@@ -5385,14 +5469,14 @@
       const wrap=document.createElement('div');
       wrap.className='row'; wrap.id=`extra-${idx}`;
       wrap.innerHTML=`
-      <div>
+      <div class="field-intro">
         <label class="h3">其他參與者關係</label>
         <select id="ex-role-${idx}" onchange="toggleCustomRole(${idx}, 'ex')">
           ${roleOptionsHTML(true)}
         </select>
         <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
       </div>
-      <div>
+      <div class="field-intro">
         <label class="h3">其他參與者姓名</label>
         <input id="ex-name-${idx}" type="text" placeholder="姓名，例如：李○○">
       </div>
@@ -11910,14 +11994,14 @@
       const idx=coCareIdx++;
       const wrap=document.createElement('div'); wrap.className='row'; wrap.id=`cc-${idx}`;
       wrap.innerHTML=`
-        <div>
+        <div class="field-intro">
           <label class="h4">關係</label>
           <select id="cc-rel-${idx}" onchange="toggleCustomRole(${idx}, 'cc')">
             ${roleOptionsHTML()}
           </select>
           <input id="cc-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
         </div>
-        <div><label class="h4">姓名</label><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
+        <div class="field-intro"><label class="h4">姓名</label><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
         <div style="flex:0; align-self:flex-end;"><button class="small" onclick="removeCoCareRow(${idx})">移除</button></div>
       `;
       host.appendChild(wrap);
@@ -12900,10 +12984,49 @@
       }
     }
 
+    function syncTabStatuses(){
+      const tabs=document.querySelectorAll('.page-tabs button');
+      if(!tabs.length){
+        return;
+      }
+      if(!wizardStepsMeta.length){
+        tabs.forEach(btn=>{
+          const isActive=btn.classList.contains('active');
+          btn.dataset.status = isActive ? 'active' : 'todo';
+        });
+        return;
+      }
+      const statusByPage = {};
+      wizardStepsMeta.forEach(meta=>{
+        if(!meta || !meta.page) return;
+        let status = meta.element && meta.element.dataset ? (meta.element.dataset.status || '') : '';
+        if(!status){
+          if(currentWizardStep === meta.step){ status='active'; }
+          else if(meta.step < currentWizardStep){ status='done'; }
+          else{ status='todo'; }
+        }
+        const prev = statusByPage[meta.page];
+        if(!prev || (TAB_STATUS_PRIORITY[status] || 0) > (TAB_STATUS_PRIORITY[prev] || 0)){
+          statusByPage[meta.page] = status;
+        }
+      });
+      tabs.forEach(btn=>{
+        const page=btn.dataset.page || '';
+        const assigned = statusByPage[page];
+        if(assigned){
+          btn.dataset.status = assigned;
+        }else{
+          const isActive=btn.classList.contains('active');
+          btn.dataset.status = isActive ? 'active' : 'todo';
+        }
+      });
+    }
+
     function updateWizardVisual(step, options){
       if(!wizardStepsMeta.length){
         currentWizardStep = null;
         updateWizardButtons();
+        syncTabStatuses();
         return;
       }
       let targetStep = Number(step);
@@ -12920,6 +13043,7 @@
       });
       currentWizardStep = targetStep;
       updateWizardButtons();
+      syncTabStatuses();
     }
 
     function determineWizardStepForPage(pageId, options){
@@ -13104,13 +13228,16 @@
         section.style.display = active === '1' ? '' : 'none';
       });
       document.querySelectorAll('.page-tabs button').forEach(btn=>{
-        btn.classList.toggle('active', btn.dataset.page === pageId);
+        const isActive = btn.dataset.page === pageId;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-current', isActive ? 'page' : 'false');
       });
       const step = determineWizardStepForPage(pageId, opts);
       if(step !== null){
         updateWizardVisual(step);
       }else{
         updateWizardButtons();
+        syncTabStatuses();
       }
       scheduleSideNavRender();
       scheduleLayoutMeasurements();
