@@ -16,8 +16,8 @@
        尺寸基準（依需求可再調）：
        - 根字級（html）：桌機 19→20px（視寬度），手機依檔位 clamp(20px~26px)
        - 內文/標籤：≥16–18px（隨 font-scale 比例放大）
-       - 控制元件字級：20px 起，依檔位漸增至 24px（避免 iOS 聚焦放大）
-       - 輸入框高度：56px 起，依檔位漸增；主按鈕同步放大；核取方塊 28→34px（觸控）
+       - 控制元件字級：標準 20px；大字 24px；特大字 26px（避免 iOS 聚焦放大）
+       - 輸入框高度：標準 56px 起，依檔位漸增；主按鈕同步放大；核取方塊 28→36px（觸控）
     */
 
     :root{
@@ -92,58 +92,40 @@
       --mobile-font-fluid:5.2vw;
       --mobile-font-max:22px;
     }
-    body[data-fontscale="md"]{
-      --font-scale:1.2;
-      --fs-ctrl:21.5px;
-      --h-input:58px;
-      --h-button:58px;
-      --h-button-sm:50px;
-      --checkbox:30px;
-      --line-height:1.77;
-      --mobile-font-min:21px;
-      --mobile-font-fluid:5.4vw;
-      --mobile-font-max:23px;
-    }
-    body[data-fontscale="lg"]{
-      --font-scale:1.35;
-      --fs-ctrl:22.5px;
-      --h-input:60px;
-      --h-button:60px;
-      --h-button-sm:52px;
-      --checkbox:31px;
-      --line-height:1.8;
-      --mobile-font-min:21.5px;
-      --mobile-font-fluid:5.5vw;
-      --mobile-font-max:23.5px;
-    }
     body[data-fontscale="xl"]{
-      --font-scale:1.5;
-      --fs-ctrl:23.5px;
-      --h-input:64px;
-      --h-button:64px;
-      --h-button-sm:56px;
-      --checkbox:32px;
+      --font-scale:1.2;
+      --fs-ctrl:24px;
+      --h-input:62px;
+      --h-button:62px;
+      --h-button-sm:54px;
+      --checkbox:34px;
       --line-height:1.82;
-      --mobile-font-min:22px;
-      --mobile-font-fluid:5.8vw;
-      --mobile-font-max:24px;
+      --mobile-font-min:23px;
+      --mobile-font-fluid:5.9vw;
+      --mobile-font-max:24.2px;
     }
     body[data-fontscale="xxl"]{
-      --font-scale:1.75;
-      --fs-ctrl:24px;
+      --font-scale:1.32;
+      --fs-ctrl:26px;
       --h-input:68px;
       --h-button:68px;
       --h-button-sm:60px;
-      --checkbox:34px;
-      --line-height:1.85;
-      --mobile-font-min:24px;
-      --mobile-font-fluid:6.4vw;
+      --checkbox:36px;
+      --line-height:1.88;
+      --mobile-font-min:25px;
+      --mobile-font-fluid:6.6vw;
       --mobile-font-max:26px;
     }
     body[data-uimode="comfort"]{
       --gap:calc(var(--gap-base) * 0.9);
       --group-padding:calc(var(--group-padding-base) * 0.9);
       --group-spacing:calc(var(--group-spacing-base) * 0.9);
+    }
+    body[data-vertical-density="compact"]{
+      --gap:calc(var(--gap-base) * 0.9);
+      --group-padding:calc(var(--group-padding-base) * 0.9);
+      --group-spacing:calc(var(--group-spacing-base) * 0.9);
+      line-height:calc(var(--line-height) * 0.95);
     }
     .app-container{
       max-width:1200px;
@@ -669,8 +651,7 @@
       font-weight:600;
     }
     @media (pointer:coarse){
-      body[data-fontscale="sm"],
-      body[data-fontscale="md"]{ --checkbox:32px; }
+      body[data-fontscale="sm"]{ --checkbox:32px; }
     } /* 觸控設備放大到 32px */
 
     .lesion-mode{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
@@ -1303,11 +1284,9 @@
         <div class="page-toolbar" id="pageToolbar">
           <span class="font-scale-label">字級</span>
           <div class="font-scale-control" id="fontScaleControl" role="group" aria-label="字級設定">
-            <button type="button" data-scale="sm" title="標準字級">A</button>
-            <button type="button" data-scale="md" title="放大字級">A+</button>
-            <button type="button" data-scale="lg" title="特大字級">A++</button>
-            <button type="button" data-scale="xl" title="極大字級（200%）">A+++</button>
-            <button type="button" data-scale="xxl" title="特大字級（臨床）">A++++</button>
+            <button type="button" data-scale="sm" title="標準字級（20px）">A</button>
+            <button type="button" data-scale="xl" title="大字（約 24px）">A+</button>
+            <button type="button" data-scale="xxl" title="特大字（約 26px）">A++</button>
           </div>
           <span class="mobile-mode-label">手機模式</span>
           <div class="mobile-mode-control" id="mobileModeControl" role="group" aria-label="手機常用模式">
@@ -2538,7 +2517,14 @@
     /* ===== 版面配置工具 ===== */
     const FONT_SCALE_STORAGE_KEY = 'AA01.fontScale';
     const FONT_SCALE_DEFAULT = 'sm';
-    const FONT_SCALE_OPTIONS = ['sm','md','lg','xl','xxl'];
+    const FONT_SCALE_OPTIONS = ['sm','xl','xxl'];
+    const FONT_SCALE_ALIASES = { md:'xl', lg:'xl' };
+    function normalizeFontScale(scale){
+      if(!scale) return null;
+      const alias = FONT_SCALE_ALIASES[scale];
+      if(alias) return alias;
+      return FONT_SCALE_OPTIONS.indexOf(scale) !== -1 ? scale : null;
+    }
     const UI_MODE_STORAGE_KEY = 'AA01.uiMode';
     const UI_MODE_DEFAULT = 'custom';
     const UI_MODE_OPTIONS = ['clear','comfort','review','custom'];
@@ -2548,6 +2534,7 @@
     let floatingMeasureScheduled = false;
     let headerMeasureScheduled = false;
     let sectionViewsReady = false;
+    let currentVerticalDensityMode = '';
 
     function updateFloatingActionsMetrics(){
       const actions=document.getElementById('floatingActions');
@@ -2593,9 +2580,30 @@
       });
     }
 
+    function updateVerticalDensityMode(){
+      if(!document.body) return;
+      let height = 0;
+      if(window.visualViewport && typeof window.visualViewport.height === 'number'){
+        height = window.visualViewport.height;
+      }
+      if(!height && typeof window.innerHeight === 'number'){
+        height = window.innerHeight;
+      }
+      const compact = height > 0 && height < 640;
+      const nextMode = compact ? 'compact' : '';
+      if(currentVerticalDensityMode === nextMode) return;
+      currentVerticalDensityMode = nextMode;
+      if(compact){
+        document.body.dataset.verticalDensity = 'compact';
+      }else{
+        document.body.removeAttribute('data-vertical-density');
+      }
+    }
+
     function scheduleLayoutMeasurements(){
       scheduleFloatingActionsMeasurement();
       scheduleScrollOffsetMeasurement();
+      updateVerticalDensityMode();
     }
 
     function isCoarsePointer(){
@@ -2615,9 +2623,9 @@
     function updateFontScaleButtons(active){
       const control=document.getElementById('fontScaleControl');
       if(!control) return;
-      const target=active || FONT_SCALE_DEFAULT;
+      const normalizedActive = normalizeFontScale(active) || FONT_SCALE_DEFAULT;
       control.querySelectorAll('button[data-scale]').forEach(btn=>{
-        const isActive=btn.dataset.scale === target;
+        const isActive=btn.dataset.scale === normalizedActive;
         btn.dataset.active = isActive ? '1' : '0';
         btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
@@ -2635,7 +2643,7 @@
     }
 
     function applyFontScale(scale, options){
-      const normalized = FONT_SCALE_OPTIONS.indexOf(scale) !== -1 ? scale : FONT_SCALE_DEFAULT;
+      const normalized = normalizeFontScale(scale) || FONT_SCALE_DEFAULT;
       if(document.body){
         document.body.dataset.fontscale = normalized;
       }
@@ -2753,14 +2761,15 @@
         }
         setSection1DiffMode(false);
       }else if(normalized === 'review'){
-        scaleToApply = 'lg';
+        scaleToApply = 'sm';
         if(shouldApplySections){
           applySectionsPreset({ hideFilled:false, showAdvanced:true, collapse:'expand' }, { persist: persistSections });
         }
         setSection1DiffMode(true);
       }else{
-        const requestedScale = opts.targetScale && FONT_SCALE_OPTIONS.indexOf(opts.targetScale) !== -1 ? opts.targetScale : null;
-        scaleToApply = requestedScale || (document.body && document.body.dataset.fontscale ? document.body.dataset.fontscale : FONT_SCALE_DEFAULT);
+        const requestedScale = normalizeFontScale(opts.targetScale);
+        const currentScale = document.body && document.body.dataset.fontscale ? normalizeFontScale(document.body.dataset.fontscale) : null;
+        scaleToApply = requestedScale || currentScale || FONT_SCALE_DEFAULT;
         if(opts.applySections){
           applySectionsPreset(opts.applySections, { persist: persistSections });
         }
@@ -2803,16 +2812,17 @@
         try{ storedScale = window.localStorage.getItem(FONT_SCALE_STORAGE_KEY); }catch(err){}
       }
       const hasStoredMode = storedMode && UI_MODE_OPTIONS.indexOf(storedMode) !== -1;
-      const hasStoredScale = storedScale && FONT_SCALE_OPTIONS.indexOf(storedScale) !== -1;
+      const normalizedStoredScale = normalizeFontScale(storedScale);
+      const hasStoredScale = !!normalizedStoredScale;
 
       if(hasStoredMode){
         if(storedMode === 'custom' && hasStoredScale){
-          applyUiMode('custom', { targetScale: storedScale, skipPersist:true, skipFontSave:true, skipSections:true });
+          applyUiMode('custom', { targetScale: normalizedStoredScale, skipPersist:true, skipFontSave:true, skipSections:true });
         }else{
           applyUiMode(storedMode, { skipPersist:true, skipFontSave:true });
         }
       }else if(hasStoredScale){
-        applyUiMode('custom', { targetScale: storedScale, skipFontSave:true, skipSections:true });
+        applyUiMode('custom', { targetScale: normalizedStoredScale, skipFontSave:true, skipSections:true });
       }else if(shouldUseMobileDefaults()){
         applyUiMode('clear');
       }else{
@@ -3378,6 +3388,7 @@
       const onlyBtn = document.createElement('button');
       onlyBtn.type = 'button';
       onlyBtn.textContent = '只看未填';
+      onlyBtn.title = '系統會記住這個設定，重新整理後仍保留';
       const advancedBtn = document.createElement('button');
       advancedBtn.type = 'button';
       advancedBtn.textContent = '顯示進階';
