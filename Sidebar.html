@@ -176,7 +176,22 @@
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section]{ scroll-margin-top:var(--scroll-offset); }
     .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:6px; }
-    .row > div{ flex:1 1 min(100%, 320px); min-width:min(100%, 220px); }
+    .row > div{ flex:1 1 min(100%, 320px); min-width:min(100%, 240px); }
+    .row > [data-field-size="short"],
+    .section-group-body > [data-field-size="short"]{
+      flex:1 1 calc(33.333% - var(--gap));
+      min-width:180px;
+    }
+    .row > [data-field-size="medium"],
+    .section-group-body > [data-field-size="medium"]{
+      flex:1 1 calc(50% - var(--gap));
+      min-width:260px;
+    }
+    .row > [data-field-size="long"],
+    .section-group-body > [data-field-size="long"]{
+      flex:1 1 100%;
+      min-width:100%;
+    }
     .grid2, .grid3, .form-row-2col, .form-row-3col{ display:grid; gap:var(--gap); align-items:start; }
     .grid2, .form-row-2col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
     .grid3, .form-row-3col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-3), 1fr)); }
@@ -219,23 +234,43 @@
     }
 
     /* 日期顯示盒（更清楚） */
-    .datebox{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .datebox{
+      position:relative;
+      display:flex;
+      align-items:center;
+      width:100%;
+    }
     .datebox input[type="date"]{
-      width:auto;
-      min-width:176px;
-      flex:0 0 auto;
+      width:100%;
+      min-width:0;
+      flex:1 1 auto;
+      padding-right:96px;
     }
     .date-controls{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      display:inline-flex;
+      gap:4px;
       align-items:center;
     }
     .date-controls button.small{
-      min-width:48px;
+      min-width:42px;
       font-size:calc(var(--fs-button) + 2px);
       font-weight:700;
       line-height:1;
+    }
+    @media (max-width:440px){
+      .datebox{ flex-wrap:wrap; }
+      .datebox input[type="date"]{ padding-right:var(--ctrl-padding-inline); }
+      .date-controls{
+        position:static;
+        transform:none;
+        margin-top:6px;
+        justify-content:flex-end;
+        width:100%;
+      }
     }
 
     /* 按鈕與操作面積（以 padding 控制高度） */
@@ -302,6 +337,42 @@
       border:1px solid var(--border);
       background:#fff;
       color:var(--label);
+    }
+    .summary-progress-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+      margin-top:6px;
+    }
+    .summary-progress-list[data-empty="1"]{ display:none; }
+    .summary-progress-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:#334155;
+      font-size:0.85rem;
+      font-weight:600;
+      cursor:pointer;
+      transition:background .2s ease, border-color .2s ease, color .2s ease;
+    }
+    .summary-progress-chip .chip-label{ white-space:nowrap; }
+    .summary-progress-chip .chip-count{ font-variant-numeric:tabular-nums; color:#1f2937; }
+    .summary-progress-chip[data-status="complete"]{ background:rgba(34,197,94,.14); border-color:rgba(22,163,74,.45); color:#065f46; }
+    .summary-progress-chip[data-status="complete"] .chip-count{ color:#047857; }
+    .summary-progress-chip[data-status="partial"]{ background:rgba(253,224,71,.18); border-color:rgba(217,119,6,.45); color:#92400e; }
+    .summary-progress-chip[data-status="partial"] .chip-count{ color:#b45309; }
+    .summary-progress-chip[data-status="pending"]{ background:rgba(226,232,240,.7); border-color:rgba(148,163,184,.6); color:#1f2937; }
+    .summary-progress-chip[data-status="optional"]{ background:rgba(226,232,240,.3); border-color:rgba(203,213,225,.6); color:#475569; }
+    .summary-progress-chip:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+    @media (max-width:768px){
+      .summary-progress-list{ overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; }
+      .summary-progress-list::-webkit-scrollbar{ height:6px; }
+      .summary-progress-chip{ flex:0 0 auto; }
     }
     .summary-jump select:focus{
       outline:none;
@@ -663,6 +734,8 @@
       display:flex;
       align-items:center;
       gap:8px;
+      flex:1 1 auto;
+      justify-content:flex-start;
     }
     .section-group-toggle::before{
       content:'▾';
@@ -676,6 +749,31 @@
     .section-group[data-level="advanced"] .section-group-toggle,
     .section-group[data-level="advanced"] .section-group-toggle::before{
       color:#0b1d4d;
+    }
+    .section-group-progress{
+      font-size:0.82rem;
+      font-weight:600;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(226,232,240,.7);
+      color:#475569;
+      white-space:nowrap;
+    }
+    .section-group[data-status="complete"] .section-group-progress{
+      background:rgba(34,197,94,.16);
+      color:#047857;
+    }
+    .section-group[data-status="partial"] .section-group-progress{
+      background:rgba(253,224,71,.2);
+      color:#b45309;
+    }
+    .section-group[data-status="pending"] .section-group-progress{
+      background:rgba(226,232,240,.9);
+      color:#1f2937;
+    }
+    .section-group[data-status="optional"] .section-group-progress{
+      background:rgba(203,213,225,.32);
+      color:#475569;
     }
     .section-group-body{
       margin-top:10px;
@@ -719,7 +817,10 @@
     }
 
     /* 勾選清單（點擊面積提升） */
-    .checkcol{ display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(min(var(--checkcol-min), 48%), 1fr)); }
+    .checkcol{ display:grid; gap:10px; grid-template-columns:1fr; }
+    @media (min-width:720px){
+      .checkcol{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    }
     .checkcol label{
       display:flex; align-items:center; gap:10px; padding:10px 12px;
       border:1px solid var(--border); border-radius:12px; background:#fff; color:#222; font-size:var(--fs-base);
@@ -1265,25 +1366,49 @@
     .side-nav-link:hover,
     .side-nav-link:focus{ color:var(--title); outline:none; }
     .side-nav-count{ font-size:0.85rem; font-weight:600; color:#1f2937; min-width:64px; text-align:right; }
+    .side-nav-item[data-status="complete"] .side-nav-count{ color:#047857; }
+    .side-nav-item[data-status="partial"] .side-nav-count{ color:#b45309; }
+    .side-nav-item[data-status="pending"] .side-nav-count{ color:#1f2937; }
+    .side-nav-item[data-status="optional"] .side-nav-count{ color:#475569; }
     @media (max-width:1280px){
       .side-nav{ display:none; }
     }
     .floating-actions{
       position:fixed;
-      right:max(18px, env(safe-area-inset-right) + 18px);
-      bottom:var(--fab-gap);
+      left:0;
+      right:0;
+      bottom:0;
       display:flex;
-      flex-direction:column;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
       gap:10px;
-      align-items:flex-end;
+      padding:12px 18px;
+      padding-left:max(18px, calc(env(safe-area-inset-left) + 18px));
+      padding-right:max(18px, calc(env(safe-area-inset-right) + 18px));
+      padding-bottom:max(12px, calc(env(safe-area-inset-bottom) + 12px));
+      background:rgba(255,255,255,.95);
+      border-top:1px solid rgba(148,163,184,.35);
+      box-shadow:0 -6px 18px rgba(15,23,42,.08);
+      backdrop-filter:saturate(160%) blur(12px);
+      -webkit-backdrop-filter:saturate(160%) blur(12px);
       z-index:80;
     }
     .floating-actions button{
       min-width:140px;
-      box-shadow:var(--shadow);
+      box-shadow:none;
     }
     .floating-actions button[data-variant="ghost"]{
-      background:rgba(255,255,255,.9);
+      background:rgba(248,250,252,.9);
+    }
+    @media (max-width:640px){
+      .floating-actions{
+        justify-content:center;
+        gap:12px;
+      }
+      .floating-actions button{
+        flex:1 1 140px;
+      }
     }
     #wizardSaveBtn{ order:1; }
     #wizardNextBtn{ order:2; }
@@ -1530,13 +1655,14 @@
           <span class="summary-label">最近儲存</span>
           <span class="summary-last-saved" id="summaryLastSaved">—</span>
         </div>
-        <div class="summary-item summary-jump">
-          <label class="summary-label" for="summaryJumpSelect">快速跳轉</label>
-          <select id="summaryJumpSelect">
-            <option value="">選擇區塊</option>
-          </select>
-        </div>
+      <div class="summary-item summary-jump">
+        <label class="summary-label" for="summaryJumpSelect">快速跳轉</label>
+        <select id="summaryJumpSelect">
+          <option value="">選擇區塊</option>
+        </select>
       </div>
+    </div>
+      <div class="summary-progress-list" id="summaryProgressList" data-empty="1" aria-label="章節進度"></div>
     </div>
   </div>
 
@@ -1564,28 +1690,13 @@
   <div class="group" id="basicInfoGroup">
     <label>★基本資訊</label>
     <div class="row">
-      <div>
+      <div data-field-size="short">
         <label>單位代碼</label>
         <select id="unitCode" onchange="loadManagers(); loadConsultants();">
           <option>FNA1</option><option>FNA2</option><option>FNA3</option>
         </select>
       </div>
-      <div>
-        <label>個案管理師</label>
-        <select id="caseManagerName"></select>
-      </div>
-    </div>
-    <div class="grid3 form-row-3col">
-      <div>
-        <label>個案姓名</label>
-        <input id="caseName" type="text" placeholder="請輸入">
-      </div>
-      <div>
-        <label>照專姓名</label>
-        <select id="consultName">
-        </select>
-      </div>
-      <div>
+      <div data-field-size="short">
         <label>CMS 等級</label>
         <div id="cmsLevelGroup" class="cms-level-group">
           <button type="button" data-level="2">2</button>
@@ -1597,6 +1708,20 @@
           <button type="button" data-level="8">8</button>
         </div>
         <input type="hidden" id="cmsLevelValue" value="">
+      </div>
+      <div data-field-size="medium">
+        <label>個案管理師</label>
+        <select id="caseManagerName"></select>
+      </div>
+    </div>
+    <div class="row">
+      <div data-field-size="medium">
+        <label>個案姓名</label>
+        <input id="caseName" type="text" placeholder="請輸入">
+      </div>
+      <div data-field-size="medium">
+        <label>照專姓名</label>
+        <select id="consultName"></select>
       </div>
     </div>
   </div>
@@ -1650,7 +1775,7 @@
       <label>三、偕同訪視者</label>
     </div>
     <div class="row">
-      <div>
+      <div data-field-size="short">
         <label>主要照顧者關係</label>
         <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
           <option value="" class="placeholder-option" disabled selected>請選擇</option>
@@ -1663,7 +1788,7 @@
           <optgroup label="自訂"><option>自訂角色</option></optgroup>
         </select>
       </div>
-      <div>
+      <div data-field-size="medium">
         <label>主要照顧者姓名</label>
         <input id="primaryName" type="text" placeholder="請輸入">
       </div>
@@ -2813,6 +2938,7 @@
       items:[],
       renderScheduled:false
     };
+    const SUMMARY_PROGRESS_STATE = { root:null, scheduled:false };
     const SUMMARY_JUMP_STATE = { select:null, scheduled:false };
 
     function getPageLabel(pageId){
@@ -3240,6 +3366,12 @@
       return summaryElements;
     }
 
+    function getSummaryProgressRoot(){
+      if(SUMMARY_PROGRESS_STATE.root) return SUMMARY_PROGRESS_STATE.root;
+      SUMMARY_PROGRESS_STATE.root = document.getElementById('summaryProgressList');
+      return SUMMARY_PROGRESS_STATE.root;
+    }
+
     function getSideSummaryElements(){
       if(sideSummaryElements) return sideSummaryElements;
       sideSummaryElements = {
@@ -3379,9 +3511,28 @@
       return SIDE_NAV_STATE;
     }
 
+    function determineProgressStatus(filled, required){
+      const req = Number(required) || 0;
+      const done = Number(filled) || 0;
+      if(req <= 0){
+        return done > 0 ? 'complete' : 'optional';
+      }
+      if(done >= req) return 'complete';
+      if(done > 0) return 'partial';
+      return 'pending';
+    }
+
+    function formatProgressDisplay(filled, required){
+      const req = Number(required) || 0;
+      const done = Number(filled) || 0;
+      if(req <= 0){
+        return done > 0 ? `已填 ${done}` : '選填';
+      }
+      return `${done}/${req}`;
+    }
+
     function formatSideNavCount(filled, required){
-      if(!required) return '—';
-      return `${filled}/${required}`;
+      return formatProgressDisplay(filled, required);
     }
 
     function scrollToAnchorId(anchorId, options){
@@ -3413,6 +3564,10 @@
       updateToggleButtons(section);
       updateAllGroupEmptyStates(section);
       scheduleSideNavRender();
+      if(section.__state && section.dataset && section.dataset.section){
+        writeSectionState(section.dataset.section, section.__state);
+      }
+      scheduleSummaryProgressRender();
     }
 
     function handleSideNavClick(event){
@@ -3476,7 +3631,11 @@
         const count=document.createElement('span');
         count.className='side-nav-count';
         const stats=item.stats || { filled:0, required:0 };
+        const status=item.status || determineProgressStatus(stats.filled || 0, stats.required || 0);
+        item.status = status;
         count.textContent = formatSideNavCount(stats.filled || 0, stats.required || 0);
+        li.dataset.status = status;
+        btn.dataset.status = status;
         li.appendChild(btn);
         li.appendChild(count);
         state.list.appendChild(li);
@@ -3486,6 +3645,59 @@
       });
       scheduleLayoutMeasurements();
       scheduleSummaryJumpRefresh();
+      scheduleSummaryProgressRender();
+    }
+
+    function renderSummaryProgress(){
+      const root = getSummaryProgressRoot();
+      if(!root) return;
+      const items = Array.isArray(SIDE_NAV_STATE.items) ? SIDE_NAV_STATE.items : [];
+      const activePage = currentPageId || '';
+      const visible = items.filter(item=>{
+        if(!item) return false;
+        if(!activePage || !item.pageId) return true;
+        return item.pageId === activePage;
+      });
+      root.innerHTML='';
+      if(!visible.length){
+        root.dataset.empty = '1';
+        return;
+      }
+      root.dataset.empty = '0';
+      visible.forEach(item=>{
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='summary-progress-chip';
+        const stats=item.stats || { filled:0, required:0 };
+        const status=item.status || determineProgressStatus(stats.filled || 0, stats.required || 0);
+        btn.dataset.target=item.anchorId || '';
+        btn.dataset.page=item.pageId || '';
+        btn.dataset.status=status;
+        const label=document.createElement('span');
+        label.className='chip-label';
+        label.textContent=item.label || '未命名群組';
+        const count=document.createElement('span');
+        count.className='chip-count';
+        count.textContent=formatProgressDisplay(stats.filled || 0, stats.required || 0);
+        btn.appendChild(label);
+        btn.appendChild(count);
+        const ariaParts=[];
+        if(label.textContent) ariaParts.push(label.textContent);
+        if(count.textContent) ariaParts.push(`進度 ${count.textContent}`);
+        if(ariaParts.length){ btn.setAttribute('aria-label', ariaParts.join('，')); }
+        btn.addEventListener('click', handleSideNavClick);
+        root.appendChild(btn);
+      });
+      scheduleLayoutMeasurements();
+    }
+
+    function scheduleSummaryProgressRender(){
+      if(SUMMARY_PROGRESS_STATE.scheduled) return;
+      SUMMARY_PROGRESS_STATE.scheduled = true;
+      window.requestAnimationFrame(()=>{
+        SUMMARY_PROGRESS_STATE.scheduled = false;
+        renderSummaryProgress();
+      });
     }
 
     function getSummaryJumpSelect(){
@@ -3615,6 +3827,7 @@
             anchorId: group.element.id,
             label: label || `群組 ${group.id}`,
             stats: { filled: stats.filled || 0, required: stats.required || 0 },
+            status: determineProgressStatus(stats.filled || 0, stats.required || 0),
             element:null,
             button:null,
             countEl:null
@@ -3625,6 +3838,7 @@
       });
       scheduleSideNavRender();
       scheduleSummaryJumpRefresh();
+      scheduleSummaryProgressRender();
     }
 
     function updateSideNavForSection(section){
@@ -3636,9 +3850,14 @@
       (section.__groups || []).forEach(group=>{
         if(!group || !group.navItem) return;
         const stats = section.__groupStats && section.__groupStats[group.id] ? section.__groupStats[group.id] : { filled:0, required:0 };
+        const status = determineProgressStatus(stats.filled || 0, stats.required || 0);
+        group.navItem.status = status;
         group.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
         if(group.navItem.countEl){
           group.navItem.countEl.textContent = formatSideNavCount(group.navItem.stats.filled, group.navItem.stats.required);
+        }
+        if(group.navItem.element){
+          group.navItem.element.dataset.status = status;
         }
         if(group.toggle && group.navItem.button){
           const text = group.toggle.textContent.trim();
@@ -3646,9 +3865,13 @@
             group.navItem.button.textContent = text;
             group.navItem.label = text;
           }
+          group.navItem.button.dataset.status = status;
+        }else if(group.navItem.button){
+          group.navItem.button.dataset.status = status;
         }
       });
       scheduleSummaryJumpRefresh();
+      scheduleSummaryProgressRender();
     }
 
     const CHECKCOL_PRIORITY_MAP = {
@@ -4255,6 +4478,10 @@
           toggle.setAttribute('aria-expanded', 'true');
           toggle.textContent = '';
           header.appendChild(toggle);
+          const progress = document.createElement('span');
+          progress.className = 'section-group-progress';
+          progress.textContent = '—';
+          header.appendChild(progress);
           const body = document.createElement('div');
           body.className = 'section-group-body';
           const empty = document.createElement('div');
@@ -4264,7 +4491,7 @@
           wrapper.appendChild(header);
           wrapper.appendChild(body);
           section.insertBefore(wrapper, node);
-          current = { element: wrapper, header, toggle, body, empty, id: groupId };
+          current = { element: wrapper, header, toggle, body, empty, progress, id: groupId };
           groups.push(current);
         }
         if(current && current.body){
@@ -4274,6 +4501,10 @@
       groups.forEach(group=>{
         updateGroupTitle(group);
         group.element.dataset.level = determineGroupLevel(group);
+        group.element.dataset.status = group.element.dataset.status || 'pending';
+        if(group.progress){
+          group.progress.textContent = group.progress.textContent || '—';
+        }
       });
       return groups;
     }
@@ -4539,6 +4770,19 @@
         progress.text.textContent = `已完成 ${filledCount} / ${requiredCount}（${percent}%）`;
         progress.bar.style.width = `${percent}%`;
       }
+      (section.__groups || []).forEach(group=>{
+        if(!group || !group.element) return;
+        const stats = groupStats[group.id] || { filled:0, required:0 };
+        const status = determineProgressStatus(stats.filled || 0, stats.required || 0);
+        group.element.dataset.status = status;
+        if(group.progress){
+          group.progress.textContent = formatProgressDisplay(stats.filled || 0, stats.required || 0);
+        }
+        if(group.navItem){
+          group.navItem.status = status;
+          group.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
+        }
+      });
       updateAllGroupEmptyStates(section);
       updateSideNavForSection(section);
       scheduleSummaryUpdate();
@@ -4637,16 +4881,17 @@
         }
         writeSectionState(section.dataset.section, state);
         updateToggleButtons(section);
+        scheduleSideNavRender();
+        scheduleSummaryProgressRender();
       });
     }
 
     function applyMobileSectionDefaults(section, state){
       if(!section || !state) return;
       if(state.__persisted) return;
-      if(!shouldUseMobileDefaults()) return;
       const groups = section.__groups || [];
       let firstBasicVisible = false;
-      state.hideFilled = true;
+      state.hideFilled = shouldUseMobileDefaults();
       state.showAdvanced = false;
       state.collapsedGroups = state.collapsedGroups && typeof state.collapsedGroups === 'object' ? state.collapsedGroups : {};
       groups.forEach(group=>{
@@ -4720,9 +4965,36 @@
         if(group.toggle){
           group.toggle.addEventListener('click', ()=>{
             const collapsed = group.element.dataset.collapsed === '1';
-            setGroupCollapsed(section, group, !collapsed);
-            updateToggleButtons(section);
-            updateAllGroupEmptyStates(section);
+            if(collapsed){
+              focusSectionGroupByElement(group.element);
+            }else{
+              setGroupCollapsed(section, group, true);
+              updateToggleButtons(section);
+              updateAllGroupEmptyStates(section);
+              scheduleSideNavRender();
+              scheduleSummaryProgressRender();
+            }
+          });
+        }
+        if(group.body){
+          group.body.addEventListener('focusin', ()=>{
+            const isCollapsed = group.element.dataset.collapsed === '1';
+            let othersOpen = false;
+            if(section.__groups){
+              for(let i=0;i<section.__groups.length;i++){
+                const other = section.__groups[i];
+                if(!other || other === group) continue;
+                if(other.element && other.element.dataset.collapsed !== '1'){
+                  othersOpen = true;
+                  break;
+                }
+              }
+            }
+            if(isCollapsed || othersOpen){
+              focusSectionGroupByElement(group.element);
+              const step = resolveWizardStepForElement ? resolveWizardStepForElement(group.element) : null;
+              if(step) updateWizardVisual(step);
+            }
           });
         }
       });
@@ -12510,6 +12782,7 @@
       }
       scheduleSideNavRender();
       scheduleLayoutMeasurements();
+      scheduleSummaryProgressRender();
     }
 
     function initPageTabs(){
