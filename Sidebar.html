@@ -63,7 +63,8 @@
       --h-button:calc(var(--fs-button) + 2 * var(--button-padding-block));
       --h-button-sm:calc(var(--fs-button) + 2 * var(--button-padding-block-sm));
       --checkbox:26px;                              /* 核取方塊 */
-      --layout-max:1280px;
+      /* 讓主容器寬度能更彈性，優先 90vw，其次 layout-max（預設 1440，可改） */
+      --layout-max:1440px;
       --section-col-min:340px;
       --section-col-max:560px;
       --section-col-preferred:50%;
@@ -79,6 +80,19 @@
       --sticky-header-height:96px;
       --summary-bar-gap:10px;
       --scroll-offset:calc(var(--sticky-header-height) + var(--summary-bar-gap));
+      --side-nav-w:280px; /* 右側側欄寬度（可依需求調整） */
+      /* 標題層級間距（Token） */
+      --space-h1-top:40px; --space-h1-bottom:24px;
+      --space-h2-top:32px; --space-h2-bottom:16px;
+      --space-h3-top:24px; --space-h3-bottom:12px;
+      --space-h4-top:16px; --space-h4-bottom:8px;
+      --brand-blue:#2563EB;
+      --h1-color:#0B1220; /* 最深黑藍 */
+      --h2-color:#111827; /* 深黑 */
+      --h3-color:#1F2937; /* 中深灰 */
+      --h4-color:#374151; /* 中灰 */
+      /* 三卡片（基本資訊/電聯家訪/偕同訪視者）內欄位一致寬度 */
+      --intro-colw:clamp(260px, 28vw, 360px);
     }
 
     /* 根字級：桌機 19→20；手機 clamp(20–26) */
@@ -147,10 +161,11 @@
       line-height:calc(var(--line-height) * 0.95);
     }
     .app-container{
-      max-width:var(--layout-max);
+      max-width:min(90vw, var(--layout-max));
       margin:0 auto;
       padding-bottom:calc(var(--fab-h, 0px) + 16px);
       width:100%;
+      padding-right:calc(var(--side-nav-w) + 16px); /* 預留側欄空間（桌機） */
     }
 
     /* 卡片 */
@@ -173,11 +188,68 @@
       margin-bottom:6px; padding-bottom:3px; border-bottom:1px solid var(--border-strong);
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
     }
+    /* 當使用新標題系統時，覆寫預設 group 樣式 */
+    .group > label.h1, .titlebar > label.h1,
+    .group > label.h2, .titlebar > label.h2,
+    .group > label.h3, .titlebar > label.h3,
+    .group > label.h4, .titlebar > label.h4{
+      font-size:inherit; font-weight:inherit; color:inherit;
+      margin-bottom:unset; padding-bottom:unset; border-bottom:none;
+    }
+
+    /* ===== Headings System (H1–H6) ===== */
+    .h1{
+      display:block;
+      font-weight:800; /* Extra Bold */
+      color:var(--h1-color);
+      font-size:clamp(24px, 2.4vw, 32px);
+      margin-top:var(--space-h1-top);
+      margin-bottom:var(--space-h1-bottom);
+      padding-bottom:6px;
+      border-bottom:2px solid var(--brand-blue);
+    }
+    .h2{
+      display:block;
+      font-weight:700; /* Bold */
+      color:var(--h2-color);
+      font-size:clamp(20px, 1.8vw, 24px);
+      margin-top:var(--space-h2-top);
+      margin-bottom:var(--space-h2-bottom);
+      padding-left:10px;
+      border-left:4px solid var(--brand-blue);
+      border-bottom:none !important;
+    }
+    .h3{
+      display:block;
+      font-weight:600; /* Semi Bold */
+      color:var(--h3-color);
+      font-size:clamp(18px, 1.6vw, 20px);
+      margin-top:var(--space-h3-top);
+      margin-bottom:var(--space-h3-bottom);
+      padding-bottom:4px;
+      border-bottom:1px solid #E5E7EB; /* 極淺灰 */
+    }
+    .h4{
+      display:block;
+      font-weight:500; /* Medium */
+      color:var(--h4-color);
+      font-size:16px;
+      margin-top:var(--space-h4-top);
+      margin-bottom:var(--space-h4-bottom);
+      padding:6px 8px;
+      background:#F9FAFB; /* 淺灰底 */
+      border-radius:6px;
+    }
+    /* 段落（H5對應） */
+    .paragraph{ font-size:16px; font-weight:400; color:#111827; line-height:1.5; }
+    .h5{ font-size:16px; font-weight:400; color:#111827; line-height:1.5; }
+    /* Placeholder（H6對應） */
+    input::placeholder, textarea::placeholder{ color:#9CA3AF !important; font-size:14px; font-weight:400; }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section]{ scroll-margin-top:var(--scroll-offset); }
     .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:6px; }
-    .row > div{ flex:1 1 min(100%, 320px); min-width:min(100%, 240px); }
+    .row > div{ flex:1 1 min(100%, 360px); min-width:min(100%, 240px); max-width:720px; }
     .row > [data-field-size="short"],
     .section-group-body > [data-field-size="short"]{
       flex:1 1 calc(33.333% - var(--gap));
@@ -315,12 +387,23 @@
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
     .page-summary{
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:rgba(255,255,255,.86);
+      backdrop-filter:saturate(120%) blur(6px);
+      border-bottom:1px solid #e6eaf0;
+      padding:10px 12px;
       display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
-      gap:10px;
+      grid-template-columns:repeat(12, 1fr);
+      gap:8px 12px;
       align-items:center;
-      padding-top:4px;
-      border-top:1px solid rgba(15,23,42,.06);
+    }
+    @media (max-width:1279px){
+      .page-summary{ grid-template-columns:repeat(8, 1fr); }
+    }
+    @media (max-width:1023px){
+      .page-summary{ grid-template-columns:repeat(4, 1fr); gap:6px 8px; }
     }
     .summary-item{ display:flex; flex-direction:column; gap:4px; min-width:0; }
     .summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
@@ -614,7 +697,14 @@
     }
     .section-intro-grid > .group{
       height:100%;
+      display:flex;
+      flex-direction:column;
     }
+    .section-intro-grid > .group > .titlebar, .section-intro-grid > .group > label:first-child{ flex:0 0 auto; }
+    .section-intro-grid > .group > *:last-child{ margin-bottom:0; }
+    .section-intro-grid > .group .basic-info-fields,
+    .section-intro-grid > .group .grid2,
+    .section-intro-grid > .group .row{ flex:1 1 auto; }
     @media (max-width:1023px){
       .page-section[data-active="1"] > .section-intro-grid{
         row-gap:8px;
@@ -702,23 +792,25 @@
     }
     #basicInfoGroup .basic-info-field label{ margin-bottom:0; }
     #basicInfoGroup .unit-code-field{
-      flex:0 0 248px;
-      max-width:260px;
+      /* 與其他欄位一致寬度 */
+      flex:0 0 var(--intro-colw);
+      max-width:var(--intro-colw);
     }
     #basicInfoGroup .unit-code-field select{
       width:100%;
       min-width:0;
     }
     #basicInfoGroup .case-manager-field{
-      flex:1 1 420px;
-      min-width:320px;
-      max-width:520px;
+      flex:0 0 var(--intro-colw);
+      max-width:var(--intro-colw);
+      min-width:0;
+      overflow:hidden;
     }
     #basicInfoGroup .case-name-field,
     #basicInfoGroup .consult-name-field{
-      flex:1 1 420px;
-      min-width:300px;
-      max-width:480px;
+      flex:0 0 var(--intro-colw);
+      max-width:var(--intro-colw);
+      min-width:0;
     }
     #basicInfoGroup .case-manager-field input,
     #basicInfoGroup .case-manager-field select,
@@ -726,6 +818,9 @@
     #basicInfoGroup .consult-name-field select{
       width:100%;
       max-width:100%;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     #basicInfoGroup .cms-level-row{
       display:flex;
@@ -733,6 +828,12 @@
       gap:6px;
       margin-top:2px;
     }
+    /* 依新需求改為垂直排列：電聯日期、家訪日期、（出院日期）皆縱向堆疊 */
+    #contactVisitGroup .form-row-2col{ grid-template-columns:1fr !important; }
+    #contactVisitGroup .date-row{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+    #contactVisitGroup .date-row .datebox{ width:100%; max-width:var(--intro-colw); }
+    #contactVisitGroup .date-row .inline-checkbox{ margin:0; }
+    #contactVisitGroup .datebox input[type="date"]{ max-width:var(--intro-colw); }
     #basicInfoGroup input[type="text"],
     #basicInfoGroup input[type="search"],
     #basicInfoGroup select{
@@ -969,6 +1070,19 @@
       border-color:rgba(11,87,208,.4);
       background:rgba(11,87,208,.08);
     }
+
+    /* 偕同訪視者：第一列欄位固定一致寬度 */
+    #visitPartnersGroup .row > [data-field-size="short"],
+    #visitPartnersGroup .row > [data-field-size="medium"]{
+      flex:0 0 var(--intro-colw);
+      max-width:var(--intro-colw);
+      min-width:0;
+    }
+    #visitPartnersGroup select,
+    #visitPartnersGroup input[type="text"]{
+      width:100%; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
     .checkcol label[data-auto="1"]::after{
       content:'（系統預選）';
       margin-left:8px;
@@ -1466,7 +1580,7 @@
       position:fixed;
       right:max(16px, env(safe-area-inset-right) + 16px);
       top:calc(var(--sticky-header-height, 120px) + 18px);
-      width:220px;
+      width:var(--side-nav-w);
       background:rgba(255,255,255,.94);
       border:1px solid var(--border);
       border-radius:14px;
@@ -1476,6 +1590,15 @@
       flex-direction:column;
       gap:8px;
       z-index:38;
+    }
+    /* 1280 以下：縮小預留；1024 以下：隱藏側欄並釋放主內容寬度 */
+    @media (max-width:1279px){
+      .app-container{ padding-right:220px; }
+      .side-nav{ width:220px; }
+    }
+    @media (max-width:1023px){
+      .app-container{ padding-right:0; }
+      .side-nav{ display:none !important; }
     }
     .side-nav[data-empty="1"]{ display:none; }
     .side-nav[data-empty="1"] .side-nav-summary{ display:none; }
@@ -1512,6 +1635,7 @@
       left:0;
       right:0;
       bottom:0;
+      min-height:56px; /* 固定工具列高度 56–60px */
       display:flex;
       align-items:center;
       justify-content:flex-end;
@@ -1892,7 +2016,7 @@
               </div>
             </div>
             <label class="inline-checkbox" style="display:block; margin-top:10px;">
-              <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出院準備（勾選後顯示出院日期）
+              <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 出準日期
             </label>
             <div id="dischargeBox" style="display:none; margin-top:6px;">
               <div class="datebox">
@@ -2821,7 +2945,7 @@
 
   <!-- 五、照顧目標（原功能保留） -->
   <div class="group" id="careGoalsGroup" data-span="full">
-    <label>五、照顧目標</label>
+    <label class="h2">五、照顧目標</label>
 
     <div class="row"><div>
       <label>(一) 照顧問題（最多選 5 項）</label>
@@ -5204,20 +5328,20 @@
       const wrap=document.createElement('div');
       wrap.className='row'; wrap.id=`extra-${idx}`;
       wrap.innerHTML=`
-        <div>
-          <label>角色</label>
-          <select id="ex-role-${idx}" onchange="toggleCustomRole(${idx}, 'ex')">
-            ${roleOptionsHTML(true)}
-          </select>
-          <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:6px;">
-        </div>
-        <div>
-          <label>姓名</label>
-          <input id="ex-name-${idx}" type="text" placeholder="姓名，例如：李○○">
-        </div>
-        <div style="flex:0; align-self:flex-end;">
-          <button class="small" onclick="removeExtraRow(${idx})">移除</button>
-        </div>`;
+      <div>
+        <label class="h3">其他參與者關係</label>
+        <select id="ex-role-${idx}" onchange="toggleCustomRole(${idx}, 'ex')">
+          ${roleOptionsHTML(true)}
+        </select>
+        <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:6px;">
+      </div>
+      <div>
+        <label class="h3">其他參與者姓名</label>
+        <input id="ex-name-${idx}" type="text" placeholder="姓名，例如：李○○">
+      </div>
+      <div style="flex:0; align-self:flex-end;">
+        <button class="small" onclick="removeExtraRow(${idx})">移除</button>
+      </div>`;
       host.appendChild(wrap);
       enforcePrimaryExclusionOnSelect(document.getElementById(`ex-role-${idx}`));
       updateParticipantConflictHint();
