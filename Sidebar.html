@@ -35,11 +35,11 @@
       --accent-weak:rgba(11,87,208,.12); /* Focus ring */
 
       /* 尺寸系統 */
-      --gap-base:12px;
+      --gap-base:10px;
       --gap:var(--gap-base);
-      --group-padding-base:18px;
+      --group-padding-base:16px;
       --group-padding:var(--group-padding-base);
-      --group-spacing-base:14px;
+      --group-spacing-base:12px;
       --group-spacing:var(--group-spacing-base);
       --radius:12px;
       --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
@@ -63,11 +63,11 @@
       --section-col-preferred:50%;
       --grid-col-min-2:240px;
       --grid-col-min-3:200px;
-      --checkcol-min:220px;
+      --checkcol-min:190px;
       --textarea-min:110px;
-      --mobile-font-min:20px;
-      --mobile-font-fluid:5.2vw;
-      --mobile-font-max:22px;
+      --mobile-font-min:18px;
+      --mobile-font-fluid:4.8vw;
+      --mobile-font-max:20px;
       --fab-h:0px;
       --fab-gap:calc(max(24px, env(safe-area-inset-bottom) + 24px));
       --sticky-header-height:96px;
@@ -98,9 +98,9 @@
       --h-button-sm:44px;
       --checkbox:26px;
       --line-height:1.65;
-      --mobile-font-min:20px;
-      --mobile-font-fluid:5.1vw;
-      --mobile-font-max:22px;
+      --mobile-font-min:18px;
+      --mobile-font-fluid:4.8vw;
+      --mobile-font-max:20px;
     }
     body[data-fontscale="xl"]{
       --font-scale:1.18;
@@ -110,9 +110,9 @@
       --h-button-sm:50px;
       --checkbox:32px;
       --line-height:1.72;
-      --mobile-font-min:22px;
-      --mobile-font-fluid:5.6vw;
-      --mobile-font-max:24px;
+      --mobile-font-min:20px;
+      --mobile-font-fluid:5.4vw;
+      --mobile-font-max:22px;
     }
     body[data-fontscale="xxl"]{
       --font-scale:1.3;
@@ -122,9 +122,9 @@
       --h-button-sm:56px;
       --checkbox:34px;
       --line-height:1.78;
-      --mobile-font-min:24px;
-      --mobile-font-fluid:6.3vw;
-      --mobile-font-max:26px;
+      --mobile-font-min:22px;
+      --mobile-font-fluid:5.9vw;
+      --mobile-font-max:24px;
     }
     body[data-uimode="comfort"]{
       --gap:calc(var(--gap-base) * 0.9);
@@ -166,7 +166,7 @@
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section]{ scroll-margin-top:var(--scroll-offset); }
-    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:8px; }
+    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:6px; }
     .row > div{ flex:1 1 min(100%, 320px); min-width:min(100%, 240px); }
     .grid2, .grid3{ display:grid; gap:var(--gap); align-items:start; }
     .grid2{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
@@ -177,7 +177,7 @@
     }
 
     /* 標籤與 Placeholder（加大字、提升對比） */
-    label{ display:block; font-size:var(--fs-label); margin-bottom:8px; color:var(--label); }
+    label{ display:block; font-size:var(--fs-label); margin-bottom:6px; color:var(--label); }
     :where(input,select,textarea)::placeholder{ color:var(--placeholder); opacity:1; }
 
     /* 表單元件：20px 字級，56px 高度（iOS 聚焦不縮放） */
@@ -209,7 +209,7 @@
     }
 
     /* 日期顯示盒（更清楚） */
-    .datebox{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .datebox{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     .datebox input[type="date"]{
       width:auto;
       min-width:176px;
@@ -229,7 +229,7 @@
     }
 
     /* 按鈕與操作面積（主按鈕 56px，小按鈕 48px） */
-    .btnbar{ display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
+    .btnbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
     button{
       height:var(--h-button);
       padding:0 18px;
@@ -278,6 +278,22 @@
     .summary-progress-bar{ position:relative; height:10px; border-radius:999px; background:#e2e8f0; overflow:hidden; }
     .summary-progress-fill{ position:absolute; inset:0; width:0%; border-radius:999px; background:var(--accent); transition:width .3s ease; }
     .summary-progress-text, .summary-last-saved{ font-weight:600; color:#475569; font-size:0.95rem; }
+    .summary-remaining-text{ font-weight:600; color:#64748b; font-size:0.9rem; }
+    .summary-jump{ gap:6px; }
+    .summary-jump select{
+      min-height:var(--h-button-sm);
+      padding:8px 14px;
+      font-size:var(--fs-button);
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--label);
+    }
+    .summary-jump select:focus{
+      outline:none;
+      border-color:var(--title);
+      box-shadow:0 0 0 3px var(--accent-weak);
+    }
     .page-header-top{
       display:flex;
       align-items:flex-start;
@@ -451,16 +467,21 @@
     .wizard-step[data-status="done"] .wizard-label{ color:#0b1d4d; }
     @media (max-width:720px){
       .wizard{
-        flex-direction:column;
-        align-items:flex-start;
+        overflow-x:auto;
         gap:12px;
+        padding-bottom:6px;
+        scroll-snap-type:x proximity;
+        -webkit-overflow-scrolling:touch;
       }
+      .wizard::-webkit-scrollbar{ height:6px; }
       .wizard-step{
-        width:100%;
+        flex:0 0 auto;
+        min-width:160px;
         align-items:flex-start;
+        scroll-snap-align:start;
       }
       .wizard-step::before{ display:none; }
-      .wizard-label{ text-align:left; }
+      .wizard-label{ text-align:left; white-space:normal; }
     }
     .page-section{
       display:none;
@@ -603,8 +624,8 @@
     .section-group{
       border:1px solid var(--border);
       border-radius:var(--radius);
-      padding:14px;
-      margin-bottom:12px;
+      padding:12px;
+      margin-bottom:10px;
       background:#fff;
       box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
     }
@@ -643,10 +664,10 @@
       color:#0b1d4d;
     }
     .section-group-body{
-      margin-top:12px;
+      margin-top:10px;
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:10px;
     }
     .section-group[data-collapsed="1"] .section-group-body{
       display:none;
@@ -684,9 +705,9 @@
     }
 
     /* 勾選清單（點擊面積提升） */
-    .checkcol{ display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(var(--checkcol-min), 1fr)); }
+    .checkcol{ display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(min(var(--checkcol-min), 48%), 1fr)); }
     .checkcol label{
-      display:flex; align-items:center; gap:12px; padding:12px 14px;
+      display:flex; align-items:center; gap:10px; padding:10px 12px;
       border:1px solid var(--border); border-radius:12px; background:#fff; color:#222; font-size:var(--fs-base);
       margin:0;
     }
@@ -705,9 +726,6 @@
       color:var(--accent);
       font-size:.9rem;
       font-weight:600;
-    }
-    @media (max-width:1024px){
-      .checkcol{ grid-template-columns:1fr; }
     }
     @media (pointer:coarse){
       body[data-fontscale="sm"]{ --checkbox:32px; }
@@ -1211,7 +1229,12 @@
       z-index:38;
     }
     .side-nav[data-empty="1"]{ display:none; }
+    .side-nav[data-empty="1"] .side-nav-summary{ display:none; }
     .side-nav-title{ font-weight:700; color:var(--title); font-size:1rem; }
+    .side-nav-summary{ display:flex; flex-direction:column; gap:6px; padding:6px 0 8px; border-bottom:1px solid rgba(15,23,42,.08); }
+    .side-nav-summary-item{ display:flex; flex-direction:column; gap:2px; }
+    .side-nav-summary-label{ font-size:0.8rem; color:#64748b; font-weight:600; }
+    .side-nav-summary-value{ font-size:1rem; font-weight:700; color:#0b1d4d; word-break:break-word; }
     .side-nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
     .side-nav-item{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .side-nav-link{
@@ -1393,9 +1416,10 @@
     @media (max-width:480px){
       body{
         margin:12px;
-        --gap-base:12px;
-        --group-padding-base:18px;
-        --group-spacing-base:14px;
+        --gap-base:10px;
+        --group-padding-base:14px;
+        --group-spacing-base:10px;
+        --checkcol-min:160px;
       }
       .row, .grid2, .grid3{ gap:var(--gap); }
       .datebox input[type="date"]{ min-width:150px; font-size:var(--fs-ctrl); }
@@ -1473,6 +1497,10 @@
           <span class="summary-value" id="summaryCaseName">—</span>
         </div>
         <div class="summary-item">
+          <span class="summary-label">主要照顧者</span>
+          <span class="summary-value" id="summaryPrimaryCaregiver">—</span>
+        </div>
+        <div class="summary-item">
           <span class="summary-label">CMS 等級</span>
           <span class="summary-value" id="summaryCmsLevel">—</span>
         </div>
@@ -1482,10 +1510,17 @@
             <div class="summary-progress-fill" id="summaryProgressFill"></div>
           </div>
           <span class="summary-progress-text" id="summaryProgressText">—</span>
+          <span class="summary-remaining-text" id="summaryRemainingText">—</span>
         </div>
         <div class="summary-item">
           <span class="summary-label">最近儲存</span>
           <span class="summary-last-saved" id="summaryLastSaved">—</span>
+        </div>
+        <div class="summary-item summary-jump">
+          <label class="summary-label" for="summaryJumpSelect">快速跳轉</label>
+          <select id="summaryJumpSelect">
+            <option value="">選擇區塊</option>
+          </select>
         </div>
       </div>
     </div>
@@ -1493,6 +1528,20 @@
 
   <nav class="side-nav" id="sideNav" aria-label="群組導覽" data-empty="1">
     <div class="side-nav-title">群組導覽</div>
+    <div class="side-nav-summary" id="sideNavSummary">
+      <div class="side-nav-summary-item">
+        <span class="side-nav-summary-label">剩餘必填</span>
+        <span class="side-nav-summary-value" id="sideSummaryRemaining">—</span>
+      </div>
+      <div class="side-nav-summary-item">
+        <span class="side-nav-summary-label">CMS 等級</span>
+        <span class="side-nav-summary-value" id="sideSummaryCms">—</span>
+      </div>
+      <div class="side-nav-summary-item">
+        <span class="side-nav-summary-label">主要照顧者</span>
+        <span class="side-nav-summary-value" id="sideSummaryPrimary">—</span>
+      </div>
+    </div>
     <ul class="side-nav-list" id="sideNavList"></ul>
   </nav>
 
@@ -2721,12 +2770,26 @@
     const SUMMARY_ELEMENT_IDS = {
       root:'stickySummary',
       caseName:'summaryCaseName',
+      primary:'summaryPrimaryCaregiver',
       cmsLevel:'summaryCmsLevel',
       progressFill:'summaryProgressFill',
       progressText:'summaryProgressText',
+      remainingText:'summaryRemainingText',
       lastSaved:'summaryLastSaved'
     };
+    const SIDE_SUMMARY_IDS = {
+      remaining:'sideSummaryRemaining',
+      cms:'sideSummaryCms',
+      primary:'sideSummaryPrimary'
+    };
+    const PAGE_LABELS = {
+      goals:'計畫目標',
+      execution:'計畫執行規劃',
+      notes:'其他備註'
+    };
+    const PAGE_ORDER = ['goals','execution','notes'];
     let summaryElements = null;
+    let sideSummaryElements = null;
     let summaryUpdateScheduled = false;
     let lastSavedTimestamp = null;
 
@@ -2736,6 +2799,12 @@
       items:[],
       renderScheduled:false
     };
+    const SUMMARY_JUMP_STATE = { select:null, scheduled:false };
+
+    function getPageLabel(pageId){
+      if(!pageId) return '其他';
+      return PAGE_LABELS[pageId] || pageId;
+    }
 
     const PROBLEM_MAX_SELECTION = 5;
     const problemSelection = new Set();
@@ -3147,12 +3216,24 @@
       summaryElements = {
         root:document.getElementById(SUMMARY_ELEMENT_IDS.root),
         caseName:document.getElementById(SUMMARY_ELEMENT_IDS.caseName),
+        primary:document.getElementById(SUMMARY_ELEMENT_IDS.primary),
         cmsLevel:document.getElementById(SUMMARY_ELEMENT_IDS.cmsLevel),
         progressFill:document.getElementById(SUMMARY_ELEMENT_IDS.progressFill),
         progressText:document.getElementById(SUMMARY_ELEMENT_IDS.progressText),
+        remainingText:document.getElementById(SUMMARY_ELEMENT_IDS.remainingText),
         lastSaved:document.getElementById(SUMMARY_ELEMENT_IDS.lastSaved)
       };
       return summaryElements;
+    }
+
+    function getSideSummaryElements(){
+      if(sideSummaryElements) return sideSummaryElements;
+      sideSummaryElements = {
+        remaining:document.getElementById(SIDE_SUMMARY_IDS.remaining),
+        cms:document.getElementById(SIDE_SUMMARY_IDS.cms),
+        primary:document.getElementById(SIDE_SUMMARY_IDS.primary)
+      };
+      return sideSummaryElements;
     }
 
     function getGlobalProgressState(){
@@ -3176,22 +3257,15 @@
 
     function formatLastSavedDisplay(timestamp){
       if(!timestamp) return '尚未儲存';
-      const now = Date.now();
-      let diff = now - timestamp;
-      if(!Number.isFinite(diff)) diff = 0;
-      if(diff < 0) diff = 0;
-      if(diff < 60000) return '剛剛';
-      if(diff < 3600000){
-        const minutes = Math.round(diff / 60000);
-        return `${minutes} 分鐘前`;
-      }
-      if(diff < 86400000){
-        const hours = Math.round(diff / 3600000);
-        return `${hours} 小時前`;
-      }
       const date = new Date(timestamp);
-      if(Number.isNaN(date.getTime())) return '剛剛';
-      return `${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+      if(Number.isNaN(date.getTime())) return '已自動儲存';
+      const now = new Date();
+      const sameDay = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+      const timeText = `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+      if(sameDay){
+        return `已自動儲存於 ${timeText}`;
+      }
+      return `已自動儲存於 ${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${timeText}`;
     }
 
     function refreshStickySummary(){
@@ -3200,12 +3274,38 @@
       const nameInput=document.getElementById('caseName');
       const caseNameValue = nameInput ? (nameInput.value || '').trim() : '';
       if(els.caseName) els.caseName.textContent = caseNameValue || '—';
+      const primaryNameInput=document.getElementById('primaryName');
+      const primaryRelSelect=document.getElementById('primaryRel');
+      const primaryNameValue = primaryNameInput ? (primaryNameInput.value || '').trim() : '';
+      let primaryRelValue = '';
+      if(primaryRelSelect && primaryRelSelect.selectedIndex >= 0){
+        const opt = primaryRelSelect.options[primaryRelSelect.selectedIndex];
+        if(opt){
+          const rawValue = (opt.value || '').trim();
+          if(rawValue){
+            primaryRelValue = rawValue;
+          }else if(!opt.disabled){
+            primaryRelValue = (opt.text || '').trim();
+          }
+        }
+      }
+      let primaryDisplay = '';
+      if(primaryNameValue && primaryRelValue){
+        primaryDisplay = `${primaryRelValue} ${primaryNameValue}`;
+      }else if(primaryNameValue){
+        primaryDisplay = primaryNameValue;
+      }else if(primaryRelValue){
+        primaryDisplay = primaryRelValue;
+      }
+      if(els.primary) els.primary.textContent = primaryDisplay || '—';
       const cmsLevel = typeof getCmsLevel === 'function' ? (getCmsLevel() || '') : '';
       if(els.cmsLevel) els.cmsLevel.textContent = cmsLevel || '—';
       const progress = getGlobalProgressState();
+      const hasRequired = !!(progress.required);
+      const remainingCount = hasRequired ? Math.max(0, (progress.required || 0) - (progress.filled || 0)) : 0;
       if(els.progressFill) els.progressFill.style.width = `${progress.percent || 0}%`;
       if(els.progressText){
-        if(progress.required){
+        if(hasRequired){
           els.progressText.textContent = `已完成 ${progress.filled} / ${progress.required}（${progress.percent}%）`;
         }else if(sectionViewsReady){
           els.progressText.textContent = '無必填欄位';
@@ -3213,7 +3313,39 @@
           els.progressText.textContent = '—';
         }
       }
+      if(els.remainingText){
+        if(hasRequired){
+          els.remainingText.textContent = remainingCount > 0 ? `剩餘 ${remainingCount} 項` : '全部完成';
+        }else if(sectionViewsReady){
+          els.remainingText.textContent = '無必填欄位';
+        }else{
+          els.remainingText.textContent = '—';
+        }
+      }
       if(els.lastSaved) els.lastSaved.textContent = formatLastSavedDisplay(lastSavedTimestamp);
+      refreshSideSummary({
+        primary: primaryDisplay,
+        cmsLevel: cmsLevel,
+        remainingCount: remainingCount,
+        required: hasRequired ? (progress.required || 0) : 0
+      });
+    }
+
+    function refreshSideSummary(metrics){
+      const els = getSideSummaryElements();
+      if(!els) return;
+      const hasMetrics = metrics && typeof metrics === 'object';
+      if(els.remaining){
+        if(hasMetrics && metrics.required){
+          els.remaining.textContent = metrics.remainingCount > 0 ? `${metrics.remainingCount} 項` : '全部完成';
+        }else if(sectionViewsReady){
+          els.remaining.textContent = '無必填';
+        }else{
+          els.remaining.textContent = '—';
+        }
+      }
+      if(els.cms) els.cms.textContent = (hasMetrics && metrics.cmsLevel) ? metrics.cmsLevel : '—';
+      if(els.primary) els.primary.textContent = (hasMetrics && metrics.primary) ? metrics.primary : '—';
     }
 
     function scheduleSummaryUpdate(){
@@ -3238,16 +3370,58 @@
       return `${filled}/${required}`;
     }
 
+    function scrollToAnchorId(anchorId, options){
+      if(!anchorId) return;
+      const anchor = document.getElementById(anchorId);
+      if(!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      const offset = Math.max(0, currentScrollOffset || 0);
+      const nextTop = rect.top + window.pageYOffset - offset + 4;
+      window.scrollTo({ top: Math.max(0, nextTop), behavior: options && options.instant ? 'auto' : 'smooth' });
+    }
+
+    function focusSectionGroupByElement(groupElement){
+      if(!groupElement || !groupElement.classList || !groupElement.classList.contains('section-group')) return;
+      const section = groupElement.closest('[data-section]');
+      if(!section || !section.__groups) return;
+      let targetGroup = null;
+      (section.__groups || []).forEach(group=>{
+        if(group && group.element === groupElement){
+          targetGroup = group;
+        }
+      });
+      if(!targetGroup) return;
+      (section.__groups || []).forEach(group=>{
+        if(!group) return;
+        const collapse = group !== targetGroup;
+        setGroupCollapsed(section, group, collapse, { save:false });
+      });
+      updateToggleButtons(section);
+      updateAllGroupEmptyStates(section);
+      scheduleSideNavRender();
+    }
+
     function handleSideNavClick(event){
       const target=event && event.currentTarget ? event.currentTarget : null;
       if(!target) return;
       const anchorId = target.dataset ? target.dataset.target : '';
       if(!anchorId) return;
-      const anchor = document.getElementById(anchorId);
-      if(!anchor) return;
-      const rect = anchor.getBoundingClientRect();
-      const nextTop = rect.top + window.pageYOffset - currentScrollOffset + 4;
-      window.scrollTo({ top: Math.max(0, nextTop), behavior:'smooth' });
+      const pageId = target.dataset ? target.dataset.page : '';
+      const performScroll = ()=>{
+        const anchorEl = document.getElementById(anchorId);
+        if(anchorEl){
+          focusSectionGroupByElement(anchorEl);
+          const step = resolveWizardStepForElement(anchorEl);
+          if(step) updateWizardVisual(step);
+        }
+        scrollToAnchorId(anchorId);
+      };
+      if(pageId && pageId !== currentPageId){
+        setActivePage(pageId);
+        window.requestAnimationFrame(performScroll);
+      }else{
+        performScroll();
+      }
     }
 
     function renderSideNav(){
@@ -3271,6 +3445,7 @@
       });
       if(!visibleItems.length){
         state.root.dataset.empty = '1';
+        scheduleSummaryJumpRefresh();
         return;
       }
       state.root.dataset.empty = '0';
@@ -3282,6 +3457,7 @@
         btn.className='side-nav-link';
         btn.textContent=item.label || '未命名群組';
         btn.dataset.target=item.anchorId || '';
+        btn.dataset.page=item.pageId || '';
         btn.addEventListener('click', handleSideNavClick);
         const count=document.createElement('span');
         count.className='side-nav-count';
@@ -3295,6 +3471,100 @@
         item.countEl = count;
       });
       scheduleLayoutMeasurements();
+      scheduleSummaryJumpRefresh();
+    }
+
+    function getSummaryJumpSelect(){
+      if(SUMMARY_JUMP_STATE.select) return SUMMARY_JUMP_STATE.select;
+      const select = document.getElementById('summaryJumpSelect');
+      if(select){
+        SUMMARY_JUMP_STATE.select = select;
+        select.addEventListener('change', handleSummaryJumpChange);
+      }
+      return SUMMARY_JUMP_STATE.select;
+    }
+
+    function scheduleSummaryJumpRefresh(){
+      if(SUMMARY_JUMP_STATE.scheduled) return;
+      SUMMARY_JUMP_STATE.scheduled = true;
+      window.requestAnimationFrame(()=>{
+        SUMMARY_JUMP_STATE.scheduled = false;
+        refreshSummaryJumpOptions();
+      });
+    }
+
+    function refreshSummaryJumpOptions(){
+      const select = getSummaryJumpSelect();
+      if(!select) return;
+      const items = Array.isArray(SIDE_NAV_STATE.items) ? SIDE_NAV_STATE.items : [];
+      const grouped = new Map();
+      items.forEach(item=>{
+        if(!item || !item.anchorId) return;
+        const pageId = item.pageId || '';
+        if(!grouped.has(pageId)) grouped.set(pageId, []);
+        grouped.get(pageId).push(item);
+      });
+      select.innerHTML = '';
+      const placeholder=document.createElement('option');
+      placeholder.value='';
+      placeholder.textContent='選擇區塊';
+      select.appendChild(placeholder);
+      const pages=[];
+      if(currentPageId && grouped.has(currentPageId)) pages.push(currentPageId);
+      PAGE_ORDER.forEach(pageId=>{
+        if(grouped.has(pageId) && pages.indexOf(pageId) === -1){
+          pages.push(pageId);
+        }
+      });
+      grouped.forEach((_, pageId)=>{
+        if(pages.indexOf(pageId) === -1){
+          pages.push(pageId);
+        }
+      });
+      pages.forEach(pageId=>{
+        const list = grouped.get(pageId);
+        if(!list || !list.length) return;
+        const optgroup=document.createElement('optgroup');
+        optgroup.label = getPageLabel(pageId);
+        list.forEach(item=>{
+          if(!item.anchorId) return;
+          const option=document.createElement('option');
+          option.value=item.anchorId;
+          option.textContent=item.label || '未命名群組';
+          option.dataset.page=item.pageId || '';
+          optgroup.appendChild(option);
+        });
+        select.appendChild(optgroup);
+      });
+      select.value='';
+    }
+
+    function handleSummaryJumpChange(event){
+      const select = event && event.target ? event.target : getSummaryJumpSelect();
+      if(!select) return;
+      const anchorId = select.value;
+      if(!anchorId){
+        return;
+      }
+      const option = select.selectedOptions && select.selectedOptions.length ? select.selectedOptions[0] : null;
+      const pageId = option ? option.dataset.page : '';
+      const performScroll = ()=>{
+        const anchorEl = document.getElementById(anchorId);
+        if(anchorEl){
+          focusSectionGroupByElement(anchorEl);
+          const step = resolveWizardStepForElement(anchorEl);
+          if(step) updateWizardVisual(step);
+        }
+        scrollToAnchorId(anchorId);
+      };
+      if(pageId && pageId !== currentPageId){
+        setActivePage(pageId);
+        window.requestAnimationFrame(performScroll);
+      }else{
+        performScroll();
+      }
+      select.value='';
+      select.blur();
     }
 
     function scheduleSideNavRender(){
@@ -3340,6 +3610,7 @@
         });
       });
       scheduleSideNavRender();
+      scheduleSummaryJumpRefresh();
     }
 
     function updateSideNavForSection(section){
@@ -3357,9 +3628,13 @@
         }
         if(group.toggle && group.navItem.button){
           const text = group.toggle.textContent.trim();
-          if(text) group.navItem.button.textContent = text;
+          if(text){
+            group.navItem.button.textContent = text;
+            group.navItem.label = text;
+          }
         }
       });
+      scheduleSummaryJumpRefresh();
     }
 
     const CHECKCOL_PRIORITY_MAP = {
@@ -12276,6 +12551,9 @@
     }
 
     window.addEventListener('load', ()=>{
+      if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
+        try{ google.script.host.setWidth(900); }catch(err){}
+      }
       initUiPresetControls();
       initFontScaleControls();
       initWizardFlow();
@@ -12356,6 +12634,7 @@
           syncSocialPrimary();
           updateParticipantConflictHint();
           buildApprovalPlanPreview();
+          scheduleSummaryUpdate();
         });
       }
       const primaryNameField=document.getElementById('primaryName');
@@ -12363,6 +12642,7 @@
         primaryNameField.addEventListener('input', ()=>{
           syncSocialPrimary();
           buildApprovalPlanPreview();
+          scheduleSummaryUpdate();
         });
       }
       const caseNameInput=document.getElementById('caseName');
