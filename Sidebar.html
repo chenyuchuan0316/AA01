@@ -35,13 +35,13 @@
       --accent-weak:rgba(11,87,208,.12); /* Focus ring */
 
       /* 尺寸系統 */
-      --gap-base:10px;
+      --gap-base:8px;
       --gap:var(--gap-base);
-      --group-padding-base:16px;
+      --group-padding-base:12px;
       --group-padding:var(--group-padding-base);
-      --group-spacing-base:12px;
+      --group-spacing-base:10px;
       --group-spacing:var(--group-spacing-base);
-      --radius:12px;
+      --radius:10px;
       --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
 
       --fs-base:1rem;                               /* 由 html 根字級決定（19–22px） */
@@ -49,20 +49,26 @@
       --line-height:1.65;
       --fs-title-base:clamp(1.25rem, 1.1rem + .35vw, 1.5rem);
       --fs-title:calc(var(--fs-title-base) * var(--font-scale));
-      --fs-label-base:1rem;                         /* label ≥16–18px */
-      --fs-label:calc(var(--fs-label-base) * var(--font-scale));
       --fs-ctrl:18px;                               /* input/select/textarea 固定 18px */
+      --fs-label-base:calc(var(--fs-ctrl) - 2px);    /* label 比輸入框小 1–2px */
+      --fs-label:calc(var(--fs-label-base) * var(--font-scale));
       --fs-button:calc(var(--fs-ctrl) - 1px);
-      --h-input:52px;                               /* 輸入框高度 */
-      --h-button:52px;                              /* 主按鈕高度 */
-      --h-button-sm:44px;                           /* 小按鈕（±1天/±5天等） */
+      --ctrl-padding-block:9px;                     /* 垂直 padding 控制高度 */
+      --ctrl-padding-inline:12px;
+      --button-padding-inline:16px;
+      --button-small-padding-inline:12px;
+      --button-padding-block:calc(var(--ctrl-padding-block) - 1px);
+      --button-padding-block-sm:calc(var(--ctrl-padding-block) - 3px);
+      --h-input:calc(var(--fs-ctrl) + 2 * var(--ctrl-padding-block));
+      --h-button:calc(var(--fs-button) + 2 * var(--button-padding-block));
+      --h-button-sm:calc(var(--fs-button) + 2 * var(--button-padding-block-sm));
       --checkbox:26px;                              /* 核取方塊 */
       --layout-max:1280px;
       --section-col-min:340px;
       --section-col-max:560px;
       --section-col-preferred:50%;
-      --grid-col-min-2:240px;
-      --grid-col-min-3:200px;
+      --grid-col-min-2:220px;
+      --grid-col-min-3:180px;
       --checkcol-min:190px;
       --textarea-min:110px;
       --mobile-font-min:18px;
@@ -86,17 +92,18 @@
       font-size:calc(var(--fs-base) * var(--font-scale));
       line-height:var(--line-height);
       letter-spacing:.2px;
-      margin:12px;
+      margin:10px;
       -webkit-tap-highlight-color:transparent;
       text-rendering:optimizeLegibility;
     }
     body[data-fontscale="sm"]{
       --font-scale:1;
       --fs-ctrl:18px;
-      --h-input:52px;
-      --h-button:52px;
-      --h-button-sm:44px;
-      --checkbox:26px;
+      --ctrl-padding-block:8px;
+      --ctrl-padding-inline:11px;
+      --button-padding-inline:15px;
+      --button-small-padding-inline:12px;
+      --checkbox:24px;
       --line-height:1.65;
       --mobile-font-min:18px;
       --mobile-font-fluid:4.8vw;
@@ -105,10 +112,11 @@
     body[data-fontscale="xl"]{
       --font-scale:1.18;
       --fs-ctrl:22px;
-      --h-input:58px;
-      --h-button:58px;
-      --h-button-sm:50px;
-      --checkbox:32px;
+      --ctrl-padding-block:11px;
+      --ctrl-padding-inline:14px;
+      --button-padding-inline:18px;
+      --button-small-padding-inline:14px;
+      --checkbox:30px;
       --line-height:1.72;
       --mobile-font-min:20px;
       --mobile-font-fluid:5.4vw;
@@ -117,9 +125,10 @@
     body[data-fontscale="xxl"]{
       --font-scale:1.3;
       --fs-ctrl:24px;
-      --h-input:64px;
-      --h-button:64px;
-      --h-button-sm:56px;
+      --ctrl-padding-block:12px;
+      --ctrl-padding-inline:16px;
+      --button-padding-inline:20px;
+      --button-small-padding-inline:16px;
       --checkbox:34px;
       --line-height:1.78;
       --mobile-font-min:22px;
@@ -161,23 +170,23 @@
     .titlebar{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
     .group > label:first-child, .titlebar > label:first-child{
       display:block; font-weight:800; font-size:var(--fs-title); color:var(--title);
-      margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid var(--border-strong);
+      margin-bottom:6px; padding-bottom:3px; border-bottom:1px solid var(--border-strong);
     }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section]{ scroll-margin-top:var(--scroll-offset); }
     .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:6px; }
-    .row > div{ flex:1 1 min(100%, 320px); min-width:min(100%, 240px); }
-    .grid2, .grid3{ display:grid; gap:var(--gap); align-items:start; }
-    .grid2{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
-    .grid3{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-3), 1fr)); }
+    .row > div{ flex:1 1 min(100%, 320px); min-width:min(100%, 220px); }
+    .grid2, .grid3, .form-row-2col, .form-row-3col{ display:grid; gap:var(--gap); align-items:start; }
+    .grid2, .form-row-2col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
+    .grid3, .form-row-3col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-3), 1fr)); }
     @media (max-width:1024px){
       .row > div{ flex:1 1 100%; min-width:100%; }
-      .grid2, .grid3{ grid-template-columns:1fr; }
+      .grid2, .grid3, .form-row-2col, .form-row-3col{ grid-template-columns:1fr; }
     }
 
     /* 標籤與 Placeholder（加大字、提升對比） */
-    label{ display:block; font-size:var(--fs-label); margin-bottom:6px; color:var(--label); }
+    label{ display:block; font-size:var(--fs-label); margin-bottom:4px; color:var(--label); }
     :where(input,select,textarea)::placeholder{ color:var(--placeholder); opacity:1; }
 
     /* 表單元件：20px 字級，56px 高度（iOS 聚焦不縮放） */
@@ -186,11 +195,12 @@
     select, textarea{
       width:100%; box-sizing:border-box;
       min-height:var(--h-input);
-      padding:12px 16px;
-      font-size:var(--fs-ctrl); line-height:1.4;
+      padding:var(--ctrl-padding-block) var(--ctrl-padding-inline);
+      font-size:var(--fs-ctrl);
+      line-height:1.45;
       background:#fff;
       border:1px solid var(--border);
-      border-radius:12px;
+      border-radius:10px;
       transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
       appearance:none;
     }
@@ -209,7 +219,7 @@
     }
 
     /* 日期顯示盒（更清楚） */
-    .datebox{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .datebox{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .datebox input[type="date"]{
       width:auto;
       min-width:176px;
@@ -217,7 +227,7 @@
     }
     .date-controls{
       display:flex;
-      gap:8px;
+      gap:6px;
       flex-wrap:wrap;
       align-items:center;
     }
@@ -228,19 +238,23 @@
       line-height:1;
     }
 
-    /* 按鈕與操作面積（主按鈕 56px，小按鈕 48px） */
-    .btnbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    /* 按鈕與操作面積（以 padding 控制高度） */
+    .btnbar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
     button{
-      height:var(--h-button);
-      padding:0 18px;
-      border-radius:12px;
+      min-height:var(--h-button);
+      padding:var(--button-padding-block) var(--button-padding-inline);
+      border-radius:10px;
       border:1px solid var(--border);
       background:#fff; color:#111; font-weight:700; cursor:pointer;
-      line-height:1; touch-action:manipulation; font-size:var(--fs-button);
+      line-height:1.1; touch-action:manipulation; font-size:var(--fs-button);
     }
     button:hover{ background:#f7f7f7; }
     button.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
-    button.small{ height:var(--h-button-sm); padding:0 14px; font-size:var(--fs-button); }
+    button.small{
+      min-height:var(--h-button-sm);
+      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
+      font-size:var(--fs-button);
+    }
     /* 可選：若於按鈕加入 data-ic="plus"/"minus"，會自動加上 + / - 圖示 */
     button[data-ic="plus"]::before{ content:"+"; margin-right:.25em; font-weight:900; }
     button[data-ic="minus"]::before{ content:"–"; margin-right:.25em; font-weight:900; }
@@ -282,9 +296,9 @@
     .summary-jump{ gap:6px; }
     .summary-jump select{
       min-height:var(--h-button-sm);
-      padding:8px 14px;
+      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
       font-size:var(--fs-button);
-      border-radius:12px;
+      border-radius:10px;
       border:1px solid var(--border);
       background:#fff;
       color:var(--label);
@@ -324,8 +338,8 @@
     }
     .font-scale-control button{
       min-width:38px;
-      height:32px;
-      padding:0 12px;
+      min-height:calc(var(--h-button-sm) - 2px);
+      padding:var(--button-padding-block-sm) 12px;
       border:none;
       border-radius:999px;
       background:transparent;
@@ -361,8 +375,8 @@
     .mobile-mode-control button{
       flex:1 1 100px;
       min-width:92px;
-      height:34px;
-      padding:0 12px;
+      min-height:calc(var(--h-button-sm) + 2px);
+      padding:var(--button-padding-block-sm) 12px;
       border:none;
       border-radius:999px;
       background:transparent;
@@ -386,8 +400,8 @@
     }
     .page-tabs{ display:flex; flex-wrap:wrap; gap:6px; margin:0; }
     .page-tabs button{
-      height:40px;
-      padding:0 16px;
+      min-height:var(--h-button-sm);
+      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
       border-radius:999px;
       border:1px solid var(--border);
       background:#fff;
@@ -543,8 +557,8 @@
     }
     .cms-level-group button{
       min-width:54px;
-      height:var(--h-button-sm);
-      padding:0 16px;
+      min-height:var(--h-button-sm);
+      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
       border-radius:999px;
     }
     .cms-level-group button[data-active="1"]{
@@ -577,8 +591,8 @@
       gap:8px;
     }
     .section-controls button{
-      height:var(--h-button-sm);
-      padding:0 16px;
+      min-height:var(--h-button-sm);
+      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
       border-radius:999px;
       border:1px solid var(--border);
       background:#fff;
@@ -880,8 +894,8 @@
       margin-right:4px;
     }
     button.tiny{
-      height:44px;
-      padding:0 12px;
+      min-height:calc(var(--h-button-sm) + 4px);
+      padding:var(--button-padding-block-sm) 12px;
       font-size:17px;
       border-radius:10px;
     }
@@ -1079,11 +1093,11 @@
     }
     .home-care-qty{
       width:120px;
-      height:46px;
-      padding:8px 10px;
+      min-height:var(--h-input);
+      padding:var(--ctrl-padding-block) 10px;
       font-size:var(--fs-ctrl);
       border:1px solid var(--border);
-      border-radius:12px;
+      border-radius:10px;
       box-sizing:border-box;
     }
     .home-care-item[data-has-qty="1"] .home-care-main{
@@ -1352,7 +1366,7 @@
       flex-wrap:wrap;
     }
     #validationToast button.small{
-      height:var(--h-button-sm);
+      min-height:var(--h-button-sm);
     }
     #validationToast[data-type="warn"]{
       background:#854d0e;
@@ -1561,7 +1575,7 @@
         <select id="caseManagerName"></select>
       </div>
     </div>
-    <div class="grid3">
+    <div class="grid3 form-row-3col">
       <div>
         <label>個案姓名</label>
         <input id="caseName" type="text" placeholder="請輸入">
@@ -1590,7 +1604,7 @@
   <!-- 一、電聯日期 + 二、家訪日期 -->
   <div class="group" id="contactVisitGroup">
     <label>一、電聯日期／二、家訪日期</label>
-    <div class="grid2">
+    <div class="grid2 form-row-2col">
       <div>
         <label>電聯日期</label>
         <div id="callDateControls" class="datebox">
@@ -1683,7 +1697,7 @@
         </div>
 
         <!-- 基本＋意識/認知 -->
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div><label>年齡</label><input id="s1_age" type="number" min="1" max="120" value="70"></div>
           <div>
             <label>性別</label>
@@ -1771,7 +1785,7 @@
           </div>
         </div>
 
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div>
             <label>吞嚥／嗆咳</label>
             <select id="s1_swallow" onchange="toggleSwallow()">
@@ -1805,7 +1819,7 @@
         <div class="hr"></div>
 
         <!-- 疼痛 × 皮膚病灶（合併與連動） -->
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div>
             <label>疼痛</label>
             <select id="s1_pain" onchange="togglePainCombined()">
@@ -1830,7 +1844,7 @@
               <button type="button" class="small" id="location_copy_btn" onclick="copyLocationFromOther()">同疼痛部位</button>
             </div>
           </div>
-          <div class="grid3">
+          <div class="grid3 form-row-3col">
             <div>
               <label>部位大分類</label>
               <select id="s1_location_region" onchange="onSharedRegionChange()">
@@ -1855,7 +1869,7 @@
           </div>
         </div>
 
-          <div class="grid3">
+          <div class="grid3 form-row-3col">
             <div>
               <label>皮膚病灶</label>
             <select id="s1_lesion_has" onchange="toggleLesionCombined()">
@@ -1911,7 +1925,7 @@
         <div class="hr"></div>
 
         <!-- 移位/行走/樓梯 -->
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div>
             <label>起身/移位</label>
             <select id="s1_transfer" onchange="toggleAdlHow('s1_transfer')">
@@ -1994,7 +2008,7 @@
         </div>
 
         <!-- ADL + 排泄 -->
-        <div class="grid3" style="margin-top:8px;">
+        <div class="grid3 form-row-3col" style="margin-top:8px;">
           <div>
             <label>進食</label>
             <select id="s1_adl_eating" onchange="toggleAdlHow('s1_adl_eating')">
@@ -2054,7 +2068,7 @@
         <div class="hr"></div>
 
         <!-- 生活管理/社會參與 -->
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div>
             <label>電話使用</label>
             <select id="s1_phone" onchange="togglePhoneNotes()">
@@ -2133,7 +2147,7 @@
           </div>
         </div>
 
-        <div class="grid3" style="margin-top:8px;">
+        <div class="grid3 form-row-3col" style="margin-top:8px;">
           <div>
             <label>睡眠品質</label>
             <select id="s1_sleep" onchange="toggleSleepReason()">
@@ -2173,7 +2187,7 @@
             <input id="s1_dhx_other" type="text" placeholder="其他慢性病" style="display:none; margin-top:6px;">
           </div>
         </div>
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div><label>手術史（選填）</label><input id="s1_surgery" type="text" placeholder="例：10多年前髖關節手術"></div>
           <div><label>藥物過敏（選填）</label><input id="s1_allergy" type="text" placeholder="無則留空"></div>
           <div><label>固定就醫單位</label><input id="s1_follow_clinic" type="text" placeholder="例：嘉誠診所"></div>
@@ -2206,7 +2220,7 @@
         <div class="hr"></div>
 
         <!-- 身障資訊（與經濟收入連動） -->
-        <div class="grid2"><!-- 兩欄排版 -->
+        <div class="grid2 form-row-2col"><!-- 兩欄排版 -->
           <div><!-- 等級欄位 -->
             <label>身障等級</label>
             <div id="s1_dis_level_text" class="badge">—</div>
@@ -2249,13 +2263,13 @@
         <div class="titlebar">
           <label>(二) 經濟收入</label>
         </div>
-        <div class="grid2">
+        <div class="grid2 form-row-2col">
           <div>
             <label>主要經濟來源</label>
             <div class="checkcol" id="s2_sources"></div>
           </div>
           <div>
-            <div class="grid2">
+            <div class="grid2 form-row-2col">
               <div>
                 <label>戶籍/福利身分</label>
                 <select id="s2_id">
@@ -2285,7 +2299,7 @@
         <div class="titlebar">
           <label>(三) 居住環境</label>
         </div>
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div>
             <label>居住型態</label>
             <select id="s3_type" onchange="toggleOtherType()">
@@ -2302,7 +2316,7 @@
             <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
           </div>
         </div>
-        <div class="grid3" style="margin-top:8px;">
+        <div class="grid3 form-row-3col" style="margin-top:8px;">
           <div id="s3_rent_amount_wrap" style="display:none;">
             <label>租金金額（元/月）</label>
             <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
@@ -2320,7 +2334,7 @@
             <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
           </div>
         </div>
-        <div class="grid2" style="margin-top:8px;">
+        <div class="grid2 form-row-2col" style="margin-top:8px;">
           <div>
             <label>無障礙設施</label>
             <div class="checkcol" id="s3_fac"></div>
@@ -2341,7 +2355,7 @@
           <label>(四) 社會支持</label>
         </div>
 
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div>
             <label>主照者關係</label>
             <div id="sp_primaryRel_text" class="badge">—</div>
@@ -2363,7 +2377,7 @@
           <label>主要聯繫人/決策者</label>
           <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
         </div>
-        <div class="grid3">
+        <div class="grid3 form-row-3col">
           <div>
             <label>關係</label>
             <select id="sp_deciderRel">
@@ -2532,7 +2546,7 @@
         <div class="titlebar">
           <label>(六) 複評評值</label>
         </div>
-        <div class="grid2">
+        <div class="grid2 form-row-2col">
           <div><label>介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
           <div><label>介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
         </div>
@@ -2556,7 +2570,7 @@
 
     <div class="row"><div>
       <label>(二) 短期目標(0-3個月)</label>
-      <div class="grid2">
+      <div class="grid2 form-row-2col">
         <div id="short_care_wrap"><label>照顧服務：</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
         <div id="short_prof_wrap"><label>專業服務：</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
         <div id="short_car_wrap"><label>交通接送：</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
@@ -2568,7 +2582,7 @@
 
     <div class="row"><div>
       <label>(三) 中期目標(3-4個月)</label>
-      <div class="grid2">
+      <div class="grid2 form-row-2col">
         <div id="mid_care_wrap"><label>照顧服務：</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
         <div id="mid_prof_wrap"><label>專業服務：</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
         <div id="mid_car_wrap"><label>交通接送：</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
