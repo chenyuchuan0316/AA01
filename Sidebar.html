@@ -5,7 +5,7 @@
   <title>AA01計畫助手（快速填寫）</title>
 
   <!-- 行動端視窗與 iOS 安全區域 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover, user-scalable=yes" />
   <!-- 避免 iOS 自動辨識電話/Email 造成版面跳動 -->
   <meta name="format-detection" content="telephone=no, email=no, address=no" />
   <!-- 目前採用亮色；若未來要支援暗色可改為 "light dark" -->
@@ -59,9 +59,9 @@
       --space-lg:calc(var(--space-unit) * 6);    /* 24px */
       --gap-base:var(--space-xs);
       --gap:var(--gap-base);
-      --group-padding-base:var(--space-md);
+      --group-padding-base:var(--space-sm);
       --group-padding:var(--group-padding-base);
-      --group-spacing-base:var(--space-md);
+      --group-spacing-base:var(--space-sm);
       --group-spacing:var(--group-spacing-base);
       --radius:10px;
       --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
@@ -72,10 +72,10 @@
       --fs-title-base:clamp(1.25rem, 1.1rem + .35vw, 1.5rem);
       --fs-title:calc(var(--fs-title-base) * var(--font-scale));
       --fs-ctrl:18px;                               /* input/select/textarea 固定 18px */
-      --fs-label-base:calc(var(--fs-ctrl) - 2px);    /* label 比輸入框小 1–2px */
+      --fs-label-base:calc(var(--fs-ctrl) - 3px);    /* label 比輸入框小 3px */
       --fs-label:calc(var(--fs-label-base) * var(--font-scale));
       --fs-button:calc(var(--fs-ctrl) - 1px);
-      --ctrl-padding-block:9px;                     /* 垂直 padding 控制高度 */
+      --ctrl-padding-block:8px;                     /* 垂直 padding 控制高度 */
       --ctrl-padding-inline:12px;
       --button-padding-inline:16px;
       --button-small-padding-inline:12px;
@@ -98,9 +98,16 @@
       --mobile-font-fluid:4.8vw;
       --mobile-font-max:20px;
       --fab-h:0px;
-      --fab-gap:calc(max(24px, env(safe-area-inset-bottom) + 24px));
+      --fab-gap:calc(max(20px, env(safe-area-inset-bottom) + 20px));
       --app-top-offset:0px;
       --side-nav-w:280px; /* 右側側欄寬度（可依需求調整） */
+      --sticky-padding-block:var(--space-xs);
+      --sticky-padding-inline:clamp(10px, 3.2vw, 18px);
+      --wizard-index-size:34px;
+      --wizard-index-font:0.95rem;
+      --wizard-gap:var(--space-xs);
+      --group-header-spacing:var(--space-xs);
+      --bottom-bar-min-height:48px;
       /* 標題層級間距（Token） */
       --space-h1-top:40px; --space-h1-bottom:24px;
       --space-h2-top:32px; --space-h2-bottom:16px;
@@ -132,7 +139,7 @@
       font-size:calc(var(--fs-base) * var(--font-scale));
       line-height:var(--line-height);
       letter-spacing:.2px;
-      margin:var(--space-md);
+      margin:clamp(var(--space-xs), 4vw, var(--space-md));
       -webkit-tap-highlight-color:transparent;
       text-rendering:optimizeLegibility;
     }
@@ -151,10 +158,10 @@
     body[data-fontscale="sm"]{
       --font-scale:1;
       --fs-ctrl:20px;
-      --ctrl-padding-block:10px;
+      --ctrl-padding-block:9px;
       --ctrl-padding-inline:14px;
-      --button-padding-inline:18px;
-      --button-small-padding-inline:16px;
+      --button-padding-inline:17px;
+      --button-small-padding-inline:15px;
       --checkbox:28px;
       --line-height:1.7;
       --mobile-font-min:20px;
@@ -164,10 +171,10 @@
     body[data-fontscale="xl"]{
       --font-scale:1.2;
       --fs-ctrl:24px;
-      --ctrl-padding-block:12px;
+      --ctrl-padding-block:11px;
       --ctrl-padding-inline:16px;
-      --button-padding-inline:20px;
-      --button-small-padding-inline:18px;
+      --button-padding-inline:19px;
+      --button-small-padding-inline:17px;
       --checkbox:34px;
       --line-height:1.78;
       --mobile-font-min:22px;
@@ -177,10 +184,10 @@
     body[data-fontscale="xxl"]{
       --font-scale:1.34;
       --fs-ctrl:26px;
-      --ctrl-padding-block:13px;
+      --ctrl-padding-block:12px;
       --ctrl-padding-inline:18px;
-      --button-padding-inline:22px;
-      --button-small-padding-inline:20px;
+      --button-padding-inline:21px;
+      --button-small-padding-inline:19px;
       --checkbox:38px;
       --line-height:1.84;
       --mobile-font-min:24px;
@@ -228,6 +235,38 @@
       width:100%;
       box-sizing:border-box;
     }
+    .group-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--group-header-spacing);
+      margin-bottom:var(--space-xs);
+      flex-wrap:wrap;
+    }
+    .group[data-collapsed="1"] .group-header{ margin-bottom:0; }
+    .group-content{ display:block; }
+    .group[data-collapsed="1"] .group-content{ display:none; }
+    .group-collapse{
+      border:none;
+      background:rgba(11,87,208,.08);
+      color:var(--accent);
+      font-weight:600;
+      font-size:0.9rem;
+      padding:6px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      transition:background .2s ease, color .2s ease;
+    }
+    .group-collapse:hover,
+    .group-collapse:focus-visible{
+      background:rgba(11,87,208,.16);
+      outline:none;
+    }
+    .group-collapse-icon{ display:inline-block; transition:transform .2s ease; }
+    .group[data-collapsed="1"] .group-collapse-icon{ transform:rotate(-90deg); }
     body[data-uimode="review"] .group{ border-radius:8px; }
     /* 交錯輕底以分區（依 page-section 容器交錯） */
     .page-section[data-active="1"] > .group:nth-of-type(odd){ background:var(--card-alt); }
@@ -239,7 +278,7 @@
       align-items:center;
       gap:var(--space-xs);
       row-gap:var(--space-xxs);
-      margin:0 0 var(--space-sm);
+      margin:0 0 var(--space-xs);
     }
     @media (min-width:1280px){
       .titlebar{ grid-template-columns:minmax(0, 1fr) auto auto; }
@@ -254,7 +293,7 @@
       display:block;
       font-weight:800; /* Extra Bold */
       color:var(--h1-color);
-      font-size:clamp(24px, 2.4vw, 32px);
+      font-size:clamp(26px, 2.5vw, 34px);
       margin-top:var(--space-h1-top);
       margin-bottom:var(--space-h1-bottom);
       padding-bottom:6px;
@@ -264,7 +303,7 @@
       display:block;
       font-weight:800; /* Extra Bold */
       color:var(--h1-color);
-      font-size:clamp(22px, 2.3vw, 28px);
+      font-size:clamp(21px, 2.2vw, 28px);
       margin-top:var(--space-h2-top);
       margin-bottom:var(--space-h2-bottom);
       padding-left:14px;
@@ -276,7 +315,7 @@
       display:block;
       font-weight:600; /* Semi Bold */
       color:#1f2a44;
-      font-size:clamp(18px, 1.6vw, 21px);
+      font-size:clamp(19px, 1.75vw, 23px);
       margin-top:var(--space-h3-top);
       margin-bottom:var(--space-h3-bottom);
       padding-bottom:6px;
@@ -303,7 +342,7 @@
     .group{
       scroll-margin-top:var(--app-top-offset);
     }
-    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:var(--space-sm); }
+    .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:var(--space-xs); }
     .row > div{ flex:1 1 min(100%, 360px); min-width:min(100%, 240px); max-width:720px; }
     .row > [data-field-size="short"],
     .section-group-body > [data-field-size="short"]{
@@ -385,6 +424,18 @@
     }
     button:hover{ background:#f7f7f7; }
     button.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
+    button.button-add,
+    button[data-variant="add"]{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+      box-shadow:none;
+    }
+    button.button-add:hover,
+    button[data-variant="add"]:hover{
+      background:#0a4dc2;
+      border-color:#0a4dc2;
+    }
     button.small{
       min-height:max(var(--h-button-sm), 44px);
       min-width:56px;
@@ -399,7 +450,7 @@
       position:sticky;
       top:0;
       z-index:1000;
-      padding:var(--space-xs) clamp(12px, 4vw, 24px) var(--space-sm);
+      padding:var(--sticky-padding-block) var(--sticky-padding-inline);
       margin-bottom:var(--group-spacing);
     }
     .app-sticky-inner{
@@ -407,30 +458,30 @@
       margin:0 auto;
       background:rgba(255,255,255,.94);
       border:1px solid var(--border);
-      border-radius:18px;
+      border-radius:16px;
       box-shadow:var(--shadow);
-      padding:var(--space-sm) var(--space-md);
+      padding:var(--space-xs) var(--space-sm);
       display:flex;
       flex-direction:column;
-      gap:var(--space-sm);
+      gap:var(--space-xs);
       backdrop-filter:saturate(180%) blur(6px);
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
     .sticky-row{
       display:flex;
       align-items:center;
-      gap:var(--space-sm);
+      gap:var(--wizard-gap);
       flex-wrap:wrap;
     }
     .sticky-row--wizard{
-      align-items:flex-start;
-      gap:var(--space-sm);
+      align-items:center;
+      gap:var(--wizard-gap);
     }
-    .sticky-row--wizard .wizard{ flex:1 1 auto; }
+    .sticky-row--wizard .wizard{ flex:1 1 auto; min-width:0; }
     .sticky-row--wizard .page-toolbar{
       display:flex;
       align-items:center;
-      gap:8px;
+      gap:var(--space-xxs);
       flex-wrap:wrap;
     }
     #stickyOverflowPanel{
@@ -563,7 +614,7 @@
     .page-toolbar{
       display:flex;
       align-items:center;
-      gap:8px;
+      gap:var(--space-xxs);
       flex-wrap:wrap;
     }
     .font-scale-label{
@@ -611,7 +662,7 @@
     .mobile-mode-control{
       display:none;
       align-items:center;
-      gap:4px;
+      gap:var(--space-xxs);
       padding:4px;
       border-radius:14px;
       background:rgba(11,87,208,.08);
@@ -639,6 +690,31 @@
       outline:2px solid var(--accent);
       outline-offset:2px;
     }
+    .wizard-quickjump{
+      display:flex;
+      align-items:center;
+      gap:var(--space-xxs);
+      flex-wrap:wrap;
+    }
+    .wizard-quickjump label{
+      font-size:0.85rem;
+      font-weight:600;
+      color:#475569;
+    }
+    .wizard-quickjump select{
+      min-height:var(--h-button-sm);
+      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--label);
+      font-size:var(--fs-button);
+    }
+    .wizard-quickjump select:focus{
+      outline:none;
+      border-color:var(--title);
+      box-shadow:0 0 0 3px var(--accent-weak);
+    }
     @media (max-width:768px){
       .mobile-mode-label{ display:inline-block; }
       .mobile-mode-control{ display:inline-flex; flex-wrap:wrap; }
@@ -663,33 +739,37 @@
     .wizard{
       position:relative;
       display:flex;
-      justify-content:space-between;
-      gap:0;
-      align-items:flex-start;
+      justify-content:flex-start;
+      align-items:center;
+      gap:var(--wizard-gap);
+      flex-wrap:wrap;
     }
     .wizard-step{
       position:relative;
-      flex:1;
+      flex:1 1 160px;
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap:var(--space-xs);
+      gap:var(--space-xxs);
       border:none;
       background:none;
       cursor:pointer;
       color:var(--label);
       font-weight:600;
-      padding:0;
+      padding:var(--space-xxs) var(--space-xs);
+      border-radius:12px;
+      transition:background .2s ease, color .2s ease, box-shadow .2s ease;
     }
     .wizard-step::before{
       content:'';
       position:absolute;
-      top:20px;
+      top:calc(var(--wizard-index-size) / 2);
       left:-50%;
       width:100%;
       height:4px;
       background:#dbe5ff;
       z-index:-1;
+      transform:translateY(-50%);
     }
     .wizard-step:first-child::before{ display:none; }
     .wizard-step[data-status="done"]::before,
@@ -701,8 +781,8 @@
       outline-offset:4px;
     }
     .wizard-index{
-      width:40px;
-      height:40px;
+      width:var(--wizard-index-size);
+      height:var(--wizard-index-size);
       border-radius:50%;
       display:flex;
       align-items:center;
@@ -710,17 +790,29 @@
       background:#e2e8f0;
       color:#1f2937;
       font-weight:800;
-      font-size:1rem;
+      font-size:var(--wizard-index-font);
+      transition:background .2s ease, color .2s ease, transform .2s ease;
     }
     .wizard-label{
-      font-size:0.95rem;
+      font-size:0.9rem;
       text-align:center;
       line-height:1.4;
+    }
+    .wizard-step:hover{
+      background:rgba(11,87,208,.06);
+      color:var(--title);
     }
     .wizard-step[data-status="active"] .wizard-index,
     .wizard-step[data-status="done"] .wizard-index{
       background:var(--accent);
       color:#fff;
+    }
+    .wizard-step[data-status="active"]{
+      background:rgba(11,87,208,.12);
+      box-shadow:0 0 0 1px rgba(11,87,208,.18);
+    }
+    .wizard-step[data-status="active"] .wizard-index{
+      transform:scale(1.05);
     }
     .wizard-step[data-status="active"] .wizard-label{ color:var(--title); }
     .wizard-step[data-status="done"] .wizard-label{ color:#0b1d4d; }
@@ -741,7 +833,8 @@
       }
       .wizard-step::before{ display:none; }
       .wizard-label{ text-align:left; white-space:normal; font-size:0.92rem; }
-      .wizard-index{ width:34px; height:34px; font-size:0.95rem; }
+      .wizard-index{ width:32px; height:32px; font-size:0.9rem; }
+      .wizard-quickjump label{ display:none; }
     }
     .page-section{
       display:none;
@@ -827,27 +920,20 @@
     }
 
     .cms-level-group{
-      display:flex;
+      display:grid;
       gap:var(--space-xs);
-      row-gap:var(--space-xs);
-      flex-wrap:wrap;
-      align-items:flex-start;
+      grid-template-columns:repeat(auto-fit, minmax(64px, 1fr));
+      align-items:stretch;
     }
     @media (max-width:640px){
       .cms-level-group{
-        display:grid;
-        grid-template-columns:repeat(4, minmax(0, 1fr));
-        justify-items:stretch;
-      }
-      .cms-level-group button{
-        min-width:0;
-        width:100%;
+        grid-template-columns:repeat(auto-fit, minmax(56px, 1fr));
       }
     }
     .cms-level-group button{
-      min-width:52px;
-      min-height:52px;
-      padding:0 16px;
+      min-width:0;
+      min-height:48px;
+      padding:0 12px;
       border-radius:999px;
       font-size:var(--fs-ctrl);
       line-height:1;
@@ -864,7 +950,7 @@
     #basicInfoGroup .basic-info-fields{
       display:flex;
       flex-direction:column;
-      gap:var(--space-sm);
+      gap:var(--space-xs);
     }
     #basicInfoGroup .basic-info-row{
       display:flex;
@@ -1283,9 +1369,9 @@
 
     /* 勾選清單（點擊面積提升） */
     fieldset.checkcol{ border:0; margin:0; padding:0; min-inline-size:0; }
-    .checkcol{ display:grid; gap:var(--space-sm); grid-template-columns:1fr; }
-    @media (min-width:720px){
-      .checkcol{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .checkcol{ display:grid; gap:var(--space-xs); grid-template-columns:repeat(auto-fit, minmax(var(--checkcol-min), 1fr)); }
+    @media (max-width:480px){
+      .checkcol{ grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); }
     }
     .checkcol label{
       display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-xs) var(--space-sm);
@@ -1293,9 +1379,9 @@
       margin:0;
     }
     .inline-checkbox{
-      display:flex; align-items:center; gap:var(--space-xs); font-size:var(--fs-label); color:var(--label);
+      display:inline-flex; align-items:center; gap:var(--space-xxs); font-size:var(--fs-label); color:var(--label); flex-wrap:wrap;
     }
-    .inline-checkbox input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
+    .inline-checkbox input[type="checkbox"]{ width:calc(var(--checkbox) - 4px); height:calc(var(--checkbox) - 4px); }
     .checkcol input[type=checkbox]{ width:var(--checkbox); height:var(--checkbox); }
     .checkcol label[data-auto="1"]{
       border-color:rgba(11,87,208,.4);
@@ -2047,16 +2133,16 @@
       left:0;
       right:0;
       bottom:0;
-      min-height:56px; /* 固定工具列高度 56–60px */
+      min-height:var(--bottom-bar-min-height);
       display:flex;
       align-items:center;
       justify-content:flex-end;
       flex-wrap:wrap;
-      gap:var(--space-xs);
-      padding:var(--space-sm) var(--space-md);
+      gap:var(--space-xxs);
+      padding:var(--space-xs) var(--space-md);
       padding-left:max(var(--space-md), calc(env(safe-area-inset-left) + var(--space-md)));
       padding-right:max(var(--space-md), calc(env(safe-area-inset-right) + var(--space-md)));
-      padding-bottom:max(var(--space-sm), calc(env(safe-area-inset-bottom) + var(--space-sm)));
+      padding-bottom:max(var(--space-xs), calc(env(safe-area-inset-bottom) + var(--space-xs)));
       background:rgba(255,255,255,.95);
       border-top:1px solid rgba(148,163,184,.35);
       box-shadow:0 -6px 18px rgba(15,23,42,.08);
@@ -2065,7 +2151,7 @@
       z-index:80;
     }
     .floating-actions button{
-      min-width:140px;
+      min-width:128px;
       box-shadow:none;
     }
     .floating-actions button[data-variant="ghost"]{
@@ -2077,8 +2163,8 @@
     }
     #wizardMoreBtn{
       display:none;
-      min-width:52px;
-      height:52px;
+      min-width:44px;
+      height:44px;
       border-radius:999px;
       border:1px solid var(--border);
       background:#fff;
@@ -2115,7 +2201,7 @@
         display:grid;
         grid-template-columns:minmax(0, 1fr) auto minmax(0, 1fr);
         align-items:center;
-        gap:var(--space-xs);
+        gap:var(--space-xxs);
       }
       .floating-actions button{
         min-width:0;
@@ -2183,7 +2269,7 @@
     #validationToast{
       position:fixed;
       right:24px;
-      bottom:calc(var(--fab-h, 0px) + 120px);
+      bottom:calc(var(--fab-h, 0px) + var(--space-lg));
       max-width:360px;
       width:calc(100% - 48px);
       background:#111827;
@@ -2248,7 +2334,7 @@
         left:12px;
         right:12px;
         width:auto;
-        bottom:calc(var(--fab-h, 0px) + 98px);
+        bottom:calc(var(--fab-h, 0px) + var(--space-lg));
       }
     }
     .input-invalid{
@@ -2435,6 +2521,12 @@
             <button type="button" data-mode="review">檢視模式</button>
           </div>
         </div>
+        <div class="wizard-quickjump" id="wizardQuickJump">
+          <label for="wizardJumpSelect">快速前往</label>
+          <select id="wizardJumpSelect" aria-label="快速跳轉階段">
+            <option value="">選擇階段</option>
+          </select>
+        </div>
         <button type="button" class="sticky-overflow-toggle" id="stickyOverflowToggle" aria-controls="stickyOverflowPanel" aria-expanded="false" title="顯示更多導覽">⋯</button>
       </div>
       <div id="stickyOverflowPanel">
@@ -2616,7 +2708,7 @@
           <input type="hidden" id="includePrimary" value="true">
           <div class="titlebar titlebar--mt-xxs">
             <label class="h3">其他參與者</label>
-            <button type="button" class="small" onclick="addExtraRow()">新增參與者</button>
+            <button type="button" class="small button-add" data-ic="plus" onclick="addExtraRow()">新增參與者</button>
           </div>
           <div id="extras"></div>
           <div id="extras_conflict" role="status" aria-live="polite"></div>
@@ -4780,6 +4872,50 @@
       scheduleLayoutMeasurements();
     }
 
+    function getWizardJumpSelect(){
+      if(WIZARD_JUMP_STATE.select) return WIZARD_JUMP_STATE.select;
+      const select=document.getElementById('wizardJumpSelect');
+      if(select){
+        WIZARD_JUMP_STATE.select = select;
+        select.addEventListener('change', handleWizardJumpChange);
+      }
+      return WIZARD_JUMP_STATE.select;
+    }
+
+    function refreshWizardJumpOptions(){
+      const select = getWizardJumpSelect();
+      if(!select) return;
+      const previous = select.value;
+      select.innerHTML='';
+      const placeholder=document.createElement('option');
+      placeholder.value='';
+      placeholder.textContent='選擇階段';
+      select.appendChild(placeholder);
+      wizardStepsMeta.forEach(meta=>{
+        if(!meta) return;
+        const option=document.createElement('option');
+        option.value=String(meta.step);
+        option.textContent=meta.element ? (meta.element.querySelector('.wizard-label')?.textContent || `步驟 ${meta.step}`) : `步驟 ${meta.step}`;
+        select.appendChild(option);
+      });
+      if(previous && wizardStepLookup[Number(previous)]){
+        select.value=previous;
+      }else{
+        select.value='';
+      }
+    }
+
+    function handleWizardJumpChange(event){
+      const select = event && event.target ? event.target : getWizardJumpSelect();
+      if(!select) return;
+      const step = Number(select.value);
+      if(step){
+        setCurrentWizardStep(step, { focus:true });
+      }
+      select.value='';
+      if(typeof select.blur === 'function'){ select.blur(); }
+    }
+
     function scheduleSummaryProgressRender(){
       if(SUMMARY_PROGRESS_STATE.scheduled) return;
       SUMMARY_PROGRESS_STATE.scheduled = true;
@@ -5561,6 +5697,7 @@
     let wizardStepLookup = {};
     let currentWizardStep = null;
     const TAB_STATUS_PRIORITY = { todo:0, done:1, active:2 };
+    const WIZARD_JUMP_STATE = { select:null };
 
 
     /* ===== 段落視圖（分層/收合/進度） ===== */
@@ -14080,6 +14217,8 @@
       closeWizardMoreMenu();
       updateWizardButtons();
       syncTabStatuses();
+      const jumpSelect=getWizardJumpSelect();
+      if(jumpSelect){ jumpSelect.value=''; }
     }
 
     function determineWizardStepForPage(pageId, options){
@@ -14209,6 +14348,10 @@
           anchor: btn.dataset.anchor || '',
           anchorElement: null
         };
+        const labelText = (btn.querySelector('.wizard-label')?.textContent || '').trim();
+        if(labelText){
+          btn.setAttribute('title', `跳至${labelText}`);
+        }
         meta.anchorElement = meta.anchor ? document.querySelector(meta.anchor) : null;
         wizardStepsMeta.push(meta);
         wizardStepLookup[step] = meta;
@@ -14231,6 +14374,7 @@
         currentWizardStep = null;
         updateWizardButtons();
       }
+      refreshWizardJumpOptions();
       scheduleLayoutMeasurements();
     }
 
@@ -14312,6 +14456,61 @@
       }
     }
 
+    function initGroupCollapsibles(){
+      const groups=document.querySelectorAll('.group');
+      groups.forEach(group=>{
+        if(!group) return;
+        if(group.dataset && (group.dataset.collapsible === '0' || group.dataset.collapsible === 'disabled')) return;
+        if(group.querySelector(':scope > .group-header')) return;
+        const heading=group.querySelector(':scope > .h1');
+        if(!heading) return;
+        group.dataset.collapsible = '1';
+        const header=document.createElement('div');
+        header.className='group-header';
+        group.insertBefore(header, heading);
+        header.appendChild(heading);
+        const toggle=document.createElement('button');
+        toggle.type='button';
+        toggle.className='group-collapse';
+        const icon=document.createElement('span');
+        icon.className='group-collapse-icon';
+        icon.setAttribute('aria-hidden','true');
+        icon.textContent='▾';
+        const label=document.createElement('span');
+        label.className='group-collapse-label';
+        label.textContent='收合';
+        toggle.appendChild(icon);
+        toggle.appendChild(label);
+        header.appendChild(toggle);
+        const body=document.createElement('div');
+        body.className='group-content';
+        const contentId=ensureElementId(body, `${group.id || 'group'}_content`);
+        toggle.setAttribute('aria-controls', contentId);
+        while(header.nextSibling){
+          body.appendChild(header.nextSibling);
+        }
+        group.appendChild(body);
+        const titleText=(heading.textContent || '').trim();
+        const applyState=(collapsed)=>{
+          const isCollapsed=!!collapsed;
+          group.dataset.collapsed = isCollapsed ? '1' : '0';
+          toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+          const actionText=isCollapsed ? '展開' : '收合';
+          const ariaLabel=titleText ? `${actionText} ${titleText}` : actionText;
+          toggle.setAttribute('aria-label', ariaLabel);
+          if(label) label.textContent = actionText;
+          scheduleStickyMeasurement();
+          scheduleLayoutMeasurements();
+        };
+        toggle.addEventListener('click', ()=>{
+          const isCollapsed=group.dataset.collapsed === '1';
+          applyState(!isCollapsed);
+        });
+        const initialCollapsed = group.dataset && group.dataset.collapsed === '1';
+        applyState(initialCollapsed);
+      });
+    }
+
     function initSection1State(){
       toggleVisionNotes(); toggleTransportOther(); toggleDhxOther(); toggleMedOther();
       toggleUrineOther('day'); toggleUrineOther('night');
@@ -14387,6 +14586,7 @@
       loadServiceCatalog();
 
       prepareCaseProfileLayout();
+      initGroupCollapsibles();
       initStickyOverflowToggle();
 
       // S1
