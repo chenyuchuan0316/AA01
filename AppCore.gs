@@ -996,34 +996,134 @@ function computeNextVersionByKey(versionKey){
 }
 
 function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+const LOOKUP_CACHE_TTL_SECONDS = 30 * 60; // 30 minutes
+var CASE_MANAGER_LOOKUP_CACHE = null;
+var CONSULTANT_LOOKUP_CACHE = null;
 /** ================ HRLookup.gs ================
  * 依單位代碼（B 欄前四碼）→ 取 H 欄姓名清單
  * ============================================ */
 function getCaseManagersByUnit(unitCode){
-  try{
-    const sh = SpreadsheetApp.openById(MANAGERS_SHEET_ID).getSheetByName(MANAGERS_SHEET_NAME);
-    const vals = sh.getDataRange().getValues(); // 第1列為標題
-    const out = [];
-    for (let i=1;i<vals.length;i++){
-      const empId = (vals[i][1]||'').toString(); // B欄
-      const name  = (vals[i][7]||'').toString(); // H欄
-      if (empId && empId.substring(0,4) === unitCode && name) out.push(name);
-    }
-    return out.sort();
-  }catch(e){
-    return [];
-  }
+  const code = (unitCode || '').toString().trim();
+  if (!code) return [];
+  const lookup = loadCaseManagerLookup_();
+  const result = lookup[code];
+  return Array.isArray(result) ? result.slice() : [];
 }
 /** ================ getConsultantsByUnit.gs ================
  * 依單位代碼（B 欄前四碼）→ 取B 欄姓名清單
  * ============================================ */
 function getConsultantsByUnit(unit) {
-  const ss = SpreadsheetApp.openById(CONSULTANTS_BOOK_ID);
-  const sheet = ss.getSheetByName(CONSULTANTS_BOOK_NAME);
-  const values = sheet.getDataRange().getValues();
-  return values
-    .filter(r => r[0] === unit && r[2] === "在職")
-    .map(r => r[1]);
+  const code = (unit || '').toString().trim();
+  if (!code) return [];
+  const lookup = loadConsultantLookup_();
+  const result = lookup[code];
+  return Array.isArray(result) ? result.slice() : [];
+}
+
+function loadCaseManagerLookup_(){
+  if (CASE_MANAGER_LOOKUP_CACHE) return CASE_MANAGER_LOOKUP_CACHE;
+  const cached = readLookupCache_('caseManagerLookup_v1');
+  if (cached) {
+    CASE_MANAGER_LOOKUP_CACHE = cached;
+    return CASE_MANAGER_LOOKUP_CACHE;
+  }
+  CASE_MANAGER_LOOKUP_CACHE = buildCaseManagerLookup_();
+  writeLookupCache_('caseManagerLookup_v1', CASE_MANAGER_LOOKUP_CACHE);
+  return CASE_MANAGER_LOOKUP_CACHE;
+}
+
+function buildCaseManagerLookup_(){
+  const lookup = {};
+  try {
+    const sheet = SpreadsheetApp.openById(MANAGERS_SHEET_ID).getSheetByName(MANAGERS_SHEET_NAME);
+    if (!sheet) return lookup;
+    const values = sheet.getDataRange().getValues();
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      if (!row) continue;
+      const empId = row[1] ? String(row[1]).trim() : '';
+      const name = row[7] ? String(row[7]).trim() : '';
+      if (!empId || !name) continue;
+      const prefix = empId.substring(0, 4);
+      if (!prefix) continue;
+      if (!lookup[prefix]) lookup[prefix] = [];
+      lookup[prefix].push(name);
+    }
+    Object.keys(lookup).forEach(function(key){
+      lookup[key] = Array.from(new Set(lookup[key])).sort();
+    });
+  } catch (e) {
+    return {};
+  }
+  return lookup;
+}
+
+function loadConsultantLookup_(){
+  if (CONSULTANT_LOOKUP_CACHE) return CONSULTANT_LOOKUP_CACHE;
+  const cached = readLookupCache_('consultantLookup_v1');
+  if (cached) {
+    CONSULTANT_LOOKUP_CACHE = cached;
+    return CONSULTANT_LOOKUP_CACHE;
+  }
+  CONSULTANT_LOOKUP_CACHE = buildConsultantLookup_();
+  writeLookupCache_('consultantLookup_v1', CONSULTANT_LOOKUP_CACHE);
+  return CONSULTANT_LOOKUP_CACHE;
+}
+
+function buildConsultantLookup_(){
+  const lookup = {};
+  try {
+    const sheet = SpreadsheetApp.openById(CONSULTANTS_BOOK_ID).getSheetByName(CONSULTANTS_BOOK_NAME);
+    if (!sheet) return lookup;
+    const values = sheet.getDataRange().getValues();
+    for (let i = 0; i < values.length; i++) {
+      const row = values[i];
+      if (!row) continue;
+      const unitCode = row[0] ? String(row[0]).trim() : '';
+      const name = row[1] ? String(row[1]).trim() : '';
+      const status = row[2] ? String(row[2]).trim() : '';
+      if (!unitCode || !name || status !== '在職') continue;
+      if (!lookup[unitCode]) lookup[unitCode] = [];
+      lookup[unitCode].push(name);
+    }
+    Object.keys(lookup).forEach(function(key){
+      lookup[key] = Array.from(new Set(lookup[key])).sort();
+    });
+  } catch (e) {
+    return {};
+  }
+  return lookup;
+}
+
+function readLookupCache_(cacheKey){
+  const cache = getScriptCacheSafe_();
+  if (!cache) return null;
+  const cached = cache.get(cacheKey);
+  if (!cached) return null;
+  try {
+    return JSON.parse(cached);
+  } catch (e) {
+    return null;
+  }
+}
+
+function writeLookupCache_(cacheKey, value){
+  const cache = getScriptCacheSafe_();
+  if (!cache) return;
+  try {
+    cache.put(cacheKey, JSON.stringify(value), LOOKUP_CACHE_TTL_SECONDS);
+  } catch (e) {
+    // CacheService 容量限制或暫時失敗時忽略即可
+  }
+}
+
+function getScriptCacheSafe_(){
+  try {
+    return CacheService.getScriptCache();
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
