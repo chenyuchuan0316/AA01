@@ -2559,7 +2559,7 @@
     <div class="app-sticky-inner">
       <div class="sticky-row sticky-row--wizard">
         <div class="wizard" id="wizardSteps" aria-label="填寫進度">
-          <button type="button" class="wizard-step" data-step="1" data-page="goals" data-anchor="#basicInfoGroup">
+          <button type="button" class="wizard-step" data-step="1" data-page="basic" data-anchor="#basicInfoGroup">
             <span class="wizard-index">1</span>
             <span class="wizard-label">基本資訊</span>
           </button>
@@ -2601,7 +2601,8 @@
       <div id="stickyOverflowPanel">
         <div class="sticky-row sticky-row--tabs" id="stickyTabsRow">
           <div class="page-tabs" id="pageTabs">
-            <button type="button" data-page="goals" class="active">計畫目標</button>
+            <button type="button" data-page="basic" class="active">基本資訊</button>
+            <button type="button" data-page="goals">計畫目標</button>
             <button type="button" data-page="execution">計畫執行規劃</button>
             <button type="button" data-page="notes">其他備註</button>
           </div>
@@ -2664,7 +2665,7 @@
     <ul class="side-nav-list" id="sideNavList"></ul>
   </nav>
 
-  <div class="page-section" data-page="goals" data-active="1" data-columns="1">
+  <div class="page-section" data-page="basic" data-active="1" data-columns="1">
     <div class="group" id="basicInfoGroup">
       <span class="h1">基本資訊</span>
       <div class="section-card-grid">
@@ -2720,7 +2721,7 @@
     </div>
   </div>
 
-  <div class="page-section" data-page="goals" data-active="1" data-columns="2">
+  <div class="page-section" data-page="goals" data-active="0" data-columns="2">
     <div class="group" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
       <span class="h1">計畫目標</span>
       <div class="section-card-grid">
@@ -3965,6 +3966,7 @@
       primary:'sideSummaryPrimary'
     };
     const PAGE_LABELS = {
+      basic:'基本資訊',
       goals:'計畫目標',
       execution:'計畫執行規劃',
       notes:'其他備註'
@@ -4190,7 +4192,7 @@
       });
     }
 
-    const PAGE_ORDER = ['goals','execution','notes'];
+    const PAGE_ORDER = ['basic','goals','execution','notes'];
     let summaryElements = null;
     let sideSummaryElements = null;
     let summaryUpdateScheduled = false;
@@ -4224,7 +4226,7 @@
     let executionPageInitialized = false;
 
     let currentUiMode = UI_MODE_DEFAULT;
-    let currentPageId = 'goals';
+    let currentPageId = 'basic';
     let currentScrollOffset = 0;
     let floatingMeasureScheduled = false;
     let stickyMeasureScheduled = false;
@@ -14117,7 +14119,7 @@
         if(caseNameInput){
           caseNameInput.classList.add('input-invalid');
         }
-        errors.push({ fieldId:'caseName', pageId:'goals', text:'請輸入：個案姓名' });
+        errors.push({ fieldId:'caseName', pageId:'basic', text:'請輸入：個案姓名' });
       }else if(caseNameInput){
         caseNameInput.classList.remove('input-invalid');
       }
@@ -14963,6 +14965,7 @@
         }
         setPlanGroupLocked(false, { expand: shouldExpand });
         if(shouldExpand){
+          setActivePage('goals', { step:2 });
           showValidationToast({
             type:'warn',
             message:'基本資訊完成，請繼續填寫計畫目標。',
@@ -15003,7 +15006,7 @@
         type:'warn',
         message:'請先完成基本資訊。',
         target:focusTargetId,
-        page:'goals',
+        page:'basic',
         step:1
       });
       if(typeof setCurrentWizardStep === 'function'){
@@ -15066,7 +15069,7 @@
           type:'warn',
           message:'請先完成「基本資訊」欄位，再進行其他區塊。',
           target:focusTargetId,
-          page:'goals',
+          page:'basic',
           step:1
         });
         if(typeof scrollToAnchorId === 'function'){
