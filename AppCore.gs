@@ -170,14 +170,16 @@ function applyH1_VisitDate(body, form){
   const visitText = renderSimpleTemplate(H1_TEMPLATES.visitDate.main, {
     date: ymdToCJK(safeForm.visitDate)
   });
-  replaceAfterHeadingColon(body, ['二、家訪日期：', '二、家訪日期:'], visitText);
-
+  let finalText = visitText;
   if (safeForm.isDischarge && safeForm.dischargeDate) {
     const dischargeText = renderSimpleTemplate(H1_TEMPLATES.visitDate.discharge, {
       date: ymdToCJK(safeForm.dischargeDate)
     });
-    upsertSingleLineUnderHeading(body, ['二、家訪日期：', '二、家訪日期:'], dischargeText);
+    if (dischargeText) {
+      finalText = visitText ? `${visitText}、${dischargeText}` : dischargeText;
+    }
   }
+  replaceAfterHeadingColon(body, ['二、家訪日期：', '二、家訪日期:'], finalText);
 }
 
 // -----------------------------------------------------------------------------
