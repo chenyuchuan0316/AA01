@@ -295,6 +295,23 @@
     .titlebar--mt-md{ margin-top:var(--space-md); }
 
     /* ===== Headings System (H1–H6) ===== */
+    h1, h2, h3, h4, h5, h6{
+      margin:0;
+      font-size:inherit;
+      font-weight:inherit;
+      line-height:inherit;
+      color:inherit;
+    }
+
+    .heading-label > label{
+      display:block;
+      margin:0;
+      color:inherit;
+      font-size:inherit;
+      font-weight:inherit;
+      line-height:inherit;
+    }
+
     .h1{
       display:block;
       font-weight:800; /* Extra Bold */
@@ -1566,7 +1583,8 @@
       gap:var(--space-xxs);
       position:relative;
     }
-    [data-field-container="1"] > label{
+    [data-field-container="1"] > label,
+    [data-field-container="1"] > .heading-label > label{
       margin-bottom:0;
     }
     .field-error{
@@ -2497,13 +2515,15 @@
       gap:8px;
       grid-template-columns:1fr;
     }
-    .autogrid .field > label{ color:#374151; }
+    .autogrid .field > label,
+    .autogrid .field > .heading-label > label{ color:#374151; }
     @container (min-width:440px){
       .autogrid .field{
         grid-template-columns:160px 1fr;
         align-items:center;
       }
-      .autogrid .field > label{ justify-self:end; }
+      .autogrid .field > label,
+      .autogrid .field > .heading-label > label{ justify-self:end; }
     }
     .checkgrid{
       display:grid;
@@ -2668,19 +2688,19 @@
 
   <div class="page-section" data-page="basic" data-active="1" data-columns="1">
     <div class="group" id="basicInfoGroup">
-      <span class="h1">基本資訊</span>
+      <h1 class="h1">基本資訊</h1>
       <div class="section-card-grid">
         <section class="section-card" id="basicInfoSection">
           <div class="basic-info-fields">
             <div class="basic-info-row" data-row="1">
               <div class="basic-info-field unit-code-field field-intro" data-field-size="short">
-                <label class="h2" for="unitCode">單位代碼</label>
+                <h2 class="h2 heading-label"><label for="unitCode">單位代碼</label></h2>
                 <select id="unitCode" onchange="loadManagers(); loadConsultants();">
                   <option>FNA1</option><option>FNA2</option><option>FNA3</option>
                 </select>
               </div>
               <div class="basic-info-field case-manager-field field-intro" data-field-size="medium" data-basic-required="1">
-                <label class="h2" for="caseManagerName">個案管理師</label>
+                <h2 class="h2 heading-label"><label for="caseManagerName">個案管理師</label></h2>
                 <select id="caseManagerName">
                   <option value="" class="placeholder-option" disabled selected>請選擇</option>
                 </select>
@@ -2689,12 +2709,12 @@
             </div>
             <div class="basic-info-row" data-row="2">
               <div class="basic-info-field case-name-field field-intro" data-field-size="medium" data-basic-required="1">
-                <label class="h2" for="caseName">個案姓名</label>
+                <h2 class="h2 heading-label"><label for="caseName">個案姓名</label></h2>
                 <input id="caseName" type="text" placeholder="請輸入">
                 <div class="basic-info-status" id="caseNameStatus" role="status" aria-live="polite"></div>
               </div>
               <div class="basic-info-field consult-name-field field-intro" data-field-size="medium" data-basic-required="1">
-                <label class="h2" for="consultName">照專姓名</label>
+                <h2 class="h2 heading-label"><label for="consultName">照專姓名</label></h2>
                 <select id="consultName">
                   <option value="" class="placeholder-option" disabled selected>請選擇</option>
                 </select>
@@ -2702,7 +2722,7 @@
               </div>
             </div>
             <div class="cms-level-row" data-row="3" data-basic-required="1">
-              <label class="h2" for="cmsLevelValue">CMS 等級</label>
+              <h2 class="h2 heading-label"><label for="cmsLevelValue">CMS 等級</label></h2>
               <div id="cmsLevelGroup" class="cms-level-group">
                 <button type="button" data-level="2">2</button>
                 <button type="button" data-level="3">3</button>
@@ -2724,14 +2744,14 @@
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
     <div class="group" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
-      <span class="h1">計畫目標</span>
+      <h1 class="h1">計畫目標</h1>
       <div class="section-card-grid">
         <section class="section-card contact-visit-card" data-card="call">
           <div class="contact-visit-card-header">
-            <span class="h2">一、電聯日期</span>
+            <h2 class="h2">一、電聯日期</h2>
           </div>
           <div class="contact-visit-card-body">
-            <label class="h3" for="callDate">電聯日期</label>
+            <h3 class="h3 heading-label"><label for="callDate">電聯日期</label></h3>
             <div id="callDateControls" class="datebox">
               <input id="callDate" type="date">
             </div>
@@ -2744,10 +2764,10 @@
 
         <section class="section-card contact-visit-card" data-card="visit">
           <div class="contact-visit-card-header">
-            <span class="h2">二、家訪日期</span>
+            <h2 class="h2">二、家訪日期</h2>
           </div>
           <div class="contact-visit-card-body">
-            <label class="h3" for="visitDate">家訪日期</label>
+            <h3 class="h3 heading-label"><label for="visitDate">家訪日期</label></h3>
             <div class="datebox">
               <input id="visitDate" type="date">
             </div>
@@ -2755,7 +2775,7 @@
               <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出院日期
             </label>
             <div id="dischargeBox" style="display:none; margin-top:var(--space-xs);">
-              <label class="h3" for="dischargeDate">出院日期</label>
+              <h3 class="h3 heading-label"><label for="dischargeDate">出院日期</label></h3>
               <div class="datebox">
                 <input id="dischargeDate" type="date">
               </div>
@@ -2765,12 +2785,12 @@
 
         <section class="section-card contact-visit-card" id="visitPartnersGroup" data-card="partners">
           <div class="contact-visit-card-header">
-            <span class="h2">三、偕同訪視者</span>
+            <h2 class="h2">三、偕同訪視者</h2>
           </div>
           <div class="contact-visit-card-body">
             <div class="row">
               <div class="field-intro" data-field-size="short">
-                <label class="h3" for="primaryRel">主要照顧者關係</label>
+                <h3 class="h3 heading-label"><label for="primaryRel">主要照顧者關係</label></h3>
                 <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
                   <option value="" class="placeholder-option" disabled selected>請選擇</option>
                   <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
@@ -2783,13 +2803,13 @@
                 </select>
               </div>
               <div class="field-intro" data-field-size="medium">
-                <label class="h3" for="primaryName">主要照顧者姓名</label>
+                <h3 class="h3 heading-label"><label for="primaryName">主要照顧者姓名</label></h3>
                 <input id="primaryName" type="text" placeholder="請輸入">
               </div>
             </div>
             <input type="hidden" id="includePrimary" value="true">
             <div class="titlebar titlebar--mt-xxs">
-              <label class="h3">其他參與者</label>
+              <h3 class="h3 heading-label"><label>其他參與者</label></h3>
               <button type="button" class="small button-add" data-ic="plus" onclick="addExtraRow()">新增參與者</button>
             </div>
             <div id="extras"></div>
@@ -2802,7 +2822,7 @@
     <!-- 四、個案概況 -->
     <div class="group" id="caseOverviewGroup" data-span="full" data-collapsed="1">
     <div class="titlebar">
-      <span class="h1">四、個案概況</span>
+      <h1 class="h1">四、個案概況</h1>
       <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
     </div>
 
@@ -2812,25 +2832,25 @@
         <div id="section1_error_summary" class="error-summary" data-show="0" aria-live="polite"></div>
 
         <div class="group" id="caseProfileBasicGroup" data-collapsed="0">
-          <span class="h1">一、基本資料</span>
+          <h1 class="h1">一、基本資料</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileBasicCard">
-                <span class="h2">基本資料</span>
+                <h2 class="h2">基本資料</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="short">
-                    <label class="h3" for="s1_age">年齡</label>
+                    <h3 class="h3 heading-label"><label for="s1_age">年齡</label></h3>
                     <input id="s1_age" type="number" min="1" max="120" value="70">
                   </div>
                   <div class="field" data-field-size="short">
-                    <label class="h3" for="s1_gender">性別</label>
+                    <h3 class="h3 heading-label"><label for="s1_gender">性別</label></h3>
                     <select id="s1_gender">
                       <option>男</option>
                       <option>女</option>
                     </select>
                   </div>
                   <div class="field" data-field-size="long">
-                    <label class="h3">溝通語言／方式</label>
+                    <h3 class="h3 heading-label"><label>溝通語言／方式</label></h3>
                     <div class="checkcol" id="s1_lang_box"></div>
                     <input id="s1_lang_note" type="text" placeholder="備註（例如：以台語為主）" style="margin-top:var(--space-xs);">
                   </div>
@@ -2841,14 +2861,14 @@
         </div>
 
         <div class="group" id="caseProfileSensoryGroup" data-collapsed="0">
-          <span class="h1">二、感官功能</span>
+          <h1 class="h1">二、感官功能</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileVisionCard">
-                <span class="h2">視力</span>
+                <h2 class="h2">視力</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_vision">視力程度</label>
+                    <h3 class="h3 heading-label"><label for="s1_vision">視力程度</label></h3>
                     <select id="s1_vision" onchange="toggleVisionNotes()">
                       <option>視力清晰</option>
                       <option>靠近才能辨識</option>
@@ -2858,11 +2878,11 @@
                     </select>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3">視力補充說明【選填】</label>
+                    <h3 class="h3 heading-label"><label>視力補充說明【選填】</label></h3>
                     <div class="checkcol" id="s1_vision_note_box"></div>
                     <input id="s1_vision_other" type="text" placeholder="其他說明" style="display:none; margin-top:var(--space-xs);">
                     <div id="s1_glasses_adherence_wrap" style="display:none; margin-top:var(--space-xs);">
-                      <label class="h4" for="s1_glasses_adherence">配戴情形</label>
+                      <h4 class="h4 heading-label"><label for="s1_glasses_adherence">配戴情形</label></h4>
                       <select id="s1_glasses_adherence">
                         <option value="" class="placeholder-option" disabled selected>配戴情形</option>
                         <option>常態配戴</option>
@@ -2878,10 +2898,10 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileHearingCard">
-                <span class="h2">聽力</span>
+                <h2 class="h2">聽力</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_hearing_level">聽力程度</label>
+                    <h3 class="h3 heading-label"><label for="s1_hearing_level">聽力程度</label></h3>
                     <select id="s1_hearing_level" onchange="renderHearingDetails()">
                       <option>無明顯異常</option>
                       <option>輕度受損</option>
@@ -2892,10 +2912,10 @@
                     </select>
                   </div>
                   <div class="field" id="s1_hearing_detail_wrap" data-field-size="medium" style="display:none;">
-                    <label class="h3">聽力補充說明【選填】</label>
+                    <h3 class="h3 heading-label"><label>聽力補充說明【選填】</label></h3>
                     <div class="checkcol" id="s1_hearing_detail_box"></div>
                     <div id="s1_hearing_device_wrap" style="display:none; margin-top:var(--space-xs);">
-                      <label class="h4" for="s1_hearing_device_adherence">助聽／擴音依從性</label>
+                      <h4 class="h4 heading-label"><label for="s1_hearing_device_adherence">助聽／擴音依從性</label></h4>
                       <select id="s1_hearing_device_adherence">
                         <option value="" class="placeholder-option" disabled selected>助聽／擴音依從性</option>
                         <option>持續使用</option>
@@ -2911,14 +2931,14 @@
         </div>
 
         <div class="group" id="caseProfileOralGroup" data-collapsed="0">
-          <span class="h1">三、口腔與吞嚥功能</span>
+          <h1 class="h1">三、口腔與吞嚥功能</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileSwallowCard">
-                <span class="h2">吞嚥功能</span>
+                <h2 class="h2">吞嚥功能</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_swallow">吞嚥／嗆咳程度</label>
+                    <h3 class="h3 heading-label"><label for="s1_swallow">吞嚥／嗆咳程度</label></h3>
                     <select id="s1_swallow" onchange="toggleSwallow()">
                       <option>無困難</option>
                       <option>輕度</option>
@@ -2927,23 +2947,23 @@
                     </select>
                   </div>
                   <div class="field" id="s1_swallow_sx_wrap" data-field-size="medium" style="display:none;">
-                    <label class="h3">吞嚥症狀</label>
+                    <h3 class="h3 heading-label"><label>吞嚥症狀</label></h3>
                     <div id="s1_swallow_sx_hint" class="hint" style="display:none;">例：嗆咳、殘留、口水外漏等，勾選可快速完成紀錄。</div>
                     <div class="checkcol" id="s1_swallow_sx_box"></div>
                   </div>
                   <div class="field" id="s1_diet_wrap" data-field-size="medium" style="display:none;">
-                    <label class="h3">飲食質地</label>
+                    <h3 class="h3 heading-label"><label>飲食質地</label></h3>
                     <div class="checkcol" id="s1_diet_texture_box"></div>
-                    <span class="h4" style="margin-top:var(--space-sm); display:block;">管灌方式</span>
+                    <h4 class="h4" style="margin-top:var(--space-sm); display:block;">管灌方式</h4>
                     <div class="checkcol" id="s1_feeding_tube_box"></div>
                   </div>
                 </div>
               </section>
               <section class="section-card" id="caseProfileOralCard">
-                <span class="h2">口腔與牙齒</span>
+                <h2 class="h2">口腔與牙齒</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
-                    <label class="h3">口腔牙齒／假牙</label>
+                    <h3 class="h3 heading-label"><label>口腔牙齒／假牙</label></h3>
                     <div class="checkcol" id="s1_oral_box"></div>
                     <input id="s1_oral_note" type="text" placeholder="備註" style="margin-top:var(--space-xs);">
                   </div>
@@ -2954,14 +2974,14 @@
         </div>
 
         <div class="group" id="caseProfileMobilityGroup" data-collapsed="0">
-          <span class="h1">四、移動功能</span>
+          <h1 class="h1">四、移動功能</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileMobilityCard">
-                <span class="h2">移動功能</span>
+                <h2 class="h2">移動功能</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_transfer">起身／移位能力</label>
+                    <h3 class="h3 heading-label"><label for="s1_transfer">起身／移位能力</label></h3>
                     <select id="s1_transfer" onchange="toggleAdlHow('s1_transfer')">
                       <option selected>獨立</option>
                       <option>需要輕扶</option>
@@ -2972,7 +2992,7 @@
                     <input id="s1_transfer_how" type="text" placeholder="請說明協助方式" style="display:none; margin-top:var(--space-xs);" data-show-values="中度協助,重度協助">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_walk_indoor">室內行走能力</label>
+                    <h3 class="h3 heading-label"><label for="s1_walk_indoor">室內行走能力</label></h3>
                     <select id="s1_walk_indoor">
                       <option selected>無輔具緩慢</option>
                       <option>單拐</option>
@@ -2983,7 +3003,7 @@
                     </select>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_walk_outdoor">外出行走能力</label>
+                    <h3 class="h3 heading-label"><label for="s1_walk_outdoor">外出行走能力</label></h3>
                     <select id="s1_walk_outdoor">
                       <option>獨立</option>
                       <option selected>單拐</option>
@@ -2994,7 +3014,7 @@
                     </select>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_stairs">上下樓梯能力</label>
+                    <h3 class="h3 heading-label"><label for="s1_stairs">上下樓梯能力</label></h3>
                     <select id="s1_stairs">
                       <option>可獨立</option>
                       <option selected>需扶手</option>
@@ -3003,7 +3023,7 @@
                     </select>
                   </div>
                   <div class="field" data-field-size="short">
-                    <label class="h3" for="s1_weak_laterality">偏側無力</label>
+                    <h3 class="h3 heading-label"><label for="s1_weak_laterality">偏側無力</label></h3>
                     <select id="s1_weak_laterality">
                       <option>無</option>
                       <option>左側</option>
@@ -3012,7 +3032,7 @@
                     </select>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_fall_history">跌倒史</label>
+                    <h3 class="h3 heading-label"><label for="s1_fall_history">跌倒史</label></h3>
                     <select id="s1_fall_history" onchange="toggleFallDetail()">
                       <option>無</option>
                       <option>過去1年1次</option>
@@ -3022,11 +3042,11 @@
                     <input id="s1_fall_times" type="number" min="0" placeholder="次數" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" data-field-size="long">
-                    <label class="h3">平衡程度</label>
+                    <h3 class="h3 heading-label"><label>平衡程度</label></h3>
                     <div class="checkcol" id="s1_balance_box"></div>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_sitting_stability">坐姿穩定性與輪椅安全</label>
+                    <h3 class="h3 heading-label"><label for="s1_sitting_stability">坐姿穩定性與輪椅安全</label></h3>
                     <select id="s1_sitting_stability" onchange="toggleSittingSupports()">
                       <option value="" class="placeholder-option" disabled selected>請選擇</option>
                       <option>穩定</option>
@@ -3036,7 +3056,7 @@
                     <div class="checkcol" id="s1_sitting_support_box" style="display:none; margin-top:var(--space-xs);"></div>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_gait">步態</label>
+                    <h3 class="h3 heading-label"><label for="s1_gait">步態</label></h3>
                     <select id="s1_gait">
                       <option value="" class="placeholder-option" disabled selected>請選擇</option>
                       <option>正常</option>
@@ -3056,14 +3076,14 @@
         </div>
 
         <div class="group" id="caseProfileAdlGroup" data-collapsed="0">
-          <span class="h1">五、ADL（日常生活活動）</span>
+          <h1 class="h1">五、ADL（日常生活活動）</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileAdlCard">
-                <span class="h2">ADL 日常生活活動</span>
+                <h2 class="h2">ADL 日常生活活動</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_adl_eating">進食</label>
+                    <h3 class="h3 heading-label"><label for="s1_adl_eating">進食</label></h3>
                     <select id="s1_adl_eating" onchange="toggleAdlHow('s1_adl_eating')">
                       <option selected>獨立</option>
                       <option>部分協助</option>
@@ -3072,7 +3092,7 @@
                     <input id="s1_adl_eating_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_eating" data-required-label="進食的部分協助方式">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_adl_groom">盥洗（刷牙／洗臉）</label>
+                    <h3 class="h3 heading-label"><label for="s1_adl_groom">盥洗（刷牙／洗臉）</label></h3>
                     <select id="s1_adl_groom" onchange="toggleAdlHow('s1_adl_groom')">
                       <option selected>獨立</option>
                       <option>部分協助</option>
@@ -3081,7 +3101,7 @@
                     <input id="s1_adl_groom_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_groom" data-required-label="刷牙/洗臉的部分協助方式">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_adl_bathing">洗澡</label>
+                    <h3 class="h3 heading-label"><label for="s1_adl_bathing">洗澡</label></h3>
                     <select id="s1_adl_bathing" onchange="toggleAdlHow('s1_adl_bathing')">
                       <option selected>獨立</option>
                       <option>部分協助</option>
@@ -3090,7 +3110,7 @@
                     <input id="s1_adl_bathing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_bathing" data-required-label="洗澡的部分協助方式">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_adl_dressing">穿脫衣</label>
+                    <h3 class="h3 heading-label"><label for="s1_adl_dressing">穿脫衣</label></h3>
                     <select id="s1_adl_dressing" onchange="toggleAdlHow('s1_adl_dressing')">
                       <option selected>獨立</option>
                       <option>部分協助</option>
@@ -3099,7 +3119,7 @@
                     <input id="s1_adl_dressing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_dressing" data-required-label="穿脫衣的部分協助方式">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_post_toilet">如廁後清潔</label>
+                    <h3 class="h3 heading-label"><label for="s1_post_toilet">如廁後清潔</label></h3>
                     <select id="s1_post_toilet" onchange="toggleAdlHow('s1_post_toilet')">
                       <option selected>獨立</option>
                       <option>部分協助</option>
@@ -3114,14 +3134,14 @@
         </div>
 
         <div class="group" id="caseProfileIadlGroup" data-collapsed="0">
-          <span class="h1">六、IADL（工具性日常活動）</span>
+          <h1 class="h1">六、IADL（工具性日常活動）</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileIadlCard">
-                <span class="h2">IADL 工具性日常活動</span>
+                <h2 class="h2">IADL 工具性日常活動</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_phone">電話使用</label>
+                    <h3 class="h3 heading-label"><label for="s1_phone">電話使用</label></h3>
                     <select id="s1_phone" onchange="togglePhoneNotes()">
                       <option selected>會撥打與接聽</option>
                       <option>僅能接聽</option>
@@ -3133,7 +3153,7 @@
                     </div>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_shopping">外出購物</label>
+                    <h3 class="h3 heading-label"><label for="s1_shopping">外出購物</label></h3>
                     <select id="s1_shopping" onchange="toggleShoppingHow()">
                       <option>可獨立</option>
                       <option selected>需陪同</option>
@@ -3151,7 +3171,7 @@
                     <input id="s1_shopping_how_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_meal_prep">備餐</label>
+                    <h3 class="h3 heading-label"><label for="s1_meal_prep">備餐</label></h3>
                     <select id="s1_meal_prep" onchange="toggleAdlHow('s1_meal_prep')">
                       <option>獨立</option>
                       <option selected>部分協助</option>
@@ -3160,7 +3180,7 @@
                     <input id="s1_meal_prep_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_meal_prep" data-required-label="備餐的部分協助方式">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_dishwash">餐具清洗</label>
+                    <h3 class="h3 heading-label"><label for="s1_dishwash">餐具清洗</label></h3>
                     <select id="s1_dishwash" onchange="toggleDishwashHow()">
                       <option>乾淨</option>
                       <option selected>尚可或不一定乾淨</option>
@@ -3173,7 +3193,7 @@
                     <input id="s1_dishwash_how_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_housework">家務整理</label>
+                    <h3 class="h3 heading-label"><label for="s1_housework">家務整理</label></h3>
                     <select id="s1_housework" onchange="toggleAdlHow('s1_housework')">
                       <option>獨立</option>
                       <option selected>部分協助</option>
@@ -3182,7 +3202,7 @@
                     <input id="s1_housework_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_housework" data-required-label="家務整理的部分協助方式">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_finance">財務管理</label>
+                    <h3 class="h3 heading-label"><label for="s1_finance">財務管理</label></h3>
                     <select id="s1_finance" onchange="toggleAdlHow('s1_finance')">
                       <option selected>獨立</option>
                       <option>部分協助</option>
@@ -3197,18 +3217,18 @@
         </div>
 
         <div class="group" id="caseProfileExcretionGroup" data-collapsed="0">
-          <span class="h1">七、排泄功能</span>
+          <h1 class="h1">七、排泄功能</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileExcretionCard">
-                <span class="h2">排泄功能</span>
+                <h2 class="h2">排泄功能</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
-                    <label class="h3">排泄輔具</label>
+                    <h3 class="h3 heading-label"><label>排泄輔具</label></h3>
                     <div class="checkcol" id="s1_excretion_aids_box"></div>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_urine_day">日間排尿情形</label>
+                    <h3 class="h3 heading-label"><label for="s1_urine_day">日間排尿情形</label></h3>
                     <select id="s1_urine_day" onchange="toggleUrineOther('day')">
                       <option selected>正常（4–6次）</option>
                       <option>偏少（少於3次）</option>
@@ -3219,7 +3239,7 @@
                     <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" id="s1_urine_night_wrap" data-field-size="medium">
-                    <label class="h3" for="s1_urine_night">夜間排尿情形</label>
+                    <h3 class="h3 heading-label"><label for="s1_urine_night">夜間排尿情形</label></h3>
                     <select id="s1_urine_night" onchange="toggleUrineOther('night')">
                       <option selected>夜間未起夜</option>
                       <option>夜間起夜1次</option>
@@ -3231,7 +3251,7 @@
                     <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" id="s1_nocturia_wrap" data-field-size="short" style="display:none;">
-                    <label class="h3" for="s1_nocturia_count">夜尿次數數值</label>
+                    <h3 class="h3 heading-label"><label for="s1_nocturia_count">夜尿次數數值</label></h3>
                     <input id="s1_nocturia_count" type="number" min="0" max="10" placeholder="0-10">
                   </div>
                 </div>
@@ -3242,48 +3262,48 @@
         </div>
 
         <div class="group" id="caseProfileHealthGroup" data-collapsed="0">
-          <span class="h1">八、健康狀況與病史</span>
+          <h1 class="h1">八、健康狀況與病史</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileDiseaseCard">
-                <span class="h2">病史與過敏</span>
+                <h2 class="h2">病史與過敏</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
-                    <label class="h3">慢性病史</label>
+                    <h3 class="h3 heading-label"><label>慢性病史</label></h3>
                     <div class="checkcol" id="s1_dhx_box"></div>
                     <input id="s1_dhx_other" type="text" placeholder="其他慢性病" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_surgery">手術史【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_surgery">手術史【選填】</label></h3>
                     <input id="s1_surgery" type="text" placeholder="例：10多年前髖關節手術">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_allergy">藥物過敏【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_allergy">藥物過敏【選填】</label></h3>
                     <input id="s1_allergy" type="text" placeholder="無則留空">
                   </div>
                 </div>
               </section>
               <section class="section-card" id="caseProfileMedicationCard">
-                <span class="h2">用藥與就醫</span>
+                <h2 class="h2">用藥與就醫</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
-                    <label class="h3">現用藥物種類</label>
+                    <h3 class="h3 heading-label"><label>現用藥物種類</label></h3>
                     <div class="checkcol" id="s1_med_classes_box"></div>
                     <input id="s1_med_classes_other" type="text" placeholder="其他用藥" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_follow_clinic">固定就醫單位【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_follow_clinic">固定就醫單位【選填】</label></h3>
                     <input id="s1_follow_clinic" type="text" placeholder="例：嘉誠診所">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_rx_type">處方型態【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_rx_type">處方型態【選填】</label></h3>
                     <select id="s1_rx_type">
                       <option>慢性處方箋</option>
                       <option>一般門診</option>
                     </select>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_med_manage">用藥管理方式</label>
+                    <h3 class="h3 heading-label"><label for="s1_med_manage">用藥管理方式</label></h3>
                     <select id="s1_med_manage">
                       <option>可自行規則服藥</option>
                       <option>需提醒</option>
@@ -3291,7 +3311,7 @@
                     </select>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_visit_transport">就醫交通方式【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_visit_transport">就醫交通方式【選填】</label></h3>
                     <select id="s1_visit_transport" onchange="toggleTransportOther()">
                       <option>計程車</option>
                       <option>家屬接送</option>
@@ -3303,24 +3323,24 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileDeviceCard">
-                <span class="h2">管路／裝置</span>
+                <h2 class="h2">管路／裝置</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
-                    <label class="h3">管路／裝置</label>
+                    <h3 class="h3 heading-label"><label>管路／裝置</label></h3>
                     <div class="checkcol" id="s1_devices_box"></div>
                     <input id="s1_devices_note" type="text" placeholder="備註" style="margin-top:var(--space-xs);">
                   </div>
                 </div>
               </section>
               <section class="section-card" id="caseProfileDisabilityCard">
-                <span class="h2">身心障礙資訊</span>
+                <h2 class="h2">身心障礙資訊</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3">身心障礙等級</label>
+                    <h3 class="h3 heading-label"><label>身心障礙等級</label></h3>
                     <div id="s1_dis_level_text" class="badge">—</div>
                   </div>
                   <div class="field" id="s1_dis_cat_box" data-field-size="medium" style="display:none;">
-                    <label class="h3">身心障礙類別</label>
+                    <h3 class="h3 heading-label"><label>身心障礙類別</label></h3>
                     <div id="s1_dis_cat_text" class="badge">—</div>
                   </div>
                 </div>
@@ -3331,22 +3351,22 @@
         </div>
 
         <div class="group" id="caseProfilePsychGroup" data-collapsed="0">
-          <span class="h1">九、心理與行為狀態</span>
+          <h1 class="h1">九、心理與行為狀態</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfilePsychBehaviorCard">
-                <span class="h2">心理與行為</span>
+                <h2 class="h2">心理與行為</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3">情緒狀態</label>
+                    <h3 class="h3 heading-label"><label>情緒狀態</label></h3>
                     <div class="checkcol" id="s1_emotion_box"></div>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3">行為表現</label>
+                    <h3 class="h3 heading-label"><label>行為表現</label></h3>
                     <div class="checkcol" id="s1_behavior_box"></div>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_motivation">執行動機與督促需求</label>
+                    <h3 class="h3 heading-label"><label for="s1_motivation">執行動機與督促需求</label></h3>
                     <select id="s1_motivation">
                       <option value="" class="placeholder-option" disabled selected>請選擇</option>
                       <option>主動配合</option>
@@ -3355,7 +3375,7 @@
                     </select>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_cognition">認知功能【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_cognition">認知功能【選填】</label></h3>
                     <select id="s1_cognition">
                       <option>清楚可應答</option>
                       <option>需重複或放慢</option>
@@ -3366,7 +3386,7 @@
                     </select>
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_awareness">意識狀態【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_awareness">意識狀態【選填】</label></h3>
                     <select id="s1_awareness">
                       <option>清楚</option>
                       <option>遲鈍</option>
@@ -3379,10 +3399,10 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfilePsychSleepCard">
-                <span class="h2">睡眠與日間活動</span>
+                <h2 class="h2">睡眠與日間活動</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_sleep">睡眠品質</label>
+                    <h3 class="h3 heading-label"><label for="s1_sleep">睡眠品質</label></h3>
                     <select id="s1_sleep" onchange="toggleSleepReason()">
                       <option>良好</option>
                       <option>尚可</option>
@@ -3407,16 +3427,16 @@
                     <input id="s1_sleep_reason_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_daytime">白天活動【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_daytime">白天活動【選填】</label></h3>
                     <input id="s1_daytime" type="text" placeholder="例：坐後門外看電視，累了打盹">
                   </div>
                 </div>
               </section>
               <section class="section-card" id="caseProfilePainSkinCard">
-                <span class="h2">疼痛與皮膚狀態</span>
+                <h2 class="h2">疼痛與皮膚狀態</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_pain">疼痛【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_pain">疼痛【選填】</label></h3>
                     <select id="s1_pain" onchange="togglePainCombined()">
                       <option selected>無</option>
                       <option>有</option>
@@ -3424,7 +3444,7 @@
                     </select>
                   </div>
                   <div class="field" id="s1_pain_score_wrap" data-field-size="short" style="display:none;">
-                    <label class="h3" for="s1_pain_score">疼痛強度（1-10）</label>
+                    <h3 class="h3 heading-label"><label for="s1_pain_score">疼痛強度（1-10）</label></h3>
                     <input id="s1_pain_score" type="number" min="1" max="10" step="1">
                     <div class="field-error" id="s1_pain_score_error"></div>
                   </div>
@@ -3442,7 +3462,7 @@
                   </div>
                   <div class="autogrid autogrid--wide">
                     <div class="field" data-field-size="medium">
-                      <label class="h3" for="s1_location_region">部位大分類</label>
+                      <h3 class="h3 heading-label"><label for="s1_location_region">部位大分類</label></h3>
                       <select id="s1_location_region" onchange="onSharedRegionChange()">
                         <option value="" class="placeholder-option" disabled selected>請選擇</option>
                         <option>頭頸部</option>
@@ -3453,14 +3473,14 @@
                       </select>
                     </div>
                     <div class="field" data-field-size="medium">
-                      <label class="h3" for="s1_location_subregion">細部分位</label>
+                      <h3 class="h3 heading-label"><label for="s1_location_subregion">細部分位</label></h3>
                       <select id="s1_location_subregion" onchange="onSharedSubregionChange()">
                         <option value="" class="placeholder-option" disabled selected>請選擇</option>
                       </select>
                       <input id="s1_location_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:var(--space-xs);" oninput="onSharedSubregionOtherInput()">
                     </div>
                     <div class="field" data-field-size="short">
-                      <label class="h3" for="s1_location_laterality">側別</label>
+                      <h3 class="h3 heading-label"><label for="s1_location_laterality">側別</label></h3>
                       <select id="s1_location_laterality" onchange="onSharedLateralityChange()">
                         <option value="" class="placeholder-option" disabled selected>請選擇</option>
                         <option>左側</option>
@@ -3472,7 +3492,7 @@
                 </div>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
-                    <label class="h3" for="s1_lesion_has">皮膚病灶【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_lesion_has">皮膚病灶【選填】</label></h3>
                     <select id="s1_lesion_has" onchange="toggleLesionCombined()">
                       <option selected>無</option>
                       <option>有</option>
@@ -3480,7 +3500,7 @@
                     </select>
                   </div>
                   <div class="field" id="s1_lesion_layer_wrap" data-field-size="medium" style="display:none;">
-                    <label class="h3" for="s1_lesion_layer">病灶層次</label>
+                    <h3 class="h3 heading-label"><label for="s1_lesion_layer">病灶層次</label></h3>
                     <select id="s1_lesion_layer" onchange="toggleLesionLayerOther()">
                       <option>無</option>
                       <option>表皮</option>
@@ -3491,7 +3511,7 @@
                     <input id="s1_lesion_layer_other" type="text" placeholder="請填寫" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div class="field" id="s1_lesion_size_wrap" data-field-size="medium" style="display:none;">
-                    <label class="h3">病灶大小</label>
+                    <h3 class="h3 heading-label"><label>病灶大小</label></h3>
                     <div class="lesion-size-grid">
                       <div class="lesion-size-field">
                         <input id="s1_lesion_length" type="number" min="0" step="0.1" placeholder="長" oninput="updateLesionAreaDisplay()">
@@ -3510,7 +3530,7 @@
                 <div id="s1_lesion_more" style="display:none;" data-level="advanced">
                   <div class="autogrid autogrid--wide">
                     <div class="field" data-field-size="medium">
-                      <label class="h3">病灶症狀</label>
+                      <h3 class="h3 heading-label"><label>病灶症狀</label></h3>
                       <div class="lesion-mode" id="s1_lesion_mode">
                         <button type="button" class="small" data-mode="none" onclick="setLesionSymptomMode('none')">無不適</button>
                         <button type="button" class="small" data-mode="symptom" onclick="setLesionSymptomMode('symptom')">有症狀</button>
@@ -3518,7 +3538,7 @@
                       <div class="checkcol" id="s1_lesion_sx_box"></div>
                     </div>
                     <div class="field" data-field-size="medium">
-                      <label class="h3" for="s1_lesion_eval">醫療評估</label>
+                      <h3 class="h3 heading-label"><label for="s1_lesion_eval">醫療評估</label></h3>
                       <select id="s1_lesion_eval" onchange="toggleLesionHospital()">
                         <option>未評估</option>
                         <option>醫師評估無大礙</option>
@@ -3536,12 +3556,12 @@
         </div>
 
         <div class="group" id="caseProfileSummaryGroup" data-collapsed="0">
-          <span class="h1">總結建議</span>
+          <h1 class="h1">總結建議</h1>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileActionsCard">
                 <div class="section-card-header">
-                  <span class="h2">建議措施</span>
+                  <h2 class="h2">建議措施</h2>
                   <button type="button" class="small" onclick="addActionEntry()">＋新增</button>
                 </div>
                 <div class="autogrid autogrid--wide">
@@ -3553,10 +3573,10 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileNotesCard">
-                <span class="h2">補充內容</span>
+                <h2 class="h2">補充內容</h2>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
-                    <label class="h3" for="s1_notes">補充內容【選填】</label>
+                    <h3 class="h3 heading-label"><label for="s1_notes">補充內容【選填】</label></h3>
                     <textarea id="s1_notes" placeholder="其他未涵蓋重點（限簡要）；將附加於段落末端。"></textarea>
                   </div>
                 </div>
@@ -3580,30 +3600,30 @@
     <div class="row">
       <div id="section2_block" data-section="s2">
         <div class="titlebar">
-          <label class="h3">（二）經濟收入</label>
+          <h3 class="h3 heading-label"><label>（二）經濟收入</label></h3>
         </div>
         <div class="grid2 form-row-2col">
           <div>
-            <label class="h4">主要經濟來源</label>
+            <h4 class="h4 heading-label"><label>主要經濟來源</label></h4>
             <div class="checkcol" id="s2_sources"></div>
           </div>
           <div>
             <div class="grid2 form-row-2col">
               <div>
-                <label class="h4">戶籍／福利身分</label>
+                <h4 class="h4 heading-label"><label>戶籍／福利身分</label></h4>
                 <select id="s2_id">
                   <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
                 </select>
               </div>
               <div>
-                <label class="h4">身心障礙等級</label>
+                <h4 class="h4 heading-label"><label>身心障礙等級</label></h4>
                 <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身心障礙等級 -->
                   <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
                 </select>
               </div>
             </div>
             <div id="disCatBox" style="display:none; margin-top:var(--space-xs);"><!-- 類別欄位，預設隱藏 -->
-              <label class="h4">身心障礙類別（等級≠無才需選）</label>
+              <h4 class="h4 heading-label"><label>身心障礙類別（等級≠無才需選）</label></h4>
               <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身心障礙類別 --></select>
             </div>
           </div>
@@ -3616,22 +3636,22 @@
     <div class="row">
       <div id="section3_block" data-section="s3">
         <div class="titlebar">
-          <label class="h3">（三）居住環境</label>
+          <h3 class="h3 heading-label"><label>（三）居住環境</label></h3>
         </div>
         <div class="grid3 form-row-3col">
           <div>
-            <label class="h4">居住型態</label>
+            <h4 class="h4 heading-label"><label>居住型態</label></h4>
             <select id="s3_type" onchange="toggleOtherType()">
               <option>透天</option><option>鐵皮屋</option><option>公寓</option><option>大樓</option><option>套房</option><option>其他</option>
             </select>
             <input id="s3_type_other" type="text" placeholder="請輸入其他型態" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div>
-            <label class="h4">居住權屬</label>
+            <h4 class="h4 heading-label"><label>居住權屬</label></h4>
             <select id="s3_own" onchange="toggleRentFields()"><option>自有</option><option>租賃</option><option>借住</option></select>
           </div>
           <div>
-            <label class="h4">整潔度／異味</label>
+            <h4 class="h4 heading-label"><label>整潔度／異味</label></h4>
             <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
           </div>
         </div>
@@ -3655,11 +3675,11 @@
         </div>
         <div class="grid2 form-row-2col" style="margin-top:var(--space-xs);">
           <div>
-            <label class="h4">無障礙設施</label>
+            <h4 class="h4 heading-label"><label>無障礙設施</label></h4>
             <div class="checkcol" id="s3_fac"></div>
           </div>
           <div>
-            <label class="h4">輔具</label>
+            <h4 class="h4 heading-label"><label>輔具</label></h4>
             <div class="checkcol" id="s3_aids"></div>
           </div>
         </div>
@@ -3671,20 +3691,20 @@
     <div class="row">
       <div id="section4_block" data-section="s4">
         <div class="titlebar">
-          <label class="h3">（四）社會支持</label>
+          <h3 class="h3 heading-label"><label>（四）社會支持</label></h3>
         </div>
 
         <div class="grid3 form-row-3col">
           <div>
-            <label class="h4">主照者關係</label>
+            <h4 class="h4 heading-label"><label>主照者關係</label></h4>
             <div id="sp_primaryRel_text" class="badge">—</div>
           </div>
           <div>
-            <label class="h4">主照者姓名</label>
+            <h4 class="h4 heading-label"><label>主照者姓名</label></h4>
             <div id="sp_primaryName_text" class="badge">—</div>
           </div>
           <div>
-            <label class="h4">同住狀態</label>
+            <h4 class="h4 heading-label"><label>同住狀態</label></h4>
             <select id="sp_cohabit"><option value="">—不選—</option><option>同住</option><option>不同住</option></select>
           </div>
         </div>
@@ -3693,12 +3713,12 @@
         <div class="hr"></div>
 
         <div class="titlebar titlebar--mt-sm">
-          <label class="h4">主要聯繫人/決策者</label>
+          <h4 class="h4 heading-label"><label>主要聯繫人/決策者</label></h4>
           <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
         </div>
         <div class="grid3 form-row-3col">
           <div class="field-intro">
-            <label class="h4">關係</label>
+            <h4 class="h4 heading-label"><label>關係</label></h4>
             <select id="sp_deciderRel">
               <option value="">—不選—</option>
               <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
@@ -3711,11 +3731,11 @@
             </select>
           </div>
           <div class="field-intro">
-            <label class="h4">姓名</label>
+            <h4 class="h4 heading-label"><label>姓名</label></h4>
             <input id="sp_deciderName" type="text" placeholder="請選擇">
           </div>
           <div>
-            <label class="h4">聯絡電話</label>
+            <h4 class="h4 heading-label"><label>聯絡電話</label></h4>
             <input id="sp_deciderPhone" type="tel" placeholder="例如：0912-345678">
           </div>
         </div>
@@ -3723,7 +3743,7 @@
         <div class="hr"></div>
 
         <div class="titlebar titlebar--mt-sm">
-          <label class="h4">共同照顧者（可多筆）</label>
+          <h4 class="h4 heading-label"><label>共同照顧者（可多筆）</label></h4>
           <button type="button" class="small" onclick="addCoCare()">＋新增共同照顧者</button>
         </div>
         <div id="coCare"></div>
@@ -3731,12 +3751,12 @@
         <div class="hr"></div>
 
         <div>
-          <label class="h4">正式資源（多選）</label>
+          <h4 class="h4 heading-label"><label>正式資源（多選）</label></h4>
           <div class="muted">固定：<span class="badge">社區整合型服務中心為福安</span></div>
           <div class="checkcol" id="sp_formal"></div>
           <div id="homeCareWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label class="h4">居家服務項目（多選）</label>
+              <h4 class="h4 heading-label"><label>居家服務項目（多選）</label></h4>
               <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
             </div>
             <div id="homeCareList" class="home-care-grid"></div>
@@ -3744,7 +3764,7 @@
           </div>
           <div id="dayCareWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label class="h4">日間照顧服務項目（多選）</label>
+              <h4 class="h4 heading-label"><label>日間照顧服務項目（多選）</label></h4>
               <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
             </div>
             <div id="dayCareList" class="home-care-grid"></div>
@@ -3752,7 +3772,7 @@
           </div>
           <div id="profServiceWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label class="h4">專業服務項目（多選）</label>
+              <h4 class="h4 heading-label"><label>專業服務項目（多選）</label></h4>
               <button class="small" type="button" onclick="resetProfessionalPhrases()">重新套用片語</button>
             </div>
             <div id="profServiceList" class="home-care-grid"></div>
@@ -3760,7 +3780,7 @@
           </div>
           <div id="transportServiceWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label class="h4">交通接送項目（多選）</label>
+              <h4 class="h4 heading-label"><label>交通接送項目（多選）</label></h4>
               <button class="small" type="button" onclick="resetTransportPhrases()">重新套用片語</button>
             </div>
             <div id="transportServiceList" class="home-care-grid"></div>
@@ -3768,7 +3788,7 @@
           </div>
           <div id="respServiceWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label class="h4">喘息服務項目（多選）</label>
+              <h4 class="h4 heading-label"><label>喘息服務項目（多選）</label></h4>
               <button class="small" type="button" onclick="resetRespitePhrases()">重新套用片語</button>
             </div>
             <div id="respServiceList" class="home-care-grid"></div>
@@ -3776,7 +3796,7 @@
           </div>
           <div id="mealServiceWrap" style="display:none; margin-top:var(--space-xs);">
             <div class="titlebar">
-              <label class="h4">營養送餐項目（多選）</label>
+              <h4 class="h4 heading-label"><label>營養送餐項目（多選）</label></h4>
               <button class="small" type="button" onclick="resetMealPhrases()">重新套用片語</button>
             </div>
             <div id="mealServiceList" class="home-care-grid"></div>
@@ -3787,7 +3807,7 @@
         <div class="hr"></div>
 
         <div>
-          <label class="h4">非正式資源（多選，每類需填「單位名稱」）</label>
+          <h4 class="h4 heading-label"><label>非正式資源（多選，每類需填「單位名稱」）</label></h4>
           <div>
             <label class="h5 inline"><input type="checkbox" id="sp_inf_pt" onchange="toggleInfInput('pt')"> 據點</label>
             <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
@@ -3840,7 +3860,7 @@
 
         <div class="hr"></div>
         <div>
-          <label class="h4">高風險評估（多選）</label>
+          <h4 class="h4 heading-label"><label>高風險評估（多選）</label></h4>
           <div class="checkcol" id="sp_risks"></div>
           <div class="subtle">勾選將只輸出「標題短語」，說明文字僅作參考。</div>
         </div>
@@ -3853,7 +3873,7 @@
     <div class="row">
       <div id="section5_block" data-section="s5">
         <div class="titlebar">
-          <label class="h3">（五）其他</label>
+          <h3 class="h3 heading-label"><label>（五）其他</label></h3>
         </div>
         <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
       </div>
@@ -3863,11 +3883,11 @@
     <div class="row">
       <div id="section6_block" data-section="s6">
         <div class="titlebar">
-          <label class="h3">（六）複評評值</label>
+          <h3 class="h3 heading-label"><label>（六）複評評值</label></h3>
         </div>
         <div class="grid2 form-row-2col">
-          <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
-          <div><label class="h4">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
+          <div><h4 class="h4 heading-label"><label>介入前</label></h4><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
+          <div><h4 class="h4 heading-label"><label>介入後</label></h4><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
         </div>
         <textarea id="section6_struct" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
@@ -3876,52 +3896,52 @@
 
   <!-- 五、照顧目標（原功能保留） -->
   <div class="group" id="careGoalsGroup" data-span="full">
-    <span class="h2">五、照顧目標</span>
+    <h2 class="h2">五、照顧目標</h2>
 
     <div class="care-goals-layout">
       <div class="care-goals-main">
         <div class="care-goal-block">
           <div class="care-goal-heading">
-            <label class="h3">（一）照顧問題（最多選 5 項）</label>
+            <h3 class="h3 heading-label"><label>（一）照顧問題（最多選 5 項）</label></h3>
             <div id="problemCount">已選 0 / 5</div>
           </div>
           <div class="checkcol" id="problemList"></div>
           <div class="virtual-checklist-print" id="problemListPrint" aria-hidden="true"></div>
-          <label class="h4" style="margin-top:var(--space-xs);">補充說明（可選）</label>
+          <h4 class="h4 heading-label"><label style="margin-top:var(--space-xs);">補充說明（可選）</label></h4>
           <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
         </div>
 
         <div class="care-goal-block">
-          <label class="h3">（二）短期目標（0–3 個月）</label>
+          <h3 class="h3 heading-label"><label>（二）短期目標（0–3 個月）</label></h3>
           <div class="grid2 form-row-2col">
-            <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
-            <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
-            <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
-            <div id="short_resp_wrap"><label class="h4">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
-            <div id="short_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
-            <div id="short_meal_wrap"><label class="h4">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
+            <div id="short_care_wrap"><h4 class="h4 heading-label"><label>照顧服務</label></h4><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
+            <div id="short_prof_wrap"><h4 class="h4 heading-label"><label>專業服務</label></h4><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
+            <div id="short_car_wrap"><h4 class="h4 heading-label"><label>交通接送</label></h4><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
+            <div id="short_resp_wrap"><h4 class="h4 heading-label"><label>喘息服務</label></h4><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
+            <div id="short_access_wrap"><h4 class="h4 heading-label"><label>無障礙及輔具</label></h4><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
+            <div id="short_meal_wrap"><h4 class="h4 heading-label"><label>營養送餐</label></h4><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
           </div>
         </div>
 
         <div class="care-goal-block">
-          <label class="h3">（三）中期目標（3–4 個月）</label>
+          <h3 class="h3 heading-label"><label>（三）中期目標（3–4 個月）</label></h3>
           <div class="grid2 form-row-2col">
-            <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
-            <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
-            <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
-            <div id="mid_resp_wrap"><label class="h4">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
-            <div id="mid_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
-            <div id="mid_meal_wrap"><label class="h4">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_care_wrap"><h4 class="h4 heading-label"><label>照顧服務</label></h4><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_prof_wrap"><h4 class="h4 heading-label"><label>專業服務</label></h4><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_car_wrap"><h4 class="h4 heading-label"><label>交通接送</label></h4><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
+            <div id="mid_resp_wrap"><h4 class="h4 heading-label"><label>喘息服務</label></h4><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_access_wrap"><h4 class="h4 heading-label"><label>無障礙及輔具</label></h4><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_meal_wrap"><h4 class="h4 heading-label"><label>營養送餐</label></h4><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
           </div>
         </div>
       </div>
 
       <div class="care-goals-side">
         <div class="care-goals-side-inner">
-          <label class="h3">（四）長期目標（4–6 個月）</label>
+          <h3 class="h3 heading-label"><label>（四）長期目標（4–6 個月）</label></h3>
           <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
           <div class="hr"></div>
-          <label class="h4">目標文字預覽（含碼別與各期結構）</label>
+          <h4 class="h4 heading-label"><label>目標文字預覽（含碼別與各期結構）</label></h4>
           <div id="goalPreview" class="preview goal-preview-empty">（尚未選擇服務或填寫內容）</div>
         </div>
       </div>
@@ -3930,20 +3950,20 @@
 
   <!-- 六、與照專…（原功能保留） -->
   <div class="group" id="mismatchPlanGroup" data-span="full">
-    <span class="h2">六、與照專建議服務項目、問題清單不一致之原因說明及未來規劃</span>
+    <h2 class="h2">六、與照專建議服務項目、問題清單不一致之原因說明及未來規劃</h2>
     <div class="row"><div>
-      <label class="h3">（一）目標達成的狀況以及未達成的差距</label>
+      <h3 class="h3 heading-label"><label>（一）目標達成的狀況以及未達成的差距</label></h3>
       <textarea id="reason1" placeholder="填寫欄位"></textarea>
     </div></div>
     <div class="row"><div>
-      <label class="h3">（二）資源的變動情形</label>
+      <h3 class="h3 heading-label"><label>（二）資源的變動情形</label></h3>
       <textarea id="reason2" placeholder="填寫欄位"></textarea>
     </div></div>
     <div class="row"><div>
-      <label class="h3">（三）未使用的替代方案或是可能的影響</label>
+      <h3 class="h3 heading-label"><label>（三）未使用的替代方案或是可能的影響</label></h3>
       <textarea id="reason3" placeholder="填寫欄位"></textarea>
       <div class="hr"></div>
-      <label class="h4">常用快捷（勾選即加入第 3 格）</label>
+      <h4 class="h4 heading-label"><label>常用快捷（勾選即加入第 3 格）</label></h4>
       <div style="margin:var(--space-xs) 0;">
         <input id="rq1_no" type="text" placeholder="原服務，例如：備餐" style="margin-right:4px;">
         <input id="rq1_alt" type="text" placeholder="替代服務，例如：代購服務">
@@ -3967,11 +3987,11 @@
 
   <div class="page-section" data-page="execution" data-columns="2">
     <div class="group" data-span="full" data-collapsed="1">
-      <span class="h1">計畫執行規劃</span>
+      <h1 class="h1">計畫執行規劃</h1>
       <div class="section-card-grid">
         <section class="section-card" id="planExecutionGroup">
           <div class="titlebar">
-            <label class="h2">一、長照服務核定項目、頻率</label>
+            <h2 class="h2 heading-label"><label>一、長照服務核定項目、頻率</label></h2>
           </div>
           <div class="plan-guideline">
             <p>請依核定的正式資源填寫承接方式、指定單位、用量與使用方式，系統會同步整理附件二預覽與額度統計。</p>
@@ -3982,22 +4002,22 @@
 
         <section class="section-card" id="planReferralSection">
           <div class="titlebar">
-            <label class="h2">二、轉介其他服務資源</label>
+            <h2 class="h2 heading-label"><label>二、轉介其他服務資源</label></h2>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
         </section>
 
         <section class="section-card" id="planStationSection">
           <div class="titlebar">
-            <label class="h2">三、巷弄長照站資訊與意願</label>
+            <h2 class="h2 heading-label"><label>三、巷弄長照站資訊與意願</label></h2>
           </div>
           <div class="plan-meta-grid">
             <div>
-              <label class="h4" for="plan_station_info">巷弄長照站資訊</label>
+              <h4 class="h4 heading-label"><label for="plan_station_info">巷弄長照站資訊</label></h4>
               <textarea id="plan_station_info" placeholder="例：○○巷弄長照站（地址，距離1.2公里，電話0000-000000）"></textarea>
             </div>
             <div>
-              <label class="h4" for="plan_station_willingness">參與意願</label>
+              <h4 class="h4 heading-label"><label for="plan_station_willingness">參與意願</label></h4>
               <select id="plan_station_willingness">
                 <option value="">—請選擇—</option>
                 <option value="有意願">有意願</option>
@@ -4009,14 +4029,14 @@
 
         <section class="section-card" id="planEmergencySection">
           <div class="titlebar">
-            <label class="h2">四、緊急救援服務說明</label>
+            <h2 class="h2 heading-label"><label>四、緊急救援服務說明</label></h2>
           </div>
           <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
         </section>
 
         <section class="section-card" id="planSummaryGroup">
           <div class="titlebar">
-            <label class="h2">附件二（服務計畫明細）預覽</label>
+            <h2 class="h2 heading-label"><label>附件二（服務計畫明細）預覽</label></h2>
           </div>
           <div class="summary-actions">
             <button type="button" class="small" id="planSummaryCopyBtn">複製表格</button>
@@ -4056,7 +4076,7 @@
 
         <section class="section-card" id="planTextGroup">
           <div class="titlebar">
-            <label class="h2">附件一：計畫執行規劃預覽</label>
+            <h2 class="h2 heading-label"><label>附件一：計畫執行規劃預覽</label></h2>
           </div>
           <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
           <textarea id="plan_text" class="plan-preview" readonly></textarea>
@@ -4074,10 +4094,10 @@
 
   <div class="page-section" data-page="notes" data-columns="1">
     <div class="group" id="planOtherGroup" data-span="full" data-collapsed="1">
-      <span class="h1">其他備註</span>
+      <h1 class="h1">其他備註</h1>
       <div class="section-card-grid">
         <section class="section-card">
-          <label class="h2">其他（個案特殊狀況或其他未盡事宜可備註於此）</label>
+          <h2 class="h2 heading-label"><label>其他（個案特殊狀況或其他未盡事宜可備註於此）</label></h2>
           <textarea id="plan_other" placeholder="如有補充事項請於此敘述"></textarea>
         </section>
       </div>
@@ -6922,14 +6942,14 @@
       wrap.id=`extra-${idx}`;
       wrap.innerHTML=`
       <div class="field-intro" data-field-size="short">
-        <label class="h3" for="ex-role-${idx}">其他參與者關係</label>
+        <h3 class="h3 heading-label"><label for="ex-role-${idx}">其他參與者關係</label></h3>
         <select id="ex-role-${idx}" onchange="toggleCustomRole(${idx}, 'ex')">
           ${roleOptionsHTML(true)}
         </select>
         <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
       </div>
       <div class="field-intro" data-field-size="medium">
-        <label class="h3" for="ex-name-${idx}">其他參與者姓名</label>
+        <h3 class="h3 heading-label"><label for="ex-name-${idx}">其他參與者姓名</label></h3>
         <input id="ex-name-${idx}" type="text" placeholder="姓名，例如：李○○">
       </div>
       <div class="extra-row-actions">
@@ -13548,13 +13568,13 @@
       const wrap=document.createElement('div'); wrap.className='row'; wrap.id=`cc-${idx}`;
       wrap.innerHTML=`
         <div class="field-intro">
-          <label class="h4">關係</label>
+          <h4 class="h4 heading-label"><label>關係</label></h4>
           <select id="cc-rel-${idx}" onchange="toggleCustomRole(${idx}, 'cc')">
             ${roleOptionsHTML()}
           </select>
           <input id="cc-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
         </div>
-        <div class="field-intro"><label class="h4">姓名</label><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
+        <div class="field-intro"><h4 class="h4 heading-label"><label>姓名</label></h4><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
         <div style="flex:0; align-self:flex-end;"><button class="small" onclick="removeCoCareRow(${idx})">移除</button></div>
       `;
       host.appendChild(wrap);
@@ -15432,7 +15452,7 @@
     }
 
     function applyEllipsisTooltips(){
-      const selector='.group > label:first-child, .titlebar > label:first-child';
+      const selector='.group > label:first-child, .group > .heading-label:first-child, .titlebar > label:first-child, .titlebar > .heading-label:first-child';
       document.querySelectorAll(selector).forEach(label=>{
         if(!label) return;
         const text=(label.textContent || '').trim();
