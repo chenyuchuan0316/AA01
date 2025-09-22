@@ -4176,7 +4176,11 @@
       }
       const heading=document.createElement('h4');
       heading.className='h4';
-      heading.textContent=(labelEl ? labelEl.textContent : titlebar.textContent || '').trim();
+      const titleText=(labelEl ? labelEl.textContent : titlebar.textContent || '').trim();
+      heading.textContent=titleText;
+      if(titleText){
+        card.dataset.cardTitle = titleText;
+      }
       const extras = labelEl ? children.filter(child=>child !== labelEl) : children.slice();
       if(extras.length){
         const header=document.createElement('div');
@@ -6119,16 +6123,69 @@
       return 'basic';
     }
 
+    function extractGroupTitleFromNode(node){
+      if(!node) return '';
+      if(node.dataset){
+        const datasetTitle = (node.dataset.title || node.dataset.cardTitle || '').trim();
+        if(datasetTitle) return datasetTitle;
+      }
+      const children = Array.from(node.children || []);
+      for(let i=0;i<children.length;i++){
+        const child = children[i];
+        if(!child) continue;
+        if(child.dataset){
+          const childTitle = (child.dataset.title || child.dataset.cardTitle || '').trim();
+          if(childTitle) return childTitle;
+        }
+        if(child.classList && child.classList.contains('titlebar')){
+          const label = child.querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
+          const text = label && label.textContent ? label.textContent.trim() : '';
+          if(text) return text;
+        }
+        if(child.classList && child.classList.contains('group-header')){
+          const heading = child.querySelector('.h1, .h2, .h3, .h4, h1, h2, h3, h4, label, span');
+          const text = heading && heading.textContent ? heading.textContent.trim() : '';
+          if(text) return text;
+        }
+        if(child.classList && child.classList.contains('section-card-header')){
+          const heading = child.querySelector('.h1, .h2, .h3, .h4, h1, h2, h3, h4, span, label');
+          const text = heading && heading.textContent ? heading.textContent.trim() : '';
+          if(text) return text;
+        }
+        if(child.tagName && /^H[1-6]$/.test(child.tagName)){
+          const text = child.textContent ? child.textContent.trim() : '';
+          if(text) return text;
+        }
+        if(child.classList && (child.classList.contains('h1') || child.classList.contains('h2') || child.classList.contains('h3') || child.classList.contains('h4') || child.classList.contains('h5') || child.classList.contains('h6'))){
+          const text = child.textContent ? child.textContent.trim() : '';
+          if(text) return text;
+        }
+        if(child.classList && (child.classList.contains('section-card') || child.classList.contains('section-card-grid') || child.classList.contains('group'))){
+          const nested = extractGroupTitleFromNode(child);
+          if(nested) return nested;
+        }
+      }
+      return '';
+    }
+
     function updateGroupTitle(group){
       if(!group || !group.toggle) return;
       const body = group.body;
       let title = group.title || '';
       if(!title && body){
+        title = extractGroupTitleFromNode(body);
+      }
+      if(!title && body){
         const label = body.querySelector('label');
-        if(label) title = label.textContent.trim();
+        if(label && label.textContent){
+          title = label.textContent.trim();
+        }
       }
       if(!title) title = `群組 ${group.id || ''}`.trim();
       group.title = title;
+      if(group.element){
+        group.element.dataset.title = title;
+      }
       group.toggle.textContent = title;
       if(group.navItem){
         group.navItem.label = title;
