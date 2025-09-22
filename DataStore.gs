@@ -39,44 +39,13 @@ const H1_TEMPLATES = Object.freeze({
   })
 });
 
-const BASIC_INFO_SECTIONS = Object.freeze([
-  { key: 'unitCode', headings: ['單位代碼：', '單位代碼:', '單位代碼'] },
-  { key: 'caseManagerName', headings: ['個案管理師：', '個案管理師:', '個案管理師'] },
-  { key: 'caseName', headings: ['個案姓名：', '個案姓名:', '個案姓名'] },
-  {
-    key: 'consultName',
-    headings: ['照專姓名：', '照專姓名:', '照專姓名', '照顧專員姓名：', '照顧專員姓名:', '照顧專員姓名']
-  },
-  { key: 'cmsLevel', headings: ['CMS 等級：', 'CMS 等級:', 'CMS 等級'] }
-]);
-
 const H1_CASE_PROFILE_SECTIONS = Object.freeze([
-  {
-    key: 'section1',
-    headings: ['(一)身心概況：', '(一) 身心概況：', '（一）身心概況：', '(一)身心概況', '(一) 身心概況', '（一）身心概況']
-  },
-  {
-    key: 'section2',
-    headings: ['(二)經濟收入：', '(二) 經濟收入：', '（二）經濟收入：', '(二)經濟收入', '(二) 經濟收入', '（二）經濟收入']
-  },
-  {
-    key: 'section3',
-    headings: ['(三)居住環境：', '(三) 居住環境：', '（三）居住環境：', '(三)居住環境', '(三) 居住環境', '（三）居住環境']
-  },
-  {
-    key: 'section4',
-    headings: ['(四)社會支持：', '(四) 社會支持：', '（四）社會支持：', '(四)社會支持', '(四) 社會支持', '（四）社會支持']
-  },
-  {
-    key: 'section5',
-    headings: ['(五)其他：', '(五) 其他：', '（五）其他：', '(五)其他', '(五) 其他', '（五）其他'],
-    fallback: '無。'
-  },
-  {
-    key: 'section6',
-    headings: ['(六)複評評值：', '(六) 複評評值：', '（六）複評評值：', '(六)複評評值', '(六) 複評評值', '（六）複評評值'],
-    fallback: '此個案為新案，無複評評值。'
-  }
+  { key: 'section1', headings: ['(一)身心概況：','(一) 身心概況：','（一）身心概況：'] },
+  { key: 'section2', headings: ['(二)經濟收入：','(二) 經濟收入：','（二）經濟收入：'] },
+  { key: 'section3', headings: ['(三)居住環境：','(三) 居住環境：','（三）居住環境：'] },
+  { key: 'section4', headings: ['(四)社會支持：','(四) 社會支持：','（四）社會支持：'] },
+  { key: 'section5', headings: ['(五)其他：','(五) 其他：','（五）其他：'], fallback: '無。' },
+  { key: 'section6', headings: ['(六)複評評值：','(六) 複評評值：','（六）複評評值：'], fallback: '此個案為新案，無複評評值。' }
 ]);
 
 const H1_PROBLEM_DICT = Object.freeze({
@@ -91,7 +60,7 @@ const H1_PROBLEM_DICT = Object.freeze({
 
 const H1_PROBLEM_HEADING_VARIANTS = (function(){
   const bases = ['(一)照顧問題','(一) 照顧問題','（一）照顧問題','（一） 照顧問題'];
-  const marks = ['：', ':', ''];
+  const marks = ['：', ':'];
   const prefixes = ['', '五、照顧目標', '五、照顧目標 ', '五、 照顧目標', '五、 照顧目標 '];
   const joiners = ['', '：', ':', '： ', ': ', ' '];
   const variants = [];
@@ -123,30 +92,16 @@ const H1_GOAL_CATEGORY_FIELDS = Object.freeze([
 ]);
 
 const H1_GOAL_TIERS = Object.freeze([
-  {
-    prefix: 'short',
-    headings: ['(二)短期目標', '(二) 短期目標', '（二）短期目標', '(二)短期目標(0-3個月)', '(二) 短期目標(0-3個月)', '（二）短期目標(0-3個月)', '（二）短期目標（0-3個月）']
-  },
-  {
-    prefix: 'mid',
-    headings: ['(三)中期目標', '(三) 中期目標', '（三）中期目標', '(三)中期目標(3-4個月)', '(三) 中期目標(3-4個月)', '（三）中期目標(3-4個月)', '（三）中期目標（3-4個月）']
-  }
+  { prefix: 'short', headings: ['(二)短期目標','(二) 短期目標'] },
+  { prefix: 'mid', headings: ['(三)中期目標','(三) 中期目標'] }
 ]);
 
-const H1_LONG_GOAL_HEADINGS = Object.freeze([
-  '(四)長期目標',
-  '(四) 長期目標',
-  '（四）長期目標',
-  '(四)長期目標(4-6個月)',
-  '(四) 長期目標(4-6個月)',
-  '（四）長期目標(4-6個月)',
-  '（四）長期目標（4-6個月）'
-]);
+const H1_LONG_GOAL_HEADINGS = Object.freeze(['(四)長期目標','(四) 長期目標']);
 
 const H1_MISMATCH_REASON_FIELDS = Object.freeze([
-  { key: 'reason1', prefix: '（一）目標達成的狀況以及未達成的差距：' },
-  { key: 'reason2', prefix: '（二）資源的變動情形：' },
-  { key: 'reason3', prefix: '（三）未使用的替代方案或是可能的影響：' }
+  { key: 'reason1', prefix: '1.目標達成的狀況以及未達成的差距：' },
+  { key: 'reason2', prefix: '2.資源的變動情形：' },
+  { key: 'reason3', prefix: '3.未使用的替代方案或是可能的影響：' }
 ]);
 
 const H1_MISMATCH_QUICK_TEMPLATES = Object.freeze({
