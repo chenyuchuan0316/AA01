@@ -120,10 +120,11 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
    - `applyAndSave` 先計算新檔名稱（`FNA1_YYYYMMDD_個案姓名_個管師姓名_V{版號}`），並以「個案×個管師」為唯一鍵遞增版號。
    - 於 `OUTPUT_FOLDER_ID` 指定的資料夾中，以 `TEMPLATE_DOC_ID` 為模板建立副本並開啟 Body。
    - `DOCUMENT_WRITERS` 依序呼叫 `applyH1_*` 函式處理各段落（邏輯集中於 `AppCore.gs`）：
-    - `applyH1_CallDate` / `applyH1_VisitDate`：更新標題列文字或插入出院日期。
-    - `applyH1_Attendees`：組出偕同訪視者句子（包含主照者、照專、其他參與者）。
+    - `applyBasicInfoSection`：寫入「基本資訊」分頁的 H2 欄位（單位代碼、個案管理師、個案姓名、照專姓名、CMS 等級），支援冒號同行與段落分行兩種模板。
+    - `applyH1_CallDate` / `applyH1_VisitDate`：同時支援舊版冒號格式與新版 H2/H3 層級，分別填入電聯日期、家訪日期與出院日期欄位。
+    - `applyH1_Attendees`：除保留舊版摘要句外，也會更新「主要照顧者／其他參與者」的關係、姓名 H3 欄位。
     - `applyH1_CaseProfile`：依新版層級輸出「四、個案概況」，（一）身心概況細分為基本資料、感官功能、吞嚥與飲食、口腔／牙齒、疼痛與皮膚、移動功能、排泄與輔具、ADL、IADL、情緒與行為、醫療與用藥、睡眠與日間活動、管路／裝置、身障資訊、建議措施與補充；後續保留（二）經濟收入、（三）居住環境、（四）社會支持、（五）其他、（六）複評評值（含結構化預覽），必要時補上預設文字並同步更新唯讀欄位。
-    - `applyH1_CareGoals`：寫入照顧問題、短/中期四格、長期目標。
+    - `applyH1_CareGoals`：寫入照顧問題、短/中期四格、長期目標（含 0–3/3–4/4–6 個月標示）。
     - `applyH1_MismatchPlan`：整合不一致原因與常用快捷語句。
    - 接著透過 `applyPlanExecutionPage` 與 `applyPlanServiceSummaryPage` 在文件結尾加入頁 2（計畫執行規劃）與頁 3（服務明細），自動插入分頁。
    - 完成後儲存關閉文件，回傳新檔資訊給前端。
