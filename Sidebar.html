@@ -491,9 +491,12 @@
       flex-wrap:wrap;
     }
     #stickyOverflowPanel{
-      display:flex;
+      display:none;
       flex-direction:column;
       gap:var(--space-sm);
+    }
+    .app-sticky[data-expanded="1"] #stickyOverflowPanel{
+      display:flex;
     }
     .sticky-overflow-toggle{
       display:inline-flex;
@@ -533,8 +536,6 @@
       .app-sticky[data-expanded="1"] .sticky-row--tabs{ display:flex; }
     }
     @media (max-width:1279px){
-      #stickyOverflowPanel{ display:none; }
-      .app-sticky[data-expanded="1"] #stickyOverflowPanel{ display:flex; }
       .sticky-row--wizard{ align-items:center; }
     }
     @media (max-width:720px){
