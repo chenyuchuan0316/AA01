@@ -342,6 +342,35 @@
     /* 段落（H5對應） */
     .paragraph{ font-size:16px; font-weight:400; color:#111827; line-height:1.5; }
     .h5{ font-size:16px; font-weight:400; color:#111827; line-height:1.5; }
+
+    .heading-tier{ display:block; font-weight:700; }
+    .h2.heading-tier,
+    .h3.heading-tier,
+    .h4.heading-tier,
+    .h5.heading-tier{ border-left:none; border-bottom:none; padding-left:0; background:none; }
+    .heading-tier--primary{
+      color:var(--h1-color);
+      font-size:clamp(22px, 1.9vw, 28px);
+      margin-top:var(--space-h2-top);
+      margin-bottom:var(--space-h2-bottom);
+      padding-bottom:6px;
+      border-bottom:1px solid var(--border-strong);
+    }
+    .heading-tier--section{
+      color:var(--h2-color);
+      font-size:clamp(19px, 1.6vw, 23px);
+      margin-top:var(--space-h3-top);
+      margin-bottom:var(--space-h3-bottom);
+      border-left:4px solid var(--brand-blue);
+      padding-left:12px;
+      border-radius:4px;
+    }
+    .heading-tier--subsection{
+      color:var(--h3-color);
+      font-size:18px;
+      margin-top:var(--space-h4-top);
+      margin-bottom:var(--space-h4-bottom);
+    }
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section],
     .page-section,
@@ -2802,21 +2831,22 @@
     <!-- 四、個案概況 -->
     <div class="group" id="caseOverviewGroup" data-span="full" data-collapsed="1">
     <div class="titlebar">
-      <span class="h1">四、個案概況</span>
+      <span class="h2 heading-tier heading-tier--primary">四、個案概況</span>
       <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
     </div>
 
+    <span class="h3 heading-tier heading-tier--primary">（一）身心概況</span>
     <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
     <div class="row">
       <div id="section1_block" data-section="s1">
         <div id="section1_error_summary" class="error-summary" data-show="0" aria-live="polite"></div>
 
         <div class="group" id="caseProfileBasicGroup" data-collapsed="0">
-          <span class="h1">一、基本資料</span>
+          <span class="h4 heading-tier heading-tier--section">一、基本資料</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileBasicCard">
-                <span class="h2">基本資料</span>
+                <span class="h5 heading-tier heading-tier--subsection">基本資料</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="short">
                     <label class="h3" for="s1_age">年齡</label>
@@ -2841,11 +2871,11 @@
         </div>
 
         <div class="group" id="caseProfileSensoryGroup" data-collapsed="0">
-          <span class="h1">二、感官功能</span>
+          <span class="h4 heading-tier heading-tier--section">二、感官功能</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileVisionCard">
-                <span class="h2">視力</span>
+                <span class="h5 heading-tier heading-tier--subsection">視力</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3" for="s1_vision">視力程度</label>
@@ -2878,7 +2908,7 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileHearingCard">
-                <span class="h2">聽力</span>
+                <span class="h5 heading-tier heading-tier--subsection">聽力</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3" for="s1_hearing_level">聽力程度</label>
@@ -2911,11 +2941,11 @@
         </div>
 
         <div class="group" id="caseProfileOralGroup" data-collapsed="0">
-          <span class="h1">三、口腔與吞嚥功能</span>
+          <span class="h4 heading-tier heading-tier--section">三、口腔與吞嚥功能</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileSwallowCard">
-                <span class="h2">吞嚥功能</span>
+                <span class="h5 heading-tier heading-tier--subsection">吞嚥功能</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3" for="s1_swallow">吞嚥／嗆咳程度</label>
@@ -2940,7 +2970,7 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileOralCard">
-                <span class="h2">口腔與牙齒</span>
+                <span class="h5 heading-tier heading-tier--subsection">口腔與牙齒</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
                     <label class="h3">口腔牙齒／假牙</label>
@@ -2954,11 +2984,11 @@
         </div>
 
         <div class="group" id="caseProfileMobilityGroup" data-collapsed="0">
-          <span class="h1">四、移動功能</span>
+          <span class="h4 heading-tier heading-tier--section">四、移動功能</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileMobilityCard">
-                <span class="h2">移動功能</span>
+                <span class="h5 heading-tier heading-tier--subsection">移動功能</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3" for="s1_transfer">起身／移位能力</label>
@@ -3056,11 +3086,11 @@
         </div>
 
         <div class="group" id="caseProfileAdlGroup" data-collapsed="0">
-          <span class="h1">五、ADL（日常生活活動）</span>
+          <span class="h4 heading-tier heading-tier--section">五、ADL（日常生活活動）</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileAdlCard">
-                <span class="h2">ADL 日常生活活動</span>
+                <span class="h5 heading-tier heading-tier--subsection">ADL 日常生活活動</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3" for="s1_adl_eating">進食</label>
@@ -3114,11 +3144,11 @@
         </div>
 
         <div class="group" id="caseProfileIadlGroup" data-collapsed="0">
-          <span class="h1">六、IADL（工具性日常活動）</span>
+          <span class="h4 heading-tier heading-tier--section">六、IADL（工具性日常活動）</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileIadlCard">
-                <span class="h2">IADL 工具性日常活動</span>
+                <span class="h5 heading-tier heading-tier--subsection">IADL 工具性日常活動</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3" for="s1_phone">電話使用</label>
@@ -3197,11 +3227,11 @@
         </div>
 
         <div class="group" id="caseProfileExcretionGroup" data-collapsed="0">
-          <span class="h1">七、排泄功能</span>
+          <span class="h4 heading-tier heading-tier--section">七、排泄功能</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileExcretionCard">
-                <span class="h2">排泄功能</span>
+                <span class="h5 heading-tier heading-tier--subsection">排泄功能</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
                     <label class="h3">排泄輔具</label>
@@ -3242,11 +3272,11 @@
         </div>
 
         <div class="group" id="caseProfileHealthGroup" data-collapsed="0">
-          <span class="h1">八、健康狀況與病史</span>
+          <span class="h4 heading-tier heading-tier--section">八、健康狀況與病史</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileDiseaseCard">
-                <span class="h2">病史與過敏</span>
+                <span class="h5 heading-tier heading-tier--subsection">病史與過敏</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
                     <label class="h3">慢性病史</label>
@@ -3264,7 +3294,7 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileMedicationCard">
-                <span class="h2">用藥與就醫</span>
+                <span class="h5 heading-tier heading-tier--subsection">用藥與就醫</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
                     <label class="h3">現用藥物種類</label>
@@ -3303,7 +3333,7 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileDeviceCard">
-                <span class="h2">管路／裝置</span>
+                <span class="h5 heading-tier heading-tier--subsection">管路／裝置</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
                     <label class="h3">管路／裝置</label>
@@ -3313,7 +3343,7 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileDisabilityCard">
-                <span class="h2">身心障礙資訊</span>
+                <span class="h5 heading-tier heading-tier--subsection">身心障礙資訊</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3">身心障礙等級</label>
@@ -3331,11 +3361,11 @@
         </div>
 
         <div class="group" id="caseProfilePsychGroup" data-collapsed="0">
-          <span class="h1">九、心理與行為狀態</span>
+          <span class="h4 heading-tier heading-tier--section">九、心理與行為狀態</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfilePsychBehaviorCard">
-                <span class="h2">心理與行為</span>
+                <span class="h5 heading-tier heading-tier--subsection">心理與行為</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3">情緒狀態</label>
@@ -3379,7 +3409,7 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfilePsychSleepCard">
-                <span class="h2">睡眠與日間活動</span>
+                <span class="h5 heading-tier heading-tier--subsection">睡眠與日間活動</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3" for="s1_sleep">睡眠品質</label>
@@ -3413,7 +3443,7 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfilePainSkinCard">
-                <span class="h2">疼痛與皮膚狀態</span>
+                <span class="h5 heading-tier heading-tier--subsection">疼痛與皮膚狀態</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="medium">
                     <label class="h3" for="s1_pain">疼痛【選填】</label>
@@ -3536,12 +3566,12 @@
         </div>
 
         <div class="group" id="caseProfileSummaryGroup" data-collapsed="0">
-          <span class="h1">總結建議</span>
+          <span class="h4 heading-tier heading-tier--section">總結建議</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileActionsCard">
                 <div class="section-card-header">
-                  <span class="h2">建議措施</span>
+                  <span class="h5 heading-tier heading-tier--subsection">建議措施</span>
                   <button type="button" class="small" onclick="addActionEntry()">＋新增</button>
                 </div>
                 <div class="autogrid autogrid--wide">
@@ -3553,7 +3583,7 @@
                 </div>
               </section>
               <section class="section-card" id="caseProfileNotesCard">
-                <span class="h2">補充內容</span>
+                <span class="h5 heading-tier heading-tier--subsection">補充內容</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="long">
                     <label class="h3" for="s1_notes">補充內容【選填】</label>
@@ -3580,7 +3610,7 @@
     <div class="row">
       <div id="section2_block" data-section="s2">
         <div class="titlebar">
-          <label class="h3">（二）經濟收入</label>
+          <span class="h3 heading-tier heading-tier--primary">（二）經濟收入</span>
         </div>
         <div class="grid2 form-row-2col">
           <div>
@@ -3616,7 +3646,7 @@
     <div class="row">
       <div id="section3_block" data-section="s3">
         <div class="titlebar">
-          <label class="h3">（三）居住環境</label>
+          <span class="h3 heading-tier heading-tier--primary">（三）居住環境</span>
         </div>
         <div class="grid3 form-row-3col">
           <div>
@@ -3671,7 +3701,7 @@
     <div class="row">
       <div id="section4_block" data-section="s4">
         <div class="titlebar">
-          <label class="h3">（四）社會支持</label>
+          <span class="h3 heading-tier heading-tier--primary">（四）社會支持</span>
         </div>
 
         <div class="grid3 form-row-3col">
@@ -3853,7 +3883,7 @@
     <div class="row">
       <div id="section5_block" data-section="s5">
         <div class="titlebar">
-          <label class="h3">（五）其他</label>
+          <span class="h3 heading-tier heading-tier--primary">（五）其他</span>
         </div>
         <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
       </div>
@@ -3863,7 +3893,7 @@
     <div class="row">
       <div id="section6_block" data-section="s6">
         <div class="titlebar">
-          <label class="h3">（六）複評評值</label>
+          <span class="h3 heading-tier heading-tier--primary">（六）複評評值</span>
         </div>
         <div class="grid2 form-row-2col">
           <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
@@ -3930,7 +3960,7 @@
 
   <!-- 六、與照專…（原功能保留） -->
   <div class="group" id="mismatchPlanGroup" data-span="full">
-    <span class="h2">六、與照專建議服務項目、問題清單不一致之原因說明及未來規劃</span>
+    <span class="h2">六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃</span>
     <div class="row"><div>
       <label class="h3">（一）目標達成的狀況以及未達成的差距</label>
       <textarea id="reason1" placeholder="填寫欄位"></textarea>
@@ -3989,7 +4019,7 @@
 
         <section class="section-card" id="planStationSection">
           <div class="titlebar">
-            <label class="h2">三、巷弄長照站資訊與意願</label>
+            <label class="h3 heading-tier heading-tier--section">三、巷弄長照站資訊與意願</label>
           </div>
           <div class="plan-meta-grid">
             <div>
@@ -4009,14 +4039,14 @@
 
         <section class="section-card" id="planEmergencySection">
           <div class="titlebar">
-            <label class="h2">四、緊急救援服務說明</label>
+            <label class="h3 heading-tier heading-tier--section">四、緊急救援服務說明</label>
           </div>
           <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
         </section>
 
         <section class="section-card" id="planSummaryGroup">
           <div class="titlebar">
-            <label class="h2">附件二（服務計畫明細）預覽</label>
+            <label class="h3 heading-tier heading-tier--section">附件二（服務計畫明細）預覽</label>
           </div>
           <div class="summary-actions">
             <button type="button" class="small" id="planSummaryCopyBtn">複製表格</button>
@@ -4056,7 +4086,7 @@
 
         <section class="section-card" id="planTextGroup">
           <div class="titlebar">
-            <label class="h2">附件一：計畫執行規劃預覽</label>
+            <label class="h3 heading-tier heading-tier--section">附件一：計畫執行規劃預覽</label>
           </div>
           <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
           <textarea id="plan_text" class="plan-preview" readonly></textarea>
@@ -15318,7 +15348,7 @@
         if(!group) return;
         if(group.dataset && (group.dataset.collapsible === '0' || group.dataset.collapsible === 'disabled')) return;
         if(group.querySelector(':scope > .group-header')) return;
-        let heading=group.querySelector(':scope > .h1');
+        let heading=group.querySelector(':scope > .h1, :scope > .heading-tier');
         let header=null;
         if(heading){
           header=document.createElement('div');
@@ -15327,7 +15357,7 @@
           header.appendChild(heading);
         }else{
           const titlebar=group.querySelector(':scope > .titlebar');
-          const titleHeading=titlebar ? titlebar.querySelector('.h1') : null;
+          const titleHeading=titlebar ? titlebar.querySelector('.h1, .heading-tier') : null;
           if(!titlebar || !titleHeading) return;
           heading=titleHeading;
           header=document.createElement('div');
