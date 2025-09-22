@@ -243,6 +243,10 @@
       margin-bottom:var(--space-xs);
       flex-wrap:wrap;
     }
+    .group-header > .titlebar{
+      flex:1 1 auto;
+      margin:0;
+    }
     .group[data-collapsed="1"] .group-header{ margin-bottom:0; }
     .group-content{ display:block; }
     .group[data-collapsed="1"] .group-content{ display:none; }
@@ -759,6 +763,14 @@
       padding:var(--space-xxs) var(--space-xs);
       border-radius:12px;
       transition:background .2s ease, color .2s ease, box-shadow .2s ease;
+    }
+    .wizard-step[data-locked="1"]{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .wizard-step[data-locked="1"]:hover{
+      background:none;
+      color:var(--label);
     }
     .wizard-step::before{
       content:'';
@@ -2341,6 +2353,56 @@
       border-color:#d92d20 !important;
       box-shadow:0 0 0 2px rgba(217,45,32,.2) !important;
     }
+    .input-complete{
+      border-color:var(--status-complete-border) !important;
+      box-shadow:0 0 0 2px rgba(34,197,94,.25) !important;
+    }
+    .basic-info-field[data-state="complete"] label{
+      color:var(--status-complete-strong);
+    }
+    .basic-info-field[data-state="invalid"] label{
+      color:var(--label);
+    }
+    .basic-info-status{
+      font-size:0.82rem;
+      font-weight:600;
+      min-height:1.25em;
+      display:flex;
+      align-items:center;
+      gap:4px;
+      color:#475569;
+    }
+    .basic-info-status::before{ content:''; font-weight:700; }
+    .basic-info-status[data-state="invalid"]{ color:#b91c1c; }
+    .basic-info-status[data-state="invalid"]::before{ content:'!'; }
+    .basic-info-status[data-state="complete"]{ color:var(--status-complete-strong); }
+    .basic-info-status[data-state="complete"]::before{ content:'✓'; }
+    .cms-level-row #cmsLevelGroup{
+      transition:box-shadow .2s ease;
+    }
+    .cms-level-row[data-status="invalid"] #cmsLevelGroup{
+      box-shadow:0 0 0 2px rgba(217,45,32,.2);
+      border-radius:16px;
+    }
+    .cms-level-row[data-status="complete"] #cmsLevelGroup{
+      box-shadow:0 0 0 2px rgba(34,197,94,.25);
+      border-radius:16px;
+    }
+    .cms-level-row[data-status="complete"] > .h2{ color:var(--status-complete-strong); }
+    .cms-level-row[data-status="invalid"] > .h2{ color:var(--label); }
+    .group[data-plan-locked="1"] .group-header{ opacity:.85; }
+    .group[data-plan-locked="1"] .group-collapse{
+      cursor:not-allowed;
+      background:rgba(148,163,184,.16);
+      color:#64748b;
+      border-color:rgba(148,163,184,.4);
+    }
+    .group[data-plan-locked="1"] .group-collapse:hover,
+    .group[data-plan-locked="1"] .group-collapse:focus-visible{
+      background:rgba(148,163,184,.16);
+      color:#64748b;
+    }
+    .group-collapse.is-locked .group-collapse-icon{ opacity:.6; }
     .checkcol.input-invalid{
       border:1px solid #fca5a5;
       border-radius:var(--radius);
@@ -2608,26 +2670,29 @@
                   <option>FNA1</option><option>FNA2</option><option>FNA3</option>
                 </select>
               </div>
-              <div class="basic-info-field case-manager-field field-intro" data-field-size="medium">
+              <div class="basic-info-field case-manager-field field-intro" data-field-size="medium" data-basic-required="1">
                 <label class="h2" for="caseManagerName">個案管理師</label>
                 <select id="caseManagerName">
                   <option value="" class="placeholder-option" disabled selected>請選擇</option>
                 </select>
+                <div class="basic-info-status" id="caseManagerStatus" role="status" aria-live="polite"></div>
               </div>
             </div>
             <div class="basic-info-row" data-row="2">
-              <div class="basic-info-field case-name-field field-intro" data-field-size="medium">
+              <div class="basic-info-field case-name-field field-intro" data-field-size="medium" data-basic-required="1">
                 <label class="h2" for="caseName">個案姓名</label>
                 <input id="caseName" type="text" placeholder="請輸入">
+                <div class="basic-info-status" id="caseNameStatus" role="status" aria-live="polite"></div>
               </div>
-              <div class="basic-info-field consult-name-field field-intro" data-field-size="medium">
+              <div class="basic-info-field consult-name-field field-intro" data-field-size="medium" data-basic-required="1">
                 <label class="h2" for="consultName">照專姓名</label>
                 <select id="consultName">
                   <option value="" class="placeholder-option" disabled selected>請選擇</option>
                 </select>
+                <div class="basic-info-status" id="consultStatus" role="status" aria-live="polite"></div>
               </div>
             </div>
-            <div class="cms-level-row" data-row="3">
+            <div class="cms-level-row" data-row="3" data-basic-required="1">
               <label class="h2" for="cmsLevelValue">CMS 等級</label>
               <div id="cmsLevelGroup" class="cms-level-group">
                 <button type="button" data-level="2">2</button>
@@ -2639,6 +2704,7 @@
                 <button type="button" data-level="8">8</button>
               </div>
               <div class="hint cms-level-hint">選擇 CMS 等級後會同步填入隱藏欄位。</div>
+              <div class="basic-info-status" id="cmsLevelStatus" role="status" aria-live="polite"></div>
               <input type="hidden" id="cmsLevelValue" value="">
             </div>
           </div>
@@ -2646,7 +2712,7 @@
       </div>
     </div>
 
-    <div class="group" id="contactVisitGroup">
+    <div class="group" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
       <span class="h1">計畫目標</span>
       <div class="section-card-grid">
         <section class="section-card contact-visit-card" data-card="call">
@@ -2721,7 +2787,7 @@
     </div>
 
     <!-- 四、個案概況 -->
-  <div class="group" data-span="full">
+  <div class="group" data-span="full" data-collapsed="1">
     <div class="titlebar">
       <span class="h1">四、個案概況</span>
       <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
@@ -3711,7 +3777,7 @@
   </div>
 
   <div class="page-section" data-page="execution" data-columns="2">
-    <div class="group" data-span="full">
+    <div class="group" data-span="full" data-collapsed="1">
       <span class="h1">計畫執行規劃</span>
       <div class="section-card-grid">
         <section class="section-card" id="planExecutionGroup">
@@ -3818,7 +3884,7 @@
   </div>
 
   <div class="page-section" data-page="notes" data-columns="1">
-    <div class="group" id="planOtherGroup" data-span="full">
+    <div class="group" id="planOtherGroup" data-span="full" data-collapsed="1">
       <span class="h1">其他備註</span>
       <div class="section-card-grid">
         <section class="section-card">
@@ -4762,20 +4828,31 @@
       const anchorId = target.dataset ? target.dataset.target : '';
       if(!anchorId) return;
       const pageId = target.dataset ? target.dataset.page : '';
-      const performScroll = ()=>{
-        const anchorEl = document.getElementById(anchorId);
-        if(anchorEl){
-          focusSectionGroupByElement(anchorEl);
-          const step = resolveWizardStepForElement(anchorEl);
-          if(step) updateWizardVisual(step);
+      const anchorEl=document.getElementById(anchorId);
+      if(anchorEl){
+        if(blockIfPlanGroupLocked(anchorEl)) return;
+        const step = resolveWizardStepForElement(anchorEl);
+        if(step && isWizardStepLocked(step)){
+          handleWizardStepLocked(step);
+          return;
         }
-        scrollToAnchorId(anchorId);
-      };
-      if(pageId && pageId !== currentPageId){
-        setActivePage(pageId);
-        window.requestAnimationFrame(performScroll);
-      }else{
-        performScroll();
+        const performScroll = ()=>{
+          focusSectionGroupByElement(anchorEl);
+          if(step) updateWizardVisual(step);
+          scrollToAnchorId(anchorId);
+        };
+        if(pageId && pageId !== currentPageId){
+          if(setActivePage(pageId, { step: step }) === false){
+            return;
+          }
+          window.requestAnimationFrame(performScroll);
+        }else{
+          performScroll();
+        }
+      }else if(pageId && pageId !== currentPageId){
+        if(setActivePage(pageId) !== false){
+          window.requestAnimationFrame(()=>scrollToAnchorId(anchorId));
+        }
       }
     }
 
@@ -4916,7 +4993,11 @@
       if(!select) return;
       const step = Number(select.value);
       if(step){
-        setCurrentWizardStep(step, { focus:true });
+        if(isWizardStepLocked(step)){
+          handleWizardStepLocked(step);
+        }else{
+          setCurrentWizardStep(step, { focus:true });
+        }
       }
       select.value='';
       if(typeof select.blur === 'function'){ select.blur(); }
@@ -5005,20 +5086,44 @@
       }
       const option = select.selectedOptions && select.selectedOptions.length ? select.selectedOptions[0] : null;
       const pageId = option ? option.dataset.page : '';
-      const performScroll = ()=>{
-        const anchorEl = document.getElementById(anchorId);
-        if(anchorEl){
-          focusSectionGroupByElement(anchorEl);
-          const step = resolveWizardStepForElement(anchorEl);
-          if(step) updateWizardVisual(step);
+      const anchorEl=document.getElementById(anchorId);
+      if(anchorEl){
+        if(blockIfPlanGroupLocked(anchorEl)){
+          select.value='';
+          select.blur();
+          return;
         }
+        const step = resolveWizardStepForElement(anchorEl);
+        if(step && isWizardStepLocked(step)){
+          handleWizardStepLocked(step);
+          select.value='';
+          select.blur();
+          return;
+        }
+        const performScroll = ()=>{
+          focusSectionGroupByElement(anchorEl);
+          if(step) updateWizardVisual(step);
+          scrollToAnchorId(anchorId);
+        };
+        if(pageId && pageId !== currentPageId){
+          if(setActivePage(pageId, { step: step }) === false){
+            select.value='';
+            select.blur();
+            return;
+          }
+          window.requestAnimationFrame(performScroll);
+        }else{
+          performScroll();
+        }
+      }else if(pageId && pageId !== currentPageId){
+        if(setActivePage(pageId) === false){
+          select.value='';
+          select.blur();
+          return;
+        }
+        window.requestAnimationFrame(()=>scrollToAnchorId(anchorId));
+      }else if(!anchorEl){
         scrollToAnchorId(anchorId);
-      };
-      if(pageId && pageId !== currentPageId){
-        setActivePage(pageId);
-        window.requestAnimationFrame(performScroll);
-      }else{
-        performScroll();
       }
       select.value='';
       select.blur();
@@ -6459,6 +6564,7 @@
         }
         buildApprovalPlanPreview();
         scheduleSummaryUpdate();
+        updateBasicInfoCompletion({ silent:true });
       }).getCaseManagersByUnit(unit);
     }
 
@@ -6501,6 +6607,7 @@
         updateConsultVisitText();
         toggleCallDateByConsultVisit();
         scheduleSummaryUpdate();
+        updateBasicInfoCompletion({ silent:true });
       }).getConsultantsByUnit(unit);
     }
 
@@ -8694,9 +8801,17 @@
       const link = evt && evt.currentTarget ? evt.currentTarget : null;
       if(!link) return;
       const targetId = link.dataset.target || '';
+      const targetEl = targetId ? document.getElementById(targetId) : null;
+      if(targetEl && blockIfPlanGroupLocked(targetEl)) return;
       const step = resolveWizardStepForField(targetId);
+      if(step && isWizardStepLocked(step)){
+        handleWizardStepLocked(step);
+        return;
+      }
       if(step){
-        setCurrentWizardStep(step, { scroll:false });
+        if(!setCurrentWizardStep(step, { scroll:false })){
+          return;
+        }
       }else{
         setActivePage('goals');
       }
@@ -8771,13 +8886,22 @@
         setActivePage('goals');
         return;
       }
+      if(blockIfPlanGroupLocked(el)) return;
       const step = resolveWizardStepForElement(el);
+      if(step && isWizardStepLocked(step)){
+        handleWizardStepLocked(step);
+        return;
+      }
+      const section = el.closest ? el.closest('.page-section') : null;
+      const pageId = section && section.dataset ? section.dataset.page : 'goals';
       if(step){
-        setCurrentWizardStep(step, { scroll:false });
+        if(!setCurrentWizardStep(step, { scroll:false })){
+          return;
+        }
       }else{
-        const section = el.closest ? el.closest('.page-section') : null;
-        const pageId = section && section.dataset ? section.dataset.page : 'goals';
-        setActivePage(pageId || 'goals');
+        if(setActivePage(pageId || 'goals') === false){
+          return;
+        }
       }
       const scrollTask=()=>{
         if(typeof el.scrollIntoView === 'function'){
@@ -12671,7 +12795,7 @@
       if(emergency){ emergency.addEventListener('input', evt=>{ planMetaState.emergencyNote = evt.target.value; buildApprovalPlanPreview(); }); }
     }
 
-    function setCmsLevel(level){
+    function setCmsLevel(level, options){
       const value = level ? String(level) : '';
       const hidden=document.getElementById('cmsLevelValue');
       if(hidden) hidden.value = value;
@@ -12682,6 +12806,7 @@
       syncPlanStateWithSelections();
       scheduleSummaryUpdate();
       if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
+      updateBasicInfoCompletion(options);
     }
 
     function getCmsLevel(){
@@ -12695,7 +12820,7 @@
         btn.addEventListener('click', ()=>{ setCmsLevel(btn.dataset.level); });
       });
       const current = (document.getElementById('cmsLevelValue')?.value || '').trim();
-      if(current) setCmsLevel(current);
+      if(current) setCmsLevel(current, { silent:true });
     }
 
     function loadServiceCatalog(){
@@ -13822,8 +13947,21 @@
       const fieldId=link.dataset.target;
       const step = resolveWizardStepForField(fieldId);
       hideValidationToast();
-      if(pageId) setActivePage(pageId, { step: step });
-      else if(step) setCurrentWizardStep(step, { scroll:false });
+      const fieldEl = fieldId ? document.getElementById(fieldId) : null;
+      if(fieldEl && blockIfPlanGroupLocked(fieldEl)) return;
+      if(step && isWizardStepLocked(step)){
+        handleWizardStepLocked(step);
+        return;
+      }
+      if(pageId){
+        if(setActivePage(pageId, { step: step }) === false){
+          return;
+        }
+      }else if(step){
+        if(!setCurrentWizardStep(step, { scroll:false })){
+          return;
+        }
+      }
       focusErrorTarget(fieldId);
     }
 
@@ -13831,6 +13969,7 @@
       if(!fieldId) return;
       const el=document.getElementById(fieldId);
       if(!el) return;
+      if(blockIfPlanGroupLocked(el)) return;
       if(typeof el.scrollIntoView === 'function'){
         el.scrollIntoView({behavior:'smooth', block:'center'});
       }
@@ -14305,9 +14444,15 @@
     }
 
     function setCurrentWizardStep(step, options){
+      if(isWizardStepLocked(step)){
+        handleWizardStepLocked(step);
+        return false;
+      }
       const meta = getWizardStepMeta(step);
-      if(!meta) return;
-      setActivePage(meta.page, { step: meta.step });
+      if(!meta) return false;
+      if(setActivePage(meta.page, { step: meta.step }) === false){
+        return false;
+      }
       if(!options || options.scroll !== false){
         const anchor = meta.anchorElement || (meta.anchor ? document.querySelector(meta.anchor) : null);
         scrollToWizardAnchor(anchor, options);
@@ -14319,6 +14464,7 @@
           focusTarget.focus({ preventScroll:true });
         }
       }
+      return true;
     }
 
     function goWizardRelative(delta){
@@ -14327,6 +14473,10 @@
       if(index === -1) return;
       const target = wizardStepsMeta[index + delta];
       if(target){
+        if(isWizardStepLocked(target.step)){
+          handleWizardStepLocked(target.step);
+          return;
+        }
         setCurrentWizardStep(target.step, { focus:true });
       }
     }
@@ -14410,7 +14560,13 @@
         meta.anchorElement = meta.anchor ? document.querySelector(meta.anchor) : null;
         wizardStepsMeta.push(meta);
         wizardStepLookup[step] = meta;
-        btn.addEventListener('click', function(){ setCurrentWizardStep(step, { focus:true }); });
+        btn.addEventListener('click', function(){
+          if(isWizardStepLocked(step)){
+            handleWizardStepLocked(step);
+            return;
+          }
+          setCurrentWizardStep(step, { focus:true });
+        });
       });
       wizardStepsMeta.sort(function(a,b){ return a.step - b.step; });
       if(wizardStepsMeta.length){
@@ -14425,6 +14581,7 @@
           initialStep = wizardStepsMeta[0].step;
         }
         updateWizardVisual(initialStep);
+        applyWizardStepLockStates();
       }else{
         currentWizardStep = null;
         updateWizardButtons();
@@ -14473,8 +14630,13 @@
 
         /* ===== 初始化 ===== */
     function setActivePage(pageId, options){
-      if(!pageId) return;
+      if(!pageId) return false;
       const opts = options || {};
+      const targetStep = determineWizardStepForPage(pageId, opts);
+      if(targetStep !== null && isWizardStepLocked(targetStep)){
+        handleWizardStepLocked(targetStep);
+        return false;
+      }
       currentPageId = pageId;
       const sections=document.querySelectorAll('.page-section');
       sections.forEach(section=>{
@@ -14487,9 +14649,8 @@
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-current', isActive ? 'page' : 'false');
       });
-      const step = determineWizardStepForPage(pageId, opts);
-      if(step !== null){
-        updateWizardVisual(step);
+      if(targetStep !== null){
+        updateWizardVisual(targetStep);
       }else{
         updateWizardButtons();
         syncTabStatuses();
@@ -14497,6 +14658,7 @@
       scheduleSideNavRender();
       scheduleLayoutMeasurements();
       scheduleSummaryProgressRender();
+      return true;
     }
 
     function initPageTabs(){
@@ -14564,6 +14726,217 @@
       }
     }
 
+    const BASIC_INFO_REQUIRED_FIELDS = Object.freeze([
+      { fieldId:'caseManagerName', type:'select', statusId:'caseManagerStatus', label:'個案管理師' },
+      { fieldId:'consultName', type:'select', statusId:'consultStatus', label:'照專姓名' },
+      { fieldId:'caseName', type:'input', statusId:'caseNameStatus', label:'個案姓名' },
+      { fieldId:'cmsLevelGroup', type:'cms', statusId:'cmsLevelStatus', label:'CMS 等級' }
+    ]);
+
+    const basicInfoState = { complete:false };
+    const planGroupState = { locked:true, pendingExpand:false };
+
+    function isPlanGroupLocked(){
+      return !!planGroupState.locked;
+    }
+
+    function applyPlanGroupLockState(options){
+      const groupElement=document.getElementById('contactVisitGroup');
+      if(groupElement){
+        groupElement.dataset.planLocked = planGroupState.locked ? '1' : '0';
+      }
+      const ctrl=simpleGroupControllers['contactVisitGroup'];
+      if(!ctrl || !ctrl.element){
+        return;
+      }
+      const toggle=ctrl.toggle || ctrl.element.querySelector('.group-collapse');
+      if(toggle){
+        toggle.classList.toggle('is-locked', planGroupState.locked);
+        toggle.setAttribute('aria-disabled', planGroupState.locked ? 'true' : 'false');
+        toggle.dataset.locked = planGroupState.locked ? '1' : '0';
+        if(planGroupState.locked){
+          toggle.setAttribute('title', '完成基本資訊後可展開');
+        }else{
+          toggle.removeAttribute('title');
+        }
+      }
+      if(planGroupState.locked){
+        if(ctrl.element.dataset.collapsed !== '1'){
+          ctrl.applyState(true);
+        }
+      }else if(planGroupState.pendingExpand || (options && options.expand)){
+        ctrl.applyState(false);
+        planGroupState.pendingExpand = false;
+      }
+    }
+
+    function setPlanGroupLocked(locked, options){
+      const normalized = !!locked;
+      const shouldExpand = options && options.expand;
+      planGroupState.locked = normalized;
+      if(!normalized && shouldExpand){
+        planGroupState.pendingExpand = true;
+      }
+      if(normalized){
+        planGroupState.pendingExpand = false;
+      }
+      applyPlanGroupLockState({ expand: shouldExpand });
+    }
+
+    function getBasicInfoFieldValue(field){
+      if(!field) return '';
+      if(field.type === 'cms'){
+        return typeof getCmsLevel === 'function' ? (getCmsLevel() || '') : '';
+      }
+      const el=document.getElementById(field.fieldId);
+      if(!el) return '';
+      if(el.tagName === 'SELECT'){
+        if(el.disabled) return '';
+        const value=(el.value || '').trim();
+        if(!value) return '';
+        const option=el.options[el.selectedIndex];
+        if(option && (option.disabled || option.classList.contains('placeholder-option'))){
+          return '';
+        }
+        return value;
+      }
+      if(typeof el.value === 'string'){
+        return el.value.trim();
+      }
+      return '';
+    }
+
+    function updateBasicInfoFieldState(field, filled){
+      const status = filled ? 'complete' : 'invalid';
+      if(field.type === 'cms'){
+        const row=document.querySelector('.cms-level-row');
+        if(row){
+          row.dataset.status = status;
+        }
+      }else{
+        const el=document.getElementById(field.fieldId);
+        if(el && el.classList){
+          if(filled){
+            el.classList.remove('input-invalid');
+            el.classList.add('input-complete');
+          }else{
+            el.classList.add('input-invalid');
+            el.classList.remove('input-complete');
+          }
+          const container=el.closest('.basic-info-field');
+          if(container){
+            container.dataset.state = status;
+          }
+        }
+      }
+      const statusEl=document.getElementById(field.statusId);
+      if(statusEl){
+        statusEl.dataset.state = status;
+        const label=field.label || '';
+        if(filled){
+          statusEl.textContent = label ? `「${label}」已完成` : '已完成';
+        }else{
+          statusEl.textContent = label ? `請完成「${label}」` : '請完成此欄位';
+        }
+      }
+    }
+
+    function applyWizardStepLockStates(){
+      if(!Array.isArray(wizardStepsMeta) || !wizardStepsMeta.length) return;
+      wizardStepsMeta.forEach(meta=>{
+        if(!meta || !meta.element) return;
+        const locked = meta.step > 1 && !basicInfoState.complete;
+        meta.element.dataset.locked = locked ? '1' : '0';
+        meta.element.setAttribute('aria-disabled', locked ? 'true' : 'false');
+      });
+    }
+
+    function updateBasicInfoCompletion(options){
+      let allFilled = true;
+      BASIC_INFO_REQUIRED_FIELDS.forEach(field=>{
+        const filled = !!getBasicInfoFieldValue(field);
+        updateBasicInfoFieldState(field, filled);
+        if(!filled){
+          allFilled = false;
+        }
+      });
+      const wasComplete = !!basicInfoState.complete;
+      basicInfoState.complete = allFilled;
+      applyWizardStepLockStates();
+      if(allFilled){
+        const shouldExpand = !wasComplete && !(options && options.silent);
+        setPlanGroupLocked(false, { expand: shouldExpand });
+        if(shouldExpand){
+          showValidationToast({
+            type:'warn',
+            message:'基本資訊完成，請繼續填寫計畫目標。',
+            page:'goals',
+            step:2
+          });
+          if(typeof scrollToAnchorId === 'function'){
+            scrollToAnchorId('contactVisitGroup');
+          }
+        }
+      }else{
+        setPlanGroupLocked(true);
+        if(currentWizardStep && currentWizardStep > 1 && typeof setCurrentWizardStep === 'function'){
+          setCurrentWizardStep(1, { scroll:false });
+        }
+      }
+      return allFilled;
+    }
+
+    function initBasicInfoValidation(){
+      updateBasicInfoCompletion({ silent:true });
+    }
+
+    function handleLockedPlanAttempt(){
+      updateBasicInfoCompletion({ silent:true });
+      const focusTargetId=getFirstIncompleteBasicInfoFieldId();
+      showValidationToast({
+        type:'warn',
+        message:'請先完成基本資訊。',
+        target:focusTargetId,
+        page:'goals',
+        step:1
+      });
+      if(typeof setCurrentWizardStep === 'function'){
+        setCurrentWizardStep(1, { scroll:false });
+      }
+      if(typeof scrollToAnchorId === 'function'){
+        scrollToAnchorId('basicInfoGroup');
+      }
+      focusBasicInfoField(focusTargetId);
+    }
+
+    function shouldPreventPlanGroupExpansion(group){
+      return group && group.id === 'contactVisitGroup' && isPlanGroupLocked();
+    }
+
+    function blockIfPlanGroupLocked(element){
+      if(!element) return false;
+      const group = element.id === 'contactVisitGroup'
+        ? element
+        : (typeof element.closest === 'function' ? element.closest('#contactVisitGroup') : null);
+      if(group && shouldPreventPlanGroupExpansion(group)){
+        handleLockedPlanAttempt();
+        return true;
+      }
+      return false;
+    }
+
+    function isWizardStepLocked(step){
+      const stepNum = Number(step);
+      if(!stepNum || stepNum <= 1) return false;
+      return !basicInfoState.complete;
+    }
+
+    function handleWizardStepLocked(step){
+      if(Number(step) > 1){
+        handleLockedPlanAttempt();
+      }
+    }
+
     function shouldBlockCollapseForBasicInfo(targetGroup){
       if(!targetGroup) return false;
       const basicCtrl=simpleGroupControllers['basicInfoGroup'];
@@ -14608,13 +14981,24 @@
         if(!group) return;
         if(group.dataset && (group.dataset.collapsible === '0' || group.dataset.collapsible === 'disabled')) return;
         if(group.querySelector(':scope > .group-header')) return;
-        const heading=group.querySelector(':scope > .h1');
-        if(!heading) return;
+        let heading=group.querySelector(':scope > .h1');
+        let header=null;
+        if(heading){
+          header=document.createElement('div');
+          header.className='group-header';
+          group.insertBefore(header, heading);
+          header.appendChild(heading);
+        }else{
+          const titlebar=group.querySelector(':scope > .titlebar');
+          const titleHeading=titlebar ? titlebar.querySelector('.h1') : null;
+          if(!titlebar || !titleHeading) return;
+          heading=titleHeading;
+          header=document.createElement('div');
+          header.className='group-header';
+          group.insertBefore(header, titlebar);
+          header.appendChild(titlebar);
+        }
         group.dataset.collapsible = '1';
-        const header=document.createElement('div');
-        header.className='group-header';
-        group.insertBefore(header, heading);
-        header.appendChild(heading);
         const toggle=document.createElement('button');
         toggle.type='button';
         toggle.className='group-collapse';
@@ -14648,13 +15032,18 @@
           scheduleStickyMeasurement();
           scheduleLayoutMeasurements();
         };
-        const controller={ element:group, applyState };
+        const controller={ element:group, applyState, toggle };
         if(group.id){
           simpleGroupControllers[group.id] = controller;
         }
         toggle.addEventListener('click', ()=>{
           const isCollapsed=group.dataset.collapsed === '1';
-          if(!isCollapsed && shouldBlockCollapseForBasicInfo(group)){
+          if(isCollapsed){
+            if(shouldPreventPlanGroupExpansion(group)){
+              handleLockedPlanAttempt();
+              return;
+            }
+          }else if(shouldBlockCollapseForBasicInfo(group)){
             return;
           }
           applyState(!isCollapsed);
@@ -14662,6 +15051,7 @@
         const initialCollapsed = group.dataset && group.dataset.collapsed === '1';
         applyState(initialCollapsed);
       });
+      applyPlanGroupLockState();
     }
 
     function initSection1State(){
@@ -14740,6 +15130,7 @@
 
       prepareCaseProfileLayout();
       initGroupCollapsibles();
+      initBasicInfoValidation();
       initStickyOverflowToggle();
 
       // S1
@@ -14820,7 +15211,7 @@
       }
       const caseNameInput=document.getElementById('caseName');
       if(caseNameInput){
-        caseNameInput.addEventListener('input', ()=>{ caseNameInput.classList.remove('input-invalid'); });
+        caseNameInput.addEventListener('input', ()=>{ updateBasicInfoCompletion(); });
         caseNameInput.addEventListener('input', syncSocialPrimary);
         caseNameInput.addEventListener('input', updateConsultVisitText);
         caseNameInput.addEventListener('input', buildApprovalPlanPreview);
@@ -14830,12 +15221,14 @@
       if(consultSelect){
         consultSelect.addEventListener('change', updateConsultVisitText);
         consultSelect.addEventListener('change', scheduleSummaryUpdate);
+        consultSelect.addEventListener('change', ()=>{ updateBasicInfoCompletion(); });
       }
       document.getElementById('s1_gender')?.addEventListener('change', buildApprovalPlanPreview);
       const caseManagerSelect=document.getElementById('caseManagerName');
       if(caseManagerSelect){
         caseManagerSelect.addEventListener('change', buildApprovalPlanPreview);
         caseManagerSelect.addEventListener('change', scheduleSummaryUpdate);
+        caseManagerSelect.addEventListener('change', ()=>{ updateBasicInfoCompletion(); });
       }
 
       toggleCallDateByConsultVisit();
