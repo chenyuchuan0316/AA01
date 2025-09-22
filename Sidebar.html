@@ -208,7 +208,9 @@
     .app-container{
       width:100%;
       margin:0 auto;
-      padding-top:var(--app-top-offset);
+      padding-top:var(--space-xs);
+      padding-top:calc(var(--space-xs) + constant(safe-area-inset-top));
+      padding-top:calc(var(--space-xs) + env(safe-area-inset-top));
       padding-bottom:calc(var(--fab-h, 0px) + var(--space-md));
       box-sizing:border-box;
     }
