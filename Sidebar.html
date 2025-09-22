@@ -99,9 +99,7 @@
       --mobile-font-max:20px;
       --fab-h:0px;
       --fab-gap:calc(max(24px, env(safe-area-inset-bottom) + 24px));
-      --sticky-header-height:96px;
-      --summary-bar-gap:var(--space-md);
-      --scroll-offset:calc(var(--sticky-header-height) + var(--summary-bar-gap));
+      --app-top-offset:0px;
       --side-nav-w:280px; /* 右側側欄寬度（可依需求調整） */
       /* 標題層級間距（Token） */
       --space-h1-top:40px; --space-h1-bottom:24px;
@@ -124,7 +122,7 @@
     }
 
     /* 根字級：桌機 19→20；手機 clamp(20–26) */
-    html { font-size:19px; -webkit-text-size-adjust:100%; }
+    html { font-size:19px; -webkit-text-size-adjust:100%; scroll-padding-top:var(--app-top-offset); }
     @media (min-width:1920px){ html{ font-size:20px; } }
     @media (max-width:480px){ html{ font-size:clamp(var(--mobile-font-min), var(--mobile-font-fluid), var(--mobile-font-max)); } }
 
@@ -201,17 +199,23 @@
       line-height:calc(var(--line-height) * 0.95);
     }
     .app-container{
-      max-width:min(90vw, var(--layout-max));
-      margin:0 auto;
-      padding-bottom:calc(var(--fab-h, 0px) + var(--space-md));
       width:100%;
-      padding-right:var(--space-md);
+      margin:0 auto;
+      padding-top:var(--app-top-offset);
+      padding-bottom:calc(var(--fab-h, 0px) + var(--space-md));
+      box-sizing:border-box;
     }
-    @media (max-width:1023px){
-      .app-container{ padding-right:0; }
+    .page{
+      width:min(1360px, 100%);
+      margin-inline:auto;
+      padding-inline:clamp(12px, 4vw, 24px);
+      box-sizing:border-box;
     }
     @media (min-width:1280px){
       .app-container{ padding-right:calc(var(--side-nav-w) + 16px); }
+    }
+    @media (max-width:1279px){
+      .app-container{ padding-right:0; }
     }
 
     /* 卡片 */
@@ -295,7 +299,11 @@
     input::placeholder, textarea::placeholder{ color:#9CA3AF !important; font-size:14px; font-weight:400; }
 
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
-    [data-section]{ scroll-margin-top:var(--scroll-offset); }
+    [data-section],
+    .page-section,
+    .group{
+      scroll-margin-top:var(--app-top-offset);
+    }
     .row{ display:flex; gap:var(--gap); flex-wrap:wrap; align-items:flex-start; margin-bottom:var(--space-sm); }
     .row > div{ flex:1 1 min(100%, 360px); min-width:min(100%, 240px); max-width:720px; }
     .row > [data-field-size="short"],
@@ -415,14 +423,16 @@
     button[data-ic="plus"]::before{ content:"+"; margin-right:.25em; font-weight:900; }
     button[data-ic="minus"]::before{ content:"–"; margin-right:.25em; font-weight:900; }
 
-    .page-header{
+    .app-sticky{
       position:sticky;
       top:0;
-      z-index:40;
-      padding-top:var(--space-xs);
+      z-index:1000;
+      padding:var(--space-xs) clamp(12px, 4vw, 24px) var(--space-sm);
       margin-bottom:var(--group-spacing);
     }
-    .page-header-inner{
+    .app-sticky-inner{
+      width:min(1360px, 100%);
+      margin:0 auto;
       background:rgba(255,255,255,.94);
       border:1px solid var(--border);
       border-radius:18px;
@@ -434,24 +444,69 @@
       backdrop-filter:saturate(180%) blur(6px);
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
-    .page-summary{
-      position:sticky;
-      top:0;
-      z-index:30;
-      background:rgba(255,255,255,.86);
-      backdrop-filter:saturate(120%) blur(6px);
-      border-bottom:1px solid #e6eaf0;
-      padding:var(--space-sm) var(--space-md);
-      display:grid;
-      grid-template-columns:repeat(12, 1fr);
-      gap:var(--space-xs) var(--space-md);
+    .sticky-row{
+      display:flex;
       align-items:center;
+      gap:var(--space-sm);
+      flex-wrap:wrap;
+    }
+    .sticky-row--wizard{
+      align-items:flex-start;
+      gap:var(--space-sm);
+    }
+    .sticky-row--wizard .wizard{ flex:1 1 auto; }
+    .sticky-row--wizard .page-toolbar{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    #stickyOverflowPanel{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
+    }
+    .sticky-overflow-toggle{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:44px;
+      height:44px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:1.1rem;
+      line-height:1;
+      cursor:pointer;
+      transition:background .2s ease, border-color .2s ease, color .2s ease;
+    }
+    .sticky-overflow-toggle:hover,
+    .sticky-overflow-toggle:focus{
+      background:rgba(15,23,42,.08);
+      border-color:var(--accent);
+      color:var(--accent);
+      outline:none;
+    }
+    .page-summary{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+      gap:var(--space-xs) var(--space-md);
+      align-items:flex-start;
+    }
+    @media (min-width:1280px){
+      .sticky-overflow-toggle{
+        font-size:1rem;
+        min-width:72px;
+        padding-inline:16px;
+      }
+      .app-sticky[data-expanded="0"] .sticky-row--tabs{ display:none; }
+      .app-sticky[data-expanded="1"] .sticky-row--tabs{ display:flex; }
     }
     @media (max-width:1279px){
-      .page-summary{ grid-template-columns:repeat(8, 1fr); }
-    }
-    @media (max-width:1023px){
-      .page-summary{ grid-template-columns:repeat(4, 1fr); gap:var(--space-xs); }
+      #stickyOverflowPanel{ display:none; }
+      .app-sticky[data-expanded="1"] #stickyOverflowPanel{ display:flex; }
+      .sticky-row--wizard{ align-items:center; }
     }
     .summary-item{ display:flex; flex-direction:column; gap:var(--space-xxs); min-width:0; }
     .summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
@@ -753,50 +808,6 @@
       .page-section[data-columns="2"][data-active="1"] > .group[data-span="full"],
       .page-section[data-columns="2"][data-active="1"] > .section-intro-grid{
         grid-column:1 / -1;
-      }
-    }
-
-    .page-section[data-active="1"] > .section-intro-grid{
-      display:grid;
-      grid-template-columns:1fr;
-      row-gap:var(--space-sm);
-      column-gap:var(--space-sm);
-      flex:1 1 100%;
-      min-width:100%;
-      align-items:stretch;
-    }
-    .section-intro-grid > .group{
-      height:100%;
-      display:flex;
-      flex-direction:column;
-    }
-    .section-intro-grid > .group > .titlebar, .section-intro-grid > .group > label:first-child{ flex:0 0 auto; }
-    .section-intro-grid > .group > *:last-child{ margin-bottom:0; }
-    .section-intro-grid > .group .basic-info-fields,
-    .section-intro-grid > .group .grid2,
-    .section-intro-grid > .group .row{ flex:1 1 auto; }
-    @media (max-width:1023px){
-      .page-section[data-active="1"] > .section-intro-grid{
-        row-gap:var(--space-xs);
-      }
-    }
-    @media (min-width:1024px) and (max-width:1279px){
-      .page-section[data-active="1"] > .section-intro-grid{
-        grid-template-columns:60% 40%;
-        column-gap:var(--space-md);
-        row-gap:var(--space-md);
-      }
-      .page-section[data-active="1"] > .section-intro-grid > #visitPartnersGroup{
-        grid-column:1 / -1;
-      }
-    }
-    @media (min-width:1280px){
-      .page-section[data-active="1"] > .section-intro-grid{
-        grid-template-columns:40% 35% 25%;
-        column-gap:var(--space-md);
-      }
-      .page-section[data-active="1"] > .section-intro-grid > #visitPartnersGroup{
-        grid-column:auto;
       }
     }
 
@@ -1440,7 +1451,7 @@
       }
       #careGoalsGroup .care-goals-side-inner{
         position:sticky;
-        top:calc(var(--sticky-header-height) + var(--space-lg));
+        top:calc(var(--app-top-offset) + var(--space-lg));
       }
     }
 
@@ -1523,8 +1534,8 @@
         flex:0 0 clamp(320px, 38%, 420px);
         max-width:clamp(320px, 38%, 420px);
         position:sticky;
-        top:calc(var(--sticky-header-height) + var(--space-lg));
-        max-height:calc(100vh - (var(--sticky-header-height) + var(--space-lg) + var(--fab-gap) + 48px));
+        top:calc(var(--app-top-offset) + var(--space-lg));
+        max-height:calc(100vh - (var(--app-top-offset) + var(--space-lg) + var(--fab-gap) + 48px));
         overflow:auto;
         padding-right:4px;
       }
@@ -1966,14 +1977,14 @@
     .side-nav{
       position:fixed;
       right:max(var(--space-md), env(safe-area-inset-right) + var(--space-md));
-      top:calc(var(--sticky-header-height, 120px) + var(--space-md));
+      top:calc(var(--app-top-offset) + var(--space-md));
       width:var(--side-nav-w);
       background:rgba(255,255,255,.94);
       border:1px solid var(--border);
       border-radius:14px;
       box-shadow:var(--shadow);
       padding:var(--space-sm);
-      display:flex;
+      display:none;
       flex-direction:column;
       gap:var(--space-xs);
       z-index:38;
@@ -2303,29 +2314,69 @@
       .datebox input[type="date"]{ min-width:150px; font-size:var(--fs-ctrl); }
       .preview{ font-size:calc(var(--fs-base) * var(--font-scale) * 0.95); }
     }
-    /* === Section card 通用網格（大卡內的 H2~H6 分節自動排欄） === */
+    /* === Section card 通用網格與工具類 === */
     .section-card-grid{
       display:grid;
+      gap:var(--gap, 12px);
       grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
-      gap:var(--gap);
       align-items:start;
     }
     .section-card{
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:var(--gap, 12px);
       break-inside:avoid;
       -webkit-column-break-inside:avoid;
       page-break-inside:avoid;
     }
+    .section-card-header{
+      display:flex;
+      align-items:center;
+      gap:var(--space-xs);
+      flex-wrap:wrap;
+    }
+    .section-card-header > .h4{ flex:1 1 auto; }
+    .autogrid{
+      display:grid;
+      gap:var(--gap, 12px);
+      grid-template-columns:repeat(auto-fit, minmax(var(--col-min, 280px), 1fr));
+      align-items:start;
+    }
+    .autogrid--tight{ --gap:8px; --col-min:240px; }
+    .autogrid--wide{ --gap:16px; --col-min:320px; }
+    .span-2{ grid-column:span 2; }
+    .span-3{ grid-column:span 3; }
     @media (max-width:1024px){
-      .section-card-grid{ grid-template-columns:1fr; }
+      .span-2,
+      .span-3{ grid-column:auto; }
     }
-    @media (min-width:1025px) and (max-width:1439px){
-      .section-card-grid{ grid-template-columns:repeat(2, minmax(320px, 1fr)); }
+    .autogrid .field{
+      display:grid;
+      gap:8px;
+      grid-template-columns:1fr;
     }
-    @media (min-width:1440px){
-      .section-card-grid{ grid-template-columns:repeat(3, minmax(320px, 1fr)); }
+    .autogrid .field > label{ color:#374151; }
+    @container (min-width:440px){
+      .autogrid .field{
+        grid-template-columns:160px 1fr;
+        align-items:center;
+      }
+      .autogrid .field > label{ justify-self:end; }
+    }
+    .checkgrid{
+      display:grid;
+      gap:12px;
+      grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+      align-items:start;
+    }
+    .checkgrid .check-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border:1px solid var(--border, #e5e7eb);
+      border-radius:10px;
+      background:#fff;
     }
 
     /* 停用舊的 intro grid 三欄比例，避免右側留白 */
@@ -2339,7 +2390,7 @@
 
     @media print{
       body{ margin:var(--space-sm); font-size:12px; line-height:1.45; color:#000; }
-      .page-header, .page-tabs, .page-toolbar, .wizard, .floating-actions, .side-nav, .checkcol-toggle, .font-scale-control, .mobile-mode-control, #validationToast{ display:none !important; }
+      .app-sticky, .page-tabs, .page-toolbar, .wizard, .floating-actions, .side-nav, .checkcol-toggle, .font-scale-control, .mobile-mode-control, #validationToast{ display:none !important; }
       button, .btnbar, .preview-toolbar, .section-controls, .error-messages, .validation-toast, .page-tabs{ display:none !important; }
       .page-section{ display:block !important; margin:0 0 var(--space-sm) !important; }
       .page-section > .group{ margin-bottom:var(--space-sm) !important; }
@@ -2363,13 +2414,26 @@
 
   <div class="app-container" id="appContainer">
 
-  <div class="page-header" id="pageHeader">
-    <div class="page-header-inner">
-      <div class="page-header-top">
-        <div class="page-tabs" id="pageTabs">
-          <button type="button" data-page="goals" class="active">計畫目標</button>
-          <button type="button" data-page="execution">計畫執行規劃</button>
-          <button type="button" data-page="notes">其他備註</button>
+  <div class="app-sticky" id="appSticky" data-expanded="0">
+    <div class="app-sticky-inner">
+      <div class="sticky-row sticky-row--wizard">
+        <div class="wizard" id="wizardSteps" aria-label="填寫進度">
+          <button type="button" class="wizard-step" data-step="1" data-page="goals" data-anchor="#basicInfoGroup">
+            <span class="wizard-index">1</span>
+            <span class="wizard-label">基本資訊</span>
+          </button>
+          <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#careGoalsGroup">
+            <span class="wizard-index">2</span>
+            <span class="wizard-label">照顧目標</span>
+          </button>
+          <button type="button" class="wizard-step" data-step="3" data-page="execution" data-anchor="#planExecutionGroup">
+            <span class="wizard-index">3</span>
+            <span class="wizard-label">計畫執行規劃</span>
+          </button>
+          <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planOtherGroup">
+            <span class="wizard-index">4</span>
+            <span class="wizard-label">其他備註</span>
+          </button>
         </div>
         <div class="page-toolbar" id="pageToolbar">
           <span class="font-scale-label">字級</span>
@@ -2385,58 +2449,52 @@
             <button type="button" data-mode="review">檢視模式</button>
           </div>
         </div>
+        <button type="button" class="sticky-overflow-toggle" id="stickyOverflowToggle" aria-controls="stickyOverflowPanel" aria-expanded="false" title="顯示更多導覽">⋯</button>
       </div>
-      <div class="wizard" id="wizardSteps" aria-label="填寫進度">
-        <button type="button" class="wizard-step" data-step="1" data-page="goals" data-anchor="#basicInfoGroup">
-          <span class="wizard-index">1</span>
-          <span class="wizard-label">基本資訊</span>
-        </button>
-        <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#careGoalsGroup">
-          <span class="wizard-index">2</span>
-          <span class="wizard-label">照顧目標</span>
-        </button>
-        <button type="button" class="wizard-step" data-step="3" data-page="execution" data-anchor="#planExecutionGroup">
-          <span class="wizard-index">3</span>
-          <span class="wizard-label">計畫執行規劃</span>
-        </button>
-        <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planOtherGroup">
-          <span class="wizard-index">4</span>
-          <span class="wizard-label">其他備註</span>
-        </button>
-      </div>
-      <div class="page-summary" id="stickySummary" aria-live="polite">
-        <div class="summary-item">
-          <span class="summary-label">個案</span>
-          <span class="summary-value" id="summaryCaseName">—</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">主要照顧者</span>
-          <span class="summary-value" id="summaryPrimaryCaregiver">—</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">CMS 等級</span>
-          <span class="summary-value" id="summaryCmsLevel">—</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">完成度</span>
-          <div class="summary-progress-bar" role="presentation">
-            <div class="summary-progress-fill" id="summaryProgressFill"></div>
+      <div id="stickyOverflowPanel">
+        <div class="sticky-row sticky-row--tabs" id="stickyTabsRow">
+          <div class="page-tabs" id="pageTabs">
+            <button type="button" data-page="goals" class="active">計畫目標</button>
+            <button type="button" data-page="execution">計畫執行規劃</button>
+            <button type="button" data-page="notes">其他備註</button>
           </div>
-          <span class="summary-progress-text" id="summaryProgressText">—</span>
-          <span class="summary-remaining-text" id="summaryRemainingText">—</span>
         </div>
-        <div class="summary-item">
-          <span class="summary-label">最近儲存</span>
-          <span class="summary-last-saved" id="summaryLastSaved">—</span>
+        <div class="sticky-row sticky-row--chips" id="stickyChipsRow">
+          <div class="page-summary" id="stickySummary" aria-live="polite">
+            <div class="summary-item">
+              <span class="summary-label">個案</span>
+              <span class="summary-value" id="summaryCaseName">—</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">主要照顧者</span>
+              <span class="summary-value" id="summaryPrimaryCaregiver">—</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">CMS 等級</span>
+              <span class="summary-value" id="summaryCmsLevel">—</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">完成度</span>
+              <div class="summary-progress-bar" role="presentation">
+                <div class="summary-progress-fill" id="summaryProgressFill"></div>
+              </div>
+              <span class="summary-progress-text" id="summaryProgressText">—</span>
+              <span class="summary-remaining-text" id="summaryRemainingText">—</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">最近儲存</span>
+              <span class="summary-last-saved" id="summaryLastSaved">—</span>
+            </div>
+            <div class="summary-item summary-jump">
+              <label class="summary-label" for="summaryJumpSelect">快速跳轉</label>
+              <select id="summaryJumpSelect">
+                <option value="">選擇區塊</option>
+              </select>
+            </div>
+          </div>
+          <div class="summary-progress-list" id="summaryProgressList" data-empty="1" aria-label="章節進度"></div>
         </div>
-      <div class="summary-item summary-jump">
-        <label class="summary-label" for="summaryJumpSelect">快速跳轉</label>
-        <select id="summaryJumpSelect">
-          <option value="">選擇區塊</option>
-        </select>
       </div>
-    </div>
-      <div class="summary-progress-list" id="summaryProgressList" data-empty="1" aria-label="章節進度"></div>
     </div>
   </div>
 
@@ -2542,19 +2600,11 @@
                 <button type="button" class="small" aria-label="加一天" aria-controls="visitDate" title="加一天" onclick="shiftDate('visitDate', 1)">+</button>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section class="section-card contact-visit-card" data-card="discharge">
-          <div class="contact-visit-card-header">
-            <span class="h2">三、出準日期</span>
-          </div>
-          <div class="contact-visit-card-body">
-            <label class="inline-checkbox" style="display:block;">
-              <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出準日期
+            <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
+              <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出院日期
             </label>
             <div id="dischargeBox" style="display:none; margin-top:var(--space-xs);">
-              <label class="h3" for="dischargeDate">出準日期</label>
+              <label class="h3" for="dischargeDate">出院日期</label>
               <div class="datebox">
                 <input id="dischargeDate" type="date">
                 <div class="date-controls">
@@ -3203,7 +3253,7 @@
 
     <!-- (二) 經濟收入（原功能保留） -->
     <div class="row">
-      <div>
+      <div id="section2_block" data-section="s2">
         <div class="titlebar">
           <label class="h3">（二）經濟收入</label>
         </div>
@@ -3239,7 +3289,7 @@
 
     <!-- (三) 居住環境（原功能保留） -->
     <div class="row">
-      <div>
+      <div id="section3_block" data-section="s3">
         <div class="titlebar">
           <label class="h3">（三）居住環境</label>
         </div>
@@ -3294,7 +3344,7 @@
 
     <!-- (四) 社會支持（原功能保留） -->
     <div class="row">
-      <div>
+      <div id="section4_block" data-section="s4">
         <div class="titlebar">
           <label class="h3">（四）社會支持</label>
         </div>
@@ -3476,7 +3526,7 @@
 
     <!-- (五) 其他 -->
     <div class="row">
-      <div>
+      <div id="section5_block" data-section="s5">
         <div class="titlebar">
           <label class="h3">（五）其他</label>
         </div>
@@ -3486,7 +3536,7 @@
 
     <!-- (六) 複評評值 -->
     <div class="row">
-      <div>
+      <div id="section6_block" data-section="s6">
         <div class="titlebar">
           <label class="h3">（六）複評評值</label>
         </div>
@@ -3766,6 +3816,183 @@
       execution:'計畫執行規劃',
       notes:'其他備註'
     };
+
+    function isSectionCardTitlebar(node){
+      if(!node || node.nodeType !== 1) return false;
+      if(!node.classList || !node.classList.contains('titlebar')) return false;
+      return !!node.querySelector('.h4');
+    }
+
+    function findFirstCardNode(section){
+      if(!section || !section.children) return null;
+      const nodes=Array.from(section.children);
+      for(let i=0;i<nodes.length;i++){
+        const node=nodes[i];
+        if(isSectionCardTitlebar(node)) return node;
+        if(node && node.querySelector && node.querySelector('.h4')) return node;
+      }
+      return null;
+    }
+
+    function createSectionCardFromTitlebar(titlebar){
+      const card=document.createElement('section');
+      card.className='section-card';
+      const children=Array.from(titlebar.children || []);
+      let labelEl=null;
+      for(let i=0;i<children.length;i++){
+        const child=children[i];
+        if(child && child.matches && child.matches('.h1, .h2, .h3, .h4, .h5, .h6, label, span')){
+          labelEl = child;
+          break;
+        }
+      }
+      const heading=document.createElement('h4');
+      heading.className='h4';
+      heading.textContent=(labelEl ? labelEl.textContent : titlebar.textContent || '').trim();
+      const extras = labelEl ? children.filter(child=>child !== labelEl) : children.slice();
+      if(extras.length){
+        const header=document.createElement('div');
+        header.className='section-card-header';
+        header.appendChild(heading);
+        extras.forEach(extra=>header.appendChild(extra));
+        card.appendChild(header);
+      }else{
+        card.appendChild(heading);
+      }
+      return card;
+    }
+
+    function wrapSectionCardGrid(grid){
+      if(!grid || grid.dataset.cardsUpgraded === '1') return;
+      const nodes=Array.from(grid.children);
+      let current=null;
+      nodes.forEach(node=>{
+        if(!node) return;
+        if(node.classList && node.classList.contains('section-card')){
+          current = node;
+          return;
+        }
+        if(node.classList && node.classList.contains('titlebar')){
+          const card=createSectionCardFromTitlebar(node);
+          grid.insertBefore(card, node);
+          node.remove();
+          current = card;
+          return;
+        }
+        if(current){
+          current.appendChild(node);
+        }
+      });
+      grid.dataset.cardsUpgraded = '1';
+    }
+
+    function ensureSectionCardGrid(section){
+      if(!section) return;
+      const children=Array.from(section.children || []);
+      const firstCardNode=findFirstCardNode(section);
+      if(!firstCardNode) return;
+      const hasGrid=children.some(child=>child && child.classList && child.classList.contains('section-card-grid'));
+      if(hasGrid) return;
+      const grid=document.createElement('div');
+      grid.className='section-card-grid';
+      section.insertBefore(grid, firstCardNode);
+      let current=null;
+      let node=firstCardNode;
+      while(node){
+        const next=node.nextSibling;
+        if(node.nodeType !== 1){
+          if(current){ current.appendChild(node); }
+          node=next;
+          continue;
+        }
+        if(node.classList && node.classList.contains('hr')){
+          node.remove();
+          node=next;
+          continue;
+        }
+        if(isSectionCardTitlebar(node)){
+          const card=createSectionCardFromTitlebar(node);
+          grid.appendChild(card);
+          node.remove();
+          current=card;
+        }else if(current){
+          current.appendChild(node);
+        }else{
+          grid.appendChild(node);
+        }
+        node=next;
+      }
+      grid.dataset.cardsUpgraded='1';
+      promoteFieldHeadings(section, grid);
+      cleanupEmptyContainers(section);
+    }
+
+    function promoteFieldHeadings(section, grid){
+      if(!section || !grid) return;
+      const headings=Array.from(section.querySelectorAll('.h4')).filter(heading=>{
+        if(heading.closest('.section-card')) return false;
+        if(heading.closest('.section-card-header')) return false;
+        if(heading.closest('.titlebar')) return false;
+        return true;
+      });
+      headings.forEach(heading=>{
+        const container=heading.parentElement;
+        if(!container || container === section || container === grid) return;
+        if(container.closest('.section-card')) return;
+        const card=document.createElement('section');
+        card.className='section-card';
+        container.parentNode.insertBefore(card, container);
+        card.appendChild(container);
+        grid.appendChild(card);
+      });
+    }
+
+    function cleanupEmptyContainers(root){
+      if(!root || !root.querySelectorAll) return;
+      const nodes=Array.from(root.querySelectorAll('div'));
+      nodes.forEach(node=>{
+        if(!node) return;
+        if(node.children.length) return;
+        if((node.textContent || '').trim() !== '') return;
+        if(node.id) return;
+        if(node.dataset && Object.keys(node.dataset).length) return;
+        node.remove();
+      });
+    }
+
+    function applyGridUtilities(root){
+      if(!root || !root.querySelectorAll) return;
+      root.querySelectorAll('.row').forEach(el=>{
+        el.classList.remove('row');
+        el.classList.add('autogrid','autogrid--wide');
+      });
+      root.querySelectorAll('.grid2').forEach(el=>{
+        el.classList.remove('grid2');
+        el.classList.remove('form-row-2col');
+        el.classList.add('autogrid','autogrid--wide');
+      });
+      root.querySelectorAll('.grid3').forEach(el=>{
+        el.classList.remove('grid3');
+        el.classList.remove('form-row-3col');
+        el.classList.add('autogrid','autogrid--wide');
+      });
+      root.querySelectorAll('.checkcol').forEach(el=>{
+        el.classList.add('checkgrid');
+        el.querySelectorAll('label').forEach(label=>label.classList.add('check-item'));
+      });
+    }
+
+    function upgradeLegacyContainers(section){
+      if(!section) return;
+      ensureSectionCardGrid(section);
+      section.querySelectorAll('.section-card-grid').forEach(grid=>wrapSectionCardGrid(grid));
+      applyGridUtilities(section);
+    }
+
+    function prepareCaseProfileLayout(){
+      document.querySelectorAll('[data-section]').forEach(section=>upgradeLegacyContainers(section));
+      applyGridUtilities(document);
+    }
     const PAGE_ORDER = ['goals','execution','notes'];
     let summaryElements = null;
     let sideSummaryElements = null;
@@ -3801,9 +4028,10 @@
 
     let currentUiMode = UI_MODE_DEFAULT;
     let currentPageId = 'goals';
-    let currentScrollOffset = 96;
+    let currentScrollOffset = 0;
     let floatingMeasureScheduled = false;
     let stickyMeasureScheduled = false;
+    let currentStickyLayoutMode = '';
     let sectionViewsReady = false;
     let currentVerticalDensityMode = '';
     let planStateSyncScheduled = false;
@@ -4131,30 +4359,52 @@
       });
     }
 
+    function updateStickyLayoutMode(){
+      const host=document.getElementById('appSticky');
+      const toggle=document.getElementById('stickyOverflowToggle');
+      let width=0;
+      if(typeof window !== 'undefined' && typeof window.innerWidth === 'number'){
+        width = window.innerWidth;
+      }
+      const nextMode = width >= 1280 ? 'desktop' : 'mobile';
+      if(currentStickyLayoutMode === nextMode){
+        if(host && !host.dataset.layoutMode){
+          host.dataset.layoutMode = nextMode;
+        }
+        return;
+      }
+      currentStickyLayoutMode = nextMode;
+      if(host){
+        host.dataset.layoutMode = nextMode;
+        if(nextMode === 'mobile'){
+          host.dataset.expanded = '0';
+          if(toggle){ toggle.setAttribute('aria-expanded','false'); }
+        }
+      }
+      if(toggle){
+        if(nextMode === 'desktop'){
+          toggle.textContent = '切頁';
+          toggle.setAttribute('aria-label','切換頁籤');
+          toggle.setAttribute('title','切換頁籤');
+        }else{
+          toggle.textContent = '⋯';
+          toggle.setAttribute('aria-label','顯示更多導覽');
+          toggle.setAttribute('title','顯示更多導覽');
+        }
+      }
+    }
+
     function measureStickyElements(){
-      const header=document.getElementById('pageHeader');
-      let headerHeight=0;
-      if(header){
-        const rect=header.getBoundingClientRect();
-        headerHeight=Math.max(0, Math.ceil(rect.height));
-      }
-      const summary=document.getElementById(SUMMARY_ELEMENT_IDS.root);
-      let summaryGap=12;
-      if(summary){
-        const style=window.getComputedStyle(summary);
+      const sticky=document.getElementById('appSticky');
+      let offset=0;
+      if(sticky){
+        const rect=sticky.getBoundingClientRect();
+        const style=window.getComputedStyle(sticky);
         const marginBottom=parseFloat(style.marginBottom) || 0;
-        summaryGap=Math.max(summaryGap, Math.ceil(marginBottom));
+        offset=Math.max(0, Math.ceil(rect.height + marginBottom));
       }
-      if(header){
-        const headerStyle=window.getComputedStyle(header);
-        const headerMargin=parseFloat(headerStyle.marginBottom) || 0;
-        summaryGap=Math.max(summaryGap, Math.ceil(headerMargin));
-      }
-      const offset=Math.max(72, headerHeight + summaryGap);
       currentScrollOffset = offset;
-      document.documentElement.style.setProperty('--sticky-header-height', `${headerHeight}px`);
-      document.documentElement.style.setProperty('--summary-bar-gap', `${summaryGap}px`);
-      document.documentElement.style.setProperty('--scroll-offset', `${offset}px`);
+      document.documentElement.style.setProperty('--app-top-offset', `${offset}px`);
     }
 
     function scheduleStickyMeasurement(){
@@ -4187,9 +4437,32 @@
     }
 
     function scheduleLayoutMeasurements(){
+      updateStickyLayoutMode();
       scheduleFloatingActionsMeasurement();
       scheduleStickyMeasurement();
       updateVerticalDensityMode();
+    }
+
+    function setStickyExpanded(expanded){
+      const host=document.getElementById('appSticky');
+      const toggle=document.getElementById('stickyOverflowToggle');
+      if(!host || !toggle) return;
+      host.dataset.expanded = expanded ? '1' : '0';
+      toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      scheduleLayoutMeasurements();
+    }
+
+    function initStickyOverflowToggle(){
+      const host=document.getElementById('appSticky');
+      const toggle=document.getElementById('stickyOverflowToggle');
+      if(!host || !toggle) return;
+      const initial = host.dataset && host.dataset.expanded === '1';
+      toggle.setAttribute('aria-expanded', initial ? 'true' : 'false');
+      toggle.addEventListener('click', function(){
+        const expanded = host.dataset && host.dataset.expanded === '1';
+        setStickyExpanded(!expanded);
+      });
+      updateStickyLayoutMode();
     }
 
     function getSummaryElements(){
@@ -5394,16 +5667,13 @@
     function updateGroupTitle(group){
       if(!group || !group.toggle) return;
       const body = group.body;
-      let title = '';
-      if(body){
-        const titleLabel = body.querySelector('.titlebar label');
-        if(titleLabel) title = titleLabel.textContent.trim();
-        if(!title){
-          const label = body.querySelector('label');
-          if(label) title = label.textContent.trim();
-        }
+      let title = group.title || '';
+      if(!title && body){
+        const label = body.querySelector('label');
+        if(label) title = label.textContent.trim();
       }
       if(!title) title = `群組 ${group.id || ''}`.trim();
+      group.title = title;
       group.toggle.textContent = title;
       if(group.navItem){
         group.navItem.label = title;
@@ -5429,7 +5699,8 @@
         if(!node) continue;
         if(node.classList && node.classList.contains('section-progress')) continue;
         if(node.dataset && node.dataset.groupIgnore === '1') continue;
-        if(!current || (node.classList && node.classList.contains('titlebar'))){
+        const isTitlebar = node.classList && node.classList.contains('titlebar');
+        if(!current || isTitlebar){
           const wrapper = document.createElement('div');
           wrapper.className = 'section-group';
           const groupId = String(++counter);
@@ -5458,8 +5729,20 @@
           wrapper.appendChild(header);
           wrapper.appendChild(body);
           section.insertBefore(wrapper, node);
-          current = { element: wrapper, header, toggle, body, empty, progress, id: groupId };
+          current = { element: wrapper, header, toggle, body, empty, progress, id: groupId, title:'' };
           groups.push(current);
+        }
+        if(isTitlebar){
+          if(current){
+            const label=node.querySelector('.h4, .h3, .h2, .h1, label, span');
+            const titleText=label ? label.textContent.trim() : (node.textContent || '').trim();
+            if(titleText){
+              current.title = titleText;
+              if(current.element && current.element.dataset) current.element.dataset.title = titleText;
+            }
+          }
+          if(node.parentNode) node.parentNode.removeChild(node);
+          continue;
         }
         if(current && current.body){
           current.body.appendChild(node);
@@ -5497,7 +5780,10 @@
       containers.forEach(container=>{
         if(isContainerVisible(section, container)) hasVisible = true;
       });
-      group.element.dataset.empty = hasVisible ? '0' : '1';
+      const hideFilled = section && section.dataset ? section.dataset.hideFilled === '1' : false;
+      const status = group.element && group.element.dataset ? group.element.dataset.status : '';
+      const showEmpty = !hasVisible && hideFilled && status === 'complete';
+      group.element.dataset.empty = showEmpty ? '1' : '0';
     }
 
     function updateAllGroupEmptyStates(section){
@@ -12042,7 +12328,13 @@
       lines.push(`CMS 等級：${cmsLevel || '尚未設定'}`);
       const callDate = formatSummaryDate(getDateBox('callDate'));
       const visitDate = formatSummaryDate(getDateBox('visitDate'));
-      lines.push(`電聯日期：${callDate || '—'}；家訪日期：${visitDate || '—'}`);
+      const dischargeEnabled = document.getElementById('isDischarge')?.checked;
+      const dischargeDateValue = dischargeEnabled ? formatSummaryDate(getDateBox('dischargeDate')) : '';
+      let visitLine = `電聯日期：${callDate || '—'}；家訪日期：${visitDate || '—'}`;
+      if(dischargeEnabled && dischargeDateValue){
+        visitLine += `、出院日期：${dischargeDateValue}`;
+      }
+      lines.push(visitLine);
       const primaryRel=(document.getElementById('primaryRel')?.value || '').trim();
       const primaryName=(document.getElementById('primaryName')?.value || '').trim();
       const primaryLine = primaryRel || primaryName ? `${primaryRel || '—'}${primaryName ? `－${primaryName}` : ''}` : '尚未填寫';
@@ -14119,6 +14411,9 @@
       loadConsultants();
       initCmsLevelButtons();
       loadServiceCatalog();
+
+      prepareCaseProfileLayout();
+      initStickyOverflowToggle();
 
       // S1
       renderS1(); initSection1State();
