@@ -122,7 +122,7 @@
     }
 
     /* 根字級：桌機 19→20；手機 clamp(20–26) */
-    html { font-size:19px; -webkit-text-size-adjust:100%; scroll-padding-top:var(--app-top-offset); }
+    html { font-size:19px; -webkit-text-size-adjust:100%; scroll-padding-top:calc(var(--app-top-offset) + var(--space-sm)); }
     @media (min-width:1920px){ html{ font-size:20px; } }
     @media (max-width:480px){ html{ font-size:clamp(var(--mobile-font-min), var(--mobile-font-fluid), var(--mobile-font-max)); } }
 
@@ -150,42 +150,42 @@
     }
     body[data-fontscale="sm"]{
       --font-scale:1;
-      --fs-ctrl:18px;
-      --ctrl-padding-block:8px;
-      --ctrl-padding-inline:11px;
-      --button-padding-inline:15px;
-      --button-small-padding-inline:12px;
-      --checkbox:24px;
-      --line-height:1.65;
-      --mobile-font-min:18px;
-      --mobile-font-fluid:4.8vw;
-      --mobile-font-max:20px;
-    }
-    body[data-fontscale="xl"]{
-      --font-scale:1.18;
-      --fs-ctrl:22px;
-      --ctrl-padding-block:11px;
+      --fs-ctrl:20px;
+      --ctrl-padding-block:10px;
       --ctrl-padding-inline:14px;
       --button-padding-inline:18px;
-      --button-small-padding-inline:14px;
-      --checkbox:30px;
-      --line-height:1.72;
+      --button-small-padding-inline:16px;
+      --checkbox:28px;
+      --line-height:1.7;
       --mobile-font-min:20px;
-      --mobile-font-fluid:5.4vw;
-      --mobile-font-max:22px;
+      --mobile-font-fluid:5.2vw;
+      --mobile-font-max:23px;
     }
-    body[data-fontscale="xxl"]{
-      --font-scale:1.3;
+    body[data-fontscale="xl"]{
+      --font-scale:1.2;
       --fs-ctrl:24px;
       --ctrl-padding-block:12px;
       --ctrl-padding-inline:16px;
       --button-padding-inline:20px;
-      --button-small-padding-inline:16px;
+      --button-small-padding-inline:18px;
       --checkbox:34px;
       --line-height:1.78;
       --mobile-font-min:22px;
-      --mobile-font-fluid:5.9vw;
-      --mobile-font-max:24px;
+      --mobile-font-fluid:5.8vw;
+      --mobile-font-max:25px;
+    }
+    body[data-fontscale="xxl"]{
+      --font-scale:1.34;
+      --fs-ctrl:26px;
+      --ctrl-padding-block:13px;
+      --ctrl-padding-inline:18px;
+      --button-padding-inline:22px;
+      --button-small-padding-inline:20px;
+      --checkbox:38px;
+      --line-height:1.84;
+      --mobile-font-min:24px;
+      --mobile-font-fluid:6.2vw;
+      --mobile-font-max:27px;
     }
     body[data-uimode="comfort"]{
       --gap:calc(var(--gap-base) * 0.9);
@@ -262,24 +262,26 @@
     }
     .h2{
       display:block;
-      font-weight:700; /* Bold */
-      color:var(--h2-color);
-      font-size:clamp(20px, 1.8vw, 24px);
+      font-weight:800; /* Extra Bold */
+      color:var(--h1-color);
+      font-size:clamp(22px, 2.3vw, 28px);
       margin-top:var(--space-h2-top);
       margin-bottom:var(--space-h2-bottom);
-      padding-left:10px;
-      border-left:4px solid var(--brand-blue);
+      padding-left:14px;
+      border-left:5px solid var(--brand-blue);
       border-bottom:none !important;
+      letter-spacing:.01em;
     }
     .h3{
       display:block;
       font-weight:600; /* Semi Bold */
-      color:var(--h3-color);
-      font-size:clamp(18px, 1.6vw, 20px);
+      color:#1f2a44;
+      font-size:clamp(18px, 1.6vw, 21px);
       margin-top:var(--space-h3-top);
       margin-bottom:var(--space-h3-bottom);
-      padding-bottom:4px;
-      border-bottom:1px solid #E5E7EB; /* 極淺灰 */
+      padding-bottom:6px;
+      border-bottom:1px solid #d4d8e3; /* 極淺灰 */
+      letter-spacing:.005em;
     }
     .h4{
       display:block;
@@ -295,9 +297,6 @@
     /* 段落（H5對應） */
     .paragraph{ font-size:16px; font-weight:400; color:#111827; line-height:1.5; }
     .h5{ font-size:16px; font-weight:400; color:#111827; line-height:1.5; }
-    /* Placeholder（H6對應） */
-    input::placeholder, textarea::placeholder{ color:#9CA3AF !important; font-size:14px; font-weight:400; }
-
     /* 佈局：桌機固定兩欄、行動單欄（避免三欄造成橫向拉長） */
     [data-section],
     .page-section,
@@ -331,7 +330,8 @@
 
     /* 標籤與 Placeholder（加大字、提升對比） */
     label{ display:block; font-size:var(--fs-label); margin-bottom:var(--space-xxs); color:var(--label); }
-    :where(input,select,textarea)::placeholder{ color:var(--placeholder); opacity:1; }
+    :where(input,select,textarea)::placeholder{ color:var(--placeholder); opacity:1; font-size:calc(var(--fs-ctrl) - 2px); }
+    :where(input,select,textarea,button,.datebox){ scroll-margin-top:calc(var(--app-top-offset) + var(--space-md)); }
 
     /* 表單元件：20px 字級，56px 高度（iOS 聚焦不縮放） */
     input[type="text"], input[type="number"], input[type="tel"], input[type="email"],
@@ -364,42 +364,13 @@
 
     /* 日期顯示盒（更清楚） */
     .datebox{
-      position:relative;
-      display:flex;
-      align-items:center;
+      display:block;
       width:100%;
     }
     .datebox input[type="date"]{
       width:100%;
       min-width:0;
-      flex:1 1 auto;
-      padding-right:96px;
-    }
-    .date-controls{
-      position:absolute;
-      right:8px;
-      top:50%;
-      transform:translateY(-50%);
-      display:inline-flex;
-      gap:4px;
-      align-items:center;
-    }
-    .date-controls button.small{
-      min-width:42px;
-      font-size:calc(var(--fs-button) + 2px);
-      font-weight:700;
-      line-height:1;
-    }
-    @media (max-width:440px){
-      .datebox{ flex-wrap:wrap; }
-      .datebox input[type="date"]{ padding-right:var(--ctrl-padding-inline); }
-      .date-controls{
-        position:static;
-        transform:none;
-        margin-top:var(--space-xs);
-        justify-content:flex-end;
-        width:100%;
-      }
+      padding-right:var(--ctrl-padding-inline);
     }
 
     /* 按鈕與操作面積（以 padding 控制高度） */
@@ -415,8 +386,9 @@
     button:hover{ background:#f7f7f7; }
     button.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
     button.small{
-      min-height:var(--h-button-sm);
-      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
+      min-height:max(var(--h-button-sm), 44px);
+      min-width:56px;
+      padding:calc(var(--button-padding-block-sm) + 2px) var(--button-small-padding-inline);
       font-size:var(--fs-button);
     }
     /* 可選：若於按鈕加入 data-ic="plus"/"minus"，會自動加上 + / - 圖示 */
@@ -507,6 +479,18 @@
       #stickyOverflowPanel{ display:none; }
       .app-sticky[data-expanded="1"] #stickyOverflowPanel{ display:flex; }
       .sticky-row--wizard{ align-items:center; }
+    }
+    @media (max-width:720px){
+      .app-sticky{ padding:var(--space-xxs) clamp(8px, 4vw, 16px) var(--space-xs); }
+      .app-sticky-inner{ padding:var(--space-xs) var(--space-sm); gap:var(--space-xs); border-radius:14px; }
+      .sticky-row{ gap:var(--space-xs); }
+      .sticky-overflow-toggle{ min-width:40px; height:40px; font-size:1rem; }
+      .page-toolbar{ gap:6px; }
+      .font-scale-label{ display:none; }
+      .font-scale-control{ padding:2px; }
+      .page-summary{ gap:var(--space-xxs) var(--space-xs); }
+      .summary-progress-list{ margin-top:var(--space-xxs); }
+      .summary-value{ font-size:1.05rem; }
     }
     .summary-item{ display:flex; flex-direction:column; gap:var(--space-xxs); min-width:0; }
     .summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
@@ -743,20 +727,21 @@
     @media (max-width:720px){
       .wizard{
         overflow-x:auto;
-        gap:var(--space-sm);
-        padding-bottom:6px;
+        gap:var(--space-xs);
+        padding-bottom:4px;
         scroll-snap-type:x proximity;
         -webkit-overflow-scrolling:touch;
       }
       .wizard::-webkit-scrollbar{ height:6px; }
       .wizard-step{
         flex:0 0 auto;
-        min-width:160px;
+        min-width:140px;
         align-items:flex-start;
         scroll-snap-align:center;
       }
       .wizard-step::before{ display:none; }
-      .wizard-label{ text-align:left; white-space:normal; }
+      .wizard-label{ text-align:left; white-space:normal; font-size:0.92rem; }
+      .wizard-index{ width:34px; height:34px; font-size:0.95rem; }
     }
     .page-section{
       display:none;
@@ -989,19 +974,13 @@
     }
     #contactVisitGroup .contact-visit-card .datebox{
       width:100%;
-      max-width:var(--intro-colw);
+      max-width:100%;
     }
     #contactVisitGroup .contact-visit-card .inline-checkbox{
       margin:0;
     }
     #visitPartnersGroup{
       position:relative;
-    }
-    #visitPartnersGroup .titlebar{
-      padding-right:140px;
-    }
-    #visitPartnersGroup .titlebar.titlebar--mt-xxs{
-      padding-right:0;
     }
     #visitPartnersGroup .extra-row{
       display:flex;
@@ -2306,20 +2285,27 @@
       body{
         margin:var(--space-sm);
         --gap-base:var(--space-xs);
-        --group-padding-base:var(--space-sm);
-        --group-spacing-base:var(--space-sm);
+        --group-padding-base:var(--space-xs);
+        --group-spacing-base:var(--space-xs);
         --checkcol-min:160px;
       }
       .row, .grid2, .grid3{ gap:var(--gap); }
-      .datebox input[type="date"]{ min-width:150px; font-size:var(--fs-ctrl); }
+      .datebox input[type="date"]{ font-size:var(--fs-ctrl); }
+      .titlebar{ margin-bottom:var(--space-xs); }
+      .group{ padding:var(--group-padding); }
+      #contactVisitGroup .contact-visit-card{ padding:var(--space-xs); gap:var(--space-xxs); }
+      #contactVisitGroup .contact-visit-card-body{ gap:var(--space-xs); }
       .preview{ font-size:calc(var(--fs-base) * var(--font-scale) * 0.95); }
     }
     /* === Section card 通用網格與工具類 === */
     .section-card-grid{
       display:grid;
       gap:var(--gap, 12px);
-      grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
       align-items:start;
+    }
+    @media (max-width:720px){
+      .section-card-grid{ grid-template-columns:1fr; }
     }
     .section-card{
       display:flex;
@@ -2575,10 +2561,6 @@
             <label class="h3" for="callDate">電聯日期</label>
             <div id="callDateControls" class="datebox">
               <input id="callDate" type="date">
-              <div class="date-controls">
-                <button type="button" class="small" aria-label="減一天" aria-controls="callDate" title="減一天" onclick="shiftDate('callDate', -1)">−</button>
-                <button type="button" class="small" aria-label="加一天" aria-controls="callDate" title="加一天" onclick="shiftDate('callDate', 1)">+</button>
-              </div>
             </div>
             <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
               <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
@@ -2595,10 +2577,6 @@
             <label class="h3" for="visitDate">家訪日期</label>
             <div class="datebox">
               <input id="visitDate" type="date">
-              <div class="date-controls">
-                <button type="button" class="small" aria-label="減一天" aria-controls="visitDate" title="減一天" onclick="shiftDate('visitDate', -1)">−</button>
-                <button type="button" class="small" aria-label="加一天" aria-controls="visitDate" title="加一天" onclick="shiftDate('visitDate', 1)">+</button>
-              </div>
             </div>
             <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
               <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出院日期
@@ -2607,10 +2585,6 @@
               <label class="h3" for="dischargeDate">出院日期</label>
               <div class="datebox">
                 <input id="dischargeDate" type="date">
-                <div class="date-controls">
-                  <button type="button" class="small" aria-label="減一天" aria-controls="dischargeDate" title="減一天" onclick="shiftDate('dischargeDate', -1)">−</button>
-                  <button type="button" class="small" aria-label="加一天" aria-controls="dischargeDate" title="加一天" onclick="shiftDate('dischargeDate', 1)">+</button>
-                </div>
               </div>
             </div>
           </div>
