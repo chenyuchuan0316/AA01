@@ -999,31 +999,101 @@ function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 /** ================ HRLookup.gs ================
  * 依單位代碼（B 欄前四碼）→ 取 H 欄姓名清單
  * ============================================ */
+var CASE_MANAGER_CACHE = null;
+
 function getCaseManagersByUnit(unitCode){
+  const key = normalizeUnitPrefix(unitCode);
+  if (!key) return [];
+  const index = ensureCaseManagerIndex();
+  const list = index[key];
+  return list ? list.slice() : [];
+}
+
+function ensureCaseManagerIndex(){
+  if (CASE_MANAGER_CACHE !== null) return CASE_MANAGER_CACHE;
+  const built = buildCaseManagerIndex();
+  if (built === null) return {};
+  CASE_MANAGER_CACHE = built;
+  return CASE_MANAGER_CACHE;
+}
+
+function buildCaseManagerIndex(){
+  const index = {};
   try{
-    const sh = SpreadsheetApp.openById(MANAGERS_SHEET_ID).getSheetByName(MANAGERS_SHEET_NAME);
-    const vals = sh.getDataRange().getValues(); // 第1列為標題
-    const out = [];
-    for (let i=1;i<vals.length;i++){
-      const empId = (vals[i][1]||'').toString(); // B欄
-      const name  = (vals[i][7]||'').toString(); // H欄
-      if (empId && empId.substring(0,4) === unitCode && name) out.push(name);
+    const sheet = SpreadsheetApp.openById(MANAGERS_SHEET_ID).getSheetByName(MANAGERS_SHEET_NAME);
+    if (!sheet) return index;
+    const values = sheet.getDataRange().getValues();
+    for (let i = 1; i < values.length; i++){
+      const row = values[i];
+      const unit = normalizeUnitPrefix(row && row[1]);
+      const name = row && row[7] ? String(row[7]).trim() : '';
+      if (!unit || !name) continue;
+      if (!index[unit]) index[unit] = [];
+      index[unit].push(name);
     }
-    return out.sort();
-  }catch(e){
-    return [];
+    Object.keys(index).forEach(function(unit){
+      index[unit].sort();
+    });
+  }catch(err){
+    return null;
   }
+  return index;
 }
 /** ================ getConsultantsByUnit.gs ================
  * 依單位代碼（B 欄前四碼）→ 取B 欄姓名清單
  * ============================================ */
-function getConsultantsByUnit(unit) {
-  const ss = SpreadsheetApp.openById(CONSULTANTS_BOOK_ID);
-  const sheet = ss.getSheetByName(CONSULTANTS_BOOK_NAME);
-  const values = sheet.getDataRange().getValues();
-  return values
-    .filter(r => r[0] === unit && r[2] === "在職")
-    .map(r => r[1]);
+var CONSULTANT_CACHE = null;
+
+function getConsultantsByUnit(unit){
+  const key = normalizeUnitKey(unit);
+  if (!key) return [];
+  const index = ensureConsultantIndex();
+  const list = index[key];
+  return list ? list.slice() : [];
+}
+
+function ensureConsultantIndex(){
+  if (CONSULTANT_CACHE !== null) return CONSULTANT_CACHE;
+  const built = buildConsultantIndex();
+  if (built === null) return {};
+  CONSULTANT_CACHE = built;
+  return CONSULTANT_CACHE;
+}
+
+function buildConsultantIndex(){
+  const index = {};
+  try{
+    const ss = SpreadsheetApp.openById(CONSULTANTS_BOOK_ID);
+    const sheet = ss.getSheetByName(CONSULTANTS_BOOK_NAME);
+    if (!sheet) return index;
+    const values = sheet.getDataRange().getValues();
+    for (let i = 1; i < values.length; i++){
+      const row = values[i];
+      const unit = normalizeUnitKey(row && row[0]);
+      const status = row && row[2] ? String(row[2]).trim() : '';
+      if (!unit || status !== '在職') continue;
+      const name = row && row[1] ? String(row[1]).trim() : '';
+      if (!name) continue;
+      if (!index[unit]) index[unit] = [];
+      index[unit].push(name);
+    }
+    Object.keys(index).forEach(function(unit){
+      index[unit].sort();
+    });
+  }catch(err){
+    return null;
+  }
+  return index;
+}
+
+function normalizeUnitPrefix(value){
+  const text = normalizeUnitKey(value);
+  return text ? text.substring(0, 4) : '';
+}
+
+function normalizeUnitKey(value){
+  if (value === undefined || value === null) return '';
+  return String(value).trim();
 }
 
 /**
