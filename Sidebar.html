@@ -2610,8 +2610,9 @@
               </div>
               <div class="basic-info-field case-manager-field field-intro" data-field-size="medium">
                 <label class="h2" for="caseManagerName">個案管理師</label>
-                <input id="caseManagerName" type="search" list="caseManagerList" autocomplete="off" placeholder="搜尋或輸入個管師">
-                <datalist id="caseManagerList"></datalist>
+                <select id="caseManagerName">
+                  <option value="" class="placeholder-option" disabled selected>請選擇</option>
+                </select>
               </div>
             </div>
             <div class="basic-info-row" data-row="2">
@@ -2621,7 +2622,9 @@
               </div>
               <div class="basic-info-field consult-name-field field-intro" data-field-size="medium">
                 <label class="h2" for="consultName">照專姓名</label>
-                <select id="consultName"></select>
+                <select id="consultName">
+                  <option value="" class="placeholder-option" disabled selected>請選擇</option>
+                </select>
               </div>
             </div>
             <div class="cms-level-row" data-row="3">
@@ -2635,6 +2638,7 @@
                 <button type="button" data-level="7">7</button>
                 <button type="button" data-level="8">8</button>
               </div>
+              <div class="hint cms-level-hint">選擇 CMS 等級後會同步填入隱藏欄位。</div>
               <input type="hidden" id="cmsLevelValue" value="">
             </div>
           </div>
@@ -3882,6 +3886,8 @@
       execution:'計畫執行規劃',
       notes:'其他備註'
     };
+
+    const simpleGroupControllers = {};
 
     function isSectionCardTitlebar(node){
       if(!node || node.nodeType !== 1) return false;
@@ -6419,21 +6425,40 @@
     function loadManagers(){
       const unit=document.getElementById('unitCode').value;
       google.script.run.withSuccessHandler(list=>{
-        const input=document.getElementById('caseManagerName');
-        const dataList=document.getElementById('caseManagerList');
-        const options=(list && list.length? list : ['（無資料）']);
-        if(dataList){
-          dataList.innerHTML='';
-          options.forEach(name=>{ const option=document.createElement('option'); option.value=name; dataList.appendChild(option); });
-        }
-        if(input){
-          const current=(input.value||'').trim();
-          const hasCurrent=options.indexOf(current) !== -1;
-          const fallback=options[0] || '';
-          input.value=hasCurrent? current : fallback;
-          input.setAttribute('placeholder', options[0] === '（無資料）' ? '無個管師資料' : '搜尋或輸入個管師');
+        const select=document.getElementById('caseManagerName');
+        if(!select) return;
+        const previousValue=(select.value || '').trim();
+        const hasData=Array.isArray(list) && list.length > 0;
+        select.innerHTML='';
+        const placeholder=document.createElement('option');
+        placeholder.value='';
+        placeholder.textContent=hasData ? '請選擇' : '（無資料）';
+        placeholder.className='placeholder-option';
+        placeholder.disabled=true;
+        placeholder.selected=true;
+        select.appendChild(placeholder);
+        let matched=false;
+        if(hasData){
+          list.forEach(name=>{
+            const option=document.createElement('option');
+            option.value=name;
+            option.textContent=name;
+            if(name === previousValue){
+              option.selected=true;
+              matched=true;
+            }
+            select.appendChild(option);
+          });
+          select.disabled=false;
+          if(!matched){
+            select.selectedIndex=0;
+          }
+        }else{
+          select.disabled=true;
+          select.selectedIndex=0;
         }
         buildApprovalPlanPreview();
+        scheduleSummaryUpdate();
       }).getCaseManagersByUnit(unit);
     }
 
@@ -6441,11 +6466,41 @@
     function loadConsultants(){
       const unit = document.getElementById('unitCode').value;
       google.script.run.withSuccessHandler(list=>{
-        const sel = document.getElementById('consultName');
-        sel.innerHTML='';
-        (list && list.length ? list : ['（無資料）']).forEach(n=>{const o=document.createElement('option'); o.textContent=n; sel.appendChild(o);}); sel.selectedIndex=0;
+        const select=document.getElementById('consultName');
+        if(!select) return;
+        const previousValue=(select.value || '').trim();
+        const hasData=Array.isArray(list) && list.length > 0;
+        select.innerHTML='';
+        const placeholder=document.createElement('option');
+        placeholder.value='';
+        placeholder.textContent=hasData ? '請選擇' : '（無資料）';
+        placeholder.className='placeholder-option';
+        placeholder.disabled=true;
+        placeholder.selected=true;
+        select.appendChild(placeholder);
+        let matched=false;
+        if(hasData){
+          list.forEach(name=>{
+            const option=document.createElement('option');
+            option.value=name;
+            option.textContent=name;
+            if(name === previousValue){
+              option.selected=true;
+              matched=true;
+            }
+            select.appendChild(option);
+          });
+          select.disabled=false;
+          if(!matched){
+            select.selectedIndex=0;
+          }
+        }else{
+          select.disabled=true;
+          select.selectedIndex=0;
+        }
         updateConsultVisitText();
         toggleCallDateByConsultVisit();
+        scheduleSummaryUpdate();
       }).getConsultantsByUnit(unit);
     }
 
@@ -14456,7 +14511,98 @@
       }
     }
 
+    function isBasicInfoComplete(){
+      const unitSelect=document.getElementById('unitCode');
+      const unitValue=(unitSelect && typeof unitSelect.value === 'string') ? unitSelect.value.trim() : '';
+      const managerSelect=document.getElementById('caseManagerName');
+      const managerValue=(managerSelect && typeof managerSelect.value === 'string') ? managerSelect.value.trim() : '';
+      const managerFilled=!managerSelect || managerSelect.disabled || !!managerValue;
+      const caseNameInput=document.getElementById('caseName');
+      const caseNameValue=(caseNameInput && typeof caseNameInput.value === 'string') ? caseNameInput.value.trim() : '';
+      const consultSelect=document.getElementById('consultName');
+      const consultValue=(consultSelect && typeof consultSelect.value === 'string') ? consultSelect.value.trim() : '';
+      const consultFilled=!consultSelect || consultSelect.disabled || !!consultValue;
+      const cmsValue=typeof getCmsLevel === 'function' ? getCmsLevel() : (document.getElementById('cmsLevelValue')?.value || '').trim();
+      return !!unitValue && managerFilled && !!caseNameValue && consultFilled && !!cmsValue;
+    }
+
+    function getFirstIncompleteBasicInfoFieldId(){
+      const unitSelect=document.getElementById('unitCode');
+      if(unitSelect && !unitSelect.disabled && !(unitSelect.value || '').trim()){
+        return 'unitCode';
+      }
+      const managerSelect=document.getElementById('caseManagerName');
+      if(managerSelect && !managerSelect.disabled && !(managerSelect.value || '').trim()){
+        return 'caseManagerName';
+      }
+      const caseNameInput=document.getElementById('caseName');
+      if(caseNameInput && !(caseNameInput.value || '').trim()){
+        return 'caseName';
+      }
+      const consultSelect=document.getElementById('consultName');
+      if(consultSelect && !consultSelect.disabled && !(consultSelect.value || '').trim()){
+        return 'consultName';
+      }
+      const cmsValue=typeof getCmsLevel === 'function' ? getCmsLevel() : (document.getElementById('cmsLevelValue')?.value || '').trim();
+      if(!cmsValue){
+        return 'cmsLevelGroup';
+      }
+      return 'caseName';
+    }
+
+    function focusBasicInfoField(fieldId){
+      if(!fieldId) return;
+      const el=document.getElementById(fieldId);
+      if(!el) return;
+      if(typeof el.focus === 'function'){
+        el.focus();
+        return;
+      }
+      const focusEl=el.querySelector && el.querySelector('input,select,textarea,button,[tabindex]');
+      if(focusEl && typeof focusEl.focus === 'function'){
+        focusEl.focus();
+      }
+    }
+
+    function shouldBlockCollapseForBasicInfo(targetGroup){
+      if(!targetGroup) return false;
+      const basicCtrl=simpleGroupControllers['basicInfoGroup'];
+      const planCtrl=simpleGroupControllers['contactVisitGroup'];
+      if(!basicCtrl || !basicCtrl.element || !planCtrl || !planCtrl.element) return false;
+      const isTargetBasic=basicCtrl.element === targetGroup;
+      const isTargetPlan=planCtrl.element === targetGroup;
+      if(!isTargetBasic && !isTargetPlan) return false;
+      const basicCollapsed=basicCtrl.element.dataset.collapsed === '1';
+      const planCollapsed=planCtrl.element.dataset.collapsed === '1';
+      const willBasicCollapsed=isTargetBasic ? true : basicCollapsed;
+      const willPlanCollapsed=isTargetPlan ? true : planCollapsed;
+      if(willBasicCollapsed && willPlanCollapsed && !isBasicInfoComplete()){
+        if(typeof basicCtrl.applyState === 'function'){
+          basicCtrl.applyState(false);
+        }else if(basicCtrl.element){
+          basicCtrl.element.dataset.collapsed='0';
+        }
+        const focusTargetId=getFirstIncompleteBasicInfoFieldId();
+        showValidationToast({
+          type:'warn',
+          message:'請先完成「基本資訊」欄位，再進行其他區塊。',
+          target:focusTargetId,
+          page:'goals',
+          step:1
+        });
+        if(typeof scrollToAnchorId === 'function'){
+          scrollToAnchorId('basicInfoGroup');
+        }else if(basicCtrl.element && typeof basicCtrl.element.scrollIntoView === 'function'){
+          basicCtrl.element.scrollIntoView({ behavior:'smooth', block:'start' });
+        }
+        focusBasicInfoField(focusTargetId);
+        return true;
+      }
+      return false;
+    }
+
     function initGroupCollapsibles(){
+      Object.keys(simpleGroupControllers).forEach(key=>{ delete simpleGroupControllers[key]; });
       const groups=document.querySelectorAll('.group');
       groups.forEach(group=>{
         if(!group) return;
@@ -14502,8 +14648,15 @@
           scheduleStickyMeasurement();
           scheduleLayoutMeasurements();
         };
+        const controller={ element:group, applyState };
+        if(group.id){
+          simpleGroupControllers[group.id] = controller;
+        }
         toggle.addEventListener('click', ()=>{
           const isCollapsed=group.dataset.collapsed === '1';
+          if(!isCollapsed && shouldBlockCollapseForBasicInfo(group)){
+            return;
+          }
           applyState(!isCollapsed);
         });
         const initialCollapsed = group.dataset && group.dataset.collapsed === '1';
@@ -14676,9 +14829,14 @@
       const consultSelect=document.getElementById('consultName');
       if(consultSelect){
         consultSelect.addEventListener('change', updateConsultVisitText);
+        consultSelect.addEventListener('change', scheduleSummaryUpdate);
       }
       document.getElementById('s1_gender')?.addEventListener('change', buildApprovalPlanPreview);
-      document.getElementById('caseManagerName')?.addEventListener('change', buildApprovalPlanPreview);
+      const caseManagerSelect=document.getElementById('caseManagerName');
+      if(caseManagerSelect){
+        caseManagerSelect.addEventListener('change', buildApprovalPlanPreview);
+        caseManagerSelect.addEventListener('change', scheduleSummaryUpdate);
+      }
 
       toggleCallDateByConsultVisit();
       updateConsultVisitText();
