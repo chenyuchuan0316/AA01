@@ -41,6 +41,7 @@ function doGet(){
  * H1 相關段落已整併於 H1_Sections.gs，便於維護。
  */
 const DOCUMENT_WRITERS = Object.freeze([
+  applyBasicInfoSection,
   applyH1_CallDate,
   applyH1_VisitDate,
   applyH1_Attendees,
@@ -51,6 +52,17 @@ const DOCUMENT_WRITERS = Object.freeze([
   applyPlanServiceSummaryPage,
   applyPlanOtherNotesPage
 ]);
+
+const H1_CALL_DATE_MAIN_HEADINGS = Object.freeze(['一、電聯日期：', '一、電聯日期:']);
+const H1_CALL_DATE_CONTENT_HEADINGS = Object.freeze(['電聯日期：', '電聯日期:', '電聯日期']);
+const H1_VISIT_DATE_MAIN_HEADINGS = Object.freeze(['二、家訪日期：', '二、家訪日期:']);
+const H1_VISIT_DATE_CONTENT_HEADINGS = Object.freeze(['家訪日期：', '家訪日期:', '家訪日期']);
+const H1_DISCHARGE_DATE_HEADINGS = Object.freeze(['出院日期：', '出院日期:', '出院日期']);
+const H1_ATTENDEE_SUMMARY_HEADINGS = Object.freeze(['三、偕同訪視者：', '三、偕同訪視者:']);
+const H1_ATTENDEE_PRIMARY_REL_HEADINGS = Object.freeze(['主要照顧者關係：', '主要照顧者關係:', '主要照顧者關係']);
+const H1_ATTENDEE_PRIMARY_NAME_HEADINGS = Object.freeze(['主要照顧者姓名：', '主要照顧者姓名:', '主要照顧者姓名']);
+const H1_ATTENDEE_EXTRA_REL_HEADINGS = Object.freeze(['其他參與者關係：', '其他參與者關係:', '其他參與者關係']);
+const H1_ATTENDEE_EXTRA_NAME_HEADINGS = Object.freeze(['其他參與者姓名：', '其他參與者姓名:', '其他參與者姓名']);
 
 function sanitizeFilePart(part){
   if (!part) return '';
@@ -136,6 +148,20 @@ function applyAndSave(form){
  */
 
 // -----------------------------------------------------------------------------
+// 基本資訊
+// -----------------------------------------------------------------------------
+
+function applyBasicInfoSection(body, form){
+  const safeForm = form || {};
+  if (!Array.isArray(BASIC_INFO_SECTIONS)) return;
+  BASIC_INFO_SECTIONS.forEach(function(section){
+    if (!section || !Array.isArray(section.headings)) return;
+    const headings = section.headings.map(function(h){ return String(h || '').trim(); });
+    setHeadingContent(body, headings, getTrimmed(safeForm, section.key));
+  });
+}
+
+// -----------------------------------------------------------------------------
 // 一、電聯日期
 // -----------------------------------------------------------------------------
 
@@ -153,7 +179,8 @@ function applyH1_CallDate(body, form){
     consultName: (safeForm.consultName || '').trim(),
     date: ymdToCJK(safeForm.callDate)
   });
-  replaceAfterHeadingColon(body, ['一、電聯日期：', '一、電聯日期:'], text);
+  setHeadingContent(body, H1_CALL_DATE_MAIN_HEADINGS, text);
+  setHeadingContent(body, H1_CALL_DATE_CONTENT_HEADINGS, text);
 }
 
 // -----------------------------------------------------------------------------
@@ -179,7 +206,12 @@ function applyH1_VisitDate(body, form){
       finalText = visitText ? `${visitText}、${dischargeText}` : dischargeText;
     }
   }
-  replaceAfterHeadingColon(body, ['二、家訪日期：', '二、家訪日期:'], finalText);
+  setHeadingContent(body, H1_VISIT_DATE_MAIN_HEADINGS, finalText);
+  setHeadingContent(body, H1_VISIT_DATE_CONTENT_HEADINGS, visitText);
+  const dischargeOnly = (safeForm.isDischarge && safeForm.dischargeDate)
+    ? ymdToCJK(safeForm.dischargeDate)
+    : '';
+  setHeadingContent(body, H1_DISCHARGE_DATE_HEADINGS, dischargeOnly);
 }
 
 // -----------------------------------------------------------------------------
@@ -226,13 +258,29 @@ function applyH1_Attendees(body, form){
   });
 
   const listText = participants.join('、');
-  const sentence = renderSimpleTemplate(H1_TEMPLATES.attendees.sentence, { list: listText });
+  const sentence = listText
+    ? renderSimpleTemplate(H1_TEMPLATES.attendees.sentence, { list: listText })
+    : '';
+  setHeadingContent(body, H1_ATTENDEE_SUMMARY_HEADINGS, sentence);
 
-  upsertContentUnderHeading(
-    body,
-    ['三、偕同訪視者：', '三、偕同訪視者:', '三、偕同訪視者'],
-    sentence
-  );
+  const primaryRelText = includePrimary ? primaryRel : '';
+  const fallbackCaseName = getTrimmed(safeForm, 'caseName');
+  const primaryNameText = includePrimary ? (primaryName || fallbackCaseName) : '';
+  setHeadingContent(body, H1_ATTENDEE_PRIMARY_REL_HEADINGS, primaryRelText);
+  setHeadingContent(body, H1_ATTENDEE_PRIMARY_NAME_HEADINGS, primaryNameText);
+
+  const extras = Array.isArray(safeForm.extras) ? safeForm.extras : [];
+  const extraRels = [];
+  const extraNames = [];
+  extras.forEach(function(extra){
+    if (!extra) return;
+    const role = (extra.role || '').trim();
+    const name = (extra.name || '').trim();
+    if (role) extraRels.push(role);
+    if (name) extraNames.push(name);
+  });
+  setHeadingContent(body, H1_ATTENDEE_EXTRA_REL_HEADINGS, extraRels.join('、'));
+  setHeadingContent(body, H1_ATTENDEE_EXTRA_NAME_HEADINGS, extraNames.join('、'));
 }
 
 // -----------------------------------------------------------------------------
@@ -316,7 +364,10 @@ function applyCareProblems(body, form){
   const titleLine = items
     ? renderSimpleTemplate(H1_TEMPLATES.careGoals.problemTitle, { items: items })
     : '';
-  replaceAfterHeadingColon(body, H1_PROBLEM_HEADING_VARIANTS, titleLine);
+  const problemHeadingColon = filterHeadingsWithColon(H1_PROBLEM_HEADING_VARIANTS);
+  if (!replaceAfterHeadingColon(body, problemHeadingColon, titleLine)){
+    upsertContentUnderHeading(body, H1_PROBLEM_HEADING_VARIANTS, titleLine);
+  }
 
   const note = getTrimmed(form, 'problemNote');
   if (note) {
@@ -879,6 +930,22 @@ function findHeadingParagraph(body, headingVariants){
   return null;
 }
 
+function filterHeadingsWithColon(headings){
+  return (headings || [])
+    .map(function(text){ return String(text || '').trim(); })
+    .filter(function(text){ return /[:：]$/.test(text); });
+}
+
+function setHeadingContent(body, headings, text){
+  if (!body || !headings || !headings.length) return false;
+  const normalized = headings.map(function(item){ return String(item || '').trim(); });
+  const colonVariants = filterHeadingsWithColon(normalized);
+  if (colonVariants.length && replaceAfterHeadingColon(body, colonVariants, text)){
+    return true;
+  }
+  return upsertContentUnderHeading(body, normalized, text);
+}
+
 /** 將「標題行」的冒號後文字取代為指定字串（用於日期與 Problems 行） */
 function replaceAfterHeadingColon(body, headingVariants, replaceText){
   const found = findHeadingParagraph(body, headingVariants);
@@ -889,13 +956,24 @@ function replaceAfterHeadingColon(body, headingVariants, replaceText){
 }
 
 /** 是否遇到下一個標題（大標或小標） */
-function isNextHeadingLine_(txt){
-  const t = (txt||'').trim();
-  if (!t) return false;
-  // 小標：(一) / （一）
-  if (/^[（(]?[一二三四五六七八九十]+[)）]/.test(t)) return true;
-  // 大標：一、二、三… 或 五、
-  if (/^[一二三四五六七八九十]+、/.test(t)) return true;
+function isNextHeadingLine_(paragraphOrText){
+  if (!paragraphOrText) return false;
+  let text = '';
+  if (typeof paragraphOrText.getHeading === 'function'){
+    const headingStyle = paragraphOrText.getHeading();
+    if (headingStyle && headingStyle !== DocumentApp.ParagraphHeading.NORMAL){
+      return true;
+    }
+    text = (paragraphOrText.getText() || '').trim();
+  } else {
+    text = String(paragraphOrText || '').trim();
+  }
+  if (!text) return false;
+  if (/^[（(]?[一二三四五六七八九十]+[)）]/.test(text)) return true;
+  if (/^[一二三四五六七八九十]+、/.test(text)) return true;
+  if (/^(單位代碼|個案管理師|個案姓名|照專姓名|照顧專員姓名|CMS 等級|電聯日期|家訪日期|出院日期|主要照顧者關係|主要照顧者姓名|其他參與者關係|其他參與者姓名)/.test(text)){
+    return true;
+  }
   return false;
 }
 
@@ -913,11 +991,12 @@ function upsertContentUnderHeading(body, headingVariants, content){
   const paras = body.getParagraphs();
   let i = index + 1;
   while (i < paras.length){
-    const txt = (paras[i].getText()||'').trim();
-    if (isNextHeadingLine_(txt)) break;
+    const paragraph = paras[i];
+    if (isNextHeadingLine_(paragraph)) break;
+    const txt = (paragraph.getText()||'').trim();
     if (!txt || /如.*等[。.]?$/.test(txt)) { i++; continue; }
     // 覆蓋現有內容行
-    paras[i].setText(content || '');
+    paragraph.setText(content || '');
     return true;
   }
   // 沒有內容行 → 插入新段落
@@ -933,11 +1012,11 @@ function upsertSingleLineUnderHeading(body, headingVariants, content){
   const paras = body.getParagraphs();
   const nextIdx = index + 1;
   if (nextIdx < paras.length){
-    const txt = (paras[nextIdx].getText()||'').trim();
-    if (isNextHeadingLine_(txt)){
+    const nextParagraph = paras[nextIdx];
+    if (isNextHeadingLine_(nextParagraph)){
       body.insertParagraph(nextIdx, content || '');
     }else{
-      paras[nextIdx].setText(content || '');
+      nextParagraph.setText(content || '');
     }
   }else{
     body.appendParagraph(content || '');
