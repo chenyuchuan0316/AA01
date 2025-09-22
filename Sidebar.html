@@ -1077,6 +1077,11 @@
     #contactVisitGroup .contact-visit-card .inline-checkbox{
       margin:0;
     }
+    #contactVisitGroup .plan-card-case-overview,
+    #contactVisitGroup .plan-card-care-goals,
+    #contactVisitGroup .plan-card-mismatch{
+      grid-column:1 / -1;
+    }
     #visitPartnersGroup{
       position:relative;
     }
@@ -2556,7 +2561,7 @@
             <span class="wizard-index">1</span>
             <span class="wizard-label">基本資訊</span>
           </button>
-          <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#careGoalsGroup">
+          <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#contactVisitGroup">
             <span class="wizard-index">2</span>
             <span class="wizard-label">照顧目標</span>
           </button>
@@ -2657,7 +2662,7 @@
     <ul class="side-nav-list" id="sideNavList"></ul>
   </nav>
 
-  <div class="page-section" data-page="goals" data-active="1" data-columns="2">
+  <div class="page-section" data-page="goals" data-active="1" data-columns="1">
     <div class="group" id="basicInfoGroup">
       <span class="h1">基本資訊</span>
       <div class="section-card-grid">
@@ -2711,7 +2716,9 @@
         </section>
       </div>
     </div>
+  </div>
 
+  <div class="page-section" data-page="goals" data-active="1" data-columns="2">
     <div class="group" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
       <span class="h1">計畫目標</span>
       <div class="section-card-grid">
@@ -2752,42 +2759,44 @@
           </div>
         </section>
 
-        <section class="section-card" id="visitPartnersGroup">
-          <div class="titlebar">
-            <label class="h2">三、偕同訪視者</label>
+        <section class="section-card contact-visit-card" id="visitPartnersGroup" data-card="partners">
+          <div class="contact-visit-card-header">
+            <span class="h2">三、偕同訪視者</span>
           </div>
-          <div class="row">
-            <div class="field-intro" data-field-size="short">
-              <label class="h3" for="primaryRel">主要照顧者關係</label>
-              <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
-                <option value="" class="placeholder-option" disabled selected>請選擇</option>
-                <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
-                <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
-                <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
-                <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
-                <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
-                <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
-                <optgroup label="自訂"><option>自訂角色</option></optgroup>
-              </select>
+          <div class="contact-visit-card-body">
+            <div class="row">
+              <div class="field-intro" data-field-size="short">
+                <label class="h3" for="primaryRel">主要照顧者關係</label>
+                <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
+                  <option value="" class="placeholder-option" disabled selected>請選擇</option>
+                  <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
+                  <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
+                  <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
+                  <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
+                  <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
+                  <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
+                  <optgroup label="自訂"><option>自訂角色</option></optgroup>
+                </select>
+              </div>
+              <div class="field-intro" data-field-size="medium">
+                <label class="h3" for="primaryName">主要照顧者姓名</label>
+                <input id="primaryName" type="text" placeholder="請輸入">
+              </div>
             </div>
-            <div class="field-intro" data-field-size="medium">
-              <label class="h3" for="primaryName">主要照顧者姓名</label>
-              <input id="primaryName" type="text" placeholder="請輸入">
+            <input type="hidden" id="includePrimary" value="true">
+            <div class="titlebar titlebar--mt-xxs">
+              <label class="h3">其他參與者</label>
+              <button type="button" class="small button-add" data-ic="plus" onclick="addExtraRow()">新增參與者</button>
             </div>
+            <div id="extras"></div>
+            <div id="extras_conflict" role="status" aria-live="polite"></div>
           </div>
-          <input type="hidden" id="includePrimary" value="true">
-          <div class="titlebar titlebar--mt-xxs">
-            <label class="h3">其他參與者</label>
-            <button type="button" class="small button-add" data-ic="plus" onclick="addExtraRow()">新增參與者</button>
-          </div>
-          <div id="extras"></div>
-          <div id="extras_conflict" role="status" aria-live="polite"></div>
         </section>
       </div>
     </div>
 
     <!-- 四、個案概況 -->
-  <div class="group" data-span="full" data-collapsed="1">
+    <div class="group" id="caseOverviewGroup" data-span="full" data-collapsed="1">
     <div class="titlebar">
       <span class="h1">四、個案概況</span>
       <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
@@ -2805,9 +2814,9 @@
         <div class="titlebar">
           <label class="h4">基本資料</label>
         </div>
-        <div class="grid3 form-row-3col field-intro-grid">
+        <div class="grid2 form-row-2col field-intro-grid">
           <div>
-            <label class="h5" for="s1_age">年齡（年紀）</label>
+            <label class="h5" for="s1_age">年齡</label>
             <input id="s1_age" type="number" min="1" max="120" value="70">
           </div>
           <div>
@@ -2816,23 +2825,12 @@
               <option>男</option><option>女</option>
             </select>
           </div>
+        </div>
+        <div class="row">
           <div>
-            <label class="h5" for="s1_cognition">認知溝通</label>
-            <select id="s1_cognition">
-              <option>清楚可應答</option>
-              <option>需重複或放慢</option>
-              <option>健忘／短期記憶不佳</option>
-              <option>表達或理解困難</option>
-              <option>無法溝通</option>
-              <option>無法評估</option>
-            </select>
-          </div>
-          <div>
-            <label class="h5" for="s1_awareness">意識狀態</label>
-            <select id="s1_awareness">
-              <option>清楚</option><option>遲鈍</option>
-              <option>混亂</option><option>模糊</option><option>嗜睡</option><option>昏迷</option>
-            </select>
+            <label class="h5">溝通語言／方式</label>
+            <div class="checkcol" id="s1_lang_box"></div>
+            <input id="s1_lang_note" type="text" placeholder="備註（例如：以台語為主）" style="margin-top:var(--space-xs);">
           </div>
         </div>
 
@@ -2841,7 +2839,7 @@
         </div>
         <div class="grid3 form-row-3col field-intro-grid">
           <div>
-            <label class="h5" for="s1_vision">視力狀態</label>
+            <label class="h5" for="s1_vision">視力程度</label>
             <select id="s1_vision" onchange="toggleVisionNotes()">
               <option>視力清晰</option>
               <option>靠近才能辨識</option>
@@ -2851,7 +2849,7 @@
             </select>
           </div>
           <div>
-            <label class="h5">視力補充</label>
+            <label class="h5">視力補充說明【選填】</label>
             <div class="checkcol" id="s1_vision_note_box"></div>
             <input id="s1_vision_other" type="text" placeholder="其他說明" style="display:none; margin-top:var(--space-xs);">
             <div id="s1_glasses_adherence_wrap" style="display:none; margin-top:var(--space-xs);">
@@ -2880,7 +2878,7 @@
           </div>
         </div>
         <div id="s1_hearing_detail_wrap" style="display:none;">
-          <label class="h5">聽力狀態說明</label>
+          <label class="h5">聽力補充說明【選填】</label>
           <div class="checkcol" id="s1_hearing_detail_box"></div>
           <div id="s1_hearing_device_wrap" style="display:none; margin-top:var(--space-xs);">
             <select id="s1_hearing_device_adherence">
@@ -2891,20 +2889,13 @@
             </select>
           </div>
         </div>
-        <div class="row">
-          <div>
-            <label class="h5">溝通語言／方式</label>
-            <div class="checkcol" id="s1_lang_box"></div>
-            <input id="s1_lang_note" type="text" placeholder="備註（例如：以台語為主）" style="margin-top:var(--space-xs);">
-          </div>
-        </div>
 
         <div class="titlebar">
-          <label class="h4">吞嚥與飲食</label>
+          <label class="h4">口腔與吞嚥功能</label>
         </div>
         <div class="grid3 form-row-3col">
           <div>
-            <label class="h5" for="s1_swallow">吞嚥／嗆咳等級</label>
+            <label class="h5" for="s1_swallow">吞嚥／嗆咳程度</label>
             <select id="s1_swallow" onchange="toggleSwallow()">
               <option>無困難</option>
               <option>輕度</option>
@@ -2937,11 +2928,11 @@
         </div>
 
         <div class="titlebar">
-          <label class="h4">疼痛與皮膚</label>
+          <label class="h4">疼痛與皮膚狀態</label>
         </div>
         <div class="grid3 form-row-3col">
           <div>
-            <label class="h5" for="s1_pain">疼痛</label>
+            <label class="h5" for="s1_pain">疼痛【選填】</label>
             <select id="s1_pain" onchange="togglePainCombined()">
               <option selected>無</option><option>有</option><option>未知</option>
             </select>
@@ -2989,7 +2980,7 @@
         </div>
         <div class="grid3 form-row-3col">
           <div>
-            <label class="h5" for="s1_lesion_has">皮膚病灶</label>
+            <label class="h5" for="s1_lesion_has">皮膚病灶【選填】</label>
             <select id="s1_lesion_has" onchange="toggleLesionCombined()">
               <option selected>無</option><option>有</option><option>未知</option>
             </select>
@@ -3044,32 +3035,32 @@
         </div>
         <div class="grid3 form-row-3col">
           <div>
-            <label class="h5" for="s1_transfer">起身／移位</label>
+            <label class="h5" for="s1_transfer">起身／移位程度</label>
             <select id="s1_transfer" onchange="toggleAdlHow('s1_transfer')">
               <option selected>獨立</option><option>需要輕扶</option><option>中度協助</option><option>重度協助</option><option>完全依賴</option>
             </select>
             <input id="s1_transfer_how" type="text" placeholder="請說明協助方式" style="display:none; margin-top:var(--space-xs);" data-show-values="中度協助,重度協助">
           </div>
           <div>
-            <label class="h5" for="s1_walk_indoor">室內行走</label>
+            <label class="h5" for="s1_walk_indoor">室內行走程度</label>
             <select id="s1_walk_indoor">
               <option selected>無輔具緩慢</option><option>單拐</option><option>四腳拐</option><option>助行器</option><option>輪椅</option><option>無法</option>
             </select>
           </div>
           <div>
-            <label class="h5" for="s1_walk_outdoor">外出行走</label>
+            <label class="h5" for="s1_walk_outdoor">外出行走程度</label>
             <select id="s1_walk_outdoor">
               <option>獨立</option><option selected>單拐</option><option>四腳拐</option><option>助行器</option><option>輪椅</option><option>無法</option>
             </select>
           </div>
           <div>
-            <label class="h5" for="s1_stairs">上下樓</label>
+            <label class="h5" for="s1_stairs">上下樓梯程度</label>
             <select id="s1_stairs">
               <option>可獨立</option><option selected>需扶手</option><option>需人協助</option><option>無法</option>
             </select>
           </div>
           <div>
-            <label class="h5" for="s1_weak_laterality">偏側無力</label>
+            <label class="h5" for="s1_weak_laterality">偏側無力狀態</label>
             <select id="s1_weak_laterality">
               <option>無</option>
               <option>左側</option>
@@ -3078,7 +3069,7 @@
             </select>
           </div>
           <div>
-            <label class="h5" for="s1_fall_history">跌倒史</label>
+            <label class="h5" for="s1_fall_history">跌倒史情形</label>
             <select id="s1_fall_history" onchange="toggleFallDetail()">
               <option>無</option>
               <option>過去1年1次</option>
@@ -3088,11 +3079,11 @@
             <input id="s1_fall_times" type="number" min="0" placeholder="次數" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div style="grid-column:1 / -1;">
-            <label class="h5">平衡狀態</label>
+            <label class="h5">平衡程度</label>
             <div class="checkcol" id="s1_balance_box"></div>
           </div>
           <div>
-            <label class="h5" for="s1_sitting_stability">坐姿穩定／輪椅安全</label>
+            <label class="h5" for="s1_sitting_stability">坐姿穩定性與輪椅安全情形</label>
             <select id="s1_sitting_stability" onchange="toggleSittingSupports()">
               <option value="" class="placeholder-option" disabled selected>請選擇</option>
               <option>穩定</option>
@@ -3102,7 +3093,7 @@
             <div class="checkcol" id="s1_sitting_support_box" style="display:none; margin-top:var(--space-xs);"></div>
           </div>
           <div>
-            <label class="h5" for="s1_gait">步態</label>
+            <label class="h5" for="s1_gait">步態狀態</label>
             <select id="s1_gait">
               <option value="" class="placeholder-option" disabled selected>請選擇</option>
               <option>正常</option>
@@ -3118,7 +3109,7 @@
         </div>
 
         <div class="titlebar">
-          <label class="h4">排泄與輔具</label>
+          <label class="h4">排泄功能</label>
         </div>
         <div class="row" style="margin-top:var(--space-xs);">
           <div>
@@ -3128,21 +3119,21 @@
         </div>
         <div class="grid3 form-row-3col" style="margin-top:var(--space-xs);">
           <div>
-            <label class="h5" for="s1_urine_day">白天排尿</label>
+            <label class="h5" for="s1_urine_day">日間排尿情形</label>
             <select id="s1_urine_day" onchange="toggleUrineOther('day')">
               <option selected>正常（4–6次）</option><option>偏少（少於3次）</option><option>偏多（7–9次）</option><option>失禁</option><option>其他</option>
             </select>
             <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div id="s1_urine_night_wrap">
-            <label class="h5" for="s1_urine_night">夜間排尿</label>
+            <label class="h5" for="s1_urine_night">夜間排尿情形</label>
             <select id="s1_urine_night" onchange="toggleUrineOther('night')">
               <option selected>夜間未起夜</option><option>夜間起夜1次</option><option>夜間起夜2–3次</option><option>夜間起夜≥4次</option><option>夜間有尿失禁</option><option>其他</option>
             </select>
             <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div id="s1_nocturia_wrap" style="display:none;">
-            <label class="h5" for="s1_nocturia_count">夜尿數值</label>
+            <label class="h5" for="s1_nocturia_count">夜尿次數數值</label>
             <input id="s1_nocturia_count" type="number" min="0" max="10" placeholder="0-10">
           </div>
         </div>
@@ -3248,15 +3239,19 @@
         </div>
 
         <div class="titlebar">
-          <label class="h4">情緒與行為</label>
+          <label class="h4">心理與行為狀態</label>
         </div>
-        <div class="grid2 form-row-2col">
+        <div class="grid3 form-row-3col">
           <div>
-            <label class="h5">情緒／行為</label>
-            <div class="checkcol" id="s1_mood_behaviors_box"></div>
+            <label class="h5">情緒狀態</label>
+            <div class="checkcol" id="s1_emotion_box"></div>
           </div>
           <div>
-            <label class="h5" for="s1_motivation">執行動機／需督促</label>
+            <label class="h5">行為表現</label>
+            <div class="checkcol" id="s1_behavior_box"></div>
+          </div>
+          <div>
+            <label class="h5" for="s1_motivation">執行動機與督促需求</label>
             <select id="s1_motivation">
               <option value="" class="placeholder-option" disabled selected>請選擇</option>
               <option>主動配合</option>
@@ -3265,9 +3260,29 @@
             </select>
           </div>
         </div>
+        <div class="grid2 form-row-2col" style="margin-top:var(--space-xs);">
+          <div>
+            <label class="h5" for="s1_cognition">認知功能【選填】</label>
+            <select id="s1_cognition">
+              <option>清楚可應答</option>
+              <option>需重複或放慢</option>
+              <option>健忘／短期記憶不佳</option>
+              <option>表達或理解困難</option>
+              <option>無法溝通</option>
+              <option>無法評估</option>
+            </select>
+          </div>
+          <div>
+            <label class="h5" for="s1_awareness">意識狀態【選填】</label>
+            <select id="s1_awareness">
+              <option>清楚</option><option>遲鈍</option>
+              <option>混亂</option><option>模糊</option><option>嗜睡</option><option>昏迷</option>
+            </select>
+          </div>
+        </div>
 
         <div class="titlebar">
-          <label class="h4">醫療與用藥</label>
+          <label class="h4">健康狀況與病史</label>
         </div>
         <div class="row">
           <div>
@@ -3277,21 +3292,21 @@
           </div>
         </div>
         <div class="grid3 form-row-3col">
-          <div><label class="h5" for="s1_surgery">手術史（選填）</label><input id="s1_surgery" type="text" placeholder="例：10多年前髖關節手術"></div>
-          <div><label class="h5" for="s1_allergy">藥物過敏（選填）</label><input id="s1_allergy" type="text" placeholder="無則留空"></div>
-          <div><label class="h5" for="s1_follow_clinic">固定就醫單位</label><input id="s1_follow_clinic" type="text" placeholder="例：嘉誠診所"></div>
+          <div><label class="h5" for="s1_surgery">手術史【選填】</label><input id="s1_surgery" type="text" placeholder="例：10多年前髖關節手術"></div>
+          <div><label class="h5" for="s1_allergy">藥物過敏【選填】</label><input id="s1_allergy" type="text" placeholder="無則留空"></div>
+          <div><label class="h5" for="s1_follow_clinic">固定就醫單位【選填】</label><input id="s1_follow_clinic" type="text" placeholder="例：嘉誠診所"></div>
           <div>
-            <label class="h5" for="s1_rx_type">處方型態</label>
+            <label class="h5" for="s1_rx_type">處方型態【選填】</label>
             <select id="s1_rx_type"><option>慢性處方箋</option><option>一般門診</option></select>
           </div>
           <div>
-            <label class="h5" for="s1_med_manage">用藥管理</label>
+            <label class="h5" for="s1_med_manage">用藥管理方式</label>
             <select id="s1_med_manage">
               <option>可自行規則服藥</option><option>需提醒</option><option>他人給藥</option>
             </select>
           </div>
           <div>
-            <label class="h5" for="s1_visit_transport">就醫交通</label>
+            <label class="h5" for="s1_visit_transport">就醫交通方式【選填】</label>
             <select id="s1_visit_transport" onchange="toggleTransportOther()">
               <option>計程車</option><option>家屬接送</option><option>交通接送服務</option><option>其他</option>
             </select>
@@ -3300,7 +3315,7 @@
         </div>
         <div class="row">
           <div>
-            <label class="h5">現用藥別</label>
+            <label class="h5">現用藥物種類</label>
             <div class="checkcol" id="s1_med_classes_box"></div>
             <input id="s1_med_classes_other" type="text" placeholder="其他用藥" style="display:none; margin-top:var(--space-xs);">
           </div>
@@ -3334,7 +3349,7 @@
             <input id="s1_sleep_reason_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
           </div>
           <div>
-            <label class="h5" for="s1_daytime">白天活動（選填）</label>
+            <label class="h5" for="s1_daytime">白天活動【選填】</label>
             <input id="s1_daytime" type="text" placeholder="例：坐後門外看電視，累了打盹">
           </div>
         </div>
@@ -3351,28 +3366,28 @@
         </div>
 
         <div class="titlebar">
-          <label class="h4">身障資訊（唯讀顯示）</label>
+          <label class="h4">身心障礙資訊（唯讀顯示）</label>
         </div>
         <div class="grid2 form-row-2col">
           <div>
-            <label class="h5">身障等級</label>
+            <label class="h5">身心障礙等級</label>
             <div id="s1_dis_level_text" class="badge">—</div>
           </div>
           <div id="s1_dis_cat_box" style="display:none;">
-            <label class="h5">身障類別</label>
+            <label class="h5">身心障礙類別</label>
             <div id="s1_dis_cat_text" class="badge">—</div>
           </div>
         </div>
-        <div class="hint" style="margin-top:var(--space-xs);">身障資訊同步自(二)經濟收入，此處為唯讀顯示。</div>
+        <div class="hint" style="margin-top:var(--space-xs);">身心障礙資訊同步自(二)經濟收入，此處為唯讀顯示。</div>
 
         <div class="titlebar titlebar--mt-md">
-          <label class="h4">建議措施與補充</label>
+          <label class="h4">總結建議</label>
           <button type="button" class="small" onclick="addActionEntry()">＋新增</button>
         </div>
         <div id="s1_actions_list" class="action-list"></div>
         <div class="hint" id="s1_actions_hint" style="display:none;">尚未新增建議措施。</div>
         <div class="field-error" id="s1_actions_error"></div>
-        <label class="h5" for="s1_notes">補充內容（選填）</label>
+        <label class="h5" for="s1_notes">補充內容【選填】</label>
         <textarea id="s1_notes" placeholder="其他未涵蓋重點（限簡要）；將附加於段落末端。"></textarea>
         <textarea id="section1_out" style="display:none;" data-progress-ignore="1"></textarea>
         <div id="section1_errors" class="error-messages" data-progress-ignore="1"></div>
@@ -3407,15 +3422,15 @@
                 </select>
               </div>
               <div>
-                <label class="h4">身障等級</label>
-                <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身障等級 -->
+                <label class="h4">身心障礙等級</label>
+                <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身心障礙等級 -->
                   <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
                 </select>
               </div>
             </div>
             <div id="disCatBox" style="display:none; margin-top:var(--space-xs);"><!-- 類別欄位，預設隱藏 -->
-              <label class="h4">身障類別（等級≠無才需選）</label>
-              <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身障類別 --></select>
+              <label class="h4">身心障礙類別（等級≠無才需選）</label>
+              <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身心障礙類別 --></select>
             </div>
           </div>
         </div>
@@ -3740,7 +3755,7 @@
   </div>
 
   <!-- 六、與照專…（原功能保留） -->
-  <div class="group" data-span="full">
+  <div class="group" id="mismatchPlanGroup" data-span="full">
     <span class="h2">六、與照專建議服務項目、問題清單不一致之原因說明及未來規劃</span>
     <div class="row"><div>
       <label class="h3">（一）目標達成的狀況以及未達成的差距</label>
@@ -4131,6 +4146,48 @@
       document.querySelectorAll('[data-section]').forEach(section=>upgradeLegacyContainers(section));
       applyGridUtilities(document);
     }
+
+    function createPlanCardFromGroup(group, options){
+      if(!group || !group.parentNode) return null;
+      const section=document.createElement('section');
+      section.className='section-card';
+      const classes=options && options.classes;
+      if(Array.isArray(classes)){
+        classes.forEach(cls=>{
+          if(cls) section.classList.add(cls);
+        });
+      }
+      const identifier=(options && options.id) || group.id;
+      if(identifier){
+        section.id = identifier;
+      }
+      while(group.firstChild){
+        section.appendChild(group.firstChild);
+      }
+      group.remove();
+      return section;
+    }
+
+    function combinePlanGoalCards(){
+      const planGroup=document.getElementById('contactVisitGroup');
+      if(!planGroup) return;
+      const grid=planGroup.querySelector('.section-card-grid');
+      if(!grid) return;
+      const specs=[
+        { id:'caseOverviewGroup', classes:['span-2','plan-card-case-overview'] },
+        { id:'careGoalsGroup', classes:['span-2','plan-card-care-goals'] },
+        { id:'mismatchPlanGroup', classes:['span-2','plan-card-mismatch'] }
+      ];
+      specs.forEach(spec=>{
+        const group=document.getElementById(spec.id);
+        if(!group) return;
+        const section=createPlanCardFromGroup(group, spec);
+        if(section){
+          grid.appendChild(section);
+        }
+      });
+    }
+
     const PAGE_ORDER = ['goals','execution','notes'];
     let summaryElements = null;
     let sideSummaryElements = null;
@@ -5222,7 +5279,8 @@
       s1_sitting_support_box:['需安全帶','需托盤／擋板','坐墊／防滑具'],
       s1_excretion_aids_box:['紙尿褲','便盆椅','留置導尿管','間歇導尿管'],
       s1_phone_note_box:['易受詐騙','重聽需擴音'],
-      s1_mood_behaviors_box:['焦慮','憂鬱','易怒','遊走','日夜顛倒'],
+      s1_emotion_box:['情緒穩定','焦慮','憂鬱','易怒'],
+      s1_behavior_box:['遊走','日夜顛倒','重複行為','妄想'],
       s1_devices_box:['鼻胃管','胃造口管（PEG）','氣切管','氧氣機'],
       s1_dhx_box:['高血壓','糖尿病','心臟病','腦中風','失智症'],
       s1_med_classes_box:['降壓藥','降脂藥','抗血栓／抗凝','降血糖／胰島素','利尿劑','睡眠用藥'],
@@ -6812,7 +6870,8 @@
     const S1_EXCRETION_AID_OPTIONS = ['紙尿褲','尿墊','便盆椅','尿壺','留置導尿管','間歇導尿管','尿造口袋','糞造口袋','夜間集尿袋'];
     const S1_BALANCE_OPTIONS = ['站立不穩','頭暈','TUG>12s'];
     const S1_SITTING_SUPPORT_OPTIONS = ['需安全帶','需托盤／擋板','坐墊／防滑具'];
-    const S1_MOOD_BEHAVIOR_OPTIONS = ['妄想','幻想性言談','焦慮','憂鬱','易怒','遊走','重複行為','日夜顛倒','脫序行為','囤積'];
+    const S1_EMOTION_OPTIONS = ['情緒穩定','焦慮','憂鬱','易怒'];
+    const S1_BEHAVIOR_OPTIONS = ['妄想','幻想性言談','遊走','重複行為','日夜顛倒','脫序行為','囤積'];
     const S1_PHONE_NOTE_OPTIONS = ['重聽需擴音','易受詐騙','其他'];
     const S1_DEVICE_OPTIONS = ['鼻胃管','胃造口管（PEG）','氣切管','鼻導管氧氣','氧氣機','中心靜脈導管','PICC 導管','呼吸輔助器（CPAP）','雙水平呼吸器（BiPAP）','血糖機','藥盒'];
     const INSOMNIA_DETAIL = {
@@ -6963,13 +7022,22 @@
         });
       }
 
-      const moodBox=document.getElementById('s1_mood_behaviors_box');
-      if(moodBox){
-        moodBox.innerHTML='';
-        S1_MOOD_BEHAVIOR_OPTIONS.forEach((name,i)=>{
+      const emotionBox=document.getElementById('s1_emotion_box');
+      if(emotionBox){
+        emotionBox.innerHTML='';
+        S1_EMOTION_OPTIONS.forEach((name,i)=>{
           const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="mood_${i}"> ${name}`;
-          moodBox.appendChild(lab);
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="emotion_${i}"> ${name}`;
+          emotionBox.appendChild(lab);
+        });
+      }
+      const behaviorBox=document.getElementById('s1_behavior_box');
+      if(behaviorBox){
+        behaviorBox.innerHTML='';
+        S1_BEHAVIOR_OPTIONS.forEach((name,i)=>{
+          const lab=document.createElement('label');
+          lab.innerHTML=`<input type="checkbox" value="${name}" id="behavior_${i}"> ${name}`;
+          behaviorBox.appendChild(lab);
         });
       }
 
@@ -8074,7 +8142,8 @@
       s.s1_sleep_reason_detail = document.getElementById('s1_sleep_reason_detail').value;
       s.s1_sleep_reason_other = document.getElementById('s1_sleep_reason_other').value;
       s.s1_daytime = document.getElementById('s1_daytime').value;
-      s.s1_mood_behaviors = collectChecks('s1_mood_behaviors_box');
+      s.s1_emotions = collectChecks('s1_emotion_box');
+      s.s1_behaviors = collectChecks('s1_behavior_box');
       s.s1_motivation = document.getElementById('s1_motivation').value;
       s.s1_devices = collectChecks('s1_devices_box');
       s.s1_devices_note = document.getElementById('s1_devices_note').value;
@@ -8092,7 +8161,7 @@
       s.s1_visit_transport = vt;
       s.s1_med_classes = collectChecks('s1_med_classes_box','s1_med_classes_other');
 
-      // 身障
+      // 身心障礙
       const disLevelEl=document.getElementById('s2_dis_level');
       const disCatEl=document.getElementById('s2_dis_cat');
       const disLevel = disLevelEl ? disLevelEl.value : '';
@@ -8100,8 +8169,8 @@
       if(disLevel && disLevel !== '無' && disCatEl){
         disCat = disCatEl.value || '';
       }
-      s.s1_dis_level = disLevel; // 段一身障等級（讀取自段二）
-      s.s1_dis_cat = disCat;     // 段一身障類別（讀取自段二）
+      s.s1_dis_level = disLevel; // 段一身心障礙等級（讀取自段二）
+      s.s1_dis_cat = disCat;     // 段一身心障礙類別（讀取自段二）
 
       // 補充
       s.s1_actions = collectActionEntries();
@@ -9312,8 +9381,10 @@
         lifeBits.push(`睡眠${sleep}`);
       }
       if (has(s.s1_daytime)) lifeBits.push(`白天活動以${s.s1_daytime}為主`);
-      const moodArr = Array.isArray(s.s1_mood_behaviors) ? s.s1_mood_behaviors : [];
-      if (moodArr.length) lifeBits.push(`情緒／行為：${listCN(moodArr)}`);
+      const emotionArr = Array.isArray(s.s1_emotions) ? s.s1_emotions : [];
+      if (emotionArr.length) lifeBits.push(`情緒狀態：${listCN(emotionArr)}`);
+      const behaviorArr = Array.isArray(s.s1_behaviors) ? s.s1_behaviors : [];
+      if (behaviorArr.length) lifeBits.push(`行為表現：${listCN(behaviorArr)}`);
       if (has(s.s1_motivation)) lifeBits.push(`執行動機：${s.s1_motivation}`);
       const p6 = lifeBits.join("，");
 
@@ -9330,7 +9401,7 @@
           ? `平時${s.s1_med_manage||""}，並以${s.s1_visit_transport||"既定方式"}就醫` : null
       ]);
 
-      // ⑧ 身障資訊移至經濟收入段落，故此不輸出
+      // ⑧ 身心障礙資訊移至經濟收入段落，故此不輸出
       const p8 = "";
 
       // ⑨ 補充（有才輸出）
@@ -9441,7 +9512,7 @@
       });
       const catSel=document.getElementById('s2_dis_cat');
       if(catSel){
-        catSel.innerHTML=''; // 段二身障類別選單
+        catSel.innerHTML=''; // 段二身心障礙類別選單
         S2_CATS.forEach(c=>{ // 產生類別選項
           const o=document.createElement('option'); o.textContent=c; catSel.appendChild(o); // 段二加入選項
         });
@@ -9475,7 +9546,7 @@
       let s='';
       if(srcs.length) s+=`主要經濟來源為${srcs.join('、')}`;
       if(id){ s += (s? '，':'') + `戶籍/福利身分為${id}`; }
-      if(lv && lv!=='無'){ s += `；身障等級：${lv}${cat? '（'+cat+'）':''}`; }
+      if(lv && lv!=='無'){ s += `；身心障礙等級：${lv}${cat? '（'+cat+'）':''}`; }
       if(s) s+='。';
       document.getElementById('section2_out').value=s;
     }
@@ -10035,7 +10106,7 @@
       ['高齡照顧者','≥65歲；原住民≥55歲；<18歲應通報'],
       ['無照顧經驗/知能不足','家庭變故或病況改變致知能不足'],
       ['沒有照顧替手','每週≥20小時主要照顧、難求助/抗拒資源'],
-      ['需照顧兩人以上','含雙老家庭、多名身障或精神病人'],
+      ['需照顧兩人以上','含雙老家庭、多名身心障礙或精神病人'],
       ['照顧者疾病/身心影響能力或意願','精神疾患/憂鬱焦慮失眠/重大傷病'],
       ['資源不符/變動或突發緊急需求','不符補助或突發事故致負擔'],
       ['三個月內照顧情境改變','急性醫療、病況改變、外籍看護空窗、資源中斷'],
@@ -12810,7 +12881,8 @@
     }
 
     function getCmsLevel(){
-      return (document.getElementById('cmsLevelValue')?.value || '').trim();
+      const value = (document.getElementById('cmsLevelValue')?.value || '').trim();
+      return VALID_CMS_LEVELS.includes(value) ? value : '';
     }
 
     function initCmsLevelButtons(){
@@ -14726,6 +14798,8 @@
       }
     }
 
+    const VALID_CMS_LEVELS = Object.freeze(['2','3','4','5','6','7','8']);
+
     const BASIC_INFO_REQUIRED_FIELDS = Object.freeze([
       { fieldId:'caseManagerName', type:'select', statusId:'caseManagerStatus', label:'個案管理師' },
       { fieldId:'consultName', type:'select', statusId:'consultStatus', label:'照專姓名' },
@@ -14771,14 +14845,19 @@
     }
 
     function setPlanGroupLocked(locked, options){
-      const normalized = !!locked;
-      const shouldExpand = options && options.expand;
-      planGroupState.locked = normalized;
-      if(!normalized && shouldExpand){
-        planGroupState.pendingExpand = true;
-      }
-      if(normalized){
+      const requestUnlock = !locked;
+      const shouldExpand = !!(options && options.expand);
+      if(requestUnlock && !isBasicInfoComplete()){
+        planGroupState.locked = true;
         planGroupState.pendingExpand = false;
+        applyPlanGroupLockState();
+        return;
+      }
+      planGroupState.locked = !!locked;
+      if(planGroupState.locked){
+        planGroupState.pendingExpand = false;
+      }else if(shouldExpand){
+        planGroupState.pendingExpand = true;
       }
       applyPlanGroupLockState({ expand: shouldExpand });
     }
@@ -14786,7 +14865,10 @@
     function getBasicInfoFieldValue(field){
       if(!field) return '';
       if(field.type === 'cms'){
-        return typeof getCmsLevel === 'function' ? (getCmsLevel() || '') : '';
+        const level = typeof getCmsLevel === 'function'
+          ? (getCmsLevel() || '')
+          : (document.getElementById('cmsLevelValue')?.value || '').trim();
+        return VALID_CMS_LEVELS.includes(level) ? level : '';
       }
       const el=document.getElementById(field.fieldId);
       if(!el) return '';
@@ -14861,10 +14943,22 @@
         }
       });
       const wasComplete = !!basicInfoState.complete;
-      basicInfoState.complete = allFilled;
+      const ready = allFilled && isBasicInfoComplete();
+      basicInfoState.complete = ready;
       applyWizardStepLockStates();
-      if(allFilled){
+      const basicCtrl = simpleGroupControllers['basicInfoGroup'];
+      if(ready){
         const shouldExpand = !wasComplete && !(options && options.silent);
+        if(!wasComplete && shouldExpand){
+          const element = basicCtrl && basicCtrl.element ? basicCtrl.element : document.getElementById('basicInfoGroup');
+          if(element && element.dataset.collapsed !== '1'){
+            if(basicCtrl && typeof basicCtrl.applyState === 'function'){
+              basicCtrl.applyState(true);
+            }else{
+              element.dataset.collapsed = '1';
+            }
+          }
+        }
         setPlanGroupLocked(false, { expand: shouldExpand });
         if(shouldExpand){
           showValidationToast({
@@ -14878,12 +14972,22 @@
           }
         }
       }else{
+        if(wasComplete){
+          const element = basicCtrl && basicCtrl.element ? basicCtrl.element : document.getElementById('basicInfoGroup');
+          if(element){
+            if(basicCtrl && typeof basicCtrl.applyState === 'function'){
+              basicCtrl.applyState(false);
+            }else{
+              element.dataset.collapsed = '0';
+            }
+          }
+        }
         setPlanGroupLocked(true);
         if(currentWizardStep && currentWizardStep > 1 && typeof setCurrentWizardStep === 'function'){
           setCurrentWizardStep(1, { scroll:false });
         }
       }
-      return allFilled;
+      return ready;
     }
 
     function initBasicInfoValidation(){
@@ -15129,6 +15233,7 @@
       loadServiceCatalog();
 
       prepareCaseProfileLayout();
+      combinePlanGoalCards();
       initGroupCollapsibles();
       initBasicInfoValidation();
       initStickyOverflowToggle();
