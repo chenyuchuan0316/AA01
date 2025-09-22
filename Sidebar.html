@@ -365,6 +365,13 @@
       flex:1 1 100%;
       min-width:100%;
     }
+    .grid2, .grid3, .form-row-2col, .form-row-3col{ display:grid; gap:var(--gap); align-items:start; }
+    .grid2, .form-row-2col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
+    .grid3, .form-row-3col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-3), 1fr)); }
+    @media (max-width:1024px){
+      .row > div{ flex:1 1 100%; min-width:100%; }
+      .grid2, .grid3, .form-row-2col, .form-row-3col{ grid-template-columns:1fr; }
+    }
 
     /* 標籤與 Placeholder（加大字、提升對比） */
     label{ display:block; font-size:var(--fs-label); margin-bottom:var(--space-xxs); color:var(--label); }
@@ -2438,7 +2445,7 @@
         --group-spacing-base:var(--space-xs);
         --checkcol-min:160px;
       }
-      .autogrid{ gap:var(--gap); }
+      .row, .grid2, .grid3{ gap:var(--gap); }
       .datebox input[type="date"]{ font-size:var(--fs-ctrl); }
       .titlebar{ margin-bottom:var(--space-xs); }
       .group{ padding:var(--group-padding); }
@@ -2761,8 +2768,8 @@
             <span class="h2">三、偕同訪視者</span>
           </div>
           <div class="contact-visit-card-body">
-            <div class="autogrid autogrid--wide">
-              <div class="field field-intro" data-field-size="short">
+            <div class="row">
+              <div class="field-intro" data-field-size="short">
                 <label class="h3" for="primaryRel">主要照顧者關係</label>
                 <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
                   <option value="" class="placeholder-option" disabled selected>請選擇</option>
@@ -2775,7 +2782,7 @@
                   <optgroup label="自訂"><option>自訂角色</option></optgroup>
                 </select>
               </div>
-              <div class="field field-intro" data-field-size="medium">
+              <div class="field-intro" data-field-size="medium">
                 <label class="h3" for="primaryName">主要照顧者姓名</label>
                 <input id="primaryName" type="text" placeholder="請輸入">
               </div>
@@ -2800,7 +2807,7 @@
     </div>
 
     <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
-    <div class="autogrid autogrid--wide">
+    <div class="row">
       <div id="section1_block" data-section="s1">
         <div id="section1_error_summary" class="error-summary" data-show="0" aria-live="polite"></div>
 
@@ -3570,292 +3577,300 @@
       </div>
     </div>
     <!-- (二) 經濟收入（原功能保留） -->
-    <div id="section2_block" data-section="s2">
-      <div class="section-card-grid">
-        <section class="section-card" id="section2IncomeCard">
-          <h4 class="h4">（二）經濟收入</h4>
-          <div class="autogrid autogrid--wide">
-            <div class="field" data-field-size="long">
-              <label class="h4">主要經濟來源</label>
-              <div class="checkcol" id="s2_sources"></div>
+    <div class="row">
+      <div id="section2_block" data-section="s2">
+        <div class="titlebar">
+          <label class="h3">（二）經濟收入</label>
+        </div>
+        <div class="grid2 form-row-2col">
+          <div>
+            <label class="h4">主要經濟來源</label>
+            <div class="checkcol" id="s2_sources"></div>
+          </div>
+          <div>
+            <div class="grid2 form-row-2col">
+              <div>
+                <label class="h4">戶籍／福利身分</label>
+                <select id="s2_id">
+                  <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
+                </select>
+              </div>
+              <div>
+                <label class="h4">身心障礙等級</label>
+                <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身心障礙等級 -->
+                  <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
+                </select>
+              </div>
             </div>
-            <div class="field" data-field-size="medium">
-              <label class="h4" for="s2_id">戶籍／福利身分</label>
-              <select id="s2_id">
-                <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
-              </select>
-            </div>
-            <div class="field" data-field-size="medium">
-              <label class="h4" for="s2_dis_level">身心障礙等級</label>
-              <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身心障礙等級 -->
-                <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
-              </select>
-            </div>
-            <div class="field" id="disCatBox" style="display:none; margin-top:var(--space-xs);"><!-- 類別欄位，預設隱藏 -->
-              <label class="h4" for="s2_dis_cat">身心障礙類別（等級≠無才需選）</label>
+            <div id="disCatBox" style="display:none; margin-top:var(--space-xs);"><!-- 類別欄位，預設隱藏 -->
+              <label class="h4">身心障礙類別（等級≠無才需選）</label>
               <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身心障礙類別 --></select>
             </div>
           </div>
-        </section>
+        </div>
+        <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
-      <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
     </div>
 
     <!-- (三) 居住環境（原功能保留） -->
-    <div id="section3_block" data-section="s3">
-      <div class="section-card-grid">
-        <section class="section-card" id="section3LivingCard">
-          <h4 class="h4">（三）居住環境</h4>
-          <div class="autogrid autogrid--wide">
-            <div class="field" data-field-size="medium">
-              <label class="h4" for="s3_type">居住型態</label>
-              <select id="s3_type" onchange="toggleOtherType()">
-                <option>透天</option><option>鐵皮屋</option><option>公寓</option><option>大樓</option><option>套房</option><option>其他</option>
-              </select>
-              <input id="s3_type_other" type="text" placeholder="請輸入其他型態" style="display:none; margin-top:var(--space-xs);">
-            </div>
-            <div class="field" data-field-size="medium">
-              <label class="h4" for="s3_own">居住權屬</label>
-              <select id="s3_own" onchange="toggleRentFields()"><option>自有</option><option>租賃</option><option>借住</option></select>
-            </div>
-            <div class="field" data-field-size="medium">
-              <label class="h4" for="s3_clean">整潔度／異味</label>
-              <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
-            </div>
+    <div class="row">
+      <div id="section3_block" data-section="s3">
+        <div class="titlebar">
+          <label class="h3">（三）居住環境</label>
+        </div>
+        <div class="grid3 form-row-3col">
+          <div>
+            <label class="h4">居住型態</label>
+            <select id="s3_type" onchange="toggleOtherType()">
+              <option>透天</option><option>鐵皮屋</option><option>公寓</option><option>大樓</option><option>套房</option><option>其他</option>
+            </select>
+            <input id="s3_type_other" type="text" placeholder="請輸入其他型態" style="display:none; margin-top:var(--space-xs);">
           </div>
-          <div class="autogrid autogrid--wide" style="margin-top:var(--space-xs);">
-            <div class="field" id="s3_rent_amount_wrap" style="display:none;">
-              <label class="h5" for="s3_rent_amount">租金金額（元/月）</label>
-              <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
-            </div>
-            <div class="field" id="s3_rent_fee_wrap" style="display:none;">
-              <label class="h5" for="s3_rent_fee">是否含管理費</label>
-              <select id="s3_rent_fee">
-                <option value="" class="placeholder-option" disabled selected>請選擇</option>
-                <option value="含管理費">含管理費</option>
-                <option value="不含管理費">不含管理費</option>
-              </select>
-            </div>
-            <div class="field">
-              <label class="h5" for="s3_smell">異味</label>
-              <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
-            </div>
+          <div>
+            <label class="h4">居住權屬</label>
+            <select id="s3_own" onchange="toggleRentFields()"><option>自有</option><option>租賃</option><option>借住</option></select>
           </div>
-          <div class="autogrid autogrid--wide" style="margin-top:var(--space-xs);">
-            <div class="field" data-field-size="medium">
-              <label class="h4">無障礙設施</label>
-              <div class="checkcol" id="s3_fac"></div>
-            </div>
-            <div class="field" data-field-size="medium">
-              <label class="h4">輔具</label>
-              <div class="checkcol" id="s3_aids"></div>
-            </div>
+          <div>
+            <label class="h4">整潔度／異味</label>
+            <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
           </div>
-        </section>
+        </div>
+        <div class="grid3 form-row-3col" style="margin-top:var(--space-xs);">
+          <div id="s3_rent_amount_wrap" style="display:none;">
+            <label class="h5">租金金額（元/月）</label>
+            <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
+          </div>
+          <div id="s3_rent_fee_wrap" style="display:none;">
+            <label class="h5">是否含管理費</label>
+            <select id="s3_rent_fee">
+              <option value="" class="placeholder-option" disabled selected>請選擇</option>
+              <option value="含管理費">含管理費</option>
+              <option value="不含管理費">不含管理費</option>
+            </select>
+          </div>
+          <div>
+            <label class="h5">異味</label>
+            <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
+          </div>
+        </div>
+        <div class="grid2 form-row-2col" style="margin-top:var(--space-xs);">
+          <div>
+            <label class="h4">無障礙設施</label>
+            <div class="checkcol" id="s3_fac"></div>
+          </div>
+          <div>
+            <label class="h4">輔具</label>
+            <div class="checkcol" id="s3_aids"></div>
+          </div>
+        </div>
+        <textarea id="section3_out" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
-      <textarea id="section3_out" style="display:none;" data-progress-ignore="1"></textarea>
     </div>
 
     <!-- (四) 社會支持（原功能保留） -->
-    <div id="section4_block" data-section="s4">
-      <div class="section-card-grid">
-        <section class="section-card" id="section4SupportCard">
-          <h4 class="h4">（四）社會支持</h4>
-          <div class="autogrid autogrid--wide">
-            <div class="field" data-field-size="medium">
-              <label class="h4">主照者關係</label>
-              <div id="sp_primaryRel_text" class="badge">—</div>
-            </div>
-            <div class="field" data-field-size="medium">
-              <label class="h4">主照者姓名</label>
-              <div id="sp_primaryName_text" class="badge">—</div>
-            </div>
-            <div class="field" data-field-size="medium">
-              <label class="h4" for="sp_cohabit">同住狀態</label>
-              <select id="sp_cohabit"><option value="">—不選—</option><option>同住</option><option>不同住</option></select>
-            </div>
-          </div>
-        </section>
+    <div class="row">
+      <div id="section4_block" data-section="s4">
+        <div class="titlebar">
+          <label class="h3">（四）社會支持</label>
+        </div>
 
-        <section class="section-card" id="section4DeciderCard">
-          <div class="section-card-header">
-            <h4 class="h4">主要聯繫人/決策者</h4>
-            <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
+        <div class="grid3 form-row-3col">
+          <div>
+            <label class="h4">主照者關係</label>
+            <div id="sp_primaryRel_text" class="badge">—</div>
           </div>
-          <div class="autogrid autogrid--wide">
-            <div class="field field-intro" data-field-size="medium">
-              <label class="h4" for="sp_deciderRel">關係</label>
-              <select id="sp_deciderRel">
-                <option value="">—不選—</option>
-                <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
-                <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
-                <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
-                <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
-                <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
-                <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
-                <optgroup label="自訂"><option>自訂角色</option></optgroup>
-              </select>
-            </div>
-            <div class="field field-intro" data-field-size="medium">
-              <label class="h4" for="sp_deciderName">姓名</label>
-              <input id="sp_deciderName" type="text" placeholder="請選擇">
-            </div>
-            <div class="field" data-field-size="medium">
-              <label class="h4" for="sp_deciderPhone">聯絡電話</label>
-              <input id="sp_deciderPhone" type="tel" placeholder="例如：0912-345678">
-            </div>
+          <div>
+            <label class="h4">主照者姓名</label>
+            <div id="sp_primaryName_text" class="badge">—</div>
           </div>
-        </section>
+          <div>
+            <label class="h4">同住狀態</label>
+            <select id="sp_cohabit"><option value="">—不選—</option><option>同住</option><option>不同住</option></select>
+          </div>
+        </div>
 
-        <section class="section-card" id="section4CoCareCard">
-          <div class="section-card-header">
-            <h4 class="h4">共同照顧者（可多筆）</h4>
-            <button type="button" class="small" onclick="addCoCare()">＋新增共同照顧者</button>
-          </div>
-          <div id="coCare"></div>
-        </section>
 
-        <section class="section-card" id="section4FormalCard">
-          <h4 class="h4">正式資源（多選）</h4>
+        <div class="hr"></div>
+
+        <div class="titlebar titlebar--mt-sm">
+          <label class="h4">主要聯繫人/決策者</label>
+          <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
+        </div>
+        <div class="grid3 form-row-3col">
+          <div class="field-intro">
+            <label class="h4">關係</label>
+            <select id="sp_deciderRel">
+              <option value="">—不選—</option>
+              <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
+              <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
+              <optgroup label="父母"><option>案父</option><option>案母</option></optgroup>
+              <optgroup label="手足"><option>案兄</option><option>案姊</option><option>案弟</option><option>案妹</option></optgroup>
+              <optgroup label="姻親"><option>案媳</option><option>案女婿</option></optgroup>
+              <optgroup label="孫輩"><option>案孫</option><option>案孫女</option></optgroup>
+              <optgroup label="自訂"><option>自訂角色</option></optgroup>
+            </select>
+          </div>
+          <div class="field-intro">
+            <label class="h4">姓名</label>
+            <input id="sp_deciderName" type="text" placeholder="請選擇">
+          </div>
+          <div>
+            <label class="h4">聯絡電話</label>
+            <input id="sp_deciderPhone" type="tel" placeholder="例如：0912-345678">
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="titlebar titlebar--mt-sm">
+          <label class="h4">共同照顧者（可多筆）</label>
+          <button type="button" class="small" onclick="addCoCare()">＋新增共同照顧者</button>
+        </div>
+        <div id="coCare"></div>
+
+        <div class="hr"></div>
+
+        <div>
+          <label class="h4">正式資源（多選）</label>
           <div class="muted">固定：<span class="badge">社區整合型服務中心為福安</span></div>
           <div class="checkcol" id="sp_formal"></div>
           <div id="homeCareWrap" style="display:none; margin-top:var(--space-xs);">
-            <div class="section-card-header">
-              <h5 class="h5">居家服務項目（多選）</h5>
+            <div class="titlebar">
+              <label class="h4">居家服務項目（多選）</label>
               <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
             </div>
             <div id="homeCareList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整；如需記錄用量，請於右側欄位輸入數量。</div>
           </div>
           <div id="dayCareWrap" style="display:none; margin-top:var(--space-xs);">
-            <div class="section-card-header">
-              <h5 class="h5">日間照顧服務項目（多選）</h5>
+            <div class="titlebar">
+              <label class="h4">日間照顧服務項目（多選）</label>
               <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
             </div>
             <div id="dayCareList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
           <div id="profServiceWrap" style="display:none; margin-top:var(--space-xs);">
-            <div class="section-card-header">
-              <h5 class="h5">專業服務項目（多選）</h5>
+            <div class="titlebar">
+              <label class="h4">專業服務項目（多選）</label>
               <button class="small" type="button" onclick="resetProfessionalPhrases()">重新套用片語</button>
             </div>
             <div id="profServiceList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
           <div id="transportServiceWrap" style="display:none; margin-top:var(--space-xs);">
-            <div class="section-card-header">
-              <h5 class="h5">交通接送項目（多選）</h5>
+            <div class="titlebar">
+              <label class="h4">交通接送項目（多選）</label>
               <button class="small" type="button" onclick="resetTransportPhrases()">重新套用片語</button>
             </div>
             <div id="transportServiceList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
           <div id="respServiceWrap" style="display:none; margin-top:var(--space-xs);">
-            <div class="section-card-header">
-              <h5 class="h5">喘息服務項目（多選）</h5>
+            <div class="titlebar">
+              <label class="h4">喘息服務項目（多選）</label>
               <button class="small" type="button" onclick="resetRespitePhrases()">重新套用片語</button>
             </div>
             <div id="respServiceList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
           <div id="mealServiceWrap" style="display:none; margin-top:var(--space-xs);">
-            <div class="section-card-header">
-              <h5 class="h5">營養送餐項目（多選）</h5>
+            <div class="titlebar">
+              <label class="h4">營養送餐項目（多選）</label>
               <button class="small" type="button" onclick="resetMealPhrases()">重新套用片語</button>
             </div>
             <div id="mealServiceList" class="home-care-grid"></div>
             <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
           </div>
-        </section>
+        </div>
 
-        <section class="section-card" id="section4InformalCard">
-          <h4 class="h4">非正式資源（多選，每類需填「單位名稱」）</h4>
-          <div class="autogrid autogrid--wide">
-            <div class="field" data-field-size="long">
-              <label class="h5 inline"><input type="checkbox" id="sp_inf_pt" onchange="toggleInfInput('pt')"> 據點</label>
-              <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-              <select id="sp_inf_pt_freq" style="display:none; margin-top:var(--space-xs);"><!-- 據點頻率 -->
-                <option value="">—請選擇頻率—</option>
-                <option>每週</option>
-                <option>每月</option>
-                <option>不定期</option>
-                <option>未知</option>
-              </select>
-            </div>
-            <div class="field" data-field-size="long">
-              <label class="h5 inline"><input type="checkbox" id="sp_inf_nb" onchange="toggleInfInput('nb')"> 鄰里</label>
-              <input id="sp_inf_nb_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-              <select id="sp_inf_nb_freq" style="display:none; margin-top:var(--space-xs);"><!-- 鄰里頻率 -->
-                <option value="">—請選擇頻率—</option>
-                <option>每週</option>
-                <option>每月</option>
-                <option>不定期</option>
-                <option>未知</option>
-              </select>
-            </div>
-            <div class="field" data-field-size="long">
-              <label class="h5 inline"><input type="checkbox" id="sp_inf_rg" onchange="toggleInfInput('rg')"> 宗教社團</label>
-              <input id="sp_inf_rg_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-              <select id="sp_inf_rg_freq" style="display:none; margin-top:var(--space-xs);"><!-- 宗教社團頻率 -->
-                <option value="">—請選擇頻率—</option>
-                <option>每週</option>
-                <option>每月</option>
-                <option>不定期</option>
-                <option>未知</option>
-              </select>
-            </div>
-            <div class="field" data-field-size="long">
-              <label class="h5 inline"><input type="checkbox" id="sp_inf_fw" onchange="toggleInfInput('fw')"> 財團／社會福利</label>
-              <input id="sp_inf_fw_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
-              <select id="sp_inf_fw_freq" style="display:none; margin-top:var(--space-xs);"><!-- 財團頻率 -->
-                <option value="">—請選擇頻率—</option>
-                <option>每週</option>
-                <option>每月</option>
-                <option>不定期</option>
-                <option>未知</option>
-              </select>
-            </div>
+        <div class="hr"></div>
+
+        <div>
+          <label class="h4">非正式資源（多選，每類需填「單位名稱」）</label>
+          <div>
+            <label class="h5 inline"><input type="checkbox" id="sp_inf_pt" onchange="toggleInfInput('pt')"> 據點</label>
+            <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+            <select id="sp_inf_pt_freq" style="display:none; margin-top:var(--space-xs);"><!-- 據點頻率 -->
+            <option value="">—請選擇頻率—</option>
+            <option>每週</option>
+            <option>每月</option>
+            <option>不定期</option>
+            <option>未知</option>
+          </select>
+
           </div>
-        </section>
+          <div>
+            <label class="h5 inline"><input type="checkbox" id="sp_inf_nb" onchange="toggleInfInput('nb')"> 鄰里</label>
+            <input id="sp_inf_nb_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+            <select id="sp_inf_nb_freq" style="display:none; margin-top:var(--space-xs);"><!-- 鄰里頻率 -->
+            <option value="">—請選擇頻率—</option>
+            <option>每週</option>
+            <option>每月</option>
+            <option>不定期</option>
+            <option>未知</option>
+          </select>
 
-        <section class="section-card" id="section4RiskCard">
-          <h4 class="h4">高風險評估（多選）</h4>
+          </div>
+          <div>
+            <label class="h5 inline"><input type="checkbox" id="sp_inf_rg" onchange="toggleInfInput('rg')"> 宗教社團</label>
+            <input id="sp_inf_rg_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+            <select id="sp_inf_rg_freq" style="display:none; margin-top:var(--space-xs);"><!-- 宗教社團頻率 -->
+            <option value="">—請選擇頻率—</option>
+            <option>每週</option>
+            <option>每月</option>
+            <option>不定期</option>
+            <option>未知</option>
+          </select>
+
+          </div>
+          <div>
+            <label class="h5 inline"><input type="checkbox" id="sp_inf_fw" onchange="toggleInfInput('fw')"> 財團／社會福利</label>
+            <input id="sp_inf_fw_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+            <select id="sp_inf_fw_freq" style="display:none; margin-top:var(--space-xs);"><!-- 財團頻率 -->
+            <option value="">—請選擇頻率—</option>
+            <option>每週</option>
+            <option>每月</option>
+            <option>不定期</option>
+            <option>未知</option>
+          </select>
+
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div>
+          <label class="h4">高風險評估（多選）</label>
           <div class="checkcol" id="sp_risks"></div>
           <div class="subtle">勾選將只輸出「標題短語」，說明文字僅作參考。</div>
-        </section>
+        </div>
+
+        <textarea id="section4_out" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
-      <textarea id="section4_out" style="display:none;" data-progress-ignore="1"></textarea>
     </div>
 
     <!-- (五) 其他 -->
-    <div id="section5_block" data-section="s5">
-      <div class="section-card-grid">
-        <section class="section-card" id="section5OtherCard">
-          <h4 class="h4">（五）其他</h4>
-          <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
-        </section>
+    <div class="row">
+      <div id="section5_block" data-section="s5">
+        <div class="titlebar">
+          <label class="h3">（五）其他</label>
+        </div>
+        <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
       </div>
     </div>
 
     <!-- (六) 複評評值 -->
-    <div id="section6_block" data-section="s6">
-      <div class="section-card-grid">
-        <section class="section-card" id="section6ReviewCard">
-          <h4 class="h4">（六）複評評值</h4>
-          <div class="autogrid autogrid--wide">
-            <div class="field" data-field-size="long">
-              <label class="h4" for="s6_before">介入前</label>
-              <textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea>
-            </div>
-            <div class="field" data-field-size="long">
-              <label class="h4" for="s6_after">介入後</label>
-              <textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea>
-            </div>
-          </div>
-        </section>
+    <div class="row">
+      <div id="section6_block" data-section="s6">
+        <div class="titlebar">
+          <label class="h3">（六）複評評值</label>
+        </div>
+        <div class="grid2 form-row-2col">
+          <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
+          <div><label class="h4">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
+        </div>
+        <textarea id="section6_struct" style="display:none;" data-progress-ignore="1"></textarea>
       </div>
-      <textarea id="section6_struct" style="display:none;" data-progress-ignore="1"></textarea>
     </div>
   </div>
 
@@ -3878,25 +3893,25 @@
 
         <div class="care-goal-block">
           <label class="h3">（二）短期目標（0–3 個月）</label>
-          <div class="autogrid autogrid--wide">
-            <div class="field" id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="short_resp_wrap"><label class="h4">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="short_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="short_meal_wrap"><label class="h4">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
+          <div class="grid2 form-row-2col">
+            <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
+            <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
+            <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
+            <div id="short_resp_wrap"><label class="h4">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
+            <div id="short_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
+            <div id="short_meal_wrap"><label class="h4">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
           </div>
         </div>
 
         <div class="care-goal-block">
           <label class="h3">（三）中期目標（3–4 個月）</label>
-          <div class="autogrid autogrid--wide">
-            <div class="field" id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="mid_resp_wrap"><label class="h4">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="mid_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
-            <div class="field" id="mid_meal_wrap"><label class="h4">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
+          <div class="grid2 form-row-2col">
+            <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
+            <div id="mid_resp_wrap"><label class="h4">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
+            <div id="mid_meal_wrap"><label class="h4">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
           </div>
         </div>
       </div>
@@ -3916,15 +3931,15 @@
   <!-- 六、與照專…（原功能保留） -->
   <div class="group" id="mismatchPlanGroup" data-span="full">
     <span class="h2">六、與照專建議服務項目、問題清單不一致之原因說明及未來規劃</span>
-    <div class="autogrid autogrid--wide"><div>
+    <div class="row"><div>
       <label class="h3">（一）目標達成的狀況以及未達成的差距</label>
       <textarea id="reason1" placeholder="填寫欄位"></textarea>
     </div></div>
-    <div class="autogrid autogrid--wide"><div>
+    <div class="row"><div>
       <label class="h3">（二）資源的變動情形</label>
       <textarea id="reason2" placeholder="填寫欄位"></textarea>
     </div></div>
-    <div class="autogrid autogrid--wide"><div>
+    <div class="row"><div>
       <label class="h3">（三）未使用的替代方案或是可能的影響</label>
       <textarea id="reason3" placeholder="填寫欄位"></textarea>
       <div class="hr"></div>
@@ -4246,66 +4261,22 @@
 
     function promoteFieldHeadings(section, grid){
       if(!section || !grid) return;
-      const report=[];
-      const processedContainers=new Set();
-      const findNearestId=node=>{
-        let current=node;
-        while(current && current !== section){
-          if(current.id) return current.id;
-          current=current.parentElement || current.parentNode || null;
-        }
-        return section.id || '';
-      };
-      const extractTitle=node=>{
-        if(!node) return '';
-        const label=node.querySelector ? node.querySelector('.h1, .h2, .h3, .h4, h1, h2, h3, h4, label, span') : null;
-        const target=label || node;
-        return (target.textContent || '').trim();
-      };
-      const wrapContainer=(container, source, type)=>{
-        if(!container || !container.parentNode || container === section || container === grid) return false;
-        if(container.closest('.section-card')) return false;
-        if(processedContainers.has(container)) return false;
+      const headings=Array.from(section.querySelectorAll('.h4')).filter(heading=>{
+        if(heading.closest('.section-card')) return false;
+        if(heading.closest('.section-card-header')) return false;
+        if(heading.closest('.titlebar')) return false;
+        return true;
+      });
+      headings.forEach(heading=>{
+        const container=heading.parentElement;
+        if(!container || container === section || container === grid) return;
+        if(container.closest('.section-card')) return;
         const card=document.createElement('section');
         card.className='section-card';
         container.parentNode.insertBefore(card, container);
         card.appendChild(container);
         grid.appendChild(card);
-        processedContainers.add(container);
-        report.push({
-          type,
-          text:extractTitle(source),
-          parentId:findNearestId(container)
-        });
-        return true;
-      };
-      let guard=0;
-      while(guard++ < 10){
-        let changed=false;
-        const looseTitlebars=Array.from(section.querySelectorAll('.titlebar')).filter(titlebar=>{
-          if(titlebar.closest('.section-card')) return false;
-          if(titlebar.closest('.section-card-header')) return false;
-          return true;
-        });
-        looseTitlebars.forEach(titlebar=>{
-          if(wrapContainer(titlebar.parentElement, titlebar, 'titlebar')){
-            changed=true;
-          }
-        });
-        const looseHeadings=Array.from(section.querySelectorAll('.h4')).filter(heading=>{
-          if(heading.closest('.section-card')) return false;
-          if(heading.closest('.section-card-header')) return false;
-          if(heading.closest('.titlebar')) return false;
-          return true;
-        });
-        looseHeadings.forEach(heading=>{
-          if(wrapContainer(heading.parentElement, heading, 'h4')){
-            changed=true;
-          }
-        });
-        if(!changed) break;
-      }
-      section.__looseHeadingReport = report;
+      });
     }
 
     function cleanupEmptyContainers(root){
@@ -4323,25 +4294,6 @@
 
     function applyGridUtilities(root){
       if(!root || !root.querySelectorAll) return;
-      const selectorMap=[
-        { selector:'.row', key:'row' },
-        { selector:'.grid2', key:'grid2' },
-        { selector:'.grid3', key:'grid3' },
-        { selector:'.form-row-2col', key:'formRow2' },
-        { selector:'.form-row-3col', key:'formRow3' }
-      ];
-      const countLegacyNodes=()=>{
-        const result={ row:0, grid2:0, grid3:0, formRow2:0, formRow3:0 };
-        selectorMap.forEach(item=>{
-          try{
-            result[item.key] = root.querySelectorAll(item.selector).length;
-          }catch(err){
-            result[item.key] = 0;
-          }
-        });
-        return result;
-      };
-      const initialCounts=countLegacyNodes();
       root.querySelectorAll('.row').forEach(el=>{
         el.classList.remove('row');
         el.classList.add('autogrid','autogrid--wide');
@@ -4360,14 +4312,6 @@
         el.classList.add('checkgrid');
         el.querySelectorAll('label').forEach(label=>label.classList.add('check-item'));
       });
-      const remainingCounts=countLegacyNodes();
-      const report={ initial:initialCounts, remaining:remainingCounts };
-      if(root === document){
-        document.__legacyGridReport = report;
-      }
-      if(root && typeof root === 'object'){
-        root.__legacyGridReport = report;
-      }
     }
 
     function upgradeLegacyContainers(section){
@@ -5114,14 +5058,6 @@
       scheduleSummaryProgressRender();
     }
 
-    function focusCardElement(cardElement){
-      if(!cardElement) return;
-      const groupElement = cardElement.closest ? cardElement.closest('.section-group') : null;
-      if(groupElement){
-        focusSectionGroupByElement(groupElement);
-      }
-    }
-
     function handleSideNavClick(event){
       const target=event && event.currentTarget ? event.currentTarget : null;
       if(!target) return;
@@ -5137,7 +5073,7 @@
           return;
         }
         const performScroll = ()=>{
-          focusCardElement(anchorEl);
+          focusSectionGroupByElement(anchorEl);
           if(step) updateWizardVisual(step);
           scrollToAnchorId(anchorId);
         };
@@ -5210,35 +5146,6 @@
       scheduleLayoutMeasurements();
       scheduleSummaryJumpRefresh();
       scheduleSummaryProgressRender();
-    }
-
-    function rebuildWizardFromNavItems(){
-      const container = document.getElementById('wizardSteps');
-      if(!container) return;
-      container.innerHTML = '';
-      const items = Array.isArray(SIDE_NAV_STATE.items) ? SIDE_NAV_STATE.items : [];
-      let stepCounter = 0;
-      items.forEach(item=>{
-        if(!item || !item.anchorId) return;
-        const step = ++stepCounter;
-        item.step = step;
-        const button=document.createElement('button');
-        button.type='button';
-        button.className='wizard-step';
-        button.dataset.step=String(step);
-        button.dataset.page=item.pageId || '';
-        button.dataset.anchor = `#${item.anchorId}`;
-        const indexSpan=document.createElement('span');
-        indexSpan.className='wizard-index';
-        indexSpan.textContent=String(step);
-        const labelSpan=document.createElement('span');
-        labelSpan.className='wizard-label';
-        labelSpan.textContent=item.label || `卡片 ${step}`;
-        button.appendChild(indexSpan);
-        button.appendChild(labelSpan);
-        container.appendChild(button);
-      });
-      initWizardFlow();
     }
 
     function renderSummaryProgress(){
@@ -5430,7 +5337,7 @@
           return;
         }
         const performScroll = ()=>{
-          focusCardElement(anchorEl);
+          focusSectionGroupByElement(anchorEl);
           if(step) updateWizardVisual(step);
           scrollToAnchorId(anchorId);
         };
@@ -5467,68 +5374,43 @@
       });
     }
 
-    function registerNavigationCards(){
+    function registerSideNavGroups(){
       const state = getSideNavElements();
       if(!state.root || !state.list) return;
-      const items = [];
-      const seen = new Set();
+      state.items = [];
       document.querySelectorAll('[data-section]').forEach(section=>{
         const sectionId = section.dataset ? section.dataset.section || '' : '';
         const pageSection = section.closest('.page-section');
         const pageId = pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '';
-        (section.__cards || []).forEach(card=>{
-          if(!card || !card.element) return;
-          const key = card.key || ensureElementId(card.element, `${sectionId || 'section'}_card`);
-          card.key = key;
-          card.anchorId = card.anchorId || key;
-          if(card.element.dataset) card.element.dataset.cardKey = key;
-          const stats = section.__cardStats && key ? section.__cardStats[key] : { filled:0, required:0 };
-          const label = card.label || deriveCardLabel(card.element) || `卡片 ${items.length + 1}`;
-          card.label = label;
-          const status = determineProgressStatus(stats.filled || 0, stats.required || 0);
+        (section.__groups || []).forEach(group=>{
+          if(!group || !group.element) return;
+          if(!group.element.id){
+            const navId = `${sectionId || 'section'}-group-${group.id}`;
+            group.element.id = navId;
+          }
+          const label = group.toggle ? group.toggle.textContent.trim() : '';
+          const stats = section.__groupStats && section.__groupStats[group.id]
+            ? section.__groupStats[group.id]
+            : { filled:0, required:0 };
           const item = {
             sectionId,
             pageId,
-            cardKey: key,
-            anchorId: card.anchorId,
-            label,
+            groupId: group.id,
+            anchorId: group.element.id,
+            label: label || `群組 ${group.id}`,
             stats: { filled: stats.filled || 0, required: stats.required || 0 },
-            status,
+            status: determineProgressStatus(stats.filled || 0, stats.required || 0),
             element:null,
             button:null,
-            countEl:null,
-            cardRef: card
+            countEl:null
           };
-          card.navItem = item;
-          items.push(item);
-          seen.add(card.element);
+          group.navItem = item;
+          state.items.push(item);
         });
       });
-      document.querySelectorAll('.section-card').forEach(cardEl=>{
-        if(!cardEl || seen.has(cardEl)) return;
-        const anchorId = ensureElementId(cardEl, `card_${items.length + 1}`);
-        const pageSection = cardEl.closest('.page-section');
-        const pageId = pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '';
-        const label = deriveCardLabel(cardEl) || `卡片 ${items.length + 1}`;
-        items.push({
-          sectionId:'',
-          pageId,
-          cardKey: anchorId,
-          anchorId,
-          label,
-          stats:{ filled:0, required:0 },
-          status:'optional',
-          element:null,
-          button:null,
-          countEl:null,
-          cardRef:null
-        });
-      });
-      state.items = items;
       scheduleSideNavRender();
       scheduleSummaryJumpRefresh();
       scheduleSummaryProgressRender();
-      rebuildWizardFromNavItems();
     }
 
     function updateSideNavForSection(section){
@@ -5537,26 +5419,27 @@
       if(!sectionId) return;
       const state = getSideNavElements();
       if(!state.items.length) return;
-      (section.__cards || []).forEach(card=>{
-        if(!card || !card.navItem) return;
-        const stats = section.__cardStats && card.key ? section.__cardStats[card.key] : { filled:0, required:0 };
+      (section.__groups || []).forEach(group=>{
+        if(!group || !group.navItem) return;
+        const stats = section.__groupStats && section.__groupStats[group.id] ? section.__groupStats[group.id] : { filled:0, required:0 };
         const status = determineProgressStatus(stats.filled || 0, stats.required || 0);
-        card.navItem.status = status;
-        card.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
-        if(card.navItem.countEl){
-          card.navItem.countEl.textContent = formatSideNavCount(card.navItem.stats.filled, card.navItem.stats.required);
+        group.navItem.status = status;
+        group.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
+        if(group.navItem.countEl){
+          group.navItem.countEl.textContent = formatSideNavCount(group.navItem.stats.filled, group.navItem.stats.required);
         }
-        if(card.navItem.element){
-          card.navItem.element.dataset.status = status;
+        if(group.navItem.element){
+          group.navItem.element.dataset.status = status;
         }
-        if(card.navItem.button){
-          const text = card.label || deriveCardLabel(card.element) || card.navItem.button.textContent || '';
+        if(group.toggle && group.navItem.button){
+          const text = group.toggle.textContent.trim();
           if(text){
-            card.navItem.button.textContent = text;
-            card.navItem.label = text;
-            card.label = text;
+            group.navItem.button.textContent = text;
+            group.navItem.label = text;
           }
-          card.navItem.button.dataset.status = status;
+          group.navItem.button.dataset.status = status;
+        }else if(group.navItem.button){
+          group.navItem.button.dataset.status = status;
         }
       });
       scheduleSummaryJumpRefresh();
@@ -6312,52 +6195,6 @@
       }
     }
 
-    function deriveCardLabel(card){
-      if(!card) return '';
-      if(card.dataset){
-        const direct = (card.dataset.title || card.dataset.cardTitle || '').trim();
-        if(direct) return direct;
-      }
-      const header = card.querySelector(':scope > h4, :scope > .section-card-header h4, :scope > .section-card-header .h4, :scope > .titlebar .h4');
-      if(header){
-        const text = header.textContent ? header.textContent.trim() : '';
-        if(text) return text;
-      }
-      const title = extractGroupTitleFromNode(card);
-      if(title) return title;
-      const fallback = card.id || '';
-      return fallback.trim();
-    }
-
-    function registerSectionCards(section){
-      if(!section) return;
-      const sectionId = section.dataset ? section.dataset.section || '' : '';
-      const pageSection = section.closest('.page-section');
-      const pageId = pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '';
-      const cards = Array.from(section.querySelectorAll('.section-card'));
-      const list = [];
-      cards.forEach((card, index)=>{
-        if(!card) return;
-        const key = ensureElementId(card, `${sectionId || 'section'}_card_${index + 1}`);
-        if(card.dataset) card.dataset.cardKey = key;
-        const label = deriveCardLabel(card) || `卡片 ${index + 1}`;
-        const group = card.closest('.section-group');
-        list.push({
-          key,
-          anchorId: key,
-          label,
-          element: card,
-          groupElement: group,
-          pageId,
-          sectionId,
-          status: 'pending',
-          stats: { filled:0, required:0 },
-          navItem: null
-        });
-      });
-      section.__cards = list;
-    }
-
     function buildSectionGroups(section){
       const groups = [];
       if(!section) return groups;
@@ -6547,13 +6384,6 @@
             container.dataset.groupId = group.dataset.groupId || '';
             container.dataset.level = container.dataset.level || group.dataset.level || 'basic';
           }
-          if(!container.dataset.cardKey){
-            const card = container.closest('.section-card');
-            if(card){
-              const cardKey = card.dataset ? (card.dataset.cardKey || card.id || '') : '';
-              if(cardKey) container.dataset.cardKey = cardKey;
-            }
-          }
           container.__conditionalRules = [];
         }
         if(container.__fields.indexOf(field) === -1){
@@ -6677,15 +6507,9 @@
       const progress = section.__progress;
       const containers = section.__fieldContainers || [];
       const groupStats = {};
-      const cardStats = {};
       (section.__groups || []).forEach(group=>{
         if(group && group.id){
           groupStats[group.id] = { required:0, filled:0 };
-        }
-      });
-      (section.__cards || []).forEach(card=>{
-        if(card && card.key){
-          cardStats[card.key] = { required:0, filled:0 };
         }
       });
       let requiredCount = 0;
@@ -6706,15 +6530,9 @@
           if(required) groupStats[groupId].required++;
           if(required && filled) groupStats[groupId].filled++;
         }
-        const cardKey = container && container.dataset ? container.dataset.cardKey : '';
-        if(cardKey && cardStats[cardKey]){
-          if(required) cardStats[cardKey].required++;
-          if(required && filled) cardStats[cardKey].filled++;
-        }
       });
       section.__progressCounts = { required: requiredCount, filled: filledCount };
       section.__groupStats = groupStats;
-      section.__cardStats = cardStats;
       section.__advancedCount = advancedCount;
       updateSectionAdvancedCount(section);
       if(progress){
@@ -6734,17 +6552,6 @@
         if(group.navItem){
           group.navItem.status = status;
           group.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
-        }
-      });
-      (section.__cards || []).forEach(card=>{
-        if(!card || !card.element) return;
-        const stats = cardStats[card.key] || { filled:0, required:0 };
-        const status = determineProgressStatus(stats.filled || 0, stats.required || 0);
-        card.status = status;
-        card.stats = { filled: stats.filled || 0, required: stats.required || 0 };
-        if(card.navItem){
-          card.navItem.status = status;
-          card.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
         }
       });
       updateAllGroupEmptyStates(section);
@@ -6929,7 +6736,6 @@
       section.dataset.sectionInit = '1';
       const groups = buildSectionGroups(section);
       section.__groups = groups;
-      registerSectionCards(section);
       createSectionProgress(section);
       createSectionControls(section);
       const prepared = prepareFieldContainers(section);
@@ -7004,7 +6810,7 @@
       const sections = document.querySelectorAll('[data-section]');
       sections.forEach(section=>setupSection(section));
       sectionViewsReady = true;
-      registerNavigationCards();
+      registerSideNavGroups();
       sections.forEach(section=>updateSideNavForSection(section));
       scheduleSideNavRender();
       scheduleSummaryUpdate();
@@ -15646,6 +15452,7 @@
       }
       initUiPresetControls();
       initFontScaleControls();
+      initWizardFlow();
       initFloatingActions();
       initPlanSummaryCopy();
       initPageTabs();
