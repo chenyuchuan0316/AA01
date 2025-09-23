@@ -237,17 +237,8 @@
       width:100%;
       box-sizing:border-box;
     }
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      padding:var(--group-padding);
-      box-shadow:var(--shadow);
-      width:100%;
-      box-sizing:border-box;
-    }
-    .card-main,
-    .card-lg{
+    .group.card-main,
+    .group.card-lg{
       display:block;
     }
     .group-header{
@@ -2502,7 +2493,7 @@
     @media (max-width:720px){
       .section-card-grid{ grid-template-columns:1fr; }
     }
-    .section-card{
+    .group.section-card{
       display:flex;
       flex-direction:column;
       gap:var(--gap, 12px);
@@ -2510,14 +2501,16 @@
       -webkit-column-break-inside:avoid;
       page-break-inside:avoid;
     }
-    .section-card-header{
+    .group.section-card > .titlebar{
       display:flex;
       align-items:center;
       gap:var(--space-xs);
       flex-wrap:wrap;
     }
-    .section-card-header > .h3,
-    .section-card-header > .h4{ flex:1 1 auto; }
+    .group.section-card > .titlebar > .h3,
+    .group.section-card > .titlebar > .h4{
+      flex:1 1 auto;
+    }
     .autogrid{
       display:grid;
       gap:var(--gap, 12px);
@@ -2712,8 +2705,8 @@
         <span class="h1">基本資訊</span>
       </div>
       <div class="section-card-grid">
-        <section class="section-card" id="basicInfoSection">
-          <div class="section-card-header">
+        <section class="group section-card" id="basicInfoSection">
+          <div class="titlebar">
             <span class="h2">基本資訊</span>
           </div>
           <div class="basic-info-fields">
@@ -2768,13 +2761,13 @@
   </div>
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
-    <section class="group card card-main" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
+    <section class="group card-main" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
           <div class="titlebar">
             <span class="h1">計畫目標</span>
           </div>
           <div class="section-card-grid">
-            <section class="section-card contact-visit-card" data-card="call">
-              <div class="contact-visit-card-header">
+            <section class="group section-card contact-visit-card" data-card="call">
+              <div class="titlebar contact-visit-card-header">
                 <span class="h2">一、電聯日期</span>
               </div>
               <div class="contact-visit-card-body">
@@ -2789,8 +2782,8 @@
               </div>
             </section>
 
-            <section class="section-card contact-visit-card" data-card="visit">
-              <div class="contact-visit-card-header">
+            <section class="group section-card contact-visit-card" data-card="visit">
+              <div class="titlebar contact-visit-card-header">
                 <span class="h2">二、家訪日期</span>
               </div>
               <div class="contact-visit-card-body">
@@ -2810,8 +2803,8 @@
               </div>
             </section>
 
-            <section class="section-card contact-visit-card" id="visitPartnersGroup" data-card="partners">
-              <div class="contact-visit-card-header">
+            <section class="group section-card contact-visit-card" id="visitPartnersGroup" data-card="partners">
+              <div class="titlebar contact-visit-card-header">
                 <span class="h2">三、偕同訪視者</span>
               </div>
               <div class="contact-visit-card-body">
@@ -2845,7 +2838,7 @@
             </section>
 
             <!-- 四、個案概況 -->
-            <section class="group card card-lg section-card span-2 plan-card-case-overview" id="caseOverviewGroup" data-span="full" data-collapsed="1">
+            <section class="group card-lg span-2 plan-card-case-overview" id="caseOverviewGroup" data-span="full" data-collapsed="1">
                 <div class="titlebar">
                   <span class="h2 heading-tier heading-tier--primary">四、個案概況</span>
                   <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
@@ -2859,7 +2852,7 @@
                   <div id="section1_error_summary" class="error-summary" data-group-ignore="1" data-show="0" aria-live="polite"></div>
 
                     <div class="section-card-grid" id="caseProfileBasicGroup">
-                      <section class="section-card" id="caseProfileBasicCard">
+                      <section class="group section-card" id="caseProfileBasicCard">
                         <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="short">
                                 <label class="h3" for="s1_age">年齡</label>
@@ -2885,7 +2878,7 @@
                       <span class="h3 heading-tier heading-tier--section">感官功能</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfileVisionCard">
+                          <section class="group section-card" id="caseProfileVisionCard">
                             <span class="h5 heading-tier heading-tier--subsection">視力</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -2918,7 +2911,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="section-card" id="caseProfileHearingCard">
+                          <section class="group section-card" id="caseProfileHearingCard">
                             <span class="h5 heading-tier heading-tier--subsection">聽力</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -2955,7 +2948,7 @@
                       <span class="h3 heading-tier heading-tier--section">口腔與吞嚥功能</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfileSwallowCard">
+                          <section class="group section-card" id="caseProfileSwallowCard">
                             <span class="h5 heading-tier heading-tier--subsection">吞嚥功能</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -2980,7 +2973,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="section-card" id="caseProfileOralCard">
+                          <section class="group section-card" id="caseProfileOralCard">
                             <span class="h5 heading-tier heading-tier--subsection">口腔與牙齒</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -2998,7 +2991,7 @@
                       <span class="h3 heading-tier heading-tier--section">移動功能</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfileMobilityCard">
+                          <section class="group section-card" id="caseProfileMobilityCard">
                             <span class="h5 heading-tier heading-tier--subsection">移動功能</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3100,7 +3093,7 @@
                       <span class="h3 heading-tier heading-tier--section">ADL（日常生活活動）</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfileAdlCard">
+                          <section class="group section-card" id="caseProfileAdlCard">
                             <span class="h5 heading-tier heading-tier--subsection">ADL 日常生活活動</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3158,7 +3151,7 @@
                       <span class="h3 heading-tier heading-tier--section">IADL（工具性日常活動）</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfileIadlCard">
+                          <section class="group section-card" id="caseProfileIadlCard">
                             <span class="h5 heading-tier heading-tier--subsection">IADL 工具性日常活動</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3241,7 +3234,7 @@
                       <span class="h3 heading-tier heading-tier--section">排泄功能</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfileExcretionCard">
+                          <section class="group section-card" id="caseProfileExcretionCard">
                             <span class="h5 heading-tier heading-tier--subsection">排泄功能</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3286,7 +3279,7 @@
                       <span class="h3 heading-tier heading-tier--section">健康狀況與病史</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfileDiseaseCard">
+                          <section class="group section-card" id="caseProfileDiseaseCard">
                             <span class="h5 heading-tier heading-tier--subsection">病史與過敏</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3304,7 +3297,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="section-card" id="caseProfileMedicationCard">
+                          <section class="group section-card" id="caseProfileMedicationCard">
                             <span class="h5 heading-tier heading-tier--subsection">用藥與就醫</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3343,7 +3336,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="section-card" id="caseProfileDeviceCard">
+                          <section class="group section-card" id="caseProfileDeviceCard">
                             <span class="h5 heading-tier heading-tier--subsection">管路／裝置</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3353,7 +3346,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="section-card" id="caseProfileDisabilityCard">
+                          <section class="group section-card" id="caseProfileDisabilityCard">
                             <span class="h5 heading-tier heading-tier--subsection">身心障礙資訊</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3375,7 +3368,7 @@
                       <span class="h3 heading-tier heading-tier--section">心理與行為狀態</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfilePsychBehaviorCard">
+                          <section class="group section-card" id="caseProfilePsychBehaviorCard">
                             <span class="h5 heading-tier heading-tier--subsection">心理與行為</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3419,7 +3412,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="section-card" id="caseProfilePsychSleepCard">
+                          <section class="group section-card" id="caseProfilePsychSleepCard">
                             <span class="h5 heading-tier heading-tier--subsection">睡眠與日間活動</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3453,7 +3446,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="section-card" id="caseProfilePainSkinCard">
+                          <section class="group section-card" id="caseProfilePainSkinCard">
                             <span class="h5 heading-tier heading-tier--subsection">疼痛與皮膚狀態</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3580,8 +3573,8 @@
                       <span class="h3 heading-tier heading-tier--section">總結建議</span>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="section-card" id="caseProfileActionsCard">
-                            <div class="section-card-header">
+                          <section class="group section-card" id="caseProfileActionsCard">
+                            <div class="titlebar">
                               <span class="h5 heading-tier heading-tier--subsection">建議措施</span>
                               <button type="button" class="small" onclick="addActionEntry()">＋新增</button>
                             </div>
@@ -3593,7 +3586,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="section-card" id="caseProfileNotesCard">
+                          <section class="group section-card" id="caseProfileNotesCard">
                             <span class="h5 heading-tier heading-tier--subsection">補充內容</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3897,7 +3890,7 @@
             </section>
 
             <!-- 五、照顧目標（原功能保留） -->
-            <section class="group card card-lg section-card span-2 plan-card-care-goals" id="careGoalsGroup" data-span="full">
+            <section class="group card-lg span-2 plan-card-care-goals" id="careGoalsGroup" data-span="full">
                 <span class="h2">五、照顧目標</span>
 
                 <div id="careGoals_block" data-section="cg">
@@ -3955,7 +3948,7 @@
               </section>
 
             <!-- 六、與照專…（原功能保留） -->
-            <section class="group card card-lg section-card span-2 plan-card-mismatch" id="mismatchPlanGroup" data-span="full">
+            <section class="group card-lg span-2 plan-card-mismatch" id="mismatchPlanGroup" data-span="full">
                 <span class="h2">六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃</span>
                 <div class="row"><div>
                   <label class="h3">（一）目標達成的狀況以及未達成的差距</label>
@@ -3996,7 +3989,7 @@
     <div class="group" data-span="full" data-collapsed="1">
       <span class="h1">計畫執行規劃</span>
       <div class="section-card-grid">
-        <section class="section-card" id="planExecutionGroup">
+        <section class="group section-card" id="planExecutionGroup">
           <div class="titlebar">
             <label class="h2">一、長照服務核定項目、頻率</label>
           </div>
@@ -4007,14 +4000,14 @@
           <div id="planEditor" class="plan-editor"></div>
         </section>
 
-        <section class="section-card" id="planReferralSection">
+        <section class="group section-card" id="planReferralSection">
           <div class="titlebar">
             <label class="h2">二、轉介其他服務資源</label>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
         </section>
 
-        <section class="section-card" id="planStationSection">
+        <section class="group section-card" id="planStationSection">
           <div class="titlebar">
             <label class="h2">三、巷弄長照站資訊與意願</label>
           </div>
@@ -4034,7 +4027,7 @@
           </div>
         </section>
 
-        <section class="section-card" id="planEmergencySection">
+        <section class="group section-card" id="planEmergencySection">
           <div class="titlebar">
             <label class="h2">四、緊急救援服務說明</label>
           </div>
@@ -4042,7 +4035,7 @@
           <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
         </section>
 
-        <section class="section-card" id="planSummaryGroup">
+        <section class="group section-card" id="planSummaryGroup">
           <div class="titlebar">
             <label class="h2">附件二（服務計畫明細）預覽</label>
           </div>
@@ -4084,7 +4077,7 @@
           </div>
         </section>
 
-        <section class="section-card" id="planTextGroup">
+        <section class="group section-card" id="planTextGroup">
           <div class="titlebar">
             <label class="h2">附件一：計畫執行規劃預覽</label>
           </div>
@@ -4109,8 +4102,8 @@
         <span class="h1">其他備註</span>
       </div>
       <div class="section-card-grid">
-        <section class="section-card">
-          <div class="section-card-header">
+        <section class="group section-card">
+          <div class="titlebar">
             <span class="h2">其他</span>
           </div>
           <div class="hint">個案特殊狀況或其他未盡事宜可備註於此。</div>
@@ -4182,10 +4175,18 @@
 
     const simpleGroupControllers = {};
 
+    function resolveSectionKey(source){
+      if(!source) return '';
+      if(typeof source === 'string') return source;
+      if(source.dataset && source.dataset.section) return source.dataset.section;
+      return source.id || '';
+    }
+
     function isSectionCardTitlebar(node){
       if(!node || node.nodeType !== 1) return false;
       if(!node.classList || !node.classList.contains('titlebar')) return false;
-      return !!node.querySelector('.h3, .h4');
+      const label=node.querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
+      return !!(label && label.textContent && label.textContent.trim());
     }
 
     function findFirstCardNode(section){
@@ -4194,124 +4195,214 @@
       for(let i=0;i<nodes.length;i++){
         const node=nodes[i];
         if(isSectionCardTitlebar(node)) return node;
-        if(node && node.querySelector && node.querySelector('.h3, .h4')) return node;
+        if(node && node.querySelector && node.querySelector('.h1, .h2, .h3, .h4, .h5, .h6')) return node;
       }
       return null;
     }
 
-    function createSectionCardFromTitlebar(titlebar){
-      const card=document.createElement('section');
-      card.className='section-card';
-      const children=Array.from(titlebar.children || []);
-      let labelEl=null;
-      for(let i=0;i<children.length;i++){
-        const child=children[i];
-        if(child && child.matches && child.matches('.h1, .h2, .h3, .h4, .h5, .h6, label, span')){
-          labelEl = child;
-          break;
+    function isHeadingElement(node){
+      if(!node || node.nodeType !== 1) return false;
+      if(node.classList){
+        if(node.classList.contains('titlebar')) return true;
+        const headingClasses=['h1','h2','h3','h4','h5','h6'];
+        for(let i=0;i<headingClasses.length;i++){
+          if(node.classList.contains(headingClasses[i])) return true;
+        }
+        if(node.classList.contains('heading-tier')) return true;
+      }
+      const tag=node.tagName ? node.tagName.toUpperCase() : '';
+      if(tag && /^H[1-6]$/.test(tag)) return true;
+      if(tag === 'LABEL') return true;
+      return false;
+    }
+
+    function ensureGroupTitlebar(group){
+      if(!group || !group.querySelector) return null;
+      let titlebar=group.querySelector(':scope > .titlebar');
+      if(titlebar) return titlebar;
+      const firstElement=group.firstElementChild;
+      if(isHeadingElement(firstElement)){
+        if(firstElement.classList && firstElement.classList.contains('titlebar')){
+          titlebar=firstElement;
+        }else{
+          titlebar=document.createElement('div');
+          titlebar.className='titlebar';
+          group.insertBefore(titlebar, firstElement);
+          titlebar.appendChild(firstElement);
+        }
+        return titlebar;
+      }
+      return null;
+    }
+
+    function normalizeCardContainer(group, sectionKey, options){
+      if(!group) return null;
+      if(!group.classList.contains('group')){
+        group.classList.add('group');
+      }
+      if(group.classList.contains('card')){
+        group.classList.remove('card');
+      }
+      const fromGrid=!!(options && options.fromGrid);
+      if(fromGrid && group.classList && !group.classList.contains('section-card')){
+        group.classList.add('section-card');
+      }
+      if(fromGrid){
+        if(group.dataset && !group.dataset.card){
+          group.dataset.card='1';
+        }
+        if(group.dataset && !group.dataset.collapsible){
+          const hasCollapsedAttr=group.hasAttribute && group.hasAttribute('data-collapsed');
+          group.dataset.collapsible = hasCollapsedAttr ? '1' : '0';
         }
       }
-      const heading=document.createElement('h3');
-      heading.className='h3';
-      const titleText=(labelEl ? labelEl.textContent : titlebar.textContent || '').trim();
-      heading.textContent=titleText;
-      if(titleText){
-        card.dataset.cardTitle = titleText;
+      if(group.dataset && !group.dataset.collapsed){
+        group.dataset.collapsed='0';
       }
-      const extras = labelEl ? children.filter(child=>child !== labelEl) : children.slice();
-      if(extras.length){
-        const header=document.createElement('div');
-        header.className='section-card-header';
-        header.appendChild(heading);
-        extras.forEach(extra=>header.appendChild(extra));
-        card.appendChild(header);
+      if(sectionKey && group.dataset && !group.dataset.section){
+        group.dataset.section = sectionKey;
+      }
+      const titlebar=ensureGroupTitlebar(group);
+      if(titlebar){
+        if(titlebar !== group.firstElementChild){
+          group.insertBefore(titlebar, group.firstChild);
+        }
+        if(group.dataset && !group.dataset.cardTitle){
+          const label=titlebar.querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
+          const text=label && label.textContent ? label.textContent.trim() : (titlebar.textContent || '').trim();
+          if(text) group.dataset.cardTitle = text;
+        }
+      }
+      return group;
+    }
+
+    function createCardFromTitlebar(titlebar, sectionKey){
+      const card=document.createElement('section');
+      card.className='group section-card';
+      card.appendChild(titlebar);
+      if(sectionKey) card.dataset.section = sectionKey;
+      card.dataset.card='1';
+      if(titlebar.dataset && titlebar.dataset.collapsed){
+        card.dataset.collapsed = titlebar.dataset.collapsed === '1' ? '1' : '0';
       }else{
-        card.appendChild(heading);
+        card.dataset.collapsed='0';
       }
+      const titleText=(titlebar.textContent || '').trim();
+      if(titleText) card.dataset.cardTitle = titleText;
       return card;
     }
 
-    function wrapSectionCardGrid(grid){
-      if(!grid || grid.dataset.cardsUpgraded === '1') return;
+    function normalizeCardGrid(grid, sectionKey){
+      if(!grid) return;
+      const key=resolveSectionKey(sectionKey || grid.closest('[data-section]'));
       const nodes=Array.from(grid.children);
       let current=null;
       nodes.forEach(node=>{
         if(!node) return;
-        if(node.classList && node.classList.contains('section-card')){
-          current = node;
+        if(node.nodeType !== 1){
+          if(current){ current.appendChild(node); }
           return;
         }
-        if(node.classList && node.classList.contains('titlebar')){
-          const card=createSectionCardFromTitlebar(node);
+        if(node.classList && node.classList.contains('section-card-grid')){
+          normalizeCardGrid(node, key);
+          current=null;
+          return;
+        }
+        if(node.classList && (node.classList.contains('group') || node.classList.contains('section-card'))){
+          current = normalizeCardContainer(node, key, { fromGrid:true });
+          return;
+        }
+        if(isSectionCardTitlebar(node)){
+          const card=createCardFromTitlebar(node, key);
+          normalizeCardContainer(card, key, { fromGrid:true });
           grid.insertBefore(card, node);
           node.remove();
           current = card;
+          return;
+        }
+        if(node.classList && node.classList.contains('hr')){
+          node.remove();
           return;
         }
         if(current){
           current.appendChild(node);
         }
       });
-      grid.dataset.cardsUpgraded = '1';
     }
 
-    function ensureSectionCardGrid(section){
+    function normalizeSectionCardLayout(section){
       if(!section) return;
+      const sectionKey=resolveSectionKey(section);
       const children=Array.from(section.children || []);
       const firstCardNode=findFirstCardNode(section);
-      if(!firstCardNode) return;
       const hasGrid=children.some(child=>child && child.classList && child.classList.contains('section-card-grid'));
-      if(hasGrid) return;
-      const grid=document.createElement('div');
-      grid.className='section-card-grid';
-      section.insertBefore(grid, firstCardNode);
-      let current=null;
-      let node=firstCardNode;
-      while(node){
-        const next=node.nextSibling;
-        if(node.nodeType !== 1){
-          if(current){ current.appendChild(node); }
+      if(firstCardNode && !hasGrid){
+        const grid=document.createElement('div');
+        grid.className='section-card-grid';
+        section.insertBefore(grid, firstCardNode);
+        let current=null;
+        let node=firstCardNode;
+        while(node){
+          const next=node.nextSibling;
+          if(node.nodeType !== 1){
+            if(current){ current.appendChild(node); }
+            node=next;
+            continue;
+          }
+          if(node.classList && node.classList.contains('hr')){
+            node.remove();
+            node=next;
+            continue;
+          }
+          if(isSectionCardTitlebar(node)){
+            const card=createCardFromTitlebar(node, sectionKey);
+            normalizeCardContainer(card, sectionKey, { fromGrid:true });
+            grid.appendChild(card);
+            node.remove();
+            current=card;
+          }else if(node.classList && (node.classList.contains('group') || node.classList.contains('section-card'))){
+            current=normalizeCardContainer(node, sectionKey, { fromGrid:true });
+            grid.appendChild(current);
+          }else if(current){
+            current.appendChild(node);
+          }else{
+            grid.appendChild(node);
+          }
           node=next;
-          continue;
         }
-        if(node.classList && node.classList.contains('hr')){
-          node.remove();
-          node=next;
-          continue;
-        }
-        if(isSectionCardTitlebar(node)){
-          const card=createSectionCardFromTitlebar(node);
-          grid.appendChild(card);
-          node.remove();
-          current=card;
-        }else if(current){
-          current.appendChild(node);
-        }else{
-          grid.appendChild(node);
-        }
-        node=next;
+        normalizeCardGrid(grid, sectionKey);
       }
-      grid.dataset.cardsUpgraded='1';
-      promoteFieldHeadings(section, grid);
+      section.querySelectorAll('.section-card-grid').forEach(grid=>normalizeCardGrid(grid, resolveSectionKey(grid.closest('[data-section]') || section)));
+      promoteFieldHeadings(section);
+      section.querySelectorAll('.section-card-grid').forEach(grid=>{
+        normalizeCardGrid(grid, resolveSectionKey(grid.closest('[data-section]') || section));
+      });
       cleanupEmptyContainers(section);
     }
 
-    function promoteFieldHeadings(section, grid){
-      if(!section || !grid) return;
+    function promoteFieldHeadings(section){
+      if(!section) return;
       const headings=Array.from(section.querySelectorAll('.h3, .h4')).filter(heading=>{
-        if(heading.closest('.section-card')) return false;
-        if(heading.closest('.section-card-header')) return false;
+        if(heading.closest('.group')) return false;
         if(heading.closest('.titlebar')) return false;
         return true;
       });
       headings.forEach(heading=>{
         const container=heading.parentElement;
-        if(!container || container === section || container === grid) return;
-        if(container.closest('.section-card')) return;
+        if(!container) return;
+        const grid=container.closest('.section-card-grid');
+        if(!grid) return;
+        const hostSection=grid.closest('[data-section]') || section;
+        const sectionKey=resolveSectionKey(hostSection);
         const card=document.createElement('section');
-        card.className='section-card';
+        card.className='group section-card';
+        const titlebar=document.createElement('div');
+        titlebar.className='titlebar';
+        titlebar.appendChild(heading);
+        card.appendChild(titlebar);
         container.parentNode.insertBefore(card, container);
         card.appendChild(container);
+        normalizeCardContainer(card, sectionKey, { fromGrid:true });
         grid.appendChild(card);
       });
     }
@@ -4353,8 +4444,7 @@
 
     function upgradeLegacyContainers(section){
       if(!section) return;
-      ensureSectionCardGrid(section);
-      section.querySelectorAll('.section-card-grid').forEach(grid=>wrapSectionCardGrid(grid));
+      normalizeSectionCardLayout(section);
       applyGridUtilities(section);
     }
 
@@ -6140,11 +6230,6 @@
         }
         if(child.classList && child.classList.contains('group-header')){
           const heading = child.querySelector('.h1, .h2, .h3, .h4, h1, h2, h3, h4, label, span');
-          const text = heading && heading.textContent ? heading.textContent.trim() : '';
-          if(text) return text;
-        }
-        if(child.classList && child.classList.contains('section-card-header')){
-          const heading = child.querySelector('.h1, .h2, .h3, .h4, h1, h2, h3, h4, span, label');
           const text = heading && heading.textContent ? heading.textContent.trim() : '';
           if(text) return text;
         }
@@ -15298,8 +15383,8 @@
       const groups=document.querySelectorAll('.group');
       groups.forEach(group=>{
         if(!group) return;
-        if(group.dataset && (group.dataset.collapsible === '0' || group.dataset.collapsible === 'disabled')) return;
         if(group.querySelector(':scope > .group-header')) return;
+        const collapsible = !(group.dataset && (group.dataset.collapsible === '0' || group.dataset.collapsible === 'disabled'));
         let heading=group.querySelector(':scope > .h1, :scope > .heading-tier');
         let header=null;
         if(heading){
@@ -15317,24 +15402,30 @@
           group.insertBefore(header, titlebar);
           header.appendChild(titlebar);
         }
-        group.dataset.collapsible = '1';
-        const toggle=document.createElement('button');
-        toggle.type='button';
-        toggle.className='group-collapse';
-        const icon=document.createElement('span');
-        icon.className='group-collapse-icon';
-        icon.setAttribute('aria-hidden','true');
-        icon.textContent='▾';
-        const label=document.createElement('span');
-        label.className='group-collapse-label';
-        label.textContent='收合';
-        toggle.appendChild(icon);
-        toggle.appendChild(label);
-        header.appendChild(toggle);
+        let toggle=null;
+        let label=null;
+        if(collapsible){
+          group.dataset.collapsible = '1';
+          toggle=document.createElement('button');
+          toggle.type='button';
+          toggle.className='group-collapse';
+          const icon=document.createElement('span');
+          icon.className='group-collapse-icon';
+          icon.setAttribute('aria-hidden','true');
+          icon.textContent='▾';
+          label=document.createElement('span');
+          label.className='group-collapse-label';
+          label.textContent='收合';
+          toggle.appendChild(icon);
+          toggle.appendChild(label);
+          header.appendChild(toggle);
+        }else if(!group.dataset || !group.dataset.collapsible){
+          group.dataset.collapsible = '0';
+        }
         const body=document.createElement('div');
         body.className='group-content';
         const contentId=ensureElementId(body, `${group.id || 'group'}_content`);
-        toggle.setAttribute('aria-controls', contentId);
+        if(toggle) toggle.setAttribute('aria-controls', contentId);
         while(header.nextSibling){
           body.appendChild(header.nextSibling);
         }
@@ -15343,30 +15434,34 @@
         const applyState=(collapsed)=>{
           const isCollapsed=!!collapsed;
           group.dataset.collapsed = isCollapsed ? '1' : '0';
-          toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+          if(toggle){
+            toggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+          }
           const actionText=isCollapsed ? '展開' : '收合';
           const ariaLabel=titleText ? `${actionText} ${titleText}` : actionText;
-          toggle.setAttribute('aria-label', ariaLabel);
+          if(toggle) toggle.setAttribute('aria-label', ariaLabel);
           if(label) label.textContent = actionText;
           scheduleStickyMeasurement();
           scheduleLayoutMeasurements();
         };
-        const controller={ element:group, applyState, toggle };
-        if(group.id){
-          simpleGroupControllers[group.id] = controller;
-        }
-        toggle.addEventListener('click', ()=>{
-          const isCollapsed=group.dataset.collapsed === '1';
-          if(isCollapsed){
-            if(shouldPreventPlanGroupExpansion(group)){
-              handleLockedPlanAttempt();
+        if(collapsible && toggle){
+          const controller={ element:group, applyState, toggle };
+          if(group.id){
+            simpleGroupControllers[group.id] = controller;
+          }
+          toggle.addEventListener('click', ()=>{
+            const isCollapsed=group.dataset.collapsed === '1';
+            if(isCollapsed){
+              if(shouldPreventPlanGroupExpansion(group)){
+                handleLockedPlanAttempt();
+                return;
+              }
+            }else if(shouldBlockCollapseForBasicInfo(group)){
               return;
             }
-          }else if(shouldBlockCollapseForBasicInfo(group)){
-            return;
-          }
-          applyState(!isCollapsed);
-        });
+            applyState(!isCollapsed);
+          });
+        }
         const initialCollapsed = group.dataset && group.dataset.collapsed === '1';
         applyState(initialCollapsed);
       });
