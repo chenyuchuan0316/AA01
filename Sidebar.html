@@ -2835,18 +2835,19 @@
       <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
     </div>
 
-    <span class="h3 heading-tier heading-tier--primary">（一）身心概況</span>
-    <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
-    <div class="row">
-      <div id="section1_block" data-section="s1">
-        <div id="section1_error_summary" class="error-summary" data-show="0" aria-live="polite"></div>
+    <div id="section1_block" data-section="s1">
+      <div class="titlebar">
+        <span class="h3 heading-tier heading-tier--primary">（一）身心概況</span>
+      </div>
+      <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
+      <div id="section1_error_summary" class="error-summary" data-group-ignore="1" data-show="0" aria-live="polite"></div>
 
         <div class="group" id="caseProfileBasicGroup" data-collapsed="0">
-          <span class="h4 heading-tier heading-tier--section">基本資料</span>
+          <span class="h4 heading-tier heading-tier--section">身心概況—基本狀態</span>
           <div class="group-content">
             <div class="section-card-grid">
               <section class="section-card" id="caseProfileBasicCard">
-                <span class="h5 heading-tier heading-tier--subsection">基本資料</span>
+                <span class="h5 heading-tier heading-tier--subsection">基本狀態</span>
                 <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="short">
                     <label class="h3" for="s1_age">年齡</label>
@@ -3607,11 +3608,10 @@
       </div>
     </div>
     <!-- (二) 經濟收入（原功能保留） -->
-    <div class="row">
-      <div id="section2_block" data-section="s2">
-        <div class="titlebar">
-          <span class="h3 heading-tier heading-tier--primary">（二）經濟收入</span>
-        </div>
+    <div id="section2_block" data-section="s2">
+      <div class="titlebar">
+        <span class="h3 heading-tier heading-tier--primary">（二）經濟收入</span>
+      </div>
         <div class="grid2 form-row-2col">
           <div>
             <label class="h4">主要經濟來源</label>
@@ -3638,16 +3638,14 @@
             </div>
           </div>
         </div>
-        <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
-      </div>
+      <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
     </div>
 
     <!-- (三) 居住環境（原功能保留） -->
-    <div class="row">
-      <div id="section3_block" data-section="s3">
-        <div class="titlebar">
-          <span class="h3 heading-tier heading-tier--primary">（三）居住環境</span>
-        </div>
+    <div id="section3_block" data-section="s3">
+      <div class="titlebar">
+        <span class="h3 heading-tier heading-tier--primary">（三）居住環境</span>
+      </div>
         <div class="grid3 form-row-3col">
           <div>
             <label class="h4">居住型態</label>
@@ -3693,16 +3691,14 @@
             <div class="checkcol" id="s3_aids"></div>
           </div>
         </div>
-        <textarea id="section3_out" style="display:none;" data-progress-ignore="1"></textarea>
-      </div>
+      <textarea id="section3_out" style="display:none;" data-progress-ignore="1"></textarea>
     </div>
 
     <!-- (四) 社會支持（原功能保留） -->
-    <div class="row">
-      <div id="section4_block" data-section="s4">
-        <div class="titlebar">
-          <span class="h3 heading-tier heading-tier--primary">（四）社會支持</span>
-        </div>
+    <div id="section4_block" data-section="s4">
+      <div class="titlebar">
+        <span class="h3 heading-tier heading-tier--primary">（四）社會支持</span>
+      </div>
 
         <div class="grid3 form-row-3col">
           <div>
@@ -3875,32 +3871,27 @@
           <div class="subtle">勾選將只輸出「標題短語」，說明文字僅作參考。</div>
         </div>
 
-        <textarea id="section4_out" style="display:none;" data-progress-ignore="1"></textarea>
-      </div>
+      <textarea id="section4_out" style="display:none;" data-progress-ignore="1"></textarea>
     </div>
 
     <!-- (五) 其他 -->
-    <div class="row">
-      <div id="section5_block" data-section="s5">
-        <div class="titlebar">
-          <span class="h3 heading-tier heading-tier--primary">（五）其他</span>
-        </div>
-        <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
+    <div id="section5_block" data-section="s5">
+      <div class="titlebar">
+        <span class="h3 heading-tier heading-tier--primary">（五）其他</span>
       </div>
+      <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
     </div>
 
     <!-- (六) 複評評值 -->
-    <div class="row">
-      <div id="section6_block" data-section="s6">
-        <div class="titlebar">
-          <span class="h3 heading-tier heading-tier--primary">（六）複評評值</span>
-        </div>
-        <div class="grid2 form-row-2col">
-          <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
-          <div><label class="h4">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
-        </div>
-        <textarea id="section6_struct" style="display:none;" data-progress-ignore="1"></textarea>
+    <div id="section6_block" data-section="s6">
+      <div class="titlebar">
+        <span class="h3 heading-tier heading-tier--primary">（六）複評評值</span>
       </div>
+      <div class="grid2 form-row-2col">
+        <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
+        <div><label class="h4">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
+      </div>
+      <textarea id="section6_struct" style="display:none;" data-progress-ignore="1"></textarea>
     </div>
   </div>
 
@@ -15007,43 +14998,41 @@
       }
     }
 
+    const VALID_CMS_LEVELS = Object.freeze(['2','3','4','5','6','7','8']);
+
+    const BASIC_INFO_REQUIRED_FIELDS = Object.freeze([
+      { fieldId:'caseManagerName', type:'select', statusId:'caseManagerStatus', label:'個案管理師' },
+      { fieldId:'consultName', type:'select', statusId:'consultStatus', label:'照專姓名' },
+      { fieldId:'caseName', type:'input', statusId:'caseNameStatus', label:'個案姓名' },
+      { fieldId:'cmsLevelGroup', type:'cms', statusId:'cmsLevelStatus', label:'CMS 等級' }
+    ]);
+
+    const basicInfoState = { complete:false };
+    const planGroupState = { locked:true, pendingExpand:false };
+
     function isBasicInfoComplete(){
+      for(let i=0;i<BASIC_INFO_REQUIRED_FIELDS.length;i++){
+        if(!getBasicInfoFieldValue(BASIC_INFO_REQUIRED_FIELDS[i])){
+          return false;
+        }
+      }
       const unitSelect=document.getElementById('unitCode');
       const unitValue=(unitSelect && typeof unitSelect.value === 'string') ? unitSelect.value.trim() : '';
-      const managerSelect=document.getElementById('caseManagerName');
-      const managerValue=(managerSelect && typeof managerSelect.value === 'string') ? managerSelect.value.trim() : '';
-      const managerFilled=!managerSelect || managerSelect.disabled || !!managerValue;
-      const caseNameInput=document.getElementById('caseName');
-      const caseNameValue=(caseNameInput && typeof caseNameInput.value === 'string') ? caseNameInput.value.trim() : '';
-      const consultSelect=document.getElementById('consultName');
-      const consultValue=(consultSelect && typeof consultSelect.value === 'string') ? consultSelect.value.trim() : '';
-      const consultFilled=!consultSelect || consultSelect.disabled || !!consultValue;
-      const cmsValue=typeof getCmsLevel === 'function' ? getCmsLevel() : (document.getElementById('cmsLevelValue')?.value || '').trim();
-      return !!unitValue && managerFilled && !!caseNameValue && consultFilled && !!cmsValue;
+      return !!unitValue;
     }
 
     function getFirstIncompleteBasicInfoFieldId(){
+      for(let i=0;i<BASIC_INFO_REQUIRED_FIELDS.length;i++){
+        const field=BASIC_INFO_REQUIRED_FIELDS[i];
+        if(!getBasicInfoFieldValue(field)){
+          return field.fieldId;
+        }
+      }
       const unitSelect=document.getElementById('unitCode');
       if(unitSelect && !unitSelect.disabled && !(unitSelect.value || '').trim()){
         return 'unitCode';
       }
-      const managerSelect=document.getElementById('caseManagerName');
-      if(managerSelect && !managerSelect.disabled && !(managerSelect.value || '').trim()){
-        return 'caseManagerName';
-      }
-      const caseNameInput=document.getElementById('caseName');
-      if(caseNameInput && !(caseNameInput.value || '').trim()){
-        return 'caseName';
-      }
-      const consultSelect=document.getElementById('consultName');
-      if(consultSelect && !consultSelect.disabled && !(consultSelect.value || '').trim()){
-        return 'consultName';
-      }
-      const cmsValue=typeof getCmsLevel === 'function' ? getCmsLevel() : (document.getElementById('cmsLevelValue')?.value || '').trim();
-      if(!cmsValue){
-        return 'cmsLevelGroup';
-      }
-      return 'caseName';
+      return BASIC_INFO_REQUIRED_FIELDS.length ? BASIC_INFO_REQUIRED_FIELDS[0].fieldId : 'caseName';
     }
 
     function focusBasicInfoField(fieldId){
@@ -15059,18 +15048,6 @@
         focusEl.focus();
       }
     }
-
-    const VALID_CMS_LEVELS = Object.freeze(['2','3','4','5','6','7','8']);
-
-    const BASIC_INFO_REQUIRED_FIELDS = Object.freeze([
-      { fieldId:'caseManagerName', type:'select', statusId:'caseManagerStatus', label:'個案管理師' },
-      { fieldId:'consultName', type:'select', statusId:'consultStatus', label:'照專姓名' },
-      { fieldId:'caseName', type:'input', statusId:'caseNameStatus', label:'個案姓名' },
-      { fieldId:'cmsLevelGroup', type:'cms', statusId:'cmsLevelStatus', label:'CMS 等級' }
-    ]);
-
-    const basicInfoState = { complete:false };
-    const planGroupState = { locked:true, pendingExpand:false };
 
     function isPlanGroupLocked(){
       return !!planGroupState.locked;
