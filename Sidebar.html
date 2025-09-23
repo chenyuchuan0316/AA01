@@ -404,12 +404,8 @@
       flex:1 1 100%;
       min-width:100%;
     }
-    .grid2, .grid3, .form-row-2col, .form-row-3col{ display:grid; gap:var(--gap); align-items:start; }
-    .grid2, .form-row-2col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
-    .grid3, .form-row-3col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-3), 1fr)); }
     @media (max-width:1024px){
       .row > div{ flex:1 1 100%; min-width:100%; }
-      .grid2, .grid3, .form-row-2col, .form-row-3col{ grid-template-columns:1fr; }
     }
 
     /* 標籤與 Placeholder（加大字、提升對比） */
@@ -2576,10 +2572,10 @@
         --group-spacing-base:var(--space-xs);
         --checkcol-min:160px;
       }
-      .row, .grid2, .grid3{ gap:var(--gap); }
+      .row, .autogrid{ gap:var(--gap); }
       .datebox input[type="date"]{ font-size:var(--fs-ctrl); }
       .titlebar{ margin-bottom:var(--space-xs); }
-      .group{ padding:var(--group-padding); }
+      .group, .section-card{ padding:var(--group-padding); }
       #contactVisitGroup .contact-visit-card{ padding:var(--space-xs); gap:var(--space-xxs); }
       #contactVisitGroup .contact-visit-card-body{ gap:var(--space-xs); }
       .preview{ font-size:calc(var(--fs-base) * var(--font-scale) * 0.95); }
@@ -2655,13 +2651,10 @@
       background:#fff;
     }
 
-    /* 停用舊的 intro grid 三欄比例，避免右側留白 */
-    .section-intro-grid{ display:contents; }
+    /* 停用舊的 intro grid 三欄比例，保持區塊本體高度 */
+    .section-intro-grid{ width:100%; }
     .page-section[data-active="1"] > .section-intro-grid{
-      display:contents !important;
-      grid-template-columns:none !important;
-      row-gap:0 !important;
-      column-gap:0 !important;
+      width:100%;
     }
 
     @media print{
@@ -2671,7 +2664,7 @@
       .page-section{ display:block !important; margin:0 0 var(--space-sm) !important; }
       .page-section > .group{ margin-bottom:var(--space-sm) !important; }
       .page-section > .group:last-child{ margin-bottom:0 !important; }
-      .group{ box-shadow:none; border:1px solid #cbd5f5; background:#fff; page-break-inside:avoid; }
+      .group, .section-card{ box-shadow:none; border:1px solid #cbd5f5; background:#fff; page-break-inside:avoid; }
       .checkcol-wrapper{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--space-xs); }
       .checkcol-wrapper > .checkcol{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--space-xs); }
       .checkcol label{ border:none; padding:var(--space-xxs) var(--space-xs); }
@@ -3748,13 +3741,13 @@
                   <div class="titlebar">
                     <label class="h3 heading-tier heading-tier--primary">（二）經濟收入</label>
                   </div>
-                    <div class="grid2 form-row-2col">
+                    <div class="autogrid autogrid--wide">
                       <div>
                         <label class="h4">主要經濟來源</label>
                         <div class="checkcol" id="s2_sources"></div>
                       </div>
                       <div>
-                        <div class="grid2 form-row-2col">
+                        <div class="autogrid autogrid--wide">
                           <div>
                             <label class="h4">戶籍／福利身分</label>
                             <select id="s2_id">
@@ -3780,7 +3773,7 @@
                   <div class="titlebar">
                     <label class="h3 heading-tier heading-tier--primary">（三）居住環境</label>
                   </div>
-                    <div class="grid3 form-row-3col">
+                    <div class="autogrid autogrid--wide">
                       <div>
                         <label class="h4">居住型態</label>
                         <select id="s3_type" onchange="toggleOtherType()">
@@ -3797,7 +3790,7 @@
                         <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
                       </div>
                     </div>
-                    <div class="grid3 form-row-3col" style="margin-top:var(--space-xs);">
+                    <div class="autogrid autogrid--wide" style="margin-top:var(--space-xs);">
                       <div id="s3_rent_amount_wrap" style="display:none;">
                         <label class="h5">租金金額（元/月）</label>
                         <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
@@ -3815,7 +3808,7 @@
                         <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
                       </div>
                     </div>
-                    <div class="grid2 form-row-2col" style="margin-top:var(--space-xs);">
+                    <div class="autogrid autogrid--wide" style="margin-top:var(--space-xs);">
                       <div>
                         <label class="h4">無障礙設施</label>
                         <div class="checkcol" id="s3_fac"></div>
@@ -3832,7 +3825,7 @@
                     <label class="h3 heading-tier heading-tier--primary">（四）社會支持</label>
                   </div>
 
-                    <div class="grid3 form-row-3col">
+                    <div class="autogrid autogrid--wide">
                       <div>
                         <label class="h4">主照者關係</label>
                         <div id="sp_primaryRel_text" class="badge">—</div>
@@ -3854,7 +3847,7 @@
                       <label class="h4">主要聯繫人/決策者</label>
                       <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
                     </div>
-                    <div class="grid3 form-row-3col">
+                    <div class="autogrid autogrid--wide">
                       <div class="field-intro">
                         <label class="h4">關係</label>
                         <select id="sp_deciderRel">
@@ -4015,7 +4008,7 @@
                   <div class="titlebar">
                     <label class="h3 heading-tier heading-tier--primary">（六）複評評值</label>
                   </div>
-                  <div class="grid2 form-row-2col">
+                  <div class="autogrid autogrid--wide">
                     <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
                     <div><label class="h4">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
                   </div>
@@ -4050,7 +4043,7 @@
                     <label class="h3 heading-tier heading-tier--primary">（二）短期目標（0–3 個月）</label>
                   </div>
                   <div class="care-goal-block">
-                    <div class="grid2 form-row-2col">
+                    <div class="autogrid autogrid--wide">
                       <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
                       <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
                       <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
@@ -4064,7 +4057,7 @@
                     <label class="h3 heading-tier heading-tier--primary">（三）中期目標（3–4 個月）</label>
                   </div>
                   <div class="care-goal-block">
-                    <div class="grid2 form-row-2col">
+                    <div class="autogrid autogrid--wide">
                       <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
                       <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
                       <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
@@ -4544,26 +4537,71 @@
 
     function ensureUniqueIdsWithin(root){
       if(!root || !root.querySelectorAll) return;
-      const records = Object.create(null);
-      Array.from(document.querySelectorAll('[id]')).forEach(node=>{
+      const preferred = Object.create(null);
+      const nodes = Array.from(document.querySelectorAll('[id]'));
+      nodes.forEach(node=>{
         if(!node || !node.id) return;
-        const key = node.id;
+        const key=node.id;
         const insideRoot = root.contains ? root.contains(node) : false;
-        const record = records[key];
-        if(!record){
-          records[key] = { node, inside: insideRoot };
+        const record = preferred[key];
+        if(!record || (insideRoot && !record.inside)){
+          preferred[key] = { node, inside: insideRoot };
+        }
+      });
+      const used = new Set();
+      const counters = Object.create(null);
+      nodes.forEach(node=>{
+        if(!node || !node.id) return;
+        const key=node.id;
+        const record = preferred[key];
+        if(record && record.node === node){
+          used.add(key);
           return;
         }
-        if(insideRoot && !record.inside){
-          if(record.node && record.node !== node && record.node.parentNode){
-            record.node.parentNode.removeChild(record.node);
+        let base = key;
+        let index = counters[base] || 1;
+        let candidate = `${base}__${index}`;
+        while(used.has(candidate) || (document.getElementById(candidate) && document.getElementById(candidate) !== node)){
+          index += 1;
+          candidate = `${base}__${index}`;
+        }
+        counters[base] = index + 1;
+        const scope = node.closest ? (node.closest('[data-section]') || node.closest('.group') || node.parentElement || root || document) : document;
+        updateIdReferences(key, candidate, scope);
+        node.id = candidate;
+        used.add(candidate);
+      });
+    }
+
+    function updateIdReferences(oldId, newId, scope){
+      if(!oldId || !newId || oldId === newId) return;
+      const root = scope && scope.querySelectorAll ? scope : document;
+      const attrList=['for','aria-controls','aria-describedby','aria-labelledby','aria-owns','aria-activedescendant'];
+      attrList.forEach(attr=>{
+        root.querySelectorAll(`[${attr}]`).forEach(el=>{
+          const value=el.getAttribute(attr);
+          if(!value) return;
+          if(attr === 'for' || attr === 'aria-controls'){
+            if(value === oldId){
+              el.setAttribute(attr, newId);
+            }
+            return;
           }
-          records[key] = { node, inside: true };
-          return;
-        }
-        if(node.parentNode){
-          node.parentNode.removeChild(node);
-        }
+          const parts=value.split(/\s+/).filter(Boolean);
+          let changed=false;
+          for(let i=0;i<parts.length;i++){
+            if(parts[i] === oldId){
+              parts[i] = newId;
+              changed=true;
+            }
+          }
+          if(changed){
+            el.setAttribute(attr, parts.join(' '));
+          }
+        });
+      });
+      root.querySelectorAll(`[href="#${oldId}"]`).forEach(el=>{
+        el.setAttribute('href', `#${newId}`);
       });
     }
 
@@ -4665,6 +4703,24 @@
       return primary;
     }
 
+    function hoistNestedPageSections(){
+      const container=document.getElementById('appContainer');
+      if(!container) return;
+      let guard=0;
+      let nested=container.querySelector('.page-section .page-section');
+      while(nested && guard<500){
+        guard++;
+        const parentSection = nested.parentElement ? nested.parentElement.closest('.page-section') : null;
+        if(!parentSection || parentSection === nested || !container.contains(parentSection)){
+          nested = container.querySelector('.page-section .page-section');
+          continue;
+        }
+        const reference = parentSection.nextSibling;
+        container.insertBefore(nested, reference);
+        nested = container.querySelector('.page-section .page-section');
+      }
+    }
+
     function dedupeGoalsSection(){
       const documentRoot = document.body || document.documentElement || document;
       const appContainer = dedupeElementsById('appContainer', documentRoot, {
@@ -4695,73 +4751,6 @@
       }
     }
 
-    function normalizeCardContainer(node, sectionKey, options){
-      if(!node) return null;
-      const fromGrid=!!(options && options.fromGrid);
-      const isCard=fromGrid || (node.classList && node.classList.contains('section-card'));
-      if(isCard){
-        if(node.classList.contains('group')){
-          node.classList.remove('group');
-        }
-        if(node.classList.contains('card')){
-          node.classList.remove('card');
-        }
-        if(node.classList && !node.classList.contains('section-card')){
-          node.classList.add('section-card');
-        }
-        if(node.dataset){
-          if(!node.dataset.card){
-            node.dataset.card='1';
-          }
-          if(!node.dataset.collapsible){
-            const hasCollapsedAttr=node.hasAttribute && node.hasAttribute('data-collapsed');
-            node.dataset.collapsible = hasCollapsedAttr ? '1' : '0';
-          }
-          if(!node.dataset.collapsed){
-            node.dataset.collapsed='0';
-          }
-          if(sectionKey && !node.dataset.section){
-            node.dataset.section = sectionKey;
-          }
-        }
-        const titlebar=ensureGroupTitlebar(node);
-        if(titlebar && titlebar !== node.firstElementChild){
-          node.insertBefore(titlebar, node.firstChild);
-        }
-        if(node.dataset && !node.dataset.cardTitle){
-          const label=(titlebar || node).querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
-          const text=label && label.textContent ? label.textContent.trim() : (titlebar ? titlebar.textContent || '' : '').trim();
-          if(text) node.dataset.cardTitle = text;
-        }
-        return node;
-      }
-      if(!node.classList.contains('group')){
-        node.classList.add('group');
-      }
-      if(node.classList.contains('section-card')){
-        node.classList.remove('section-card');
-      }
-      if(node.classList.contains('card')){
-        node.classList.remove('card');
-      }
-      if(node.dataset && !node.dataset.collapsed){
-        node.dataset.collapsed='0';
-      }
-      if(sectionKey && node.dataset && !node.dataset.section){
-        node.dataset.section = sectionKey;
-      }
-      const titlebar=ensureGroupTitlebar(node);
-      if(titlebar && titlebar !== node.firstElementChild){
-        node.insertBefore(titlebar, node.firstChild);
-      }
-      if(node.dataset && !node.dataset.cardTitle && titlebar){
-        const label=titlebar.querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
-        const text=label && label.textContent ? label.textContent.trim() : (titlebar.textContent || '').trim();
-        if(text) node.dataset.cardTitle = text;
-      }
-      return node;
-    }
-
     function createCardFromTitlebar(titlebar, sectionKey){
       const card=document.createElement('section');
       card.className='section-card';
@@ -4778,95 +4767,203 @@
       return card;
     }
 
-    function normalizeCardGrid(grid, sectionKey){
-      if(!grid) return;
-      const key=resolveSectionKey(sectionKey || grid.closest('[data-section]'));
-      const nodes=Array.from(grid.children);
-      let current=null;
-      nodes.forEach(node=>{
-        if(!node) return;
-        if(node.nodeType !== 1){
-          if(current){ current.appendChild(node); }
-          return;
-        }
-        if(node.classList && node.classList.contains('section-card-grid')){
-          normalizeCardGrid(node, key);
-          current=null;
-          return;
-        }
-        if(node.classList && (node.classList.contains('group') || node.classList.contains('section-card'))){
-          current = normalizeCardContainer(node, key, { fromGrid:true });
-          return;
-        }
-        if(isSectionCardTitlebar(node)){
-          const card=createCardFromTitlebar(node, key);
-          normalizeCardContainer(card, key, { fromGrid:true });
-          grid.insertBefore(card, node);
-          node.remove();
-          current = card;
-          return;
-        }
-        if(node.classList && node.classList.contains('hr')){
-          node.remove();
-          return;
-        }
-        if(current){
-          current.appendChild(node);
-        }
-      });
-    }
+    function normalizeLayout(node, options){
+      if(!node) return null;
 
-    function normalizeSectionCardLayout(section){
-      if(!section) return;
-      const sectionKey=resolveSectionKey(section);
-      const children=Array.from(section.children || []);
-      const firstCardNode=findFirstCardNode(section);
-      const hasGrid=children.some(child=>child && child.classList && child.classList.contains('section-card-grid'));
-      if(firstCardNode && !hasGrid){
-        const grid=document.createElement('div');
-        grid.className='section-card-grid';
-        section.insertBefore(grid, firstCardNode);
-        let current=null;
-        let node=firstCardNode;
-        while(node){
-          const next=node.nextSibling;
-          if(node.nodeType !== 1){
-            if(current){ current.appendChild(node); }
-            node=next;
-            continue;
-          }
-          if(node.classList && node.classList.contains('hr')){
-            node.remove();
-            node=next;
-            continue;
-          }
-          if(isSectionCardTitlebar(node)){
-            const card=createCardFromTitlebar(node, sectionKey);
-            normalizeCardContainer(card, sectionKey, { fromGrid:true });
-            grid.appendChild(card);
-            node.remove();
-            current=card;
-          }else if(node.classList && (node.classList.contains('group') || node.classList.contains('section-card'))){
-            current=normalizeCardContainer(node, sectionKey, { fromGrid:true });
-            grid.appendChild(current);
-          }else if(current){
-            current.appendChild(node);
-          }else{
-            grid.appendChild(node);
-          }
-          node=next;
-        }
-        normalizeCardGrid(grid, sectionKey);
+      function isCardLike(target){
+        if(!target || target.nodeType !== 1 || !target.classList) return false;
+        if(target.classList.contains('section-card')) return true;
+        if(target.classList.contains('group')) return true;
+        if(target.dataset && target.dataset.card === '1') return true;
+        return false;
       }
-      section.querySelectorAll('.section-card-grid').forEach(grid=>normalizeCardGrid(grid, resolveSectionKey(grid.closest('[data-section]') || section)));
-      promoteFieldHeadings(section);
-      section.querySelectorAll('.section-card-grid').forEach(grid=>{
-        normalizeCardGrid(grid, resolveSectionKey(grid.closest('[data-section]') || section));
-      });
-      cleanupEmptyContainers(section);
+
+      function ensureCard(target, sectionKey, sectionElement, forceCard){
+        if(!target || target.nodeType !== 1) return target;
+        const forced = !!forceCard;
+        const asCard = forced || (target.classList && target.classList.contains('section-card'));
+        if(asCard){
+          if(target.classList.contains('group')){
+            target.classList.remove('group');
+          }
+          if(target.classList.contains('card')){
+            target.classList.remove('card');
+          }
+          if(target.classList && !target.classList.contains('section-card')){
+            target.classList.add('section-card');
+          }
+          if(target.dataset){
+            if(!target.dataset.card){
+              target.dataset.card='1';
+            }
+            if(!target.dataset.collapsible){
+              const hasCollapsedAttr=target.hasAttribute && target.hasAttribute('data-collapsed');
+              target.dataset.collapsible = hasCollapsedAttr ? '1' : '0';
+            }
+            if(!target.dataset.collapsed){
+              target.dataset.collapsed='0';
+            }
+            if(sectionKey && !target.dataset.section){
+              target.dataset.section = sectionKey;
+            }
+          }
+        }else{
+          if(!target.classList.contains('group')){
+            target.classList.add('group');
+          }
+          if(target.classList.contains('section-card')){
+            target.classList.remove('section-card');
+          }
+          if(target.classList.contains('card')){
+            target.classList.remove('card');
+          }
+          if(target.dataset && !target.dataset.collapsed){
+            target.dataset.collapsed='0';
+          }
+          if(sectionKey && target.dataset && !target.dataset.section){
+            target.dataset.section = sectionKey;
+          }
+        }
+        const titlebar=ensureGroupTitlebar(target);
+        if(titlebar && titlebar !== target.firstElementChild){
+          target.insertBefore(titlebar, target.firstChild);
+        }
+        if(target.dataset && !target.dataset.cardTitle){
+          const label=(titlebar || target).querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
+          const text=label && label.textContent ? label.textContent.trim() : (titlebar ? titlebar.textContent || '' : '').trim();
+          if(text) target.dataset.cardTitle = text;
+        }
+        Array.from(target.children || []).forEach(child=>{
+          process(child, {
+            sectionElement: sectionElement || (target.closest ? target.closest('[data-section]') : null),
+            sectionKey
+          });
+        });
+        return target;
+      }
+
+      function normalizeGrid(grid, sectionKey, sectionElement){
+        if(!grid) return grid;
+        const hostSection = sectionElement || (grid.closest ? grid.closest('[data-section]') : null);
+        const key = sectionKey || resolveSectionKey(hostSection);
+        let current=null;
+        let nodeChild=grid.firstChild;
+        while(nodeChild){
+          const next=nodeChild.nextSibling;
+          if(nodeChild.nodeType !== 1){
+            if(current){ current.appendChild(nodeChild); }
+            nodeChild=next;
+            continue;
+          }
+          if(nodeChild.classList && nodeChild.classList.contains('section-card-grid')){
+            process(nodeChild, { sectionElement: hostSection, sectionKey: key });
+            current=null;
+            nodeChild=next;
+            continue;
+          }
+          if(nodeChild.classList && (nodeChild.classList.contains('group') || nodeChild.classList.contains('section-card'))){
+            current = process(nodeChild, { sectionElement: hostSection, sectionKey: key, forceCard:true });
+            nodeChild=next;
+            continue;
+          }
+          if(isSectionCardTitlebar(nodeChild)){
+            const card=createCardFromTitlebar(nodeChild, key);
+            process(card, { sectionElement: hostSection, sectionKey: key, forceCard:true });
+            grid.insertBefore(card, nodeChild);
+            nodeChild.remove();
+            current = card;
+            nodeChild=next;
+            continue;
+          }
+          if(nodeChild.classList && nodeChild.classList.contains('hr')){
+            nodeChild.remove();
+            nodeChild=next;
+            continue;
+          }
+          if(current){
+            current.appendChild(nodeChild);
+          }
+          nodeChild=next;
+        }
+        return grid;
+      }
+
+      function normalizeSection(sectionNode, sectionKey){
+        if(!sectionNode) return sectionNode;
+        const hostSection = sectionNode;
+        const key = sectionKey || resolveSectionKey(sectionNode);
+        const children=Array.from(sectionNode.children || []);
+        const firstCardNode=findFirstCardNode(sectionNode);
+        const hasGrid=children.some(child=>child && child.classList && child.classList.contains('section-card-grid'));
+        if(firstCardNode && !hasGrid){
+          const grid=document.createElement('div');
+          grid.className='section-card-grid';
+          sectionNode.insertBefore(grid, firstCardNode);
+          let current=null;
+          let nodeChild=firstCardNode;
+          while(nodeChild){
+            const next=nodeChild.nextSibling;
+            if(nodeChild.nodeType !== 1){
+              if(current){ current.appendChild(nodeChild); }
+              nodeChild=next;
+              continue;
+            }
+            if(nodeChild.classList && nodeChild.classList.contains('hr')){
+              nodeChild.remove();
+              nodeChild=next;
+              continue;
+            }
+            if(isSectionCardTitlebar(nodeChild)){
+              const card=createCardFromTitlebar(nodeChild, key);
+              process(card, { sectionElement: hostSection, sectionKey:key, forceCard:true });
+              grid.appendChild(card);
+              nodeChild.remove();
+              current=card;
+            }else if(nodeChild.classList && (nodeChild.classList.contains('group') || nodeChild.classList.contains('section-card'))){
+              current=process(nodeChild, { sectionElement: hostSection, sectionKey:key, forceCard:true });
+              grid.appendChild(current);
+            }else if(current){
+              current.appendChild(nodeChild);
+            }else{
+              grid.appendChild(nodeChild);
+            }
+            nodeChild=next;
+          }
+        }
+        sectionNode.querySelectorAll('.section-card-grid').forEach(grid=>process(grid, { sectionElement: hostSection, sectionKey:key }));
+        promoteFieldHeadings(sectionNode, key, card=>{
+          process(card, { sectionElement: hostSection, sectionKey:key, forceCard:true });
+        });
+        cleanupEmptyContainers(sectionNode);
+        return sectionNode;
+      }
+
+      function process(target, opts){
+        if(!target || target.nodeType !== 1) return target;
+        const optSection = opts && opts.sectionElement ? opts.sectionElement : (target.matches && target.matches('[data-section]') ? target : (target.closest ? target.closest('[data-section]') : null));
+        const key = opts && opts.sectionKey ? opts.sectionKey : resolveSectionKey(optSection);
+        if(opts && opts.forceCard){
+          return ensureCard(target, key, optSection, true);
+        }
+        if(target.matches && target.matches('[data-section]')){
+          return normalizeSection(target, key);
+        }
+        if(target.classList && target.classList.contains('section-card-grid')){
+          return normalizeGrid(target, key, optSection);
+        }
+        if(isCardLike(target)){
+          return ensureCard(target, key, optSection, false);
+        }
+        Array.from(target.children || []).forEach(child=>process(child, { sectionElement: optSection, sectionKey: key }));
+        return target;
+      }
+
+      const initialSection = options && options.sectionElement ? options.sectionElement : (node.matches && node.matches('[data-section]') ? node : (node.closest ? node.closest('[data-section]') : null));
+      const initialKey = options && options.sectionKey ? options.sectionKey : resolveSectionKey(initialSection);
+      return process(node, { sectionElement: initialSection, sectionKey: initialKey });
     }
 
-    function promoteFieldHeadings(section){
+    function promoteFieldHeadings(section, sectionKeyOverride, onPromote){
       if(!section) return;
       const headings=Array.from(section.querySelectorAll('.h3, .h4')).filter(heading=>{
         if(heading.closest('.group')) return false;
@@ -4880,7 +4977,7 @@
         const grid=container.closest('.section-card-grid');
         if(!grid) return;
         const hostSection=grid.closest('[data-section]') || section;
-        const sectionKey=resolveSectionKey(hostSection);
+        const sectionKey=sectionKeyOverride || resolveSectionKey(hostSection);
         const card=document.createElement('section');
         card.className='section-card';
         const titlebar=document.createElement('div');
@@ -4889,7 +4986,9 @@
         card.appendChild(titlebar);
         container.parentNode.insertBefore(card, container);
         card.appendChild(container);
-        normalizeCardContainer(card, sectionKey, { fromGrid:true });
+        if(typeof onPromote === 'function'){
+          onPromote(card, sectionKey, hostSection);
+        }
         grid.appendChild(card);
       });
     }
@@ -4913,15 +5012,12 @@
         el.classList.remove('row');
         el.classList.add('autogrid','autogrid--wide');
       });
-      root.querySelectorAll('.grid2').forEach(el=>{
-        el.classList.remove('grid2');
-        el.classList.remove('form-row-2col');
-        el.classList.add('autogrid','autogrid--wide');
-      });
-      root.querySelectorAll('.grid3').forEach(el=>{
-        el.classList.remove('grid3');
-        el.classList.remove('form-row-3col');
-        el.classList.add('autogrid','autogrid--wide');
+      const legacyGridClasses=['grid2','grid3','form-row-2col','form-row-3col'];
+      legacyGridClasses.forEach(cls=>{
+        root.querySelectorAll(`.${cls}`).forEach(el=>{
+          el.classList.remove(...legacyGridClasses);
+          el.classList.add('autogrid','autogrid--wide');
+        });
       });
       root.querySelectorAll('.checkcol').forEach(el=>{
         el.classList.add('checkgrid');
@@ -4931,7 +5027,7 @@
 
     function upgradeLegacyContainers(section){
       if(!section) return;
-      normalizeSectionCardLayout(section);
+      normalizeLayout(section);
       applyGridUtilities(section);
     }
 
@@ -4976,8 +5072,7 @@
     let currentUiMode = UI_MODE_DEFAULT;
     let currentPageId = 'basic';
     let currentScrollOffset = 0;
-    let floatingMeasureScheduled = false;
-    let stickyMeasureScheduled = false;
+    let layoutMeasureScheduled = false;
     let currentStickyLayoutMode = '';
     let sectionViewsReady = false;
     let currentVerticalDensityMode = '';
@@ -5221,7 +5316,7 @@
       buildPlanSummaryPreview();
       renderSection1Preview(section1PreviewState.segments || []);
       refreshCheckcols(document);
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
       scheduleSummaryUpdate();
     }
 
@@ -5297,15 +5392,6 @@
       document.documentElement.style.setProperty('--fab-gap', `${gap}px`);
     }
 
-    function scheduleFloatingActionsMeasurement(){
-      if(floatingMeasureScheduled) return;
-      floatingMeasureScheduled = true;
-      window.requestAnimationFrame(()=>{
-        floatingMeasureScheduled = false;
-        updateFloatingActionsMetrics();
-      });
-    }
-
     function updateStickyLayoutMode(){
       const host=document.getElementById('appSticky');
       const toggle=document.getElementById('stickyOverflowToggle');
@@ -5354,15 +5440,6 @@
       document.documentElement.style.setProperty('--app-top-offset', `${offset}px`);
     }
 
-    function scheduleStickyMeasurement(){
-      if(stickyMeasureScheduled) return;
-      stickyMeasureScheduled = true;
-      window.requestAnimationFrame(()=>{
-        stickyMeasureScheduled = false;
-        measureStickyElements();
-      });
-    }
-
     function updateVerticalDensityMode(){
       if(!document.body) return;
       let height = 0;
@@ -5383,11 +5460,16 @@
       }
     }
 
-    function scheduleLayoutMeasurements(){
+    function scheduleAllMeasurements(){
       updateStickyLayoutMode();
-      scheduleFloatingActionsMeasurement();
-      scheduleStickyMeasurement();
       updateVerticalDensityMode();
+      if(layoutMeasureScheduled) return;
+      layoutMeasureScheduled = true;
+      window.requestAnimationFrame(()=>{
+        layoutMeasureScheduled = false;
+        updateFloatingActionsMetrics();
+        measureStickyElements();
+      });
     }
 
     function setStickyExpanded(expanded){
@@ -5396,7 +5478,7 @@
       if(!host || !toggle) return;
       host.dataset.expanded = expanded ? '1' : '0';
       toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initStickyOverflowToggle(){
@@ -5720,7 +5802,7 @@
         item.button = btn;
         item.countEl = count;
       });
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
       scheduleSummaryJumpRefresh();
       scheduleSummaryProgressRender();
     }
@@ -5765,7 +5847,7 @@
         btn.addEventListener('click', handleSideNavClick);
         root.appendChild(btn);
       });
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function getWizardJumpSelect(){
@@ -6195,7 +6277,7 @@
         }
       }
       if(collapseChanged || hadSelection !== (wrapper.dataset.hasSelection === '1')){
-        scheduleLayoutMeasurements();
+        scheduleAllMeasurements();
       }
     }
 
@@ -6232,7 +6314,7 @@
         wrapper.dataset.manualToggle='1';
         toggle.textContent = collapsed ? '收合清單' : '展開清單';
         toggle.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
-        scheduleLayoutMeasurements();
+        scheduleAllMeasurements();
       });
       footer.appendChild(summaryLabel);
       footer.appendChild(chips);
@@ -6331,7 +6413,7 @@
         try{ window.localStorage.setItem(FONT_SCALE_STORAGE_KEY, normalized); }catch(err){}
       }
       updateFontScaleButtons(normalized);
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function setSectionHideFilled(section, hide, options){
@@ -6472,7 +6554,7 @@
         try{ window.localStorage.setItem(UI_MODE_STORAGE_KEY, normalized); }catch(err){}
       }
 
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initUiPresetControls(){
@@ -12937,7 +13019,7 @@
         host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
         setPlanSummaryClipboard('');
         setPlanSummaryPlainText('');
-        scheduleLayoutMeasurements();
+        scheduleAllMeasurements();
         return;
       }
       const header=['服務代碼','服務名稱','承接','指定單位','額度／單位','自費金額','使用頻率／說明'];
@@ -12992,7 +13074,7 @@
       const plainText = plainLines.join('\n');
       setPlanSummaryClipboard(copyText ? `${copyText}\n${totalLine}` : totalLine);
       setPlanSummaryPlainText(plainText ? `${plainText}\n${totalLine}` : totalLine);
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initPlanSummaryCopy(){
@@ -13081,7 +13163,7 @@
         empty.className='hint';
         empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
         host.appendChild(empty);
-        scheduleLayoutMeasurements();
+        scheduleAllMeasurements();
         return;
       }
       const groupedById={};
@@ -13253,7 +13335,7 @@
         empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
         host.appendChild(empty);
       }
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
     function updateSelfPayHint(code){
       if(!code) return;
@@ -15176,7 +15258,7 @@
         menu.dataset.open='1';
         button.setAttribute('aria-expanded','true');
         attachWizardMoreMenuEvents();
-        scheduleFloatingActionsMeasurement();
+        scheduleAllMeasurements();
       }
     }
 
@@ -15191,7 +15273,7 @@
       }
       detachWizardMoreMenuEvents();
       if(wasOpen){
-        scheduleFloatingActionsMeasurement();
+        scheduleAllMeasurements();
       }
     }
 
@@ -15335,7 +15417,7 @@
       currentPageId = finalPageId;
       updatePageTabActiveState(finalPageId);
       scheduleSideNavRender();
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
       scheduleSummaryProgressRender();
     }
 
@@ -15511,7 +15593,7 @@
         updateWizardButtons();
       }
       refreshWizardJumpOptions();
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initFloatingActions(){
@@ -15548,7 +15630,7 @@
         });
       }
       updateWizardButtons();
-      scheduleFloatingActionsMeasurement();
+      scheduleAllMeasurements();
     }
 
 
@@ -15649,7 +15731,7 @@
         syncTabStatuses();
       }
       scheduleSideNavRender();
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
       scheduleSummaryProgressRender();
       return true;
     }
@@ -15736,15 +15818,13 @@
           if(planGroupState.locked){
             if(groupElement.dataset.collapsed !== '1'){
               groupElement.dataset.collapsed = '1';
-              scheduleStickyMeasurement();
-              scheduleLayoutMeasurements();
+              scheduleAllMeasurements();
             }
             planGroupState.hasOpened = false;
           }else if(shouldExpand){
             if(groupElement.dataset.collapsed !== '0'){
               groupElement.dataset.collapsed = '0';
-              scheduleStickyMeasurement();
-              scheduleLayoutMeasurements();
+              scheduleAllMeasurements();
             }
             planGroupState.pendingExpand = false;
             planGroupState.hasOpened = true;
@@ -16074,8 +16154,7 @@
           const ariaLabel=titleText ? `${actionText} ${titleText}` : actionText;
           if(toggle) toggle.setAttribute('aria-label', ariaLabel);
           if(label) label.textContent = actionText;
-          scheduleStickyMeasurement();
-          scheduleLayoutMeasurements();
+          scheduleAllMeasurements();
         };
         if(collapsible && toggle){
           const controller={ element:group, applyState, toggle };
@@ -16132,13 +16211,13 @@
       buildSection1(); // 初次預覽一次
     }
 
-    window.addEventListener('resize', scheduleLayoutMeasurements);
-    window.addEventListener('orientationchange', scheduleLayoutMeasurements);
-    window.addEventListener('focusin', scheduleLayoutMeasurements);
-    window.addEventListener('focusout', scheduleLayoutMeasurements);
+    window.addEventListener('resize', scheduleAllMeasurements);
+    window.addEventListener('orientationchange', scheduleAllMeasurements);
+    window.addEventListener('focusin', scheduleAllMeasurements);
+    window.addEventListener('focusout', scheduleAllMeasurements);
     if(window.visualViewport){
-      window.visualViewport.addEventListener('resize', scheduleLayoutMeasurements);
-      window.visualViewport.addEventListener('scroll', scheduleLayoutMeasurements);
+      window.visualViewport.addEventListener('resize', scheduleAllMeasurements);
+      window.visualViewport.addEventListener('scroll', scheduleAllMeasurements);
     }
 
     function applyEllipsisTooltips(){
@@ -16158,6 +16237,7 @@
 
     function initializeSidebarOnLoad(){
       // 先排除重複的 page-section 與全域 ID，避免後續初始化操作到錯誤節點
+      hoistNestedPageSections();
       dedupeGoalsSection();
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
@@ -16294,7 +16374,7 @@
 
       applyEllipsisTooltips();
 
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
 
     }
 
