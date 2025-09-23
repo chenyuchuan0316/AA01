@@ -2871,7 +2871,7 @@
   </div>
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
-    <section class="group card-main" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
+    <section class="group card-main" id="contactVisitGroup" data-collapsed="0" data-plan-locked="1">
       <div class="group-header">
         <div class="titlebar">
           <span class="h1">計畫目標</span>
@@ -2951,7 +2951,7 @@
             </section>
 
             <!-- 四、個案概況 -->
-            <section class="group plan-card-case-overview" id="caseOverviewGroup" data-span="full" data-collapsed="1">
+            <section class="group plan-card-case-overview" id="caseOverviewGroup" data-span="full" data-collapsed="0">
               <div class="group-header">
                 <div class="titlebar">
                   <span class="h2 heading-tier heading-tier--primary">四、個案概況</span>
@@ -4517,6 +4517,29 @@
         return titlebar;
       }
       return null;
+    }
+
+    function ensureGroupContentWrapper(group){
+      if(!group || !group.classList || !group.classList.contains('group')) return null;
+      const children = Array.from(group.children || []);
+      if(!children.length) return null;
+      const header = children.find(child=>child && child.classList && child.classList.contains('group-header'));
+      if(!header) return null;
+      let body = children.find(child=>child && child.classList && child.classList.contains('group-content'));
+      if(body) return body;
+      body = document.createElement('div');
+      body.className = 'group-content';
+      while(header.nextSibling){
+        body.appendChild(header.nextSibling);
+      }
+      group.appendChild(body);
+      return body;
+    }
+
+    function ensureAllGroupBodies(root){
+      if(!root || !root.querySelectorAll) return;
+      const groups = root.querySelectorAll('.group');
+      groups.forEach(group=>ensureGroupContentWrapper(group));
     }
 
     function normalizeCardContainer(node, sectionKey, options){
@@ -7114,6 +7137,15 @@
       });
     }
 
+    function applyGoalInitialDefaults(section, state){
+      if(!section || !state || state.__persisted) return;
+      const page = section.closest('[data-page]');
+      if(page && page.dataset && page.dataset.page === 'goals'){
+        state.hideFilled = false;
+        state.showAdvanced = true;
+      }
+    }
+
     function applySectionState(section, state){
       if(!section) return;
       section.dataset.hideFilled = state.hideFilled ? '1' : '0';
@@ -7140,6 +7172,7 @@
       const state = readSectionState(section.dataset.section);
       section.__state = state;
       applyMobileSectionDefaults(section, state);
+      applyGoalInitialDefaults(section, state);
       applySectionState(section, state);
       (section.__fieldContainers || []).forEach(container=>{
         bindFieldListeners(section, container);
@@ -7203,6 +7236,7 @@
     }
 
     function initSectionViews(){
+      ensureAllGroupBodies(document);
       const sections = document.querySelectorAll('[data-section]');
       sections.forEach(section=>setupSection(section));
       sectionViewsReady = true;
@@ -15917,6 +15951,7 @@
       loadServiceCatalog();
 
       prepareCaseProfileLayout();
+      ensureAllGroupBodies(document);
       initGroupCollapsibles();
       initBasicInfoValidation();
       initStickyOverflowToggle();
