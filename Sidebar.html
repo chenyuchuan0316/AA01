@@ -15679,7 +15679,7 @@
     ]);
 
     const basicInfoState = { complete:false };
-    const planGroupState = { locked:true, pendingExpand:false };
+    const planGroupState = { locked:true, pendingExpand:false, hasOpened:false };
 
     function isBasicInfoComplete(){
       for(let i=0;i<BASIC_INFO_REQUIRED_FIELDS.length;i++){
@@ -15739,6 +15739,7 @@
               scheduleStickyMeasurement();
               scheduleLayoutMeasurements();
             }
+            planGroupState.hasOpened = false;
           }else if(shouldExpand){
             if(groupElement.dataset.collapsed !== '0'){
               groupElement.dataset.collapsed = '0';
@@ -15746,6 +15747,7 @@
               scheduleLayoutMeasurements();
             }
             planGroupState.pendingExpand = false;
+            planGroupState.hasOpened = true;
           }
         }
         return;
@@ -15765,9 +15767,11 @@
         if(ctrl.element.dataset.collapsed !== '1'){
           ctrl.applyState(true);
         }
+        planGroupState.hasOpened = false;
       }else if(shouldExpand){
         ctrl.applyState(false);
         planGroupState.pendingExpand = false;
+        planGroupState.hasOpened = true;
       }
     }
 
@@ -15783,7 +15787,8 @@
       planGroupState.locked = !!locked;
       if(planGroupState.locked){
         planGroupState.pendingExpand = false;
-      }else if(shouldExpand){
+        planGroupState.hasOpened = false;
+      }else if(shouldExpand || !planGroupState.hasOpened){
         planGroupState.pendingExpand = true;
       }
       applyPlanGroupLockState({ expand: shouldExpand });
