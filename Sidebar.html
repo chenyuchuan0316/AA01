@@ -228,7 +228,8 @@
     }
 
     /* 卡片 */
-    .group{
+    .group,
+    .section-card{
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius);
@@ -2493,7 +2494,7 @@
     @media (max-width:720px){
       .section-card-grid{ grid-template-columns:1fr; }
     }
-    .group.section-card{
+    .section-card{
       display:flex;
       flex-direction:column;
       gap:var(--gap, 12px);
@@ -2501,14 +2502,14 @@
       -webkit-column-break-inside:avoid;
       page-break-inside:avoid;
     }
-    .group.section-card > .titlebar{
+    .section-card > .titlebar{
       display:flex;
       align-items:center;
       gap:var(--space-xs);
       flex-wrap:wrap;
     }
-    .group.section-card > .titlebar > .h3,
-    .group.section-card > .titlebar > .h4{
+    .section-card > .titlebar > .h3,
+    .section-card > .titlebar > .h4{
       flex:1 1 auto;
     }
     .autogrid{
@@ -2701,11 +2702,14 @@
 
   <div class="page-section" data-page="basic" data-active="1" data-columns="1">
     <div class="group" id="basicInfoGroup">
-      <div class="titlebar">
-        <span class="h1">基本資訊</span>
+      <div class="group-header">
+        <div class="titlebar">
+          <span class="h1">基本資訊</span>
+        </div>
       </div>
-      <div class="section-card-grid">
-        <section class="group section-card" id="basicInfoSection">
+      <div class="group-content">
+        <div class="section-card-grid">
+        <section class="section-card" id="basicInfoSection">
           <div class="titlebar">
             <span class="h2">基本資訊</span>
           </div>
@@ -2762,11 +2766,14 @@
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
     <section class="group card-main" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
-          <div class="titlebar">
-            <span class="h1">計畫目標</span>
-          </div>
-          <div class="section-card-grid">
-            <section class="group section-card contact-visit-card" data-card="call">
+      <div class="group-header">
+        <div class="titlebar">
+          <span class="h1">計畫目標</span>
+        </div>
+      </div>
+      <div class="group-content">
+        <div class="section-card-grid">
+            <section class="section-card contact-visit-card" data-card="call">
               <div class="titlebar contact-visit-card-header">
                 <span class="h2">一、電聯日期</span>
               </div>
@@ -2782,7 +2789,7 @@
               </div>
             </section>
 
-            <section class="group section-card contact-visit-card" data-card="visit">
+            <section class="section-card contact-visit-card" data-card="visit">
               <div class="titlebar contact-visit-card-header">
                 <span class="h2">二、家訪日期</span>
               </div>
@@ -2803,7 +2810,7 @@
               </div>
             </section>
 
-            <section class="group section-card contact-visit-card" id="visitPartnersGroup" data-card="partners">
+            <section class="section-card contact-visit-card" id="visitPartnersGroup" data-card="partners">
               <div class="titlebar contact-visit-card-header">
                 <span class="h2">三、偕同訪視者</span>
               </div>
@@ -2838,12 +2845,15 @@
             </section>
 
             <!-- 四、個案概況 -->
-            <section class="group card-lg span-2 plan-card-case-overview" id="caseOverviewGroup" data-span="full" data-collapsed="1">
+            <section class="group plan-card-case-overview" id="caseOverviewGroup" data-span="full" data-collapsed="1">
+              <div class="group-header">
                 <div class="titlebar">
                   <span class="h2 heading-tier heading-tier--primary">四、個案概況</span>
                   <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
                 </div>
+              </div>
 
+              <div class="group-content">
                 <div id="section1_block" data-section="s1">
                   <div class="titlebar">
                     <label class="h3 heading-tier heading-tier--primary">（一）身心概況</label>
@@ -2852,7 +2862,7 @@
                   <div id="section1_error_summary" class="error-summary" data-group-ignore="1" data-show="0" aria-live="polite"></div>
 
                     <div class="section-card-grid" id="caseProfileBasicGroup">
-                      <section class="group section-card" id="caseProfileBasicCard">
+                      <section class="section-card" id="caseProfileBasicCard">
                         <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="short">
                                 <label class="h3" for="s1_age">年齡</label>
@@ -2875,10 +2885,12 @@
                     </div>
 
                     <div class="group" id="caseProfileSensoryGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">感官功能</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">感官功能</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfileVisionCard">
+                          <section class="section-card" id="caseProfileVisionCard">
                             <span class="h5 heading-tier heading-tier--subsection">視力</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -2911,7 +2923,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="group section-card" id="caseProfileHearingCard">
+                          <section class="section-card" id="caseProfileHearingCard">
                             <span class="h5 heading-tier heading-tier--subsection">聽力</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -2945,10 +2957,12 @@
                     </div>
 
                     <div class="group" id="caseProfileOralGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">口腔與吞嚥功能</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">口腔與吞嚥功能</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfileSwallowCard">
+                          <section class="section-card" id="caseProfileSwallowCard">
                             <span class="h5 heading-tier heading-tier--subsection">吞嚥功能</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -2973,7 +2987,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="group section-card" id="caseProfileOralCard">
+                          <section class="section-card" id="caseProfileOralCard">
                             <span class="h5 heading-tier heading-tier--subsection">口腔與牙齒</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -2988,10 +3002,12 @@
                     </div>
 
                     <div class="group" id="caseProfileMobilityGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">移動功能</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">移動功能</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfileMobilityCard">
+                          <section class="section-card" id="caseProfileMobilityCard">
                             <span class="h5 heading-tier heading-tier--subsection">移動功能</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3090,10 +3106,12 @@
                     </div>
 
                     <div class="group" id="caseProfileAdlGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">ADL（日常生活活動）</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">ADL（日常生活活動）</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfileAdlCard">
+                          <section class="section-card" id="caseProfileAdlCard">
                             <span class="h5 heading-tier heading-tier--subsection">ADL 日常生活活動</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3148,10 +3166,12 @@
                     </div>
 
                     <div class="group" id="caseProfileIadlGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">IADL（工具性日常活動）</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">IADL（工具性日常活動）</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfileIadlCard">
+                          <section class="section-card" id="caseProfileIadlCard">
                             <span class="h5 heading-tier heading-tier--subsection">IADL 工具性日常活動</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3231,10 +3251,12 @@
                     </div>
 
                     <div class="group" id="caseProfileExcretionGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">排泄功能</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">排泄功能</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfileExcretionCard">
+                          <section class="section-card" id="caseProfileExcretionCard">
                             <span class="h5 heading-tier heading-tier--subsection">排泄功能</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3276,10 +3298,12 @@
                     </div>
 
                     <div class="group" id="caseProfileHealthGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">健康狀況與病史</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">健康狀況與病史</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfileDiseaseCard">
+                          <section class="section-card" id="caseProfileDiseaseCard">
                             <span class="h5 heading-tier heading-tier--subsection">病史與過敏</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3297,7 +3321,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="group section-card" id="caseProfileMedicationCard">
+                          <section class="section-card" id="caseProfileMedicationCard">
                             <span class="h5 heading-tier heading-tier--subsection">用藥與就醫</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3336,7 +3360,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="group section-card" id="caseProfileDeviceCard">
+                          <section class="section-card" id="caseProfileDeviceCard">
                             <span class="h5 heading-tier heading-tier--subsection">管路／裝置</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3346,7 +3370,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="group section-card" id="caseProfileDisabilityCard">
+                          <section class="section-card" id="caseProfileDisabilityCard">
                             <span class="h5 heading-tier heading-tier--subsection">身心障礙資訊</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3365,10 +3389,12 @@
                     </div>
 
                     <div class="group" id="caseProfilePsychGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">心理與行為狀態</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">心理與行為狀態</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfilePsychBehaviorCard">
+                          <section class="section-card" id="caseProfilePsychBehaviorCard">
                             <span class="h5 heading-tier heading-tier--subsection">心理與行為</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3412,7 +3438,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="group section-card" id="caseProfilePsychSleepCard">
+                          <section class="section-card" id="caseProfilePsychSleepCard">
                             <span class="h5 heading-tier heading-tier--subsection">睡眠與日間活動</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3446,7 +3472,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="group section-card" id="caseProfilePainSkinCard">
+                          <section class="section-card" id="caseProfilePainSkinCard">
                             <span class="h5 heading-tier heading-tier--subsection">疼痛與皮膚狀態</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="medium">
@@ -3570,10 +3596,12 @@
                     </div>
 
                     <div class="group" id="caseProfileSummaryGroup" data-collapsed="0">
-                      <span class="h3 heading-tier heading-tier--section">總結建議</span>
+                      <div class="group-header">
+                        <span class="h3 heading-tier heading-tier--section">總結建議</span>
+                      </div>
                       <div class="group-content">
                         <div class="section-card-grid">
-                          <section class="group section-card" id="caseProfileActionsCard">
+                          <section class="section-card" id="caseProfileActionsCard">
                             <div class="titlebar">
                               <span class="h5 heading-tier heading-tier--subsection">建議措施</span>
                               <button type="button" class="small" onclick="addActionEntry()">＋新增</button>
@@ -3586,7 +3614,7 @@
                               </div>
                             </div>
                           </section>
-                          <section class="group section-card" id="caseProfileNotesCard">
+                          <section class="section-card" id="caseProfileNotesCard">
                             <span class="h5 heading-tier heading-tier--subsection">補充內容</span>
                             <div class="autogrid autogrid--wide">
                               <div class="field" data-field-size="long">
@@ -3891,8 +3919,13 @@
 
             <!-- 五、照顧目標（原功能保留） -->
             <section class="group card-lg span-2 plan-card-care-goals" id="careGoalsGroup" data-span="full">
-                <span class="h2">五、照顧目標</span>
+              <div class="group-header">
+                <div class="titlebar">
+                  <span class="h2">五、照顧目標</span>
+                </div>
+              </div>
 
+              <div class="group-content">
                 <div id="careGoals_block" data-section="cg">
                   <div class="titlebar">
                     <label class="h3 heading-tier heading-tier--primary">（一）照顧問題（最多選 5 項）</label>
@@ -3945,11 +3978,17 @@
                     <div id="goalPreview" class="preview goal-preview-empty">（尚未選擇服務或填寫內容）</div>
                   </div>
                 </div>
-              </section>
+              </div>
+            </section>
 
             <!-- 六、與照專…（原功能保留） -->
             <section class="group card-lg span-2 plan-card-mismatch" id="mismatchPlanGroup" data-span="full">
-                <span class="h2">六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃</span>
+              <div class="group-header">
+                <div class="titlebar">
+                  <span class="h2">六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃</span>
+                </div>
+              </div>
+              <div class="group-content">
                 <div class="row"><div>
                   <label class="h3">（一）目標達成的狀況以及未達成的差距</label>
                   <textarea id="reason1" placeholder="填寫欄位"></textarea>
@@ -3980,16 +4019,22 @@
                     <div class="field-error" id="mismatch_reason_error"></div>
                   </div>
                 </div></div>
-              </section>
+              </div>
+            </section>
           </div>
         </section>
   </div>
 
   <div class="page-section" data-page="execution" data-columns="2">
     <div class="group" data-span="full" data-collapsed="1">
-      <span class="h1">計畫執行規劃</span>
-      <div class="section-card-grid">
-        <section class="group section-card" id="planExecutionGroup">
+      <div class="group-header">
+        <div class="titlebar">
+          <span class="h1">計畫執行規劃</span>
+        </div>
+      </div>
+      <div class="group-content">
+        <div class="section-card-grid">
+        <section class="section-card" id="planExecutionGroup">
           <div class="titlebar">
             <label class="h2">一、長照服務核定項目、頻率</label>
           </div>
@@ -4000,14 +4045,14 @@
           <div id="planEditor" class="plan-editor"></div>
         </section>
 
-        <section class="group section-card" id="planReferralSection">
+        <section class="section-card" id="planReferralSection">
           <div class="titlebar">
             <label class="h2">二、轉介其他服務資源</label>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
         </section>
 
-        <section class="group section-card" id="planStationSection">
+        <section class="section-card" id="planStationSection">
           <div class="titlebar">
             <label class="h2">三、巷弄長照站資訊與意願</label>
           </div>
@@ -4027,7 +4072,7 @@
           </div>
         </section>
 
-        <section class="group section-card" id="planEmergencySection">
+        <section class="section-card" id="planEmergencySection">
           <div class="titlebar">
             <label class="h2">四、緊急救援服務說明</label>
           </div>
@@ -4035,7 +4080,7 @@
           <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
         </section>
 
-        <section class="group section-card" id="planSummaryGroup">
+        <section class="section-card" id="planSummaryGroup">
           <div class="titlebar">
             <label class="h2">附件二（服務計畫明細）預覽</label>
           </div>
@@ -4077,7 +4122,7 @@
           </div>
         </section>
 
-        <section class="group section-card" id="planTextGroup">
+        <section class="section-card" id="planTextGroup">
           <div class="titlebar">
             <label class="h2">附件一：計畫執行規劃預覽</label>
           </div>
@@ -4086,23 +4131,29 @@
           <textarea id="plan_text" class="plan-preview" readonly></textarea>
         </section>
       </div>
+      </div>
     </div>
     <div class="group">
-      <div class="btnbar">
+      <div class="group-content">
+        <div class="btnbar">
         <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
       </div>
-      <div id="errorSummary" data-show="0"></div>
-      <div id="msg" class="hint" style="margin-top:var(--space-xs);"></div>
+        <div id="errorSummary" data-show="0"></div>
+        <div id="msg" class="hint" style="margin-top:var(--space-xs);"></div>
+      </div>
     </div>
   </div>
 
   <div class="page-section" data-page="notes" data-columns="1">
     <div class="group" id="planOtherGroup" data-span="full" data-collapsed="1">
-      <div class="titlebar">
-        <span class="h1">其他備註</span>
+      <div class="group-header">
+        <div class="titlebar">
+          <span class="h1">其他備註</span>
+        </div>
       </div>
-      <div class="section-card-grid">
-        <section class="group section-card">
+      <div class="group-content">
+        <div class="section-card-grid">
+        <section class="section-card">
           <div class="titlebar">
             <span class="h2">其他</span>
           </div>
@@ -4235,50 +4286,76 @@
       return null;
     }
 
-    function normalizeCardContainer(group, sectionKey, options){
-      if(!group) return null;
-      if(!group.classList.contains('group')){
-        group.classList.add('group');
-      }
-      if(group.classList.contains('card')){
-        group.classList.remove('card');
-      }
+    function normalizeCardContainer(node, sectionKey, options){
+      if(!node) return null;
       const fromGrid=!!(options && options.fromGrid);
-      if(fromGrid && group.classList && !group.classList.contains('section-card')){
-        group.classList.add('section-card');
-      }
-      if(fromGrid){
-        if(group.dataset && !group.dataset.card){
-          group.dataset.card='1';
+      const isCard=fromGrid || (node.classList && node.classList.contains('section-card'));
+      if(isCard){
+        if(node.classList.contains('group')){
+          node.classList.remove('group');
         }
-        if(group.dataset && !group.dataset.collapsible){
-          const hasCollapsedAttr=group.hasAttribute && group.hasAttribute('data-collapsed');
-          group.dataset.collapsible = hasCollapsedAttr ? '1' : '0';
+        if(node.classList.contains('card')){
+          node.classList.remove('card');
         }
-      }
-      if(group.dataset && !group.dataset.collapsed){
-        group.dataset.collapsed='0';
-      }
-      if(sectionKey && group.dataset && !group.dataset.section){
-        group.dataset.section = sectionKey;
-      }
-      const titlebar=ensureGroupTitlebar(group);
-      if(titlebar){
-        if(titlebar !== group.firstElementChild){
-          group.insertBefore(titlebar, group.firstChild);
+        if(node.classList && !node.classList.contains('section-card')){
+          node.classList.add('section-card');
         }
-        if(group.dataset && !group.dataset.cardTitle){
-          const label=titlebar.querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
-          const text=label && label.textContent ? label.textContent.trim() : (titlebar.textContent || '').trim();
-          if(text) group.dataset.cardTitle = text;
+        if(node.dataset){
+          if(!node.dataset.card){
+            node.dataset.card='1';
+          }
+          if(!node.dataset.collapsible){
+            const hasCollapsedAttr=node.hasAttribute && node.hasAttribute('data-collapsed');
+            node.dataset.collapsible = hasCollapsedAttr ? '1' : '0';
+          }
+          if(!node.dataset.collapsed){
+            node.dataset.collapsed='0';
+          }
+          if(sectionKey && !node.dataset.section){
+            node.dataset.section = sectionKey;
+          }
         }
+        const titlebar=ensureGroupTitlebar(node);
+        if(titlebar && titlebar !== node.firstElementChild){
+          node.insertBefore(titlebar, node.firstChild);
+        }
+        if(node.dataset && !node.dataset.cardTitle){
+          const label=(titlebar || node).querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
+          const text=label && label.textContent ? label.textContent.trim() : (titlebar ? titlebar.textContent || '' : '').trim();
+          if(text) node.dataset.cardTitle = text;
+        }
+        return node;
       }
-      return group;
+      if(!node.classList.contains('group')){
+        node.classList.add('group');
+      }
+      if(node.classList.contains('section-card')){
+        node.classList.remove('section-card');
+      }
+      if(node.classList.contains('card')){
+        node.classList.remove('card');
+      }
+      if(node.dataset && !node.dataset.collapsed){
+        node.dataset.collapsed='0';
+      }
+      if(sectionKey && node.dataset && !node.dataset.section){
+        node.dataset.section = sectionKey;
+      }
+      const titlebar=ensureGroupTitlebar(node);
+      if(titlebar && titlebar !== node.firstElementChild){
+        node.insertBefore(titlebar, node.firstChild);
+      }
+      if(node.dataset && !node.dataset.cardTitle && titlebar){
+        const label=titlebar.querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
+        const text=label && label.textContent ? label.textContent.trim() : (titlebar.textContent || '').trim();
+        if(text) node.dataset.cardTitle = text;
+      }
+      return node;
     }
 
     function createCardFromTitlebar(titlebar, sectionKey){
       const card=document.createElement('section');
-      card.className='group section-card';
+      card.className='section-card';
       card.appendChild(titlebar);
       if(sectionKey) card.dataset.section = sectionKey;
       card.dataset.card='1';
@@ -4384,6 +4461,7 @@
       if(!section) return;
       const headings=Array.from(section.querySelectorAll('.h3, .h4')).filter(heading=>{
         if(heading.closest('.group')) return false;
+        if(heading.closest('.section-card')) return false;
         if(heading.closest('.titlebar')) return false;
         return true;
       });
@@ -4395,7 +4473,7 @@
         const hostSection=grid.closest('[data-section]') || section;
         const sectionKey=resolveSectionKey(hostSection);
         const card=document.createElement('section');
-        card.className='group section-card';
+        card.className='section-card';
         const titlebar=document.createElement('div');
         titlebar.className='titlebar';
         titlebar.appendChild(heading);
