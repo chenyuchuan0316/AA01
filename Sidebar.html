@@ -15475,7 +15475,24 @@
         groupElement.dataset.planLocked = planGroupState.locked ? '1' : '0';
       }
       const ctrl=simpleGroupControllers['contactVisitGroup'];
+      const shouldExpand = planGroupState.pendingExpand || (options && options.expand);
       if(!ctrl || !ctrl.element){
+        if(groupElement){
+          if(planGroupState.locked){
+            if(groupElement.dataset.collapsed !== '1'){
+              groupElement.dataset.collapsed = '1';
+              scheduleStickyMeasurement();
+              scheduleLayoutMeasurements();
+            }
+          }else if(shouldExpand){
+            if(groupElement.dataset.collapsed !== '0'){
+              groupElement.dataset.collapsed = '0';
+              scheduleStickyMeasurement();
+              scheduleLayoutMeasurements();
+            }
+            planGroupState.pendingExpand = false;
+          }
+        }
         return;
       }
       const toggle=ctrl.toggle || ctrl.element.querySelector('.group-collapse');
@@ -15493,7 +15510,7 @@
         if(ctrl.element.dataset.collapsed !== '1'){
           ctrl.applyState(true);
         }
-      }else if(planGroupState.pendingExpand || (options && options.expand)){
+      }else if(shouldExpand){
         ctrl.applyState(false);
         planGroupState.pendingExpand = false;
       }
