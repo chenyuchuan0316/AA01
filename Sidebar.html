@@ -2871,7 +2871,7 @@
   </div>
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
-    <section class="group card-main" id="contactVisitGroup" data-collapsed="0" data-plan-locked="1">
+    <section class="group card-main" id="contactVisitGroup" data-collapsed="1" data-plan-locked="1">
       <div class="group-header">
         <div class="titlebar">
           <span class="h1">計畫目標</span>
@@ -4540,6 +4540,63 @@
       if(!root || !root.querySelectorAll) return;
       const groups = root.querySelectorAll('.group');
       groups.forEach(group=>ensureGroupContentWrapper(group));
+    }
+
+    function ensureUniqueIdsWithin(root){
+      if(!root || !root.querySelectorAll) return;
+      const records = Object.create(null);
+      Array.from(document.querySelectorAll('[id]')).forEach(node=>{
+        if(!node || !node.id) return;
+        const key = node.id;
+        const insideRoot = root.contains ? root.contains(node) : false;
+        const record = records[key];
+        if(!record){
+          records[key] = { node, inside: insideRoot };
+          return;
+        }
+        if(insideRoot && !record.inside){
+          if(record.node && record.node !== node && record.node.parentNode){
+            record.node.parentNode.removeChild(record.node);
+          }
+          records[key] = { node, inside: true };
+          return;
+        }
+        if(node.parentNode){
+          node.parentNode.removeChild(node);
+        }
+      });
+    }
+
+    function dedupeGoalsSection(){
+      const sections = Array.from(document.querySelectorAll('.page-section[data-page="goals"]'));
+      if(!sections.length) return;
+      const appContainer = document.getElementById('appContainer');
+      let primary = null;
+      if(appContainer){
+        primary = sections.find(section=>appContainer.contains(section) && section.querySelector('#contactVisitGroup'))
+          || sections.find(section=>appContainer.contains(section))
+          || null;
+      }
+      if(!primary){
+        primary = sections.find(section=>section.querySelector('#contactVisitGroup')) || sections[0];
+      }
+      sections.forEach(section=>{
+        if(section !== primary && section.parentNode){
+          section.parentNode.removeChild(section);
+        }
+      });
+      if(!primary) return;
+      const groups = Array.from(document.querySelectorAll('#contactVisitGroup'));
+      let primaryGroup = groups.find(group=>primary.contains(group)) || null;
+      if(!primaryGroup && groups.length){
+        primaryGroup = groups[0];
+      }
+      groups.forEach(group=>{
+        if(group !== primaryGroup && group.parentNode){
+          group.parentNode.removeChild(group);
+        }
+      });
+      ensureUniqueIdsWithin(primary);
     }
 
     function normalizeCardContainer(node, sectionKey, options){
@@ -16002,6 +16059,7 @@
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
       }
+      dedupeGoalsSection();
       initUiPresetControls();
       initFontScaleControls();
       initWizardFlow();
