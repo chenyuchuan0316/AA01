@@ -4567,36 +4567,132 @@
       });
     }
 
-    function dedupeGoalsSection(){
-      const sections = Array.from(document.querySelectorAll('.page-section[data-page="goals"]'));
-      if(!sections.length) return;
-      const appContainer = document.getElementById('appContainer');
+    function escapeCssId(id){
+      if(typeof id !== 'string') return '';
+      if(window.CSS && typeof window.CSS.escape === 'function'){
+        return window.CSS.escape(id);
+      }
+      return id.replace(/([\\.#:\[\]\(\),>+~*^$|='"{}\s])/g, '\\$1');
+    }
+
+    function dedupeElementsById(id, preferredRoot, options){
+      if(!id) return null;
+      let selector = '#' + escapeCssId(id);
+      let nodes = [];
+      try{
+        nodes = Array.from(document.querySelectorAll(selector));
+      }catch(err){
+        try{
+          nodes = Array.from(document.querySelectorAll('#' + id));
+        }catch(err2){
+          nodes = [];
+        }
+      }
+      if(nodes.length <= 1){
+        return nodes[0] || null;
+      }
+      const preferFn = options && typeof options.prefer === 'function' ? options.prefer : null;
       let primary = null;
-      if(appContainer){
-        primary = sections.find(section=>appContainer.contains(section) && section.querySelector('#contactVisitGroup'))
-          || sections.find(section=>appContainer.contains(section))
-          || null;
+      if(preferFn){
+        primary = nodes.find(node=>preferFn(node)) || null;
+      }
+      if(!primary && preferredRoot && typeof preferredRoot.contains === 'function'){
+        primary = nodes.find(node=>preferredRoot.contains(node)) || null;
       }
       if(!primary){
-        primary = sections.find(section=>section.querySelector('#contactVisitGroup')) || sections[0];
+        primary = nodes[0];
+      }
+      nodes.forEach(node=>{
+        if(node && node !== primary && node.parentNode){
+          node.parentNode.removeChild(node);
+        }
+      });
+      return primary;
+    }
+
+    function sectionHasAnchors(section, anchors){
+      if(!section || !section.querySelector || !Array.isArray(anchors) || !anchors.length){
+        return true;
+      }
+      for(let i=0;i<anchors.length;i++){
+        const id=anchors[i];
+        if(!id) continue;
+        let selector = '#' + escapeCssId(id);
+        let found = false;
+        try{
+          found = !!section.querySelector(selector);
+        }catch(err){
+          try{
+            found = !!section.querySelector('#' + id);
+          }catch(err2){
+            found = false;
+          }
+        }
+        if(!found){
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function dedupePageSection(pageId, options){
+      if(!pageId) return null;
+      const sections = Array.from(document.querySelectorAll(`.page-section[data-page="${pageId}"]`));
+      if(!sections.length) return null;
+      const anchors = (options && Array.isArray(options.anchorIds)) ? options.anchorIds : [];
+      const preferredRoot = options && options.preferredRoot ? options.preferredRoot : null;
+      let primary = null;
+      if(preferredRoot && typeof preferredRoot.contains === 'function'){
+        primary = sections.find(section=>preferredRoot.contains(section) && sectionHasAnchors(section, anchors))
+          || sections.find(section=>preferredRoot.contains(section))
+          || null;
+      }
+      if(!primary && anchors.length){
+        primary = sections.find(section=>sectionHasAnchors(section, anchors)) || null;
+      }
+      if(!primary){
+        primary = sections[0];
       }
       sections.forEach(section=>{
-        if(section !== primary && section.parentNode){
+        if(section && section !== primary && section.parentNode){
           section.parentNode.removeChild(section);
         }
       });
-      if(!primary) return;
-      const groups = Array.from(document.querySelectorAll('#contactVisitGroup'));
-      let primaryGroup = groups.find(group=>primary.contains(group)) || null;
-      if(!primaryGroup && groups.length){
-        primaryGroup = groups[0];
+      const dedupeIds = (options && Array.isArray(options.dedupeIds) && options.dedupeIds.length) ? options.dedupeIds : anchors;
+      if(primary && dedupeIds && dedupeIds.length){
+        dedupeIds.forEach(id=>dedupeElementsById(id, primary));
       }
-      groups.forEach(group=>{
-        if(group !== primaryGroup && group.parentNode){
-          group.parentNode.removeChild(group);
-        }
-      });
-      ensureUniqueIdsWithin(primary);
+      return primary;
+    }
+
+    function dedupeGoalsSection(){
+      const documentRoot = document.body || document.documentElement || document;
+      const appContainer = dedupeElementsById('appContainer', documentRoot, {
+        prefer: node=>node && node.querySelector && node.querySelector('.page-section[data-page]')
+      }) || document.getElementById('appContainer');
+      const configs = [
+        { pageId:'basic', anchorIds:['basicInfoGroup'], preferredRoot:appContainer },
+        { pageId:'goals', anchorIds:['contactVisitGroup'], preferredRoot:appContainer, dedupeIds:['contactVisitGroup'] },
+        { pageId:'execution', anchorIds:['planExecutionGroup','planSummaryGroup','planTextGroup'], preferredRoot:appContainer },
+        { pageId:'notes', anchorIds:['planOtherGroup'], preferredRoot:appContainer }
+      ];
+      configs.forEach(cfg=>dedupePageSection(cfg.pageId, cfg));
+      const globalConfigs = [
+        { id:'appSticky', prefer: node=>node && node.querySelector && node.querySelector('.wizard') },
+        { id:'sideNav', prefer: node=>node && node.querySelector && node.querySelector('.side-nav-list') },
+        { id:'sideNavToggleButton' },
+        { id:'sideNavBackdrop' },
+        { id:'summaryProgressList', prefer: node=>node && node.classList && node.classList.contains('summary-progress-list') },
+        { id:'wizardSteps', prefer: node=>node && node.querySelector && node.querySelector('.wizard-step') },
+        { id:'pageTabs', prefer: node=>node && node.querySelector && node.querySelector('[data-page]') },
+        { id:'floatingActions' },
+        { id:'validationToast' }
+      ];
+      const rootForGlobals = appContainer || documentRoot;
+      globalConfigs.forEach(cfg=>dedupeElementsById(cfg.id, rootForGlobals, cfg));
+      if(appContainer){
+        ensureUniqueIdsWithin(appContainer);
+      }
     }
 
     function normalizeCardContainer(node, sectionKey, options){
