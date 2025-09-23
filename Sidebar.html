@@ -15144,9 +15144,46 @@
       currentWizardStep = targetStep;
       closeWizardMoreMenu();
       updateWizardButtons();
+      syncPageWithWizardStep(targetStep);
       syncTabStatuses();
       const jumpSelect=getWizardJumpSelect();
       if(jumpSelect){ jumpSelect.value=''; }
+    }
+
+    function syncPageWithWizardStep(step){
+      if(typeof isWizardStepLocked === 'function' && isWizardStepLocked(step)){
+        return;
+      }
+      const meta = getWizardStepMeta(step);
+      if(!meta || !meta.page){
+        return;
+      }
+      const targetPageId = meta.page;
+      if(!targetPageId || currentPageId === targetPageId){
+        return;
+      }
+      const sections = Array.from(document.querySelectorAll('.page-section'));
+      if(!sections.length){
+        return;
+      }
+      let activeSection = null;
+      for(let i=0;i<sections.length;i++){
+        const section = sections[i];
+        if(section && section.dataset && section.dataset.page === targetPageId){
+          activeSection = section;
+          break;
+        }
+      }
+      if(!activeSection){
+        return;
+      }
+      const activation = applyPageActivation(sections, activeSection);
+      const finalPageId = activation.finalPageId || targetPageId;
+      currentPageId = finalPageId;
+      updatePageTabActiveState(finalPageId);
+      scheduleSideNavRender();
+      scheduleLayoutMeasurements();
+      scheduleSummaryProgressRender();
     }
 
     function determineWizardStepForPage(pageId, options){
@@ -15371,6 +15408,51 @@
       setActivePage(pageId);
     }
 
+    function applyPageActivation(sections, activeSection){
+      if(!Array.isArray(sections) || !sections.length || !activeSection){
+        return { finalPageId: '', changed: false };
+      }
+      let finalPageId = '';
+      let changed = false;
+      sections.forEach(section=>{
+        if(!section) return;
+        const isActive = section === activeSection;
+        const nextValue = isActive ? '1' : '0';
+        const prevValue = section.dataset ? (section.dataset.active || '') : section.getAttribute('data-active');
+        if(section.dataset){
+          if(prevValue !== nextValue){
+            section.dataset.active = nextValue;
+            changed = true;
+          }
+        }else if(prevValue !== nextValue){
+          section.setAttribute('data-active', nextValue);
+          changed = true;
+        }
+        const desiredDisplay = isActive ? '' : 'none';
+        if(section.style && section.style.display !== desiredDisplay){
+          section.style.display = desiredDisplay;
+          changed = true;
+        }
+        if(isActive){
+          finalPageId = section.dataset ? (section.dataset.page || '') : (section.getAttribute('data-page') || '');
+        }
+      });
+      return { finalPageId, changed };
+    }
+
+    function updatePageTabActiveState(finalPageId){
+      document.querySelectorAll('.page-tabs [data-page]').forEach(btn=>{
+        const btnPage = btn && btn.dataset ? btn.dataset.page : '';
+        const isActive = finalPageId ? btnPage === finalPageId : false;
+        if(btn.classList){
+          btn.classList.toggle('active', isActive);
+        }
+        if(typeof btn.setAttribute === 'function'){
+          btn.setAttribute('aria-current', isActive ? 'page' : 'false');
+        }
+      });
+    }
+
     function setActivePage(pageId, options){
       const sections = Array.from(document.querySelectorAll('.page-section'));
       if(!sections.length) return false;
@@ -15395,24 +15477,10 @@
         activeSection = sections[0] || null;
       }
       if(!activeSection) return false;
-      const finalPageId = activeSection.dataset ? (activeSection.dataset.page || '') : '';
-      sections.forEach(section=>{
-        if(!section) return;
-        const isActive = section === activeSection;
-        section.dataset.active = isActive ? '1' : '0';
-        section.style.display = isActive ? '' : 'none';
-      });
+      const activation = applyPageActivation(sections, activeSection);
+      const finalPageId = activation.finalPageId || (activeSection.dataset ? (activeSection.dataset.page || '') : '');
       currentPageId = finalPageId;
-      document.querySelectorAll('.page-tabs [data-page]').forEach(btn=>{
-        const btnPage = btn && btn.dataset ? btn.dataset.page : '';
-        const isActive = btnPage === finalPageId;
-        if(btn.classList){
-          btn.classList.toggle('active', isActive);
-        }
-        if(typeof btn.setAttribute === 'function'){
-          btn.setAttribute('aria-current', isActive ? 'page' : 'false');
-        }
-      });
+      updatePageTabActiveState(finalPageId);
       let effectiveStep = null;
       if(finalPageId){
         if(finalPageId === requestedId){
@@ -15422,7 +15490,7 @@
         }
       }
       if(effectiveStep !== null){
-        updateWizardVisual(effectiveStep);
+        updateWizardVisual(effectiveStep, { fromPageActivation: true });
       }else{
         updateWizardButtons();
         syncTabStatuses();
