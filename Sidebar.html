@@ -1506,37 +1506,33 @@
     .virtual-checklist-print ol{ margin:var(--space-xxs) 0 0 1.25em; padding-left:1.25em; }
     .virtual-checklist-print li{ margin-bottom:4px; }
 
-    #careGoalsGroup .care-goals-layout{
+    #careGoals_block{
       display:flex;
       flex-direction:column;
       gap:var(--group-spacing);
     }
-    #careGoalsGroup .care-goals-main{
-      display:flex;
-      flex-direction:column;
-      gap:var(--group-spacing);
+    #careGoals_block .section-group{
+      margin:0;
     }
-    #careGoalsGroup .care-goals-side{
-      display:flex;
-      flex-direction:column;
-      gap:var(--space-sm);
+    #careGoals_block .section-group-body{
+      gap:var(--space-xs);
     }
-    #careGoalsGroup .care-goals-side-inner{
-      display:flex;
-      flex-direction:column;
-      gap:var(--space-sm);
-    }
-    #careGoalsGroup .care-goal-block{
+    #careGoals_block .care-goal-block{
       display:flex;
       flex-direction:column;
       gap:var(--space-xs);
     }
-    #careGoalsGroup .care-goal-heading{
+    #careGoals_block .care-goal-heading{
       display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content:flex-end;
       gap:var(--space-xs);
       margin-bottom:var(--space-xs);
+    }
+    #careGoals_block .care-goals-side-inner{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
     }
     #problemCount{
       display:inline-flex;
@@ -1551,19 +1547,20 @@
       min-width:0;
     }
     @media (min-width:1280px){
-      #careGoalsGroup .care-goals-layout{
-        flex-direction:row;
+      #careGoals_block{
+        display:grid;
+        grid-template-columns:minmax(0, 1fr) clamp(320px, 38%, 420px);
+        gap:var(--group-spacing);
         align-items:flex-start;
       }
-      #careGoalsGroup .care-goals-main{
-        flex:1 1 0;
-        min-width:0;
+      #careGoals_block .section-group[data-group-id="4"]{
+        grid-column:2;
+        grid-row:1 / span 3;
       }
-      #careGoalsGroup .care-goals-side{
-        flex:0 0 clamp(320px, 38%, 420px);
-        max-width:clamp(320px, 38%, 420px);
+      #careGoals_block .section-group:not([data-group-id="4"]) {
+        grid-column:1;
       }
-      #careGoalsGroup .care-goals-side-inner{
+      #careGoals_block .care-goals-side-inner{
         position:sticky;
         top:calc(var(--app-top-offset) + var(--space-lg));
       }
@@ -2837,18 +2834,14 @@
 
     <div id="section1_block" data-section="s1">
       <div class="titlebar">
-        <span class="h3 heading-tier heading-tier--primary">（一）身心概況</span>
+        <label class="h3 heading-tier heading-tier--primary">（一）身心概況</label>
       </div>
       <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
       <div id="section1_error_summary" class="error-summary" data-group-ignore="1" data-show="0" aria-live="polite"></div>
 
-        <div class="group" id="caseProfileBasicGroup" data-collapsed="0">
-          <span class="h4 heading-tier heading-tier--section">身心概況—基本狀態</span>
-          <div class="group-content">
-            <div class="section-card-grid">
-              <section class="section-card" id="caseProfileBasicCard">
-                <span class="h5 heading-tier heading-tier--subsection">基本狀態</span>
-                <div class="autogrid autogrid--wide">
+        <div class="section-card-grid" id="caseProfileBasicGroup">
+          <section class="section-card" id="caseProfileBasicCard">
+            <div class="autogrid autogrid--wide">
                   <div class="field" data-field-size="short">
                     <label class="h3" for="s1_age">年齡</label>
                     <input id="s1_age" type="number" min="1" max="120" value="70">
@@ -2865,10 +2858,8 @@
                     <div class="checkcol" id="s1_lang_box"></div>
                     <input id="s1_lang_note" type="text" placeholder="備註（例如：以台語為主）" style="margin-top:var(--space-xs);">
                   </div>
-                </div>
-              </section>
             </div>
-          </div>
+          </section>
         </div>
 
         <div class="group" id="caseProfileSensoryGroup" data-collapsed="0">
@@ -3610,7 +3601,7 @@
     <!-- (二) 經濟收入（原功能保留） -->
     <div id="section2_block" data-section="s2">
       <div class="titlebar">
-        <span class="h3 heading-tier heading-tier--primary">（二）經濟收入</span>
+        <label class="h3 heading-tier heading-tier--primary">（二）經濟收入</label>
       </div>
         <div class="grid2 form-row-2col">
           <div>
@@ -3644,7 +3635,7 @@
     <!-- (三) 居住環境（原功能保留） -->
     <div id="section3_block" data-section="s3">
       <div class="titlebar">
-        <span class="h3 heading-tier heading-tier--primary">（三）居住環境</span>
+        <label class="h3 heading-tier heading-tier--primary">（三）居住環境</label>
       </div>
         <div class="grid3 form-row-3col">
           <div>
@@ -3697,7 +3688,7 @@
     <!-- (四) 社會支持（原功能保留） -->
     <div id="section4_block" data-section="s4">
       <div class="titlebar">
-        <span class="h3 heading-tier heading-tier--primary">（四）社會支持</span>
+        <label class="h3 heading-tier heading-tier--primary">（四）社會支持</label>
       </div>
 
         <div class="grid3 form-row-3col">
@@ -3877,7 +3868,7 @@
     <!-- (五) 其他 -->
     <div id="section5_block" data-section="s5">
       <div class="titlebar">
-        <span class="h3 heading-tier heading-tier--primary">（五）其他</span>
+        <label class="h3 heading-tier heading-tier--primary">（五）其他</label>
       </div>
       <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
     </div>
@@ -3885,7 +3876,7 @@
     <!-- (六) 複評評值 -->
     <div id="section6_block" data-section="s6">
       <div class="titlebar">
-        <span class="h3 heading-tier heading-tier--primary">（六）複評評值</span>
+        <label class="h3 heading-tier heading-tier--primary">（六）複評評值</label>
       </div>
       <div class="grid2 form-row-2col">
         <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
@@ -3899,52 +3890,56 @@
   <div class="group" id="careGoalsGroup" data-span="full">
     <span class="h2">五、照顧目標</span>
 
-    <div class="care-goals-layout">
-      <div class="care-goals-main">
-        <div class="care-goal-block">
-          <div class="care-goal-heading">
-            <label class="h3">（一）照顧問題（最多選 5 項）</label>
-            <div id="problemCount">已選 0 / 5</div>
-          </div>
-          <div class="checkcol" id="problemList"></div>
-          <div class="virtual-checklist-print" id="problemListPrint" aria-hidden="true"></div>
-          <label class="h4" style="margin-top:var(--space-xs);">補充說明（可選）</label>
-          <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
+    <div id="careGoals_block" data-section="cg">
+      <div class="titlebar">
+        <label class="h3 heading-tier heading-tier--primary">（一）照顧問題（最多選 5 項）</label>
+      </div>
+      <div class="care-goal-block">
+        <div class="care-goal-heading">
+          <div id="problemCount">已選 0 / 5</div>
         </div>
+        <div class="checkcol" id="problemList"></div>
+        <div class="virtual-checklist-print" id="problemListPrint" aria-hidden="true"></div>
+        <label class="h4" style="margin-top:var(--space-xs);">補充說明（可選）</label>
+        <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
+      </div>
 
-        <div class="care-goal-block">
-          <label class="h3">（二）短期目標（0–3 個月）</label>
-          <div class="grid2 form-row-2col">
-            <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
-            <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
-            <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
-            <div id="short_resp_wrap"><label class="h4">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
-            <div id="short_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
-            <div id="short_meal_wrap"><label class="h4">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
-          </div>
-        </div>
-
-        <div class="care-goal-block">
-          <label class="h3">（三）中期目標（3–4 個月）</label>
-          <div class="grid2 form-row-2col">
-            <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
-            <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
-            <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
-            <div id="mid_resp_wrap"><label class="h4">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
-            <div id="mid_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
-            <div id="mid_meal_wrap"><label class="h4">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
-          </div>
+      <div class="titlebar">
+        <label class="h3 heading-tier heading-tier--primary">（二）短期目標（0–3 個月）</label>
+      </div>
+      <div class="care-goal-block">
+        <div class="grid2 form-row-2col">
+          <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
+          <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
+          <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
+          <div id="short_resp_wrap"><label class="h4">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
+          <div id="short_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
+          <div id="short_meal_wrap"><label class="h4">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
         </div>
       </div>
 
-      <div class="care-goals-side">
-        <div class="care-goals-side-inner">
-          <label class="h3">（四）長期目標（4–6 個月）</label>
-          <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
-          <div class="hr"></div>
-          <label class="h4">目標文字預覽（含碼別與各期結構）</label>
-          <div id="goalPreview" class="preview goal-preview-empty">（尚未選擇服務或填寫內容）</div>
+      <div class="titlebar">
+        <label class="h3 heading-tier heading-tier--primary">（三）中期目標（3–4 個月）</label>
+      </div>
+      <div class="care-goal-block">
+        <div class="grid2 form-row-2col">
+          <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
+          <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
+          <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
+          <div id="mid_resp_wrap"><label class="h4">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
+          <div id="mid_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
+          <div id="mid_meal_wrap"><label class="h4">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
         </div>
+      </div>
+
+      <div class="titlebar">
+        <label class="h3 heading-tier heading-tier--primary">（四）長期目標（4–6 個月）</label>
+      </div>
+      <div class="care-goals-side-inner">
+        <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
+        <div class="hr"></div>
+        <label class="h4">目標文字預覽（含碼別與各期結構）</label>
+        <div id="goalPreview" class="preview goal-preview-empty">（尚未選擇服務或填寫內容）</div>
       </div>
     </div>
   </div>
