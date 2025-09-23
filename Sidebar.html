@@ -16156,11 +16156,12 @@
       });
     }
 
-    window.addEventListener('load', ()=>{
+    function initializeSidebarOnLoad(){
+      // 先排除重複的 page-section 與全域 ID，避免後續初始化操作到錯誤節點
+      dedupeGoalsSection();
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
       }
-      dedupeGoalsSection();
       initUiPresetControls();
       initFontScaleControls();
       initWizardFlow();
@@ -16295,7 +16296,9 @@
 
       scheduleLayoutMeasurements();
 
-    });
+    }
+
+    window.addEventListener('load', initializeSidebarOnLoad);
   </script>
 </body>
 </html>
