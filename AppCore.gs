@@ -94,6 +94,14 @@ function runDocumentWriters(body, form){
   });
 }
 
+/** @param {GoogleAppsScript.Document.Body} body @param {Object} data */
+function writeAA01Plan(body, data){
+  if (!body) {
+    throw new Error('writeAA01Plan 需要有效的文件 Body。');
+  }
+  runDocumentWriters(body, data || {});
+}
+
 function renderSimpleTemplate(template, data){
   var text = template || '';
   var source = data || {};
@@ -115,11 +123,12 @@ function resolveTemplateValue(data, path){
 }
 
 /** 主要流程：複製公版 → 依表單寫入 → 依規則命名 → 開啟 */
-function applyAndSave(form){
-  const naming = buildDocumentNaming(form);
+function applyAndSaveAA01(data){
+  const payload = data || {};
+  const naming = buildDocumentNaming(payload);
   const docContext = createDocumentFromTemplate(naming.fileName);
 
-  runDocumentWriters(docContext.body, form);
+  writeAA01Plan(docContext.body, payload);
 
   docContext.doc.saveAndClose();
 
@@ -127,6 +136,10 @@ function applyAndSave(form){
     message: '已建立新檔並寫入內容',
     file: { id: docContext.docId, name: naming.fileName, url: 'https://docs.google.com/document/d/' + docContext.docId + '/edit' }
   };
+}
+
+function applyAndSave(form){
+  return applyAndSaveAA01(form);
 }
 /**
  * ============= H1_Sections.gs =============
