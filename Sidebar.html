@@ -4330,6 +4330,7 @@
       execution:'計畫執行規劃',
       notes:'其他備註'
     };
+    const PAGE_ORDER = Object.freeze(['basic','goals','execution','notes']);
 
     /* ===== Heading spec ===== */
     const HEADING_SPEC_VERSION = '2025-09-24';
@@ -6014,7 +6015,10 @@
     }
 
     function handleSideNavClick(event){
-      const target=event && event.currentTarget ? event.currentTarget : null;
+      const target = event
+        ? (event.currentTarget
+          || (event.target && typeof event.target.closest === 'function' ? event.target.closest('.side-nav-link') : null))
+        : null;
       if(!target) return;
       const anchorId = target.dataset ? target.dataset.target : '';
       if(!anchorId) return;
@@ -15330,7 +15334,10 @@
 
     function handleErrorSummaryClick(evt){
       if(evt) evt.preventDefault();
-      const link=evt && evt.currentTarget ? evt.currentTarget : null;
+      const link = evt
+        ? (evt.currentTarget
+          || (evt.target && typeof evt.target.closest === 'function' ? evt.target.closest('[data-page]') : null))
+        : null;
       if(!link) return;
       const pageId=link.dataset.page;
       const fieldId=link.dataset.target;
@@ -16056,10 +16063,12 @@
 
         /* ===== 初始化 ===== */
     function handlePageTabClick(event){
-      const el = event ? (event.currentTarget || event.target) : null;
-      if(!el) return;
-      const btn = el.closest ? el.closest('[data-page]') : el;
-      const pageId = btn && btn.dataset ? btn.dataset.page : '';
+      const btn = event
+        ? (event.currentTarget
+          || (event.target && typeof event.target.closest === 'function' ? event.target.closest('[data-page]') : null))
+        : null;
+      if(!btn) return;
+      const pageId = btn.dataset ? btn.dataset.page : '';
       setActivePage(pageId);
     }
 
@@ -16089,10 +16098,108 @@
           changed = true;
         }
         if(isActive){
-          finalPageId = section.dataset ? (section.dataset.page || '') : (section.getAttribute('data-page') || '');
+          const datasetPage = section.dataset ? (section.dataset.page || '') : '';
+          if(datasetPage){
+            finalPageId = datasetPage;
+          }else if(typeof section.getAttribute === 'function'){
+            finalPageId = section.getAttribute('data-page') || '';
+          }else{
+            finalPageId = '';
+          }
         }
       });
       return { finalPageId, changed };
+    }
+
+    function getSectionPageId(section){
+      if(!section) return '';
+      if(section.dataset && section.dataset.page){
+        return section.dataset.page;
+      }
+      if(typeof section.getAttribute === 'function'){
+        return section.getAttribute('data-page') || '';
+      }
+      return '';
+    }
+
+    function pageExistsInSections(sections, pageId){
+      if(!Array.isArray(sections) || !sections.length || !pageId){
+        return false;
+      }
+      for(let i=0;i<sections.length;i++){
+        const section = sections[i];
+        if(!section) continue;
+        if(getSectionPageId(section) === pageId){
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function findActivePageId(sections){
+      if(!Array.isArray(sections) || !sections.length){
+        return '';
+      }
+      for(let i=0;i<sections.length;i++){
+        const section = sections[i];
+        if(!section || !section.dataset) continue;
+        if(section.dataset.active === '1'){
+          const pageId = getSectionPageId(section);
+          if(pageId){
+            return pageId;
+          }
+        }
+      }
+      return '';
+    }
+
+    function findFirstSectionPageId(sections){
+      if(!Array.isArray(sections) || !sections.length){
+        return '';
+      }
+      for(let i=0;i<sections.length;i++){
+        const section = sections[i];
+        if(!section) continue;
+        const pageId = getSectionPageId(section);
+        if(pageId){
+          return pageId;
+        }
+      }
+      return '';
+    }
+
+    function resolvePageOrderFallback(sections){
+      if(!Array.isArray(sections) || !sections.length || !Array.isArray(PAGE_ORDER)){
+        return '';
+      }
+      for(let i=0;i<PAGE_ORDER.length;i++){
+        const candidate = PAGE_ORDER[i];
+        if(candidate && pageExistsInSections(sections, candidate)){
+          return candidate;
+        }
+      }
+      return '';
+    }
+
+    function normalizeRequestedPageId(rawPageId, sections){
+      const requested = typeof rawPageId === 'string' ? rawPageId.trim() : (rawPageId ? String(rawPageId) : '');
+      if(requested){
+        if((Array.isArray(PAGE_ORDER) && PAGE_ORDER.indexOf(requested) !== -1) || pageExistsInSections(sections, requested)){
+          return requested;
+        }
+      }
+      if(pageExistsInSections(sections, currentPageId)){
+        return currentPageId;
+      }
+      const activeId = findActivePageId(sections);
+      if(activeId){
+        return activeId;
+      }
+      const orderMatch = resolvePageOrderFallback(sections);
+      if(orderMatch){
+        return orderMatch;
+      }
+      return findFirstSectionPageId(sections);
     }
 
     function updatePageTabActiveState(finalPageId){
@@ -16111,7 +16218,7 @@
     function setActivePage(pageId, options){
       const sections = Array.from(document.querySelectorAll('.page-section'));
       if(!sections.length) return false;
-      const requestedId = typeof pageId === 'string' ? pageId : (pageId ? String(pageId) : '');
+      const requestedId = normalizeRequestedPageId(pageId, sections);
       const opts = options || {};
       const targetStep = requestedId ? determineWizardStepForPage(requestedId, opts) : null;
       if(targetStep !== null && isWizardStepLocked(targetStep)){
@@ -16122,7 +16229,7 @@
       if(requestedId){
         for(let i=0;i<sections.length;i++){
           const section = sections[i];
-          if(section && section.dataset && section.dataset.page === requestedId){
+          if(section && getSectionPageId(section) === requestedId){
             activeSection = section;
             break;
           }
@@ -16133,15 +16240,29 @@
       }
       if(!activeSection) return false;
       const activation = applyPageActivation(sections, activeSection);
-      const finalPageId = activation.finalPageId || (activeSection.dataset ? (activeSection.dataset.page || '') : '');
-      currentPageId = finalPageId;
-      updatePageTabActiveState(finalPageId);
+      let finalPageId = activation.finalPageId;
+      if(!finalPageId){
+        finalPageId = getSectionPageId(activeSection) || '';
+      }
+      const previousPageId = currentPageId || '';
+      let resolvedPageId = finalPageId || '';
+      if(!resolvedPageId && requestedId){
+        resolvedPageId = requestedId;
+      }
+      if(!resolvedPageId && previousPageId){
+        resolvedPageId = previousPageId;
+      }
+      if(!resolvedPageId){
+        resolvedPageId = findFirstSectionPageId(sections);
+      }
+      currentPageId = resolvedPageId || '';
+      updatePageTabActiveState(resolvedPageId);
       let effectiveStep = null;
-      if(finalPageId){
-        if(finalPageId === requestedId){
+      if(resolvedPageId){
+        if(resolvedPageId === requestedId){
           effectiveStep = targetStep;
         }else{
-          effectiveStep = determineWizardStepForPage(finalPageId, {});
+          effectiveStep = determineWizardStepForPage(resolvedPageId, {});
         }
       }
       if(effectiveStep !== null){
@@ -16153,7 +16274,7 @@
       scheduleSideNavRender();
       scheduleLayoutMeasurements();
       scheduleSummaryProgressRender();
-      if(finalPageId === 'goals'){
+      if(resolvedPageId === 'goals'){
         window.requestAnimationFrame(()=>ensureGoalsPageDefaults());
       }
       return true;
