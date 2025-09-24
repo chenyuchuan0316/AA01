@@ -10182,6 +10182,8 @@
       refreshCheckcol('s2_sources');
     }
     function toggleDisCategory(){
+      // 若使用者由錯誤提示點入，可一鍵跳轉
+      // 例：jumpToField('s2_dis_cat');
       const levelEl=document.getElementById('s2_dis_level');
       if(!levelEl) return;
       const catEl=document.getElementById('s2_dis_cat');
@@ -10204,7 +10206,23 @@
       const srcs=[...document.querySelectorAll('#s2_sources input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
       const id=document.getElementById('s2_id').value;
       const lv=document.getElementById('s2_dis_level').value;
-      const catSel=document.getElementById('s2_dis_cat'); const cat=(catSel && catSel.value)? catSel.value : '';
+      const catSel=document.getElementById('s2_dis_cat'); 
+      const cat=(catSel && catSel.value)? catSel.value : '';
+
+      // 驗證：等級≠無 → 類別必填
+      const disCatBox=document.getElementById('disCatBox');
+      if(lv && lv !== '無'){
+        if(!cat){
+          if(disCatBox){ disCatBox.classList.add('input-invalid'); }
+          // 導覽提示
+          showValidationToast({ type:'warn', message:'請選擇「身心障礙類別」。' });
+        }else{
+          if(disCatBox){ disCatBox.classList.remove('input-invalid'); }
+        }
+      }else{
+        if(disCatBox){ disCatBox.classList.remove('input-invalid'); }
+      }
+
       let s='';
       if(srcs.length) s+=`主要經濟來源為${srcs.join('、')}`;
       if(id){ s += (s? '，':'') + `戶籍/福利身分為${id}`; }
@@ -10245,15 +10263,43 @@
       buildS3();
     }
     function buildS3(){
-      const typeSel=document.getElementById('s3_type'); let type=typeSel.value;
-      if(type==='其他'){ const t=document.getElementById('s3_type_other').value.trim(); if(t) type=t; }
+      const typeSel=document.getElementById('s3_type'); 
+      let type=typeSel.value;
+      if(type==='其他'){ 
+        const t=document.getElementById('s3_type_other').value.trim(); 
+        if(t) type=t; 
+      }
       const own=document.getElementById('s3_own').value;
+
       const rentAmountInput=document.getElementById('s3_rent_amount');
       const rentFeeSelect=document.getElementById('s3_rent_fee');
+      const amountWrap=document.getElementById('s3_rent_amount_wrap');
+      const feeWrap=document.getElementById('s3_rent_fee_wrap');
+
       let rentInfo='';
+
       if(own==='租賃'){
         const rawAmount=(rentAmountInput?.value || '').trim();
         const feeValue=(rentFeeSelect?.value || '').trim();
+
+        // 驗證：租賃需填寫金額與是否含管理費
+        let invalid=false;
+        if(!rawAmount){
+          invalid=true;
+          if(amountWrap) amountWrap.classList.add('input-invalid');
+        }else{
+          if(amountWrap) amountWrap.classList.remove('input-invalid');
+        }
+        if(!feeValue){
+          invalid=true;
+          if(feeWrap) feeWrap.classList.add('input-invalid');
+        }else{
+          if(feeWrap) feeWrap.classList.remove('input-invalid');
+        }
+        if(invalid){
+          showValidationToast({ type:'warn', message:'居住權屬為「租賃」時，請填寫「租金金額」並選擇「是否含管理費」。' });
+        }
+
         if(rawAmount){
           const numeric=parseInt(rawAmount,10);
           const formatted=!Number.isNaN(numeric) && numeric>=0 ? numeric.toLocaleString('zh-TW') : rawAmount;
@@ -10262,11 +10308,16 @@
         }else if(feeValue){
           rentInfo = feeValue;
         }
+      }else{
+        if(amountWrap) amountWrap.classList.remove('input-invalid');
+        if(feeWrap) feeWrap.classList.remove('input-invalid');
       }
+
       const clean=document.getElementById('s3_clean').value;
       const smell=document.getElementById('s3_smell').value;
       const fac=[...document.querySelectorAll('#s3_fac input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
       const aids=[...document.querySelectorAll('#s3_aids input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
+
       if(!type) { document.getElementById('section3_out').value=''; return; }
       let base=`現居住於${own}${type}`;
       if(rentInfo){ base += `，${rentInfo}`; }
@@ -16137,6 +16188,83 @@
       scheduleLayoutMeasurements();
 
     });
+  </script>
+  <script>
+  /* ===== Safety stubs (若外部未提供，避免 ReferenceError) ===== */
+  (function(){
+    const NOP = ()=>{};
+    if(typeof window.resolveWizardStepForElement!=='function'){ window.resolveWizardStepForElement = NOP; }
+    if(typeof window.resolveWizardStepForField!=='function'){ window.resolveWizardStepForField = NOP; }
+    if(typeof window.isWizardStepLocked!=='function'){ window.isWizardStepLocked = ()=>false; }
+    if(typeof window.handleWizardStepLocked!=='function'){ window.handleWizardStepLocked = NOP; }
+    if(typeof window.updateWizardVisual!=='function'){ window.updateWizardVisual = NOP; }
+    if(typeof window.setCurrentWizardStep!=='function'){ window.setCurrentWizardStep = ()=>true; }
+    if(typeof window.setActivePage!=='function'){ window.setActivePage = ()=>true; }
+    if(typeof window.showValidationToast!=='function'){
+      window.showValidationToast = ({type='warn', message='請檢查欄位內容。'}={})=>{
+        const toast=document.getElementById('validationToast');
+        if(!toast) return;
+        toast.dataset.type=type;
+        document.getElementById('validationToastText').textContent=message||'';
+        toast.dataset.show='1';
+      };
+    }
+    if(typeof window.hideValidationToast!=='function'){
+      window.hideValidationToast = ()=>{
+        const toast=document.getElementById('validationToast');
+        if(!toast) return;
+        toast.dataset.show='0';
+      };
+    }
+  })();
+  </script>
+  <script>
+  /* ===== App bootstrap ===== */
+  (function(){
+    function safe(fn){ try{ fn&&fn(); }catch(e){ /* console.warn(e) */ } }
+
+    function boot(){
+      // 版面/排版升級與卡片化
+      safe(prepareCaseProfileLayout);
+      // 嚴格先渲染 S1 字典（因後續會用到 refreshCheckcols）
+      safe(renderS1);
+      // 其餘段落初始化
+      safe(renderS2);
+      safe(renderS3);
+      safe(buildS2);
+      safe(buildS3);
+
+      // 表單/檢核/預覽
+      safe(initFormRules);
+      safe(initSection1Preview);
+
+      // 區塊化、進度與導覽（必須在 DOM 都 ready 後）
+      safe(initSectionViews);
+      safe(registerSideNavGroups);
+
+      // 工具列與外觀
+      safe(initUiPresetControls);
+      safe(initFontScaleControls);
+      safe(initStickyOverflowToggle);
+      safe(initSideNavToggle);
+
+      // 日期欄快捷鍵
+      safe(initDateInputs);
+
+      // 自動儲存
+      safe(initAutoSave);
+
+      // 首次度量
+      safe(scheduleLayoutMeasurements);
+      safe(scheduleSummaryUpdate);
+    }
+
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', boot, { once:true });
+    }else{
+      boot();
+    }
+  })();
   </script>
 </body>
 </html>
