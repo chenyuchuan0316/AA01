@@ -31,6 +31,28 @@
 4. 若調整檔案職責或流程，記得更新本檔案的對應段落。
 5. 透過 Google Apps Script IDE 實際執行一次主流程（`applyAndSave` 或相關觸發函式），確認產出無誤。
 
+## Git 協作與提交規範
+- **分支策略**：採用 GitHub Flow。每項需求或修正建立 `feature/<summary>`、`fix/<summary>` 或 `docs/<summary>` 分支；完成後發送 PR，待審核者核准後由作者自行合併。
+- **同步主幹**：開發期間請定期以 `git fetch` 與 `git rebase origin/main`（或 `pull --rebase`）保持分支最新，降低衝突。
+- **PR 要求**：PR 描述需列出變更摘要、測試或驗證結果、影響範圍與回滾方式，並在必要時附上側欄畫面或輸出文件截圖。
+
+### Commit 訊息格式
+- 採用 `<type>: <summary>` 結構，`<type>` 建議使用 `feat`、`fix`、`docs`、`refactor`、`chore` 等小寫祈使句，摘要字數控制在 72 字元以內。
+- 需要關聯 Issue 時在訊息末段以 `Refs #123` 或 `Fixes #123` 註記；多個 Issue 以空白分隔。
+- 單一 commit 專注一項邏輯變更，若包含文件更新請視情況拆出 `docs:` commit，方便回溯。
+
+### Issue 與 PR 模板
+- Issue 請使用 `.github/ISSUE_TEMPLATE/bug_report.md`、`feature_request.md`（若尚未建立模板，提交時亦需包含「摘要、重現步驟、預期結果、實際結果、影響範圍」欄位）。
+- PR 請使用 `.github/pull_request_template.md`，至少說明「變更摘要、測試結果、相關 Issue、風險與回滾計畫」。若尚未建置模板，請在 PR 內手動提供上述資訊。
+
+## 程式碼風格與資訊安全擴充
+- **JavaScript / Apps Script**：維持 2 空格縮排與駝峰式命名；避免使用 GAS 不支援的語法。提交前可執行 `npm exec prettier --write` 與 `npm exec eslint --fix`（若在本地環境配置對應設定）。
+- **HTML**：屬性使用雙引號並依語意排序（ID、class、data-*、aria-*、其他屬性）；標籤閉合完整，巢狀層級以 2 空格縮排。
+- **CSS**：採用 `kebab-case` 類別命名，屬性順序建議依布局（display → position → box model → 排版 → 視覺）。可使用 Prettier 或 Stylelint 自動化格式化。
+- **Markdown / 文件**：標題階層從 `#` 開始遞增，不跳級；表格需留空白行區隔，列表維持一致縮排。
+- **敏感資訊保護**：禁止提交真實個案資料、身分證號、API 金鑰或未公開的雲端連結。若需示範資料，請以匿名化內容取代，並確認 Logs、測試檔案未遺留個資。
+- **審查重點**：Code Review 時需再次確認提交未包含個資、授權截圖等敏感資訊，並確保 README 的安全性提示與實作同步。
+
 ## 測試策略
 - **核心流程測試**：於 Apps Script IDE 手動執行 `applyAndSave(form)`，使用最小與完整的表單資料，確認文件複製、命名與內容寫入皆成功。
 - **資料來源驗證**：如果有對 `DataStore.gs` 的調整，需確認外部資源（Google Sheet、SpreadsheetApp 等）權限正確，並以測試資料跑過一次讀寫。
