@@ -1463,12 +1463,14 @@
       font-size:.9rem;
       font-weight:600;
     }
-    .checkcol label[data-checked="1"]{
+    .checkcol label[data-checked="1"],
+    .check-item[data-checked="1"]{
       border-color:var(--accent);
       background:rgba(11,87,208,.12);
       box-shadow:0 0 0 1.5px rgba(11,87,208,.25);
     }
-    .checkcol label[data-checked="1"]::before{
+    .checkcol label[data-checked="1"]::before,
+    .check-item[data-checked="1"]::before{
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -5269,73 +5271,126 @@
     function enforceSection1CardLayout(){
       const section = document.getElementById('section1_block');
       if(!section) return;
-      let basicCard = document.getElementById('caseProfileBasicCard');
-      if(basicCard && !section.contains(basicCard)){
-        basicCard = section.querySelector('#caseProfileBasicCard') || null;
-      }
-      const legacyContainer = document.getElementById('caseProfileBasicGroup');
-      let grid = section.querySelector(':scope > .section-card-grid[data-role="section1-basic"]');
-      if(!grid && legacyContainer && legacyContainer.classList && legacyContainer.classList.contains('section-card-grid')){
-        grid = legacyContainer;
-      }
-      if(!basicCard && legacyContainer){
-        if(legacyContainer.classList && legacyContainer.classList.contains('section-card')){
-          basicCard = legacyContainer;
-        }else if(legacyContainer.classList && legacyContainer.classList.contains('section-card-grid')){
-          const existingCard = legacyContainer.querySelector('.section-card');
-          if(existingCard){
-            basicCard = existingCard;
-          }else{
-            const createdCard = document.createElement('section');
-            createdCard.className = 'section-card';
-            createdCard.id = 'caseProfileBasicCard';
-            while(legacyContainer.firstChild){
-              createdCard.appendChild(legacyContainer.firstChild);
-            }
-            legacyContainer.appendChild(createdCard);
-            basicCard = createdCard;
+      const sectionKey = resolveSectionKey(section) || (section.dataset ? section.dataset.section : '');
+      const titlebar = section.querySelector(':scope > .titlebar');
+      const errorSummary = section.querySelector('#section1_error_summary');
+      const structuralNodes = new Set();
+      if(titlebar) structuralNodes.add(titlebar);
+      if(errorSummary) structuralNodes.add(errorSummary);
+
+      function ensureCardMeta(card){
+        if(!card || card.nodeType !== 1) return card;
+        if(card.classList && !card.classList.contains('section-card')){
+          card.classList.add('section-card');
+        }
+        if(card.dataset){
+          if(!card.dataset.card){
+            card.dataset.card = '1';
+          }
+          if(sectionKey && !card.dataset.section){
+            card.dataset.section = sectionKey;
+          }
+          if(!card.dataset.collapsible){
+            card.dataset.collapsible = '0';
           }
         }
+        return card;
       }
-      if(!basicCard && grid){
-        const existingInGrid = grid.querySelector('.section-card');
-        if(existingInGrid){
-          basicCard = existingInGrid;
+
+      function promoteContainerToCards(container){
+        const cards = [];
+        if(!container) return cards;
+        if(container.classList && container.classList.contains('section-card')){
+          cards.push(ensureCardMeta(container));
+          return cards;
         }
-      }
-      if(!basicCard){
-        const fallbackCard = section.querySelector(':scope > .section-card');
-        if(fallbackCard){
-          basicCard = fallbackCard;
+        if(container.classList && container.classList.contains('section-card-grid')){
+          const children = Array.from(container.children || []);
+          children.forEach(child=>{
+            promoteContainerToCards(child).forEach(card=>cards.push(card));
+          });
+          container.remove();
+          return cards;
         }
+        const titlebarNode = container.querySelector(':scope > .titlebar');
+        let card = null;
+        if(titlebarNode){
+          card = createCardFromTitlebar(titlebarNode, sectionKey);
+        }else{
+          card = document.createElement('section');
+          card.className = 'section-card';
+        }
+        while(container.firstChild){
+          card.appendChild(container.firstChild);
+        }
+        container.remove();
+        cards.push(ensureCardMeta(card));
+        return cards;
       }
-      if(!basicCard) return;
-      if(!basicCard.id){
-        basicCard.id = 'caseProfileBasicCard';
+
+      function ensureGrid(){
+        const directChildren = Array.from(section.children || []).filter(child=>child && child.nodeType === 1);
+        let grid = directChildren.find(child=>child.classList && child.classList.contains('section-card-grid')) || null;
+        if(!grid){
+          grid = document.createElement('div');
+          grid.className = 'section-card-grid';
+          grid.dataset.role = 'section1-card-grid';
+          const insertBefore = directChildren.find(child=>!structuralNodes.has(child));
+          section.insertBefore(grid, insertBefore || null);
+        }else{
+          grid.dataset.role = grid.dataset.role || 'section1-card-grid';
+        }
+        const nodesToMove = Array.from(section.children || []).filter(child=>{
+          if(!child || child.nodeType !== 1) return false;
+          if(structuralNodes.has(child)) return false;
+          if(child === grid) return false;
+          if(child.classList && child.classList.contains('group')) return false;
+          return child.parentElement === section;
+        });
+        nodesToMove.forEach(node=>grid.appendChild(node));
+        return grid;
       }
+
+      const grid = ensureGrid();
       if(!grid){
-        grid = document.createElement('div');
-        grid.className = 'section-card-grid';
+        const auditFallback = getUiAuditState();
+        if(auditFallback){
+          auditFallback.s1_cardized = false;
+        }
+        return;
       }
-      grid.dataset.role = 'section1-basic';
-      const titlebar = section.querySelector(':scope > .titlebar');
-      const firstGroup = Array.from(section.children || []).find(child=>child && child.classList && child.classList.contains('group'));
-      const insertionTarget = firstGroup || (titlebar ? titlebar.nextSibling : null);
-      if(grid.parentNode !== section || (insertionTarget && grid.nextSibling !== insertionTarget)){
-        section.insertBefore(grid, insertionTarget);
+      let firstCard = grid.querySelector(':scope > .section-card');
+      if(!firstCard){
+        const candidate = grid.firstElementChild;
+        if(candidate){
+          const produced = promoteContainerToCards(candidate);
+          if(produced.length){
+            const fragment = document.createDocumentFragment();
+            produced.forEach(card=>fragment.appendChild(card));
+            grid.insertBefore(fragment, grid.firstChild);
+            firstCard = produced[0] || null;
+          }
+        }
+      }else{
+        ensureCardMeta(firstCard);
       }
-      if(basicCard.parentNode !== grid){
-        const parent = basicCard.parentNode;
-        grid.appendChild(basicCard);
-        if(parent && parent !== grid && parent.id === 'caseProfileBasicGroup' && !parent.children.length){
-          parent.remove();
+      const hasCard = !!grid.querySelector(':scope > .section-card');
+      if(hasCard && errorSummary){
+        const targetCard = firstCard || grid.querySelector(':scope > .section-card');
+        if(targetCard && !targetCard.contains(errorSummary)){
+          targetCard.insertBefore(errorSummary, targetCard.firstChild);
         }
       }
-      const errorSummary = document.getElementById('section1_error_summary');
-      if(errorSummary && !basicCard.contains(errorSummary)){
-        basicCard.insertBefore(errorSummary, basicCard.firstChild);
+      if(section.dataset){
+        section.dataset.s1Cardized = hasCard ? '1' : '0';
       }
+      const audit = getUiAuditState();
+      if(audit){
+        audit.s1_cardized = hasCard;
+      }
+      cleanupEmptyContainers(section);
       normalizeLayout(section);
+      scheduleAllMeasurements();
     }
 
     function prepareCaseProfileLayout(){
@@ -5357,7 +5412,7 @@
       'h3-goals-call-date': { selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' },
       'h2-goals-homevisit': { selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
       'h3-goals-homevisit-date': { selector:'#contactVisitGroup label[for="visitDate"]', mode:'labelHeading', className:'h3' },
-      'h3-goals-prep-date': { selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3' },
+      'h3-goals-prep-date': { selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3', label:'出院日期' },
       'h2-goals-companions': { selector:'#visitPartnersGroup .titlebar .h2', mode:'replace', className:'h2' },
       'h3-goals-primary-rel': { selector:'#visitPartnersGroup label[for="primaryRel"]', mode:'labelHeading', className:'h3' },
       'h3-goals-primary-name': { selector:'#visitPartnersGroup label[for="primaryName"]', mode:'labelHeading', className:'h3' },
@@ -5455,6 +5510,14 @@
         }
       });
       ensureGoalsExtraHeadings();
+      const audit = getUiAuditState();
+      if(audit){
+        const entry = getHeadingEntry('h3-goals-prep-date');
+        const domNode = document.getElementById('h3-goals-prep-date');
+        const entryLabel = entry && entry.label ? entry.label.trim() : '';
+        const domLabel = domNode && domNode.textContent ? domNode.textContent.trim() : '';
+        audit.discharge_label_ok = entryLabel === '出院日期' && domLabel === '出院日期';
+      }
       if(missing.length){
         console.warn('缺少標題對應元素', missing);
       }
@@ -5579,14 +5642,35 @@
       const missing = report && Array.isArray(report.missing) ? report.missing : [];
       if(missing.length){
         showHeadingSpecToast(missing);
+        const audit = getUiAuditState();
+        if(audit){
+          audit.heading_show_toast_if_missing = 'shown';
+        }
       }else{
         hideHeadingSpecToast();
+        const audit = getUiAuditState();
+        if(audit){
+          if(audit.heading_show_toast_if_missing === 'shown'){
+            audit.heading_show_toast_if_missing = 'resolved';
+          }else if(audit.heading_show_toast_if_missing === 'pending'){
+            audit.heading_show_toast_if_missing = 'ready';
+          }else if(audit.heading_show_toast_if_missing !== 'resolved'){
+            audit.heading_show_toast_if_missing = 'ready';
+          }
+        }
       }
     }
 
     function initHeadingSpecToast(){
       const state = getHeadingSpecToastState();
       if(!state || !state.element) return;
+      const audit = getUiAuditState();
+      if(audit){
+        audit.heading_toast_present = true;
+        if(audit.heading_show_toast_if_missing === 'pending'){
+          audit.heading_show_toast_if_missing = 'ready';
+        }
+      }
       if(state.apply && !state.apply.dataset.boundToast){
         state.apply.dataset.boundToast = '1';
         state.apply.addEventListener('click', ()=>{
@@ -5681,6 +5765,37 @@
     };
     const SUMMARY_PROGRESS_STATE = { root:null, scheduled:false };
     const SUMMARY_JUMP_STATE = { select:null, scheduled:false };
+
+    const UI_AUDIT_STATE = {
+      discharge_label_ok:false,
+      s1_cardized:false,
+      goals_defaults_ok:false,
+      checkcol_highlight_exists:false,
+      contactVisit_init_open:false,
+      heading_toast_present:false,
+      heading_show_toast_if_missing:'pending'
+    };
+
+    function getUiAuditState(){
+      return UI_AUDIT_STATE;
+    }
+
+    function reportUiAudit(extra){
+      const state = getUiAuditState();
+      const report = Object.assign({}, state, extra || {});
+      if(console && console.groupCollapsed){
+        console.groupCollapsed('UI 稽核報告');
+        if(console.table){
+          console.table(report);
+        }else{
+          console.log(report);
+        }
+        console.groupEnd();
+      }else if(console){
+        console.log('UI 稽核報告', report);
+      }
+      return report;
+    }
 
     function getPageLabel(pageId){
       if(!pageId) return '其他';
@@ -6900,19 +7015,22 @@
 
     function updateCheckcolEnhancements(box){
       if(!box || !box.__checkcolState) return;
-      const state = box.__checkcolState;
-      const wrapper = state.wrapper;
       const labels = Array.from(box.querySelectorAll('label'));
-      let selectedCount = 0;
+      let hasChecked = false;
       labels.forEach(label=>{
         const input = label.querySelector('input[type=checkbox]');
         const checked = !!(input && input.checked);
-        label.dataset.checked = checked ? '1' : '0';
-        if(checked) selectedCount++;
+        if(checked){
+          label.setAttribute('data-checked', '1');
+          hasChecked = true;
+        }else{
+          label.removeAttribute('data-checked');
+        }
       });
-      wrapper.dataset.hasSelection = selectedCount ? '1' : '0';
-      wrapper.dataset.selectedCount = String(selectedCount);
-      updateSectionSelectionSummary(box);
+      const audit = getUiAuditState();
+      if(audit && labels.length){
+        audit.checkcol_highlight_exists = true;
+      }
     }
 
     function updateSectionSelectionSummary(box){
@@ -6942,8 +7060,6 @@
       if(!box || box.__checkcolState) return;
       const wrapper=document.createElement('div');
       wrapper.className='checkcol-wrapper';
-      wrapper.dataset.hasSelection='0';
-      wrapper.dataset.selectedCount='0';
       const parent = box.parentNode;
       if(parent){ parent.insertBefore(wrapper, box); }
       wrapper.appendChild(box);
@@ -16470,20 +16586,36 @@
         planGroup.dataset.collapsed = '0';
       }
       const host = activeSection || document.querySelector('.page-section[data-page="goals"]');
-      if(!host) return;
+      if(!host){
+        const audit = getUiAuditState();
+        if(audit){
+          audit.goals_defaults_ok = false;
+          audit.contactVisit_init_open = !!(planGroup && planGroup.dataset && planGroup.dataset.planLocked === '0' && planGroup.dataset.collapsed === '0');
+        }
+        return;
+      }
       const sections = host.querySelectorAll('[data-section]');
-      let changed = false;
       sections.forEach(section=>{
         if(applyGoalsSectionDefaults(section)){
-          changed = true;
           updateSideNavForSection(section);
         }
       });
-      if(changed){
-        scheduleSummaryProgressRender();
-        scheduleSummaryUpdate();
-        scheduleSideNavRender();
+      const audit = getUiAuditState();
+      if(audit){
+        const defaultsApplied = Array.from(sections).every(section=>{
+          if(!section || !section.dataset) return false;
+          const hideOk = section.dataset.hideFilled === '0';
+          const showOk = section.dataset.showAdvanced === '1';
+          const firstGroup = section.querySelector('.section-group');
+          const firstGroupOpen = !firstGroup || firstGroup.dataset.collapsed !== '1';
+          return hideOk && showOk && firstGroupOpen;
+        });
+        audit.goals_defaults_ok = defaultsApplied;
+        audit.contactVisit_init_open = !!(planGroup && planGroup.dataset && planGroup.dataset.planLocked === '0' && planGroup.dataset.collapsed === '0');
       }
+      scheduleSummaryProgressRender();
+      scheduleSummaryUpdate();
+      scheduleSideNavRender();
       scheduleAllMeasurements();
     }
 
@@ -17116,6 +17248,7 @@
       initSectionViews();
       refreshExecutionHeadingRegistry();
       applyHeadingSpecVersionUpgrade();
+      ensureGoalsPageDefaults();
       const headingSpecReport = logHeadingSpecReport();
       handleHeadingSpecValidation(headingSpecReport);
       scheduleSummaryUpdate();
@@ -17250,6 +17383,8 @@
       applyEllipsisTooltips();
 
       scheduleAllMeasurements();
+
+      reportUiAudit();
 
     }
 
