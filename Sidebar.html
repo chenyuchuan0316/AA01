@@ -404,12 +404,8 @@
       flex:1 1 100%;
       min-width:100%;
     }
-    .grid2, .grid3, .form-row-2col, .form-row-3col{ display:grid; gap:var(--gap); align-items:start; }
-    .grid2, .form-row-2col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-2), 1fr)); }
-    .grid3, .form-row-3col{ grid-template-columns:repeat(auto-fit, minmax(var(--grid-col-min-3), 1fr)); }
     @media (max-width:1024px){
       .row > div{ flex:1 1 100%; min-width:100%; }
-      .grid2, .grid3, .form-row-2col, .form-row-3col{ grid-template-columns:1fr; }
     }
 
     /* 標籤與 Placeholder（加大字、提升對比） */
@@ -628,6 +624,10 @@
       cursor:pointer;
       transition:background .2s ease, border-color .2s ease, color .2s ease;
     }
+    .summary-progress-chip[data-level="3"]{ padding-left:calc(var(--space-sm) + 12px); }
+    .summary-progress-chip[data-level="4"]{ padding-left:calc(var(--space-sm) + 20px); }
+    .summary-progress-chip[data-level="5"]{ padding-left:calc(var(--space-sm) + 28px); }
+    .summary-progress-chip[data-level="6"]{ padding-left:calc(var(--space-sm) + 36px); }
     .summary-progress-chip .chip-label{ white-space:nowrap; }
     .summary-progress-chip .chip-count{ font-variant-numeric:tabular-nums; color:#1f2937; }
     .summary-progress-chip[data-status="complete"]{ background:var(--status-complete-bg); border-color:var(--status-complete-border); color:var(--status-complete-text); }
@@ -1359,31 +1359,7 @@
     .section-group[data-level="advanced"] .section-group-toggle::before{
       color:#0b1d4d;
     }
-    .section-group-progress{
-      font-size:0.82rem;
-      font-weight:600;
-      padding:4px 10px;
-      border-radius:999px;
-      background:rgba(226,232,240,.7);
-      color:#475569;
-      white-space:nowrap;
-    }
-    .section-group[data-status="complete"] .section-group-progress{
-      background:rgba(34,197,94,.16);
-      color:#047857;
-    }
-    .section-group[data-status="partial"] .section-group-progress{
-      background:rgba(253,224,71,.2);
-      color:#b45309;
-    }
-    .section-group[data-status="pending"] .section-group-progress{
-      background:rgba(226,232,240,.9);
-      color:#1f2937;
-    }
-    .section-group[data-status="optional"] .section-group-progress{
-      background:rgba(203,213,225,.32);
-      color:#475569;
-    }
+    .section-group-progress{ display:none !important; }
     .section-group-body{
       margin-top:var(--space-xs);
       display:flex;
@@ -1435,8 +1411,9 @@
     .checkcol label{
       display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-xs) var(--space-sm);
       border:1px solid var(--border); border-radius:12px; background:#fff; color:#222; font-size:var(--fs-base);
-      margin:0;
+      margin:0; transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
     }
+    .checkcol label::before{ content:''; display:none; }
     .inline-checkbox{
       display:inline-flex; align-items:center; gap:var(--space-xxs); font-size:var(--fs-label); color:var(--label); flex-wrap:wrap;
     }
@@ -1486,24 +1463,35 @@
       font-size:.9rem;
       font-weight:600;
     }
+    .checkcol label[data-checked="1"],
+    .check-item[data-checked="1"]{
+      border-color:var(--accent);
+      background:rgba(11,87,208,.12);
+      box-shadow:0 0 0 1.5px rgba(11,87,208,.25);
+    }
+    .checkcol label[data-checked="1"]::before,
+    .check-item[data-checked="1"]::before{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      content:'✓';
+      font-size:.75rem;
+      font-weight:700;
+      color:#fff;
+      background:var(--accent);
+      border-radius:50%;
+      width:1.25em;
+      height:1.25em;
+    }
     @media (pointer:coarse){
       body[data-fontscale="sm"]{ --checkbox:32px; }
     } /* 觸控設備放大到 32px */
     body[data-vertical-density="compact"] .checkcol{ gap:var(--space-xs); }
     body[data-vertical-density="compact"] .checkcol label{ padding:var(--space-xs) var(--space-sm); }
 
-    .checkcol-wrapper{ display:flex; flex-direction:column; gap:8px; }
+    .checkcol-wrapper{ display:flex; flex-direction:column; gap:var(--space-xs); }
     .checkcol-wrapper > .checkcol{ width:100%; }
-    .checkcol-wrapper[data-collapsed="1"] > .checkcol{ display:none; }
-    .checkcol-footer{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:space-between; }
-    .checkcol-summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
-    .checkcol-selected-chips{ display:flex; flex-wrap:wrap; gap:var(--space-xs); }
-    .checkcol-chip{ display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; background:rgba(11,87,208,.12); color:#0b1d4d; font-size:0.9rem; font-weight:600; }
-    .checkcol-toggle{ height:auto; padding:4px 12px; border-radius:999px; border:1px solid var(--border); background:#fff; color:var(--label); font-size:0.85rem; cursor:pointer; }
-    .checkcol-toggle:hover{ background:#eef2ff; }
-    .checkcol-wrapper[data-has-selection="0"] .checkcol-summary-label,
-    .checkcol-wrapper[data-has-selection="0"] .checkcol-selected-chips,
-    .checkcol-wrapper[data-has-selection="0"] .checkcol-toggle{ display:none; }
+    .checkcol-wrapper[data-has-selection="1"] > .checkcol{ border-color:transparent; }
 
     .virtual-checklist{ position:relative; border:1px solid var(--border); border-radius:var(--radius); background:#fff; }
     .virtual-checklist-viewport{ position:relative; max-height:320px; overflow-y:auto; }
@@ -1556,6 +1544,20 @@
       font-weight:700;
       min-width:0;
     }
+    .section-selection-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:4px 12px;
+      border-radius:999px;
+      background:rgba(11,87,208,.12);
+      color:#0b1d4d;
+      font-size:0.9rem;
+      font-weight:600;
+      min-width:0;
+      justify-self:end;
+    }
+    .section-selection-badge[data-hidden="1"]{ display:none; }
     @media (min-width:1280px){
       #careGoals_block{
         display:grid;
@@ -1671,12 +1673,47 @@
       border-radius:var(--radius);
       background:#fff;
       padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
     }
-    .plan-category-title{
+    .extras-heading-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+      gap:var(--space-sm);
+      margin-bottom:var(--space-xs);
+      align-items:end;
+    }
+    @media (max-width:720px){
+      .extras-heading-grid{ grid-template-columns:1fr; }
+    }
+    .plan-category-heading{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--space-sm);
+    }
+    .plan-category-heading .h3{
       font-weight:700;
-      font-size:1.05rem;
       color:var(--title);
-      margin-bottom:var(--space-sm);
+      margin:0;
+    }
+    .plan-category-body{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
+    }
+    .plan-category-meta{
+      border-style:dashed;
+      background:var(--card-alt);
+    }
+    .plan-empty-hint{
+      font-size:0.95rem;
+      color:var(--label);
+      padding:var(--space-sm);
+      border:1px dashed var(--border);
+      border-radius:var(--radius);
+      background:#f8fafc;
     }
     .plan-entry{
       border:1px dashed var(--border);
@@ -2132,6 +2169,10 @@
       background:#fff;
       transition:background .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
+    .side-nav-item[data-level="3"]{ padding-left:calc(var(--space-sm) + 12px); }
+    .side-nav-item[data-level="4"]{ padding-left:calc(var(--space-sm) + 20px); }
+    .side-nav-item[data-level="5"]{ padding-left:calc(var(--space-sm) + 28px); }
+    .side-nav-item[data-level="6"]{ padding-left:calc(var(--space-sm) + 36px); }
     .side-nav-item:focus-within{ box-shadow:0 0 0 2px var(--accent-weak); }
     .side-nav-link{
       flex:1;
@@ -2468,6 +2509,34 @@
       color:#854d0e;
       border-color:#fff7ed;
     }
+    #headingSpecToast{
+      position:fixed;
+      right:24px;
+      bottom:calc(var(--fab-h, 0px) + var(--space-lg) + 96px);
+      max-width:320px;
+      width:calc(100% - 48px);
+      background:#1f2937;
+      color:#f8fafc;
+      padding:14px;
+      border-radius:14px;
+      box-shadow:0 12px 28px rgba(15,23,42,.2);
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-xs);
+      opacity:0;
+      transform:translateY(12px);
+      pointer-events:none;
+      transition:opacity .25s ease, transform .25s ease;
+      z-index:998;
+      box-sizing:border-box;
+    }
+    #headingSpecToast[data-show="1"]{
+      opacity:1;
+      transform:translateY(0);
+      pointer-events:auto;
+    }
+    #headingSpecToast .toast-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    #headingSpecToast button.small{ min-height:var(--h-button-sm); }
     @media (max-width:600px){
       .floating-actions{
         left:12px;
@@ -2576,10 +2645,10 @@
         --group-spacing-base:var(--space-xs);
         --checkcol-min:160px;
       }
-      .row, .grid2, .grid3{ gap:var(--gap); }
+      .row, .autogrid{ gap:var(--gap); }
       .datebox input[type="date"]{ font-size:var(--fs-ctrl); }
       .titlebar{ margin-bottom:var(--space-xs); }
-      .group{ padding:var(--group-padding); }
+      .group, .section-card{ padding:var(--group-padding); }
       #contactVisitGroup .contact-visit-card{ padding:var(--space-xs); gap:var(--space-xxs); }
       #contactVisitGroup .contact-visit-card-body{ gap:var(--space-xs); }
       .preview{ font-size:calc(var(--fs-base) * var(--font-scale) * 0.95); }
@@ -2655,13 +2724,10 @@
       background:#fff;
     }
 
-    /* 停用舊的 intro grid 三欄比例，避免右側留白 */
-    .section-intro-grid{ display:contents; }
+    /* 停用舊的 intro grid 三欄比例，保持區塊本體高度 */
+    .section-intro-grid{ width:100%; }
     .page-section[data-active="1"] > .section-intro-grid{
-      display:contents !important;
-      grid-template-columns:none !important;
-      row-gap:0 !important;
-      column-gap:0 !important;
+      width:100%;
     }
 
     @media print{
@@ -2671,7 +2737,7 @@
       .page-section{ display:block !important; margin:0 0 var(--space-sm) !important; }
       .page-section > .group{ margin-bottom:var(--space-sm) !important; }
       .page-section > .group:last-child{ margin-bottom:0 !important; }
-      .group{ box-shadow:none; border:1px solid #cbd5f5; background:#fff; page-break-inside:avoid; }
+      .group, .section-card{ box-shadow:none; border:1px solid #cbd5f5; background:#fff; page-break-inside:avoid; }
       .checkcol-wrapper{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--space-xs); }
       .checkcol-wrapper > .checkcol{ display:grid !important; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--space-xs); }
       .checkcol label{ border:none; padding:var(--space-xxs) var(--space-xs); }
@@ -2871,8 +2937,7 @@
   </div>
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
-    <section id="contactVisitGroup" class="group card-main"
-             data-plan-locked="0" data-collapsed="0">
+    <section class="group card-main" id="contactVisitGroup" data-collapsed="0" data-plan-locked="0">
       <div class="group-header">
         <div class="titlebar">
           <span class="h1">計畫目標</span>
@@ -3749,13 +3814,13 @@
                   <div class="titlebar">
                     <label class="h3 heading-tier heading-tier--primary">（二）經濟收入</label>
                   </div>
-                    <div class="grid2 form-row-2col">
+                    <div class="autogrid autogrid--wide">
                       <div>
                         <label class="h4">主要經濟來源</label>
                         <div class="checkcol" id="s2_sources"></div>
                       </div>
                       <div>
-                        <div class="grid2 form-row-2col">
+                        <div class="autogrid autogrid--wide">
                           <div>
                             <label class="h4">戶籍／福利身分</label>
                             <select id="s2_id">
@@ -3781,7 +3846,7 @@
                   <div class="titlebar">
                     <label class="h3 heading-tier heading-tier--primary">（三）居住環境</label>
                   </div>
-                    <div class="grid3 form-row-3col">
+                    <div class="autogrid autogrid--wide">
                       <div>
                         <label class="h4">居住型態</label>
                         <select id="s3_type" onchange="toggleOtherType()">
@@ -3798,7 +3863,7 @@
                         <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
                       </div>
                     </div>
-                    <div class="grid3 form-row-3col" style="margin-top:var(--space-xs);">
+                    <div class="autogrid autogrid--wide" style="margin-top:var(--space-xs);">
                       <div id="s3_rent_amount_wrap" style="display:none;">
                         <label class="h5">租金金額（元/月）</label>
                         <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
@@ -3816,7 +3881,7 @@
                         <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
                       </div>
                     </div>
-                    <div class="grid2 form-row-2col" style="margin-top:var(--space-xs);">
+                    <div class="autogrid autogrid--wide" style="margin-top:var(--space-xs);">
                       <div>
                         <label class="h4">無障礙設施</label>
                         <div class="checkcol" id="s3_fac"></div>
@@ -3833,7 +3898,7 @@
                     <label class="h3 heading-tier heading-tier--primary">（四）社會支持</label>
                   </div>
 
-                    <div class="grid3 form-row-3col">
+                    <div class="autogrid autogrid--wide">
                       <div>
                         <label class="h4">主照者關係</label>
                         <div id="sp_primaryRel_text" class="badge">—</div>
@@ -3855,7 +3920,7 @@
                       <label class="h4">主要聯繫人/決策者</label>
                       <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
                     </div>
-                    <div class="grid3 form-row-3col">
+                    <div class="autogrid autogrid--wide">
                       <div class="field-intro">
                         <label class="h4">關係</label>
                         <select id="sp_deciderRel">
@@ -4016,7 +4081,7 @@
                   <div class="titlebar">
                     <label class="h3 heading-tier heading-tier--primary">（六）複評評值</label>
                   </div>
-                  <div class="grid2 form-row-2col">
+                  <div class="autogrid autogrid--wide">
                     <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
                     <div><label class="h4">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
                   </div>
@@ -4051,7 +4116,7 @@
                     <label class="h3 heading-tier heading-tier--primary">（二）短期目標（0–3 個月）</label>
                   </div>
                   <div class="care-goal-block">
-                    <div class="grid2 form-row-2col">
+                    <div class="autogrid autogrid--wide">
                       <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
                       <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
                       <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
@@ -4065,7 +4130,7 @@
                     <label class="h3 heading-tier heading-tier--primary">（三）中期目標（3–4 個月）</label>
                   </div>
                   <div class="care-goal-block">
-                    <div class="grid2 form-row-2col">
+                    <div class="autogrid autogrid--wide">
                       <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
                       <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
                       <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
@@ -4150,6 +4215,15 @@
             <p>若同一服務由不同單位提供，或同時含自費段，請個別建立明細並清楚標註說明。</p>
           </div>
           <div id="planEditor" class="plan-editor"></div>
+          <div class="plan-category plan-category-meta" data-plan-category="EMERGENCY">
+            <div class="plan-category-heading">
+              <h3 class="h3" id="h3-exec-emergency" data-anchor="h3-exec-emergency">（八）緊急救援服務</h3>
+            </div>
+            <div class="plan-category-body">
+              <label class="h4" for="plan_emergency_note">救援需求說明</label>
+              <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
+            </div>
+          </div>
         </section>
 
         <section class="section-card" id="planReferralSection">
@@ -4157,12 +4231,6 @@
             <label class="h2">二、轉介其他服務資源</label>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
-        </section>
-
-        <section class="section-card" id="planStationSection">
-          <div class="titlebar">
-            <label class="h2">三、巷弄長照站資訊與意願</label>
-          </div>
           <div class="plan-meta-grid">
             <div>
               <label class="h3" for="plan_station_info">巷弄長照站資訊</label>
@@ -4177,14 +4245,6 @@
               </select>
             </div>
           </div>
-        </section>
-
-        <section class="section-card" id="planEmergencySection">
-          <div class="titlebar">
-            <label class="h2">四、緊急救援服務說明</label>
-          </div>
-          <label class="h3" for="plan_emergency_note">救援需求說明</label>
-          <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
         </section>
 
         <section class="section-card" id="planSummaryGroup">
@@ -4293,6 +4353,14 @@
     </div>
   </div>
 
+  <div id="headingSpecToast" data-show="0" role="status" aria-live="polite">
+    <div class="toast-message" id="headingSpecToastMessage"></div>
+    <div class="toast-actions">
+      <button type="button" class="small primary" id="headingSpecToastApply">重新套用標題</button>
+      <button type="button" class="small" id="headingSpecToastDismiss">稍後處理</button>
+    </div>
+  </div>
+
   <script>
     /* ===== 版面配置工具 ===== */
     const FONT_SCALE_STORAGE_KEY = 'AA01.fontScale';
@@ -4330,223 +4398,66 @@
       execution:'計畫執行規劃',
       notes:'其他備註'
     };
-    const PAGE_ORDER = Object.freeze(['basic','goals','execution','notes']);
 
-    /* ===== Heading spec ===== */
-    const HEADING_SPEC_VERSION = '2025-09-24';
+    const HEADING_SPEC_VERSION = '2024-04-01';
+    const HEADING_SPEC_VERSION_STORAGE_KEY = 'AA01.headingSpec.version';
 
     const HEADING_SPEC = Object.freeze([
-      /* =================== H1：基本資訊 =================== */
       {
         id:'h1-basic', tag:'h1', label:'基本資訊', page:'basic',
         children:[
-          { id:'h2-basic-unit-code',      tag:'h2', label:'單位代碼' },
-          { id:'h2-basic-case-manager',    tag:'h2', label:'個案管理師' },
-          { id:'h2-basic-case-name',       tag:'h2', label:'個案姓名' },
+          { id:'h2-basic-unit-code', tag:'h2', label:'單位代碼' },
+          { id:'h2-basic-case-manager', tag:'h2', label:'個案管理師' },
+          { id:'h2-basic-case-name', tag:'h2', label:'個案姓名' },
           { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' },
-          { id:'h2-basic-cms-level',       tag:'h2', label:'CMS 等級' }
+          { id:'h2-basic-cms-level', tag:'h2', label:'CMS 等級' }
         ]
       },
-
-      /* =================== H1：計畫目標 =================== */
       {
         id:'h1-goals', tag:'h1', label:'計畫目標', page:'goals',
         children:[
-
-          /* H2 一、電聯日期 */
           {
             id:'h2-goals-call', tag:'h2', label:'一、電聯日期',
             children:[
-              { id:'h3-goals-call-date',    tag:'h3', label:'電聯日期' },
-              { id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪' }
+              { id:'h3-goals-call-date', tag:'h3', label:'電聯日期' }
             ]
           },
-
-          /* H2 二、家訪日期 */
           {
             id:'h2-goals-homevisit', tag:'h2', label:'二、家訪日期',
             children:[
               { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' },
-              { id:'h3-goals-prep-date',      tag:'h3', label:'出院日期' }
+              { id:'h3-goals-prep-date', tag:'h3', label:'出院日期' }
             ]
           },
-
-          /* H2 三、偕同訪視者 */
           {
             id:'h2-goals-companions', tag:'h2', label:'三、偕同訪視者',
             children:[
-              { id:'h3-goals-primary-rel',  tag:'h3', label:'主要照顧者關係' },
+              { id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係' },
               { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' },
-              { id:'h3-goals-extra-rel',    tag:'h3', label:'其他參與者關係' },
-              { id:'h3-goals-extra-name',   tag:'h3', label:'其他參與者姓名' }
+              { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' },
+              { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' }
             ]
           },
-
-          /* H2 四、個案概況（六大分項） */
           {
             id:'h2-goals-overview', tag:'h2', label:'四、個案概況',
             children:[
-
-              /* H3 （一）身心概況 */
-              {
-                id:'h3-goals-s1', tag:'h3', label:'（一）身心概況',
-                children:[
-                  { id:'h4-goals-s1-basic', tag:'h4', label:'基本資料（年齡／性別／語言）' },
-                  {
-                    id:'h4-goals-s1-sensory', tag:'h4', label:'感官功能',
-                    children:[
-                      { id:'h5-goals-s1-vision',  tag:'h5', label:'視力' },
-                      { id:'h5-goals-s1-hearing', tag:'h5', label:'聽力' }
-                    ]
-                  },
-                  {
-                    id:'h4-goals-s1-oral', tag:'h4', label:'口腔與吞嚥功能',
-                    children:[
-                      { id:'h5-goals-s1-swallow',    tag:'h5', label:'吞嚥功能' },
-                      { id:'h5-goals-s1-oral-teeth', tag:'h5', label:'口腔與牙齒' }
-                    ]
-                  },
-                  {
-                    id:'h4-goals-s1-mobility', tag:'h4', label:'移動功能',
-                    children:[
-                      { id:'h5-goals-s1-transfer', tag:'h5', label:'起身／移位能力' },
-                      { id:'h5-goals-s1-walk',     tag:'h5', label:'行走與上下樓梯' },
-                      { id:'h5-goals-s1-balance',  tag:'h5', label:'平衡程度' },
-                      { id:'h5-goals-s1-sitting',  tag:'h5', label:'坐姿穩定性與輪椅安全' },
-                      { id:'h5-goals-s1-gait',     tag:'h5', label:'步態' }
-                    ]
-                  },
-                  {
-                    id:'h4-goals-s1-adl', tag:'h4', label:'ADL（日常生活活動）',
-                    children:[
-                      { id:'h5-goals-s1-adl-items', tag:'h5', label:'進食／盥洗／洗澡／穿脫衣／如廁清潔' }
-                    ]
-                  },
-                  {
-                    id:'h4-goals-s1-iadl', tag:'h4', label:'IADL（工具性日常活動）',
-                    children:[
-                      { id:'h5-goals-s1-iadl-items', tag:'h5', label:'電話／購物／備餐／餐具清／家務／財務' }
-                    ]
-                  },
-                  {
-                    id:'h4-goals-s1-excretion', tag:'h4', label:'排泄功能',
-                    children:[
-                      { id:'h5-goals-s1-urine-day',   tag:'h5', label:'日間排尿' },
-                      { id:'h5-goals-s1-urine-night', tag:'h5', label:'夜間排尿' },
-                      { id:'h5-goals-s1-nocturia',    tag:'h5', label:'夜尿次數' }
-                    ]
-                  },
-                  {
-                    id:'h4-goals-s1-health', tag:'h4', label:'健康狀況與病史',
-                    children:[
-                      { id:'h5-goals-s1-dhx',        tag:'h5', label:'慢性病史' },
-                      { id:'h5-goals-s1-surgery',    tag:'h5', label:'手術史' },
-                      { id:'h5-goals-s1-allergy',    tag:'h5', label:'藥物過敏' },
-                      { id:'h5-goals-s1-medication', tag:'h5', label:'現用藥物' },
-                      { id:'h5-goals-s1-clinic',     tag:'h5', label:'固定就醫單位' },
-                      { id:'h5-goals-s1-rx',         tag:'h5', label:'處方型態' },
-                      { id:'h5-goals-s1-med-manage', tag:'h5', label:'用藥管理方式' },
-                      { id:'h5-goals-s1-transport',  tag:'h5', label:'就醫交通方式' },
-                      { id:'h5-goals-s1-devices',    tag:'h5', label:'管路／裝置' },
-                      { id:'h5-goals-s1-disability', tag:'h5', label:'身心障礙資訊（唯讀同步）' }
-                    ]
-                  },
-                  {
-                    id:'h4-goals-s1-psych', tag:'h4', label:'心理與行為狀態',
-                    children:[
-                      { id:'h5-goals-s1-emotion',  tag:'h5', label:'情緒狀態' },
-                      { id:'h5-goals-s1-behavior', tag:'h5', label:'行為表現' },
-                      { id:'h5-goals-s1-cognition',tag:'h5', label:'認知功能' },
-                      { id:'h5-goals-s1-awareness',tag:'h5', label:'意識狀態' },
-                      { id:'h5-goals-s1-sleep',    tag:'h5', label:'睡眠品質與原因' },
-                      { id:'h5-goals-s1-daytime',  tag:'h5', label:'白天活動' },
-                      { id:'h5-goals-s1-pain',     tag:'h5', label:'疼痛與強度／部位' },
-                      { id:'h5-goals-s1-lesion',   tag:'h5', label:'皮膚病灶' }
-                    ]
-                  },
-                  {
-                    id:'h4-goals-s1-summary', tag:'h4', label:'總結建議',
-                    children:[
-                      { id:'h5-goals-s1-actions', tag:'h5', label:'建議措施' },
-                      { id:'h5-goals-s1-notes',   tag:'h5', label:'補充內容' }
-                    ]
-                  }
-                ]
-              },
-
-              /* H3 （二）經濟收入 */
-              {
-                id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入',
-                children:[
-                  { id:'h4-goals-s2-sources',    tag:'h4', label:'主要經濟來源（多選）' },
-                  { id:'h4-goals-s2-id',         tag:'h4', label:'戶籍／福利身分' },
-                  {
-                    id:'h4-goals-s2-dis-level', tag:'h4', label:'身心障礙等級',
-                    children:[
-                      { id:'h5-goals-s2-dis-cat',  tag:'h5', label:'身心障礙類別（條件顯示）' },
-                      { id:'h5-goals-s2-dis-sync', tag:'h5', label:'跨段同步顯示（至身心概況）' }
-                    ]
-                  }
-                ]
-              },
-
-              /* H3 （三）居住環境 */
-              {
-                id:'h3-goals-s3', tag:'h3', label:'（三）居住環境',
-                children:[
-                  { id:'h4-goals-s3-type',          tag:'h4', label:'居住型態' },
-                  { id:'h4-goals-s3-own',           tag:'h4', label:'居住權屬' },
-                  { id:'h4-goals-s3-clean',         tag:'h4', label:'整潔度／異味' },
-                  { id:'h4-goals-s3-rent',          tag:'h4', label:'租賃細項（租金／管理費）' },
-                  { id:'h4-goals-s3-accessibility', tag:'h4', label:'無障礙設施' },
-                  { id:'h4-goals-s3-aids',          tag:'h4', label:'輔具' }
-                ]
-              },
-
-              /* H3 （四）社會支持 */
-              {
-                id:'h3-goals-s4', tag:'h3', label:'（四）社會支持',
-                children:[
-                  { id:'h4-goals-s4-primary',  tag:'h4', label:'主照者關係／姓名／同住' },
-                  { id:'h4-goals-s4-decider',  tag:'h4', label:'主要聯繫人／決策者' },
-                  { id:'h4-goals-s4-cocare',   tag:'h4', label:'共同照顧者（多筆）' },
-                  { id:'h4-goals-s4-formal',   tag:'h4', label:'正式資源（居服／日照／專業／交通／喘息／送餐）' },
-                  { id:'h4-goals-s4-informal', tag:'h4', label:'非正式資源（據點／鄰里／宗教／財團）' },
-                  { id:'h4-goals-s4-risk',     tag:'h4', label:'高風險評估' }
-                ]
-              },
-
-              /* H3 （五）其他 */
-              {
-                id:'h3-goals-s5', tag:'h3', label:'（五）其他',
-                children:[
-                  { id:'h4-goals-s5-background', tag:'h4', label:'成長背景／職業／習慣' }
-                ]
-              },
-
-              /* H3 （六）複評評值 */
-              {
-                id:'h3-goals-s6', tag:'h3', label:'（六）複評評值',
-                children:[
-                  { id:'h4-goals-s6-before', tag:'h4', label:'介入前' },
-                  { id:'h4-goals-s6-after',  tag:'h4', label:'介入後' }
-                ]
-              }
+              { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況' },
+              { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入' },
+              { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境' },
+              { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持' },
+              { id:'h3-goals-s5', tag:'h3', label:'（五）其他' },
+              { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值' }
             ]
           },
-
-          /* H2 五、照顧目標 */
           {
             id:'h2-goals-targets', tag:'h2', label:'五、照顧目標',
             children:[
               { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' },
-              { id:'h3-goals-targets-short',    tag:'h3', label:'（二）短期目標（0–3 個月）' },
-              { id:'h3-goals-targets-mid',      tag:'h3', label:'（三）中期目標（3–4 個月）' },
-              { id:'h3-goals-targets-long',     tag:'h3', label:'（四）長期目標（4–6 個月）' }
+              { id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標(0-3個月)' },
+              { id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標(3-4個月)' },
+              { id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標(4-6個月)' }
             ]
           },
-
-          /* H2 六、不一致原因說明 */
           {
             id:'h2-goals-mismatch', tag:'h2', label:'六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
             children:[
@@ -4557,49 +4468,89 @@
           }
         ]
       },
-
-      /* =================== H1：計畫執行規劃 =================== */
       {
         id:'h1-exec', tag:'h1', label:'計畫執行規劃', page:'execution',
         children:[
           {
             id:'h2-exec-services', tag:'h2', label:'一、長照服務核定項目、頻率',
             children:[
-              { id:'h3-exec-b',          tag:'h3', label:'（一）B碼' },
-              { id:'h3-exec-c',          tag:'h3', label:'（二）C碼' },
-              { id:'h3-exec-d',          tag:'h3', label:'（三）D碼' },
-              { id:'h3-exec-ef',         tag:'h3', label:'（四）E.F碼' },
-              { id:'h3-exec-g',          tag:'h3', label:'（五）G碼' },
-              { id:'h3-exec-sc',         tag:'h3', label:'（六）SC碼' },
-              { id:'h3-exec-nutrition',  tag:'h3', label:'（七）營養餐飲服務' },
-              { id:'h3-exec-emergency',  tag:'h3', label:'（八）緊急救援服務' }
+              { id:'h3-exec-b', tag:'h3', label:'（一）B碼' },
+              { id:'h3-exec-c', tag:'h3', label:'（二）C碼' },
+              { id:'h3-exec-d', tag:'h3', label:'（三）D碼' },
+              { id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼' },
+              { id:'h3-exec-g', tag:'h3', label:'（五）G碼' },
+              { id:'h3-exec-sc', tag:'h3', label:'（六）SC碼' },
+              { id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務' },
+              { id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務' }
             ]
           },
-          { id:'h2-exec-referral',        tag:'h2', label:'二、轉介其他服務資源' },
-          { id:'h2-exec-station',         tag:'h2', label:'三、巷弄長照站資訊與意願' },
-          { id:'h2-exec-emergency-note',  tag:'h2', label:'四、緊急救援服務說明' },
-          { id:'h2-exec-attachment2',     tag:'h2', label:'附件二（服務計畫明細）預覽' },
-          { id:'h2-exec-attachment1',     tag:'h2', label:'附件一：計畫執行規劃預覽' }
+          { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源' }
         ]
       },
-
-      /* =================== H1：其他備註 =================== */
       {
         id:'h1-notes', tag:'h1', label:'其他備註', page:'notes',
         children:[
-          { id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜可備註於此）' }
+          { id:'h2-notes-other', tag:'h2', label:'其他(個案特殊狀況或其他未盡事宜可備註於此)' }
         ]
       }
     ]);
 
-    const headingSpecState = {
-      flat: [],
-      map: new Map(),
-      report: null,
-      navItems: []
-    };
+    const HEADING_INDEX = (function(){
+      const index = {};
+      let order = 0;
+      function assign(entries, parent){
+        if(!Array.isArray(entries)) return;
+        entries.forEach(entry=>{
+          if(!entry || !entry.id) return;
+          const node = {
+            id:entry.id,
+            label:entry.label || '',
+            tag:entry.tag || (parent ? parent.tag : 'h1'),
+            level:entry.tag ? Number(entry.tag.replace(/[^0-9]/g,'')) || (parent ? parent.level + 1 : 1) : (parent ? parent.level + 1 : 1),
+            page:entry.page || (parent ? parent.page : ''),
+            parentId:parent ? parent.id : null,
+            order:order++,
+            children:Array.isArray(entry.children) ? entry.children.map(child=>child.id) : []
+          };
+          index[node.id] = node;
+          if(Array.isArray(entry.children) && entry.children.length){
+            assign(entry.children, node);
+          }
+        });
+      }
+      assign(HEADING_SPEC, null);
+      return index;
+    })();
+
+    function getHeadingEntry(anchorId){
+      return anchorId ? HEADING_INDEX[anchorId] || null : null;
+    }
+
+    function forEachHeading(callback){
+      if(typeof callback !== 'function') return;
+      const ids = Object.keys(HEADING_INDEX).sort(function(a,b){
+        return HEADING_INDEX[a].order - HEADING_INDEX[b].order;
+      });
+      ids.forEach(id=>callback(HEADING_INDEX[id]));
+    }
 
     const simpleGroupControllers = {};
+    const headingGroupRegistry = {};
+
+    function registerHeadingGroup(anchorId, section, group){
+      if(!anchorId || !section || !group) return;
+      headingGroupRegistry[anchorId] = { section:section, group:group };
+      if(!section.__headingGroupMap){ section.__headingGroupMap = {}; }
+      section.__headingGroupMap[anchorId] = group;
+    }
+
+    function resetHeadingGroupRegistry(){
+      Object.keys(headingGroupRegistry).forEach(function(key){ delete headingGroupRegistry[key]; });
+    }
+
+    function getHeadingGroup(anchorId){
+      return anchorId ? headingGroupRegistry[anchorId] || null : null;
+    }
 
     const SIDE_NAV_MEDIA_QUERY = '(max-width: 1279px)';
     const SIDE_NAV_TOGGLE_STATE = { button:null, backdrop:null, media:null, expanded:false };
@@ -4811,71 +4762,230 @@
       groups.forEach(group=>ensureGroupContentWrapper(group));
     }
 
-    function normalizeCardContainer(node, sectionKey, options){
-      if(!node) return null;
-      const fromGrid=!!(options && options.fromGrid);
-      const isCard=fromGrid || (node.classList && node.classList.contains('section-card'));
-      if(isCard){
-        if(node.classList.contains('group')){
-          node.classList.remove('group');
+    function ensureUniqueIdsWithin(root){
+      if(!root || !root.querySelectorAll) return;
+      const preferred = Object.create(null);
+      const nodes = Array.from(document.querySelectorAll('[id]'));
+      nodes.forEach(node=>{
+        if(!node || !node.id) return;
+        const key=node.id;
+        const insideRoot = root.contains ? root.contains(node) : false;
+        const record = preferred[key];
+        if(!record || (insideRoot && !record.inside)){
+          preferred[key] = { node, inside: insideRoot };
         }
-        if(node.classList.contains('card')){
-          node.classList.remove('card');
+      });
+      const used = new Set();
+      const counters = Object.create(null);
+      nodes.forEach(node=>{
+        if(!node || !node.id) return;
+        const key=node.id;
+        const record = preferred[key];
+        if(record && record.node === node){
+          used.add(key);
+          return;
         }
-        if(node.classList && !node.classList.contains('section-card')){
-          node.classList.add('section-card');
+        let base = key;
+        let index = counters[base] || 1;
+        let candidate = `${base}__${index}`;
+        while(used.has(candidate) || (document.getElementById(candidate) && document.getElementById(candidate) !== node)){
+          index += 1;
+          candidate = `${base}__${index}`;
         }
-        if(node.dataset){
-          if(!node.dataset.card){
-            node.dataset.card='1';
+        counters[base] = index + 1;
+        const scope = node.closest ? (node.closest('[data-section]') || node.closest('.group') || node.parentElement || root || document) : document;
+        updateIdReferences(key, candidate, scope);
+        node.id = candidate;
+        used.add(candidate);
+      });
+    }
+
+    function updateIdReferences(oldId, newId, scope){
+      if(!oldId || !newId || oldId === newId) return;
+      const root = scope && scope.querySelectorAll ? scope : document;
+      const attrList=['for','aria-controls','aria-describedby','aria-labelledby','aria-owns','aria-activedescendant'];
+      attrList.forEach(attr=>{
+        root.querySelectorAll(`[${attr}]`).forEach(el=>{
+          const value=el.getAttribute(attr);
+          if(!value) return;
+          if(attr === 'for' || attr === 'aria-controls'){
+            if(value === oldId){
+              el.setAttribute(attr, newId);
+            }
+            return;
           }
-          if(!node.dataset.collapsible){
-            const hasCollapsedAttr=node.hasAttribute && node.hasAttribute('data-collapsed');
-            node.dataset.collapsible = hasCollapsedAttr ? '1' : '0';
+          const parts=value.split(/\s+/).filter(Boolean);
+          let changed=false;
+          for(let i=0;i<parts.length;i++){
+            if(parts[i] === oldId){
+              parts[i] = newId;
+              changed=true;
+            }
           }
-          if(!node.dataset.collapsed){
-            node.dataset.collapsed='0';
+          if(changed){
+            el.setAttribute(attr, parts.join(' '));
           }
-          if(sectionKey && !node.dataset.section){
-            node.dataset.section = sectionKey;
+        });
+      });
+      root.querySelectorAll(`[href="#${oldId}"]`).forEach(el=>{
+        el.setAttribute('href', `#${newId}`);
+      });
+    }
+
+    function escapeCssId(id){
+      if(typeof id !== 'string') return '';
+      if(window.CSS && typeof window.CSS.escape === 'function'){
+        return window.CSS.escape(id);
+      }
+      return id.replace(/([\\.#:\[\]\(\),>+~*^$|='"{}\s])/g, '\\$1');
+    }
+
+    function dedupeElementsById(id, preferredRoot, options){
+      if(!id) return null;
+      let selector = '#' + escapeCssId(id);
+      let nodes = [];
+      try{
+        nodes = Array.from(document.querySelectorAll(selector));
+      }catch(err){
+        try{
+          nodes = Array.from(document.querySelectorAll('#' + id));
+        }catch(err2){
+          nodes = [];
+        }
+      }
+      if(nodes.length <= 1){
+        return nodes[0] || null;
+      }
+      const preferFn = options && typeof options.prefer === 'function' ? options.prefer : null;
+      let primary = null;
+      if(preferFn){
+        primary = nodes.find(node=>preferFn(node)) || null;
+      }
+      if(!primary && preferredRoot && typeof preferredRoot.contains === 'function'){
+        primary = nodes.find(node=>preferredRoot.contains(node)) || null;
+      }
+      if(!primary){
+        primary = nodes[0];
+      }
+      nodes.forEach(node=>{
+        if(node && node !== primary && node.parentNode){
+          node.parentNode.removeChild(node);
+        }
+      });
+      return primary;
+    }
+
+    function sectionHasAnchors(section, anchors){
+      if(!section || !section.querySelector || !Array.isArray(anchors) || !anchors.length){
+        return true;
+      }
+      for(let i=0;i<anchors.length;i++){
+        const id=anchors[i];
+        if(!id) continue;
+        let selector = '#' + escapeCssId(id);
+        let found = false;
+        try{
+          found = !!section.querySelector(selector);
+        }catch(err){
+          try{
+            found = !!section.querySelector('#' + id);
+          }catch(err2){
+            found = false;
           }
         }
-        const titlebar=ensureGroupTitlebar(node);
-        if(titlebar && titlebar !== node.firstElementChild){
-          node.insertBefore(titlebar, node.firstChild);
+        if(!found){
+          return false;
         }
-        if(node.dataset && !node.dataset.cardTitle){
-          const label=(titlebar || node).querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
-          const text=label && label.textContent ? label.textContent.trim() : (titlebar ? titlebar.textContent || '' : '').trim();
-          if(text) node.dataset.cardTitle = text;
+      }
+      return true;
+    }
+
+    function dedupePageSection(pageId, options){
+      if(!pageId) return null;
+      const sections = Array.from(document.querySelectorAll(`.page-section[data-page="${pageId}"]`));
+      if(!sections.length) return null;
+      const anchors = (options && Array.isArray(options.anchorIds)) ? options.anchorIds : [];
+      const preferredRoot = options && options.preferredRoot ? options.preferredRoot : null;
+      let primary = null;
+      if(preferredRoot && typeof preferredRoot.contains === 'function'){
+        primary = sections.find(section=>preferredRoot.contains(section) && sectionHasAnchors(section, anchors))
+          || sections.find(section=>preferredRoot.contains(section))
+          || null;
+      }
+      if(!primary && anchors.length){
+        primary = sections.find(section=>sectionHasAnchors(section, anchors)) || null;
+      }
+      if(!primary){
+        primary = sections[0];
+      }
+      sections.forEach(section=>{
+        if(section && section !== primary && section.parentNode){
+          section.parentNode.removeChild(section);
         }
-        return node;
+      });
+      const dedupeIds = (options && Array.isArray(options.dedupeIds) && options.dedupeIds.length) ? options.dedupeIds : anchors;
+      if(primary && dedupeIds && dedupeIds.length){
+        dedupeIds.forEach(id=>dedupeElementsById(id, primary));
       }
-      if(!node.classList.contains('group')){
-        node.classList.add('group');
+      return primary;
+    }
+
+    function hoistNestedPageSections(){
+      const container=document.getElementById('appContainer');
+      if(!container) return;
+      let guard=0;
+      let nested=container.querySelector('.page-section .page-section');
+      while(nested && guard<500){
+        guard++;
+        const parentSection = nested.parentElement ? nested.parentElement.closest('.page-section') : null;
+        if(!parentSection || parentSection === nested || !container.contains(parentSection)){
+          nested = container.querySelector('.page-section .page-section');
+          continue;
+        }
+        const reference = parentSection.nextSibling;
+        container.insertBefore(nested, reference);
+        nested = container.querySelector('.page-section .page-section');
       }
-      if(node.classList.contains('section-card')){
-        node.classList.remove('section-card');
+      queuePostStructureRefresh();
+    }
+
+    function dedupeGoalsSection(){
+      const documentRoot = document.body || document.documentElement || document;
+      const appContainer = dedupeElementsById('appContainer', documentRoot, {
+        prefer: node=>node && node.querySelector && node.querySelector('.page-section[data-page]')
+      }) || document.getElementById('appContainer');
+      const configs = [
+        { pageId:'basic', anchorIds:['basicInfoGroup'], preferredRoot:appContainer },
+        { pageId:'goals', anchorIds:['contactVisitGroup'], preferredRoot:appContainer, dedupeIds:['contactVisitGroup'] },
+        { pageId:'execution', anchorIds:['planExecutionGroup','planSummaryGroup','planTextGroup'], preferredRoot:appContainer },
+        { pageId:'notes', anchorIds:['planOtherGroup'], preferredRoot:appContainer }
+      ];
+      configs.forEach(cfg=>dedupePageSection(cfg.pageId, cfg));
+      const globalConfigs = [
+        { id:'appSticky', prefer: node=>node && node.querySelector && node.querySelector('.wizard') },
+        { id:'sideNav', prefer: node=>node && node.querySelector && node.querySelector('.side-nav-list') },
+        { id:'sideNavToggleButton' },
+        { id:'sideNavBackdrop' },
+        { id:'summaryProgressList', prefer: node=>node && node.classList && node.classList.contains('summary-progress-list') },
+        { id:'wizardSteps', prefer: node=>node && node.querySelector && node.querySelector('.wizard-step') },
+        { id:'pageTabs', prefer: node=>node && node.querySelector && node.querySelector('[data-page]') },
+        { id:'floatingActions' },
+        { id:'validationToast' },
+        { id:'headingSpecToast' }
+      ];
+      const rootForGlobals = appContainer || documentRoot;
+      globalConfigs.forEach(cfg=>dedupeElementsById(cfg.id, rootForGlobals, cfg));
+      if(appContainer){
+        ensureUniqueIdsWithin(appContainer);
       }
-      if(node.classList.contains('card')){
-        node.classList.remove('card');
-      }
-      if(node.dataset && !node.dataset.collapsed){
-        node.dataset.collapsed='0';
-      }
-      if(sectionKey && node.dataset && !node.dataset.section){
-        node.dataset.section = sectionKey;
-      }
-      const titlebar=ensureGroupTitlebar(node);
-      if(titlebar && titlebar !== node.firstElementChild){
-        node.insertBefore(titlebar, node.firstChild);
-      }
-      if(node.dataset && !node.dataset.cardTitle && titlebar){
-        const label=titlebar.querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
-        const text=label && label.textContent ? label.textContent.trim() : (titlebar.textContent || '').trim();
-        if(text) node.dataset.cardTitle = text;
-      }
-      return node;
+      queuePostStructureRefresh();
+    }
+
+    function queuePostStructureRefresh(){
+      scheduleAllMeasurements();
+      scheduleSummaryUpdate();
+      scheduleSideNavRender();
+      scheduleSummaryProgressRender();
     }
 
     function createCardFromTitlebar(titlebar, sectionKey){
@@ -4894,95 +5004,203 @@
       return card;
     }
 
-    function normalizeCardGrid(grid, sectionKey){
-      if(!grid) return;
-      const key=resolveSectionKey(sectionKey || grid.closest('[data-section]'));
-      const nodes=Array.from(grid.children);
-      let current=null;
-      nodes.forEach(node=>{
-        if(!node) return;
-        if(node.nodeType !== 1){
-          if(current){ current.appendChild(node); }
-          return;
-        }
-        if(node.classList && node.classList.contains('section-card-grid')){
-          normalizeCardGrid(node, key);
-          current=null;
-          return;
-        }
-        if(node.classList && (node.classList.contains('group') || node.classList.contains('section-card'))){
-          current = normalizeCardContainer(node, key, { fromGrid:true });
-          return;
-        }
-        if(isSectionCardTitlebar(node)){
-          const card=createCardFromTitlebar(node, key);
-          normalizeCardContainer(card, key, { fromGrid:true });
-          grid.insertBefore(card, node);
-          node.remove();
-          current = card;
-          return;
-        }
-        if(node.classList && node.classList.contains('hr')){
-          node.remove();
-          return;
-        }
-        if(current){
-          current.appendChild(node);
-        }
-      });
-    }
+    function normalizeLayout(node, options){
+      if(!node) return null;
 
-    function normalizeSectionCardLayout(section){
-      if(!section) return;
-      const sectionKey=resolveSectionKey(section);
-      const children=Array.from(section.children || []);
-      const firstCardNode=findFirstCardNode(section);
-      const hasGrid=children.some(child=>child && child.classList && child.classList.contains('section-card-grid'));
-      if(firstCardNode && !hasGrid){
-        const grid=document.createElement('div');
-        grid.className='section-card-grid';
-        section.insertBefore(grid, firstCardNode);
-        let current=null;
-        let node=firstCardNode;
-        while(node){
-          const next=node.nextSibling;
-          if(node.nodeType !== 1){
-            if(current){ current.appendChild(node); }
-            node=next;
-            continue;
-          }
-          if(node.classList && node.classList.contains('hr')){
-            node.remove();
-            node=next;
-            continue;
-          }
-          if(isSectionCardTitlebar(node)){
-            const card=createCardFromTitlebar(node, sectionKey);
-            normalizeCardContainer(card, sectionKey, { fromGrid:true });
-            grid.appendChild(card);
-            node.remove();
-            current=card;
-          }else if(node.classList && (node.classList.contains('group') || node.classList.contains('section-card'))){
-            current=normalizeCardContainer(node, sectionKey, { fromGrid:true });
-            grid.appendChild(current);
-          }else if(current){
-            current.appendChild(node);
-          }else{
-            grid.appendChild(node);
-          }
-          node=next;
-        }
-        normalizeCardGrid(grid, sectionKey);
+      function isCardLike(target){
+        if(!target || target.nodeType !== 1 || !target.classList) return false;
+        if(target.classList.contains('section-card')) return true;
+        if(target.classList.contains('group')) return true;
+        if(target.dataset && target.dataset.card === '1') return true;
+        return false;
       }
-      section.querySelectorAll('.section-card-grid').forEach(grid=>normalizeCardGrid(grid, resolveSectionKey(grid.closest('[data-section]') || section)));
-      promoteFieldHeadings(section);
-      section.querySelectorAll('.section-card-grid').forEach(grid=>{
-        normalizeCardGrid(grid, resolveSectionKey(grid.closest('[data-section]') || section));
-      });
-      cleanupEmptyContainers(section);
+
+      function ensureCard(target, sectionKey, sectionElement, forceCard){
+        if(!target || target.nodeType !== 1) return target;
+        const forced = !!forceCard;
+        const asCard = forced || (target.classList && target.classList.contains('section-card'));
+        if(asCard){
+          if(target.classList.contains('group')){
+            target.classList.remove('group');
+          }
+          if(target.classList.contains('card')){
+            target.classList.remove('card');
+          }
+          if(target.classList && !target.classList.contains('section-card')){
+            target.classList.add('section-card');
+          }
+          if(target.dataset){
+            if(!target.dataset.card){
+              target.dataset.card='1';
+            }
+            if(!target.dataset.collapsible){
+              const hasCollapsedAttr=target.hasAttribute && target.hasAttribute('data-collapsed');
+              target.dataset.collapsible = hasCollapsedAttr ? '1' : '0';
+            }
+            if(!target.dataset.collapsed){
+              target.dataset.collapsed='0';
+            }
+            if(sectionKey && !target.dataset.section){
+              target.dataset.section = sectionKey;
+            }
+          }
+        }else{
+          if(!target.classList.contains('group')){
+            target.classList.add('group');
+          }
+          if(target.classList.contains('section-card')){
+            target.classList.remove('section-card');
+          }
+          if(target.classList.contains('card')){
+            target.classList.remove('card');
+          }
+          if(target.dataset && !target.dataset.collapsed){
+            target.dataset.collapsed='0';
+          }
+          if(sectionKey && target.dataset && !target.dataset.section){
+            target.dataset.section = sectionKey;
+          }
+        }
+        const titlebar=ensureGroupTitlebar(target);
+        if(titlebar && titlebar !== target.firstElementChild){
+          target.insertBefore(titlebar, target.firstChild);
+        }
+        if(target.dataset && !target.dataset.cardTitle){
+          const label=(titlebar || target).querySelector('.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6, label, span');
+          const text=label && label.textContent ? label.textContent.trim() : (titlebar ? titlebar.textContent || '' : '').trim();
+          if(text) target.dataset.cardTitle = text;
+        }
+        Array.from(target.children || []).forEach(child=>{
+          process(child, {
+            sectionElement: sectionElement || (target.closest ? target.closest('[data-section]') : null),
+            sectionKey
+          });
+        });
+        return target;
+      }
+
+      function normalizeGrid(grid, sectionKey, sectionElement){
+        if(!grid) return grid;
+        const hostSection = sectionElement || (grid.closest ? grid.closest('[data-section]') : null);
+        const key = sectionKey || resolveSectionKey(hostSection);
+        let current=null;
+        let nodeChild=grid.firstChild;
+        while(nodeChild){
+          const next=nodeChild.nextSibling;
+          if(nodeChild.nodeType !== 1){
+            if(current){ current.appendChild(nodeChild); }
+            nodeChild=next;
+            continue;
+          }
+          if(nodeChild.classList && nodeChild.classList.contains('section-card-grid')){
+            process(nodeChild, { sectionElement: hostSection, sectionKey: key });
+            current=null;
+            nodeChild=next;
+            continue;
+          }
+          if(nodeChild.classList && (nodeChild.classList.contains('group') || nodeChild.classList.contains('section-card'))){
+            current = process(nodeChild, { sectionElement: hostSection, sectionKey: key, forceCard:true });
+            nodeChild=next;
+            continue;
+          }
+          if(isSectionCardTitlebar(nodeChild)){
+            const card=createCardFromTitlebar(nodeChild, key);
+            process(card, { sectionElement: hostSection, sectionKey: key, forceCard:true });
+            grid.insertBefore(card, nodeChild);
+            nodeChild.remove();
+            current = card;
+            nodeChild=next;
+            continue;
+          }
+          if(nodeChild.classList && nodeChild.classList.contains('hr')){
+            nodeChild.remove();
+            nodeChild=next;
+            continue;
+          }
+          if(current){
+            current.appendChild(nodeChild);
+          }
+          nodeChild=next;
+        }
+        return grid;
+      }
+
+      function normalizeSection(sectionNode, sectionKey){
+        if(!sectionNode) return sectionNode;
+        const hostSection = sectionNode;
+        const key = sectionKey || resolveSectionKey(sectionNode);
+        const children=Array.from(sectionNode.children || []);
+        const firstCardNode=findFirstCardNode(sectionNode);
+        const hasGrid=children.some(child=>child && child.classList && child.classList.contains('section-card-grid'));
+        if(firstCardNode && !hasGrid){
+          const grid=document.createElement('div');
+          grid.className='section-card-grid';
+          sectionNode.insertBefore(grid, firstCardNode);
+          let current=null;
+          let nodeChild=firstCardNode;
+          while(nodeChild){
+            const next=nodeChild.nextSibling;
+            if(nodeChild.nodeType !== 1){
+              if(current){ current.appendChild(nodeChild); }
+              nodeChild=next;
+              continue;
+            }
+            if(nodeChild.classList && nodeChild.classList.contains('hr')){
+              nodeChild.remove();
+              nodeChild=next;
+              continue;
+            }
+            if(isSectionCardTitlebar(nodeChild)){
+              const card=createCardFromTitlebar(nodeChild, key);
+              process(card, { sectionElement: hostSection, sectionKey:key, forceCard:true });
+              grid.appendChild(card);
+              nodeChild.remove();
+              current=card;
+            }else if(nodeChild.classList && (nodeChild.classList.contains('group') || nodeChild.classList.contains('section-card'))){
+              current=process(nodeChild, { sectionElement: hostSection, sectionKey:key, forceCard:true });
+              grid.appendChild(current);
+            }else if(current){
+              current.appendChild(nodeChild);
+            }else{
+              grid.appendChild(nodeChild);
+            }
+            nodeChild=next;
+          }
+        }
+        sectionNode.querySelectorAll('.section-card-grid').forEach(grid=>process(grid, { sectionElement: hostSection, sectionKey:key }));
+        promoteFieldHeadings(sectionNode, key, card=>{
+          process(card, { sectionElement: hostSection, sectionKey:key, forceCard:true });
+        });
+        cleanupEmptyContainers(sectionNode);
+        return sectionNode;
+      }
+
+      function process(target, opts){
+        if(!target || target.nodeType !== 1) return target;
+        const optSection = opts && opts.sectionElement ? opts.sectionElement : (target.matches && target.matches('[data-section]') ? target : (target.closest ? target.closest('[data-section]') : null));
+        const key = opts && opts.sectionKey ? opts.sectionKey : resolveSectionKey(optSection);
+        if(opts && opts.forceCard){
+          return ensureCard(target, key, optSection, true);
+        }
+        if(target.matches && target.matches('[data-section]')){
+          return normalizeSection(target, key);
+        }
+        if(target.classList && target.classList.contains('section-card-grid')){
+          return normalizeGrid(target, key, optSection);
+        }
+        if(isCardLike(target)){
+          return ensureCard(target, key, optSection, false);
+        }
+        Array.from(target.children || []).forEach(child=>process(child, { sectionElement: optSection, sectionKey: key }));
+        return target;
+      }
+
+      const initialSection = options && options.sectionElement ? options.sectionElement : (node.matches && node.matches('[data-section]') ? node : (node.closest ? node.closest('[data-section]') : null));
+      const initialKey = options && options.sectionKey ? options.sectionKey : resolveSectionKey(initialSection);
+      return process(node, { sectionElement: initialSection, sectionKey: initialKey });
     }
 
-    function promoteFieldHeadings(section){
+    function promoteFieldHeadings(section, sectionKeyOverride, onPromote){
       if(!section) return;
       const headings=Array.from(section.querySelectorAll('.h3, .h4')).filter(heading=>{
         if(heading.closest('.group')) return false;
@@ -4996,7 +5214,7 @@
         const grid=container.closest('.section-card-grid');
         if(!grid) return;
         const hostSection=grid.closest('[data-section]') || section;
-        const sectionKey=resolveSectionKey(hostSection);
+        const sectionKey=sectionKeyOverride || resolveSectionKey(hostSection);
         const card=document.createElement('section');
         card.className='section-card';
         const titlebar=document.createElement('div');
@@ -5005,7 +5223,9 @@
         card.appendChild(titlebar);
         container.parentNode.insertBefore(card, container);
         card.appendChild(container);
-        normalizeCardContainer(card, sectionKey, { fromGrid:true });
+        if(typeof onPromote === 'function'){
+          onPromote(card, sectionKey, hostSection);
+        }
         grid.appendChild(card);
       });
     }
@@ -5029,15 +5249,12 @@
         el.classList.remove('row');
         el.classList.add('autogrid','autogrid--wide');
       });
-      root.querySelectorAll('.grid2').forEach(el=>{
-        el.classList.remove('grid2');
-        el.classList.remove('form-row-2col');
-        el.classList.add('autogrid','autogrid--wide');
-      });
-      root.querySelectorAll('.grid3').forEach(el=>{
-        el.classList.remove('grid3');
-        el.classList.remove('form-row-3col');
-        el.classList.add('autogrid','autogrid--wide');
+      const legacyGridClasses=['grid2','grid3','form-row-2col','form-row-3col'];
+      legacyGridClasses.forEach(cls=>{
+        root.querySelectorAll(`.${cls}`).forEach(el=>{
+          el.classList.remove(...legacyGridClasses);
+          el.classList.add('autogrid','autogrid--wide');
+        });
       });
       root.querySelectorAll('.checkcol').forEach(el=>{
         el.classList.add('checkgrid');
@@ -5047,13 +5264,491 @@
 
     function upgradeLegacyContainers(section){
       if(!section) return;
-      normalizeSectionCardLayout(section);
+      normalizeLayout(section);
       applyGridUtilities(section);
+    }
+
+    function enforceSection1CardLayout(){
+      const section = document.getElementById('section1_block');
+      if(!section) return;
+      const sectionKey = resolveSectionKey(section) || (section.dataset ? section.dataset.section : '');
+      const titlebar = section.querySelector(':scope > .titlebar');
+      const errorSummary = section.querySelector('#section1_error_summary');
+      const structuralNodes = new Set();
+      if(titlebar) structuralNodes.add(titlebar);
+      if(errorSummary) structuralNodes.add(errorSummary);
+
+      function ensureCardMeta(card){
+        if(!card || card.nodeType !== 1) return card;
+        if(card.classList && !card.classList.contains('section-card')){
+          card.classList.add('section-card');
+        }
+        if(card.dataset){
+          if(!card.dataset.card){
+            card.dataset.card = '1';
+          }
+          if(sectionKey && !card.dataset.section){
+            card.dataset.section = sectionKey;
+          }
+          if(!card.dataset.collapsible){
+            card.dataset.collapsible = '0';
+          }
+        }
+        return card;
+      }
+
+      function promoteContainerToCards(container){
+        const cards = [];
+        if(!container) return cards;
+        if(container.classList && container.classList.contains('section-card')){
+          cards.push(ensureCardMeta(container));
+          return cards;
+        }
+        if(container.classList && container.classList.contains('section-card-grid')){
+          const children = Array.from(container.children || []);
+          children.forEach(child=>{
+            promoteContainerToCards(child).forEach(card=>cards.push(card));
+          });
+          container.remove();
+          return cards;
+        }
+        const titlebarNode = container.querySelector(':scope > .titlebar');
+        let card = null;
+        if(titlebarNode){
+          card = createCardFromTitlebar(titlebarNode, sectionKey);
+        }else{
+          card = document.createElement('section');
+          card.className = 'section-card';
+        }
+        while(container.firstChild){
+          card.appendChild(container.firstChild);
+        }
+        container.remove();
+        cards.push(ensureCardMeta(card));
+        return cards;
+      }
+
+      function ensureGrid(){
+        const directChildren = Array.from(section.children || []).filter(child=>child && child.nodeType === 1);
+        let grid = directChildren.find(child=>child.classList && child.classList.contains('section-card-grid')) || null;
+        if(!grid){
+          grid = document.createElement('div');
+          grid.className = 'section-card-grid';
+          grid.dataset.role = 'section1-card-grid';
+          const insertBefore = directChildren.find(child=>!structuralNodes.has(child));
+          section.insertBefore(grid, insertBefore || null);
+        }else{
+          grid.dataset.role = grid.dataset.role || 'section1-card-grid';
+        }
+        const nodesToMove = Array.from(section.children || []).filter(child=>{
+          if(!child || child.nodeType !== 1) return false;
+          if(structuralNodes.has(child)) return false;
+          if(child === grid) return false;
+          if(child.classList && child.classList.contains('group')) return false;
+          return child.parentElement === section;
+        });
+        nodesToMove.forEach(node=>grid.appendChild(node));
+        return grid;
+      }
+
+      const grid = ensureGrid();
+      if(!grid){
+        const auditFallback = getUiAuditState();
+        if(auditFallback){
+          auditFallback.s1_cardized = false;
+        }
+        return;
+      }
+      let firstCard = grid.querySelector(':scope > .section-card');
+      if(!firstCard){
+        const candidate = grid.firstElementChild;
+        if(candidate){
+          const produced = promoteContainerToCards(candidate);
+          if(produced.length){
+            const fragment = document.createDocumentFragment();
+            produced.forEach(card=>fragment.appendChild(card));
+            grid.insertBefore(fragment, grid.firstChild);
+            firstCard = produced[0] || null;
+          }
+        }
+      }else{
+        ensureCardMeta(firstCard);
+      }
+      const hasCard = !!grid.querySelector(':scope > .section-card');
+      if(hasCard && errorSummary){
+        const targetCard = firstCard || grid.querySelector(':scope > .section-card');
+        if(targetCard && !targetCard.contains(errorSummary)){
+          targetCard.insertBefore(errorSummary, targetCard.firstChild);
+        }
+      }
+      if(section.dataset){
+        section.dataset.s1Cardized = hasCard ? '1' : '0';
+      }
+      const audit = getUiAuditState();
+      if(audit){
+        audit.s1_cardized = hasCard;
+      }
+      cleanupEmptyContainers(section);
+      normalizeLayout(section);
+      scheduleAllMeasurements();
     }
 
     function prepareCaseProfileLayout(){
       document.querySelectorAll('[data-section]').forEach(section=>upgradeLegacyContainers(section));
+      enforceSection1CardLayout();
       applyGridUtilities(document);
+      queuePostStructureRefresh();
+    }
+
+    const HEADING_DOM_TARGETS = Object.freeze({
+      'h1-basic': { selector:'#basicInfoGroup .titlebar .h1', mode:'replace', className:'h1' },
+      'h2-basic-unit-code': { selector:'#basicInfoGroup label[for="unitCode"]', mode:'labelHeading', className:'h2' },
+      'h2-basic-case-manager': { selector:'#basicInfoGroup label[for="caseManagerName"]', mode:'labelHeading', className:'h2' },
+      'h2-basic-case-name': { selector:'#basicInfoGroup label[for="caseName"]', mode:'labelHeading', className:'h2' },
+      'h2-basic-consultant-name': { selector:'#basicInfoGroup label[for="consultName"]', mode:'labelHeading', className:'h2' },
+      'h2-basic-cms-level': { selector:'.cms-level-row > label[for="cmsLevelValue"]', mode:'labelHeading', className:'h2' },
+      'h1-goals': { selector:'#contactVisitGroup .titlebar .h1', mode:'replace', className:'h1' },
+      'h2-goals-call': { selector:'#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-call-date': { selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' },
+      'h2-goals-homevisit': { selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-homevisit-date': { selector:'#contactVisitGroup label[for="visitDate"]', mode:'labelHeading', className:'h3' },
+      'h3-goals-prep-date': { selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3', label:'出院日期' },
+      'h2-goals-companions': { selector:'#visitPartnersGroup .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-primary-rel': { selector:'#visitPartnersGroup label[for="primaryRel"]', mode:'labelHeading', className:'h3' },
+      'h3-goals-primary-name': { selector:'#visitPartnersGroup label[for="primaryName"]', mode:'labelHeading', className:'h3' },
+      'h2-goals-overview': { selector:'#caseOverviewGroup .titlebar .h2', mode:'replace', className:'h2 heading-tier heading-tier--primary' },
+      'h3-goals-s1': { selector:'#section1_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s2': { selector:'#section2_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s3': { selector:'#section3_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s4': { selector:'#section4_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s5': { selector:'#section5_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s6': { selector:'#section6_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h2-goals-targets': { selector:'#careGoalsGroup .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-targets-problems': { selector:'#careGoals_block > .titlebar:nth-of-type(1) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-targets-short': { selector:'#careGoals_block > .titlebar:nth-of-type(2) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-targets-mid': { selector:'#careGoals_block > .titlebar:nth-of-type(3) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-targets-long': { selector:'#careGoals_block > .titlebar:nth-of-type(4) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h2-goals-mismatch': { selector:'#mismatchPlanGroup .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-mismatch-1': { selector:'#mismatchPlanGroup textarea#reason1', mode:'previousLabelHeading', className:'h3' },
+      'h3-goals-mismatch-2': { selector:'#mismatchPlanGroup textarea#reason2', mode:'previousLabelHeading', className:'h3' },
+      'h3-goals-mismatch-3': { selector:'#mismatchPlanGroup textarea#reason3', mode:'previousLabelHeading', className:'h3' },
+      'h1-exec': { selector:'.page-section[data-page="execution"] .group > .group-header .titlebar .h1', mode:'replace', className:'h1' },
+      'h2-exec-services': { selector:'#planExecutionGroup .titlebar label', mode:'replace', className:'h2' },
+      'h3-exec-b': { selector:'#planEditor .plan-category[data-plan-category="B"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-c': { selector:'#planEditor .plan-category[data-plan-category="C"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-d': { selector:'#planEditor .plan-category[data-plan-category="D"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-ef': { selector:'#planEditor .plan-category[data-plan-category="EF"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-g': { selector:'#planEditor .plan-category[data-plan-category="G"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-sc': { selector:'#planEditor .plan-category[data-plan-category="SC"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-nutrition': { selector:'#planEditor .plan-category[data-plan-category="MEAL"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-emergency': { selector:'#planExecutionGroup .plan-category[data-plan-category="EMERGENCY"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h2-exec-referral': { selector:'#planReferralSection .titlebar label', mode:'replace', className:'h2' },
+      'h1-notes': { selector:'#planOtherGroup .titlebar .h1', mode:'replace', className:'h1' },
+      'h2-notes-other': { selector:'#planOtherGroup .section-card .titlebar .h2, #planOtherGroup .section-card .titlebar span.h2', mode:'replace', className:'h2' }
+    });
+
+    function applyHeadingSpecToDom(){
+      const missing = [];
+      Object.keys(HEADING_DOM_TARGETS).forEach(function(anchorId){
+        const entry = getHeadingEntry(anchorId);
+        const config = HEADING_DOM_TARGETS[anchorId];
+        if(!entry || !config) return;
+        const tagName = (entry.tag || 'h3').toLowerCase();
+        const className = config.className || (entry.tag ? entry.tag.toLowerCase() : '');
+        if(config.mode === 'replace'){
+          let target = null;
+          try{ target = document.querySelector(config.selector); }catch(err){ target = null; }
+          if(!target){ missing.push(anchorId); return; }
+          if(target.id === anchorId && target.tagName && target.tagName.toLowerCase() === tagName){
+            target.dataset.anchor = anchorId;
+            target.textContent = entry.label || '';
+            if(className){ target.className = className; }
+            return;
+          }
+          const heading = document.createElement(entry.tag || 'h3');
+          if(className){ heading.className = className; }
+          heading.id = anchorId;
+          heading.dataset.anchor = anchorId;
+          heading.textContent = entry.label || '';
+          target.parentNode.replaceChild(heading, target);
+          return;
+        }
+        if(config.mode === 'labelHeading'){
+          let label = null;
+          try{ label = document.querySelector(config.selector); }catch(err){ label = null; }
+          if(!label){ missing.push(anchorId); return; }
+          let heading = label.querySelector('#' + anchorId);
+          const desiredTag = entry.tag || 'h3';
+          if(!heading || heading.tagName.toLowerCase() !== desiredTag.toLowerCase()){
+            heading = document.createElement(desiredTag);
+            label.innerHTML = '';
+            label.appendChild(heading);
+          }
+          heading.id = anchorId;
+          heading.dataset.anchor = anchorId;
+          heading.textContent = entry.label || '';
+          heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
+          return;
+        }
+        if(config.mode === 'previousLabelHeading'){
+          let field = null;
+          try{ field = document.querySelector(config.selector); }catch(err){ field = null; }
+          if(!field){ missing.push(anchorId); return; }
+          const label = field ? field.closest('div')?.querySelector('label') || field.parentElement?.querySelector('label') : null;
+          if(!label){ missing.push(anchorId); return; }
+          let heading = label.querySelector('#' + anchorId);
+          const desiredTag = entry.tag || 'h3';
+          if(!heading || heading.tagName.toLowerCase() !== desiredTag.toLowerCase()){
+            heading = document.createElement(desiredTag);
+            label.innerHTML = '';
+            label.appendChild(heading);
+          }
+          heading.id = anchorId;
+          heading.dataset.anchor = anchorId;
+          heading.textContent = entry.label || '';
+          heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
+        }
+      });
+      ensureGoalsExtraHeadings();
+      const audit = getUiAuditState();
+      if(audit){
+        const entry = getHeadingEntry('h3-goals-prep-date');
+        const domNode = document.getElementById('h3-goals-prep-date');
+        const entryLabel = entry && entry.label ? entry.label.trim() : '';
+        const domLabel = domNode && domNode.textContent ? domNode.textContent.trim() : '';
+        audit.discharge_label_ok = entryLabel === '出院日期' && domLabel === '出院日期';
+      }
+      if(missing.length){
+        console.warn('缺少標題對應元素', missing);
+      }
+      return missing;
+    }
+
+    function ensureGoalsExtraHeadings(){
+      const entryRel = getHeadingEntry('h3-goals-extra-rel');
+      const entryName = getHeadingEntry('h3-goals-extra-name');
+      const host = document.getElementById('extras');
+      if(!host || !entryRel || !entryName) return;
+      let wrap = document.getElementById('extrasHeading');
+      if(!wrap){
+        wrap = document.createElement('div');
+        wrap.id = 'extrasHeading';
+        wrap.className = 'extras-heading-grid';
+        host.parentNode.insertBefore(wrap, host);
+      }
+      if(!document.getElementById('h3-goals-extra-rel')){
+        const relHeading = document.createElement(entryRel.tag || 'h3');
+        relHeading.id = entryRel.id;
+        relHeading.dataset.anchor = entryRel.id;
+        relHeading.className = 'h3';
+        relHeading.textContent = entryRel.label || '';
+        wrap.appendChild(relHeading);
+      }
+      if(!document.getElementById('h3-goals-extra-name')){
+        const nameHeading = document.createElement(entryName.tag || 'h3');
+        nameHeading.id = entryName.id;
+        nameHeading.dataset.anchor = entryName.id;
+        nameHeading.className = 'h3';
+        nameHeading.textContent = entryName.label || '';
+        wrap.appendChild(nameHeading);
+      }
+    }
+
+    function refreshExecutionHeadingRegistry(){
+      if(!sectionViewsReady) return;
+      const meta = getHeadingGroup('h2-exec-services');
+      if(!meta || !meta.section || !meta.group) return;
+      const anchors = [];
+      if(typeof PLAN_CATEGORY_GROUPS !== 'undefined' && Array.isArray(PLAN_CATEGORY_GROUPS)){
+        PLAN_CATEGORY_GROUPS.forEach(function(group){
+          if(group && group.anchor){ anchors.push(group.anchor); }
+        });
+      }
+      anchors.push('h3-exec-emergency');
+      anchors.forEach(function(anchorId){
+        if(!anchorId) return;
+        const heading = document.getElementById(anchorId);
+        if(!heading) return;
+        registerHeadingGroup(anchorId, meta.section, meta.group);
+      });
+      scheduleSideNavRender();
+      scheduleSummaryJumpRefresh();
+    }
+
+    function collectHeadingSpecStatus(){
+      const missing = [];
+      forEachHeading(function(entry){
+        if(!entry || !entry.id) return;
+        if(!document.getElementById(entry.id)){
+          missing.push(entry.id);
+        }
+      });
+      return { missing };
+    }
+
+    function logHeadingSpecReport(){
+      const report = collectHeadingSpecStatus();
+      if(!window || !window.console) return report;
+      if(console.groupCollapsed){ console.groupCollapsed('HEADING_SPEC 驗證報告'); }
+      else if(console.group){ console.group('HEADING_SPEC 驗證報告'); }
+      if(report.missing.length){
+        console.warn('缺少定義的標題錨點', report.missing);
+      }else{
+        console.info('所有 HEADING_SPEC 定義的錨點皆已就緒。');
+      }
+      if(console.groupEnd){ console.groupEnd(); }
+      return report;
+    }
+
+    const HEADING_SPEC_TOAST_STATE = { element:null, message:null, apply:null, dismiss:null };
+
+    function getHeadingSpecToastState(){
+      if(!HEADING_SPEC_TOAST_STATE.element){
+        HEADING_SPEC_TOAST_STATE.element = document.getElementById('headingSpecToast');
+        HEADING_SPEC_TOAST_STATE.message = document.getElementById('headingSpecToastMessage');
+        HEADING_SPEC_TOAST_STATE.apply = document.getElementById('headingSpecToastApply');
+        HEADING_SPEC_TOAST_STATE.dismiss = document.getElementById('headingSpecToastDismiss');
+      }
+      if(!HEADING_SPEC_TOAST_STATE.element){
+        return null;
+      }
+      return HEADING_SPEC_TOAST_STATE;
+    }
+
+    function formatHeadingNames(anchorIds){
+      if(!Array.isArray(anchorIds)) return [];
+      return anchorIds.map(id=>{
+        const entry = getHeadingEntry(id);
+        return entry && entry.label ? entry.label : id;
+      });
+    }
+
+    function showHeadingSpecToast(missing){
+      const state = getHeadingSpecToastState();
+      if(!state || !state.element || !state.message) return;
+      const names = formatHeadingNames(Array.isArray(missing) ? missing : []);
+      const text = names.length ? `缺少標題錨點：${names.join('、')}` : '缺少標題錨點';
+      state.message.textContent = text;
+      state.element.dataset.show = '1';
+    }
+
+    function hideHeadingSpecToast(){
+      const state = getHeadingSpecToastState();
+      if(!state || !state.element) return;
+      state.element.dataset.show = '0';
+    }
+
+    function handleHeadingSpecValidation(report){
+      const missing = report && Array.isArray(report.missing) ? report.missing : [];
+      if(missing.length){
+        showHeadingSpecToast(missing);
+        const audit = getUiAuditState();
+        if(audit){
+          audit.heading_show_toast_if_missing = 'shown';
+        }
+      }else{
+        hideHeadingSpecToast();
+        const audit = getUiAuditState();
+        if(audit){
+          if(audit.heading_show_toast_if_missing === 'shown'){
+            audit.heading_show_toast_if_missing = 'resolved';
+          }else if(audit.heading_show_toast_if_missing === 'pending'){
+            audit.heading_show_toast_if_missing = 'ready';
+          }else if(audit.heading_show_toast_if_missing !== 'resolved'){
+            audit.heading_show_toast_if_missing = 'ready';
+          }
+        }
+      }
+    }
+
+    function initHeadingSpecToast(){
+      const state = getHeadingSpecToastState();
+      if(!state || !state.element) return;
+      const audit = getUiAuditState();
+      if(audit){
+        audit.heading_toast_present = true;
+        if(audit.heading_show_toast_if_missing === 'pending'){
+          audit.heading_show_toast_if_missing = 'ready';
+        }
+      }
+      if(state.apply && !state.apply.dataset.boundToast){
+        state.apply.dataset.boundToast = '1';
+        state.apply.addEventListener('click', ()=>{
+          hideHeadingSpecToast();
+          applyHeadingSpecToDom();
+          const report = logHeadingSpecReport();
+          handleHeadingSpecValidation(report);
+        });
+      }
+      if(state.dismiss && !state.dismiss.dataset.boundToast){
+        state.dismiss.dataset.boundToast = '1';
+        state.dismiss.addEventListener('click', ()=>hideHeadingSpecToast());
+      }
+    }
+
+    function readHeadingSpecVersion(){
+      const store = getSafeLocalStorage();
+      if(!store) return null;
+      try{
+        const value = store.getItem(HEADING_SPEC_VERSION_STORAGE_KEY);
+        return value || null;
+      }catch(err){
+        return null;
+      }
+    }
+
+    function persistHeadingSpecVersion(version){
+      const store = getSafeLocalStorage();
+      if(!store) return;
+      try{ store.setItem(HEADING_SPEC_VERSION_STORAGE_KEY, version); }catch(err){}
+    }
+
+    function applyHeadingSpecVersionUpgrade(){
+      const stored = readHeadingSpecVersion();
+      if(stored === HEADING_SPEC_VERSION) return false;
+      let changed = false;
+      const sections = document.querySelectorAll('[data-section]');
+      sections.forEach(section=>{
+        if(!section) return;
+        const state = section.__state || (section.__state = readSectionState(section.dataset.section));
+        let updated = false;
+        if(state.hideFilled){
+          state.hideFilled = false;
+          updated = true;
+        }
+        if(!state.showAdvanced){
+          state.showAdvanced = true;
+          updated = true;
+        }
+        section.dataset.hideFilled = '0';
+        section.dataset.showAdvanced = '1';
+        const groups = Array.isArray(section.__groups) ? section.__groups : [];
+        if(groups.length){
+          const firstGroup = groups.find(group=>group && group.element) || groups[0];
+          if(firstGroup){
+            if(state.collapsedGroups && state.collapsedGroups[firstGroup.id]){
+              delete state.collapsedGroups[firstGroup.id];
+              updated = true;
+            }
+            setGroupCollapsed(section, firstGroup, false, { save:false });
+          }
+        }
+        applySectionState(section, state);
+        updateAllGroupEmptyStates(section);
+        if(updated){
+          writeSectionState(section.dataset.section, state);
+          updateSideNavForSection(section);
+          changed = true;
+        }
+      });
+      persistHeadingSpecVersion(HEADING_SPEC_VERSION);
+      if(changed){
+        scheduleSummaryProgressRender();
+        scheduleSummaryUpdate();
+        scheduleSideNavRender();
+        scheduleAllMeasurements();
+      }
+      return changed;
     }
 
     const PAGE_ORDER = ['basic','goals','execution','notes'];
@@ -5068,263 +5763,39 @@
       items:[],
       renderScheduled:false
     };
-
-    function flattenHeadingSpec(nodes, parentId, out, inheritedPage){
-      if(!Array.isArray(nodes)) return;
-      const list = out || [];
-      const parent = parentId || null;
-      const fallbackPage = inheritedPage || '';
-      nodes.forEach(node=>{
-        if(!node || !node.id) return;
-        const entry = {
-          id: node.id,
-          node,
-          parentId: parent,
-          page: node.page || fallbackPage
-        };
-        list.push(entry);
-        if(Array.isArray(node.children) && node.children.length){
-          flattenHeadingSpec(node.children, node.id, list, node.page || entry.page);
-        }
-      });
-      return list;
-    }
-
-    function ensureHeadingSpecFlat(){
-      if(Array.isArray(headingSpecState.flat) && headingSpecState.flat.length){
-        return headingSpecState.flat;
-      }
-      headingSpecState.flat = flattenHeadingSpec(HEADING_SPEC, null, [], '');
-      return headingSpecState.flat;
-    }
-
-    function normalizeHeadingText(text){
-      return (text || '')
-        .replace(/[\s\u3000]+/g, '')
-        .replace(/[：:；;]/g, match=>match === ':' ? '：' : match)
-        .trim();
-    }
-
-    function findHeadingContext(entry, parentRecord){
-      if(parentRecord && parentRecord.element){
-        const parentEl = parentRecord.element;
-        const group = parentEl.closest('.section-group');
-        if(group){
-          const body = group.querySelector(':scope > .section-group-body');
-          if(body) return body;
-          return group;
-        }
-        const card = parentEl.closest('.section-card');
-        if(card){
-          const cardBody = card.querySelector(':scope > .section-card-body, :scope > .contact-visit-card-body');
-          if(cardBody) return cardBody;
-          return card;
-        }
-        const container = parentEl.closest('.group');
-        if(container){
-          const content = container.querySelector(':scope > .group-content');
-          if(content) return content;
-          return container;
-        }
-      }
-      if(entry && entry.page){
-        const pageSection=document.querySelector(`.page-section[data-page="${entry.page}"]`);
-        if(pageSection) return pageSection;
-      }
-      return document;
-    }
-
-    function queryHeadingElements(context, node){
-      const selectorsByTag = {
-        h1: '.h1, h1, label.h1, span.h1, .heading-tier',
-        h2: '.h2, h2, label.h2, span.h2, .heading-tier',
-        h3: '.h3, h3, label.h3, span.h3, .heading-tier',
-        h4: '.h4, h4, label.h4, span.h4, .heading-tier',
-        h5: '.h5, h5, label.h5, span.h5, .heading-tier'
-      };
-      const selector = selectorsByTag[(node && node.tag || '').toLowerCase()] || '.h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5, .heading-tier';
-      const root = context && context.querySelectorAll ? context : document;
-      return Array.from(root.querySelectorAll(selector));
-    }
-
-    function findHeadingCandidate(context, node){
-      if(!node) return null;
-      const root = context && context.querySelector ? context : document;
-      let candidate = root.querySelector(`[data-heading-id="${node.id}"]`);
-      if(candidate) return candidate;
-      const existing=document.getElementById(node.id);
-      if(existing) return existing;
-      const normalizedLabel = normalizeHeadingText(node.label);
-      if(!normalizedLabel) return null;
-      const elements=queryHeadingElements(root, node);
-      for(let i=0;i<elements.length;i++){
-        const el=elements[i];
-        if(!el || !el.textContent) continue;
-        const text=normalizeHeadingText(el.textContent);
-        if(text && text === normalizedLabel){
-          if(!candidate) candidate = el;
-          if(el.closest('.titlebar') || el.closest('.group-header')){
-            return el;
-          }
-        }
-      }
-      return candidate;
-    }
-
-    function ensureHeadingElement(node, context){
-      const element = findHeadingCandidate(context, node);
-      if(element) return element;
-      const target = context && context.appendChild ? context : document.body || document;
-      if(!target || !target.insertBefore) return null;
-      const created = document.createElement('span');
-      created.className = `${node.tag || 'h3'} heading-generated`;
-      created.textContent = node.label || node.id || '';
-      if(target.firstChild){
-        target.insertBefore(created, target.firstChild);
-      }else{
-        target.appendChild(created);
-      }
-      return created;
-    }
-
-    function assignHeadingMetadata(element, node, entry){
-      if(!element || !node) return;
-      if(element.id !== node.id){
-        element.id = node.id;
-      }
-      element.dataset.headingId = node.id;
-      if(node.label) element.dataset.headingLabel = node.label;
-      if(entry && entry.page){
-        element.dataset.headingPage = entry.page;
-      }
-    }
-
-    function cleanupHeadingDuplicates(root){
-      const containers = (root || document).querySelectorAll('.titlebar, .group-header');
-      containers.forEach(container=>{
-        const headings = Array.from(container.querySelectorAll('.h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5, .heading-tier'));
-        const seen = new Map();
-        headings.forEach(el=>{
-          const text = normalizeHeadingText(el.textContent);
-          if(!text) return;
-          const hasSpec = !!(el.dataset && el.dataset.headingId);
-          if(!seen.has(text)){
-            seen.set(text, { element: el, hasSpec });
-            return;
-          }
-          const info = seen.get(text);
-          if(info.hasSpec && !hasSpec){
-            el.remove();
-          }else if(!info.hasSpec && hasSpec){
-            if(info.element && info.element.parentNode){
-              info.element.parentNode.removeChild(info.element);
-            }
-            seen.set(text, { element: el, hasSpec:true });
-          }else{
-            el.remove();
-          }
-        });
-      });
-    }
-
-    function buildHeadingNavigationCache(){
-      const items = [];
-      headingSpecState.map.forEach(record=>{
-        if(!record || !record.node || !record.element) return;
-        const tag = (record.node.tag || '').toLowerCase();
-        if(tag !== 'h2' && tag !== 'h3') return;
-        const anchorElement = record.element;
-        const groupElement = anchorElement.closest('.section-group');
-        if(!groupElement) return;
-        const section = groupElement.closest('[data-section]');
-        const pageSection = section ? section.closest('.page-section') : anchorElement.closest('.page-section');
-        const pageId = record.entry && record.entry.page ? record.entry.page : (pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '');
-        if(!anchorElement.id) anchorElement.id = record.node.id;
-        items.push({
-          node: record.node,
-          entry: record.entry,
-          element: anchorElement,
-          groupElement,
-          section,
-          pageId,
-          anchorId: anchorElement.id
-        });
-      });
-      headingSpecState.navItems = items;
-    }
-
-    function getHeadingNavigationItems(){
-      const items = Array.isArray(headingSpecState.navItems) ? headingSpecState.navItems : [];
-      return items.map(item=>{
-        const section = item.section;
-        const groupElement = item.groupElement;
-        let stats = { filled:0, required:0 };
-        let status = 'pending';
-        if(section && section.__groupStats && groupElement && groupElement.dataset){
-          const key = groupElement.dataset.groupId || '';
-          if(key && section.__groupStats[key]){
-            const raw = section.__groupStats[key];
-            stats = { filled: raw.filled || 0, required: raw.required || 0 };
-            status = determineProgressStatus(stats.filled, stats.required);
-          }
-        }
-        return {
-          sectionId: section && section.dataset ? section.dataset.section || '' : '',
-          pageId: item.pageId || '',
-          groupId: groupElement && groupElement.dataset ? groupElement.dataset.groupId || '' : '',
-          anchorId: item.anchorId,
-          label: item.node.label || item.node.id,
-          stats,
-          status,
-          element:null,
-          button:null,
-          countEl:null
-        };
-      });
-    }
-
-    function applyHeadingSpecToDom(){
-      const flat = ensureHeadingSpecFlat();
-      const map = new Map();
-      const report = { applied: [], missing: [] };
-      flat.forEach(entry=>{
-        const parentRecord = entry.parentId ? map.get(entry.parentId) : null;
-        const context = findHeadingContext(entry, parentRecord);
-        const element = ensureHeadingElement(entry.node, context);
-        if(element){
-          assignHeadingMetadata(element, entry.node, entry);
-          map.set(entry.node.id, { node: entry.node, element, entry });
-          report.applied.push(entry.node.id);
-        }else{
-          report.missing.push(entry.node);
-        }
-      });
-      headingSpecState.map = map;
-      headingSpecState.report = report;
-      cleanupHeadingDuplicates(document);
-      buildHeadingNavigationCache();
-      return report;
-    }
-
-    function logHeadingSpecReport(report){
-      const result = report || headingSpecState.report;
-      if(!result) return;
-      if(typeof console !== 'undefined' && console.info){
-        console.info('[HeadingSpec]', {
-          version: HEADING_SPEC_VERSION,
-          applied: Array.isArray(result.applied) ? result.applied.length : 0,
-          missing: Array.isArray(result.missing) ? result.missing.length : 0
-        });
-      }
-      if(Array.isArray(result.missing) && result.missing.length){
-        const labels = result.missing.map(node=>node && node.label ? node.label : (node ? node.id : '')).filter(Boolean);
-        const preview = labels.slice(0, 5).join('、');
-        const message = labels.length > 5 ? `缺少標題錨點：${preview}…` : `缺少標題錨點：${preview}`;
-        showValidationToast({ type:'warn', message, action:'heading-spec', actionLabel:'重新套用' });
-      }
-    }
     const SUMMARY_PROGRESS_STATE = { root:null, scheduled:false };
     const SUMMARY_JUMP_STATE = { select:null, scheduled:false };
+
+    const UI_AUDIT_STATE = {
+      discharge_label_ok:false,
+      s1_cardized:false,
+      goals_defaults_ok:false,
+      checkcol_highlight_exists:false,
+      contactVisit_init_open:false,
+      heading_toast_present:false,
+      heading_show_toast_if_missing:'pending'
+    };
+
+    function getUiAuditState(){
+      return UI_AUDIT_STATE;
+    }
+
+    function reportUiAudit(extra){
+      const state = getUiAuditState();
+      const report = Object.assign({}, state, extra || {});
+      if(console && console.groupCollapsed){
+        console.groupCollapsed('UI 稽核報告');
+        if(console.table){
+          console.table(report);
+        }else{
+          console.log(report);
+        }
+        console.groupEnd();
+      }else if(console){
+        console.log('UI 稽核報告', report);
+      }
+      return report;
+    }
 
     function getPageLabel(pageId){
       if(!pageId) return '其他';
@@ -5347,8 +5818,7 @@
     let currentUiMode = UI_MODE_DEFAULT;
     let currentPageId = 'basic';
     let currentScrollOffset = 0;
-    let floatingMeasureScheduled = false;
-    let stickyMeasureScheduled = false;
+    let layoutMeasureScheduled = false;
     let currentStickyLayoutMode = '';
     let sectionViewsReady = false;
     let currentVerticalDensityMode = '';
@@ -5592,7 +6062,7 @@
       buildPlanSummaryPreview();
       renderSection1Preview(section1PreviewState.segments || []);
       refreshCheckcols(document);
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
       scheduleSummaryUpdate();
     }
 
@@ -5668,15 +6138,6 @@
       document.documentElement.style.setProperty('--fab-gap', `${gap}px`);
     }
 
-    function scheduleFloatingActionsMeasurement(){
-      if(floatingMeasureScheduled) return;
-      floatingMeasureScheduled = true;
-      window.requestAnimationFrame(()=>{
-        floatingMeasureScheduled = false;
-        updateFloatingActionsMetrics();
-      });
-    }
-
     function updateStickyLayoutMode(){
       const host=document.getElementById('appSticky');
       const toggle=document.getElementById('stickyOverflowToggle');
@@ -5725,15 +6186,6 @@
       document.documentElement.style.setProperty('--app-top-offset', `${offset}px`);
     }
 
-    function scheduleStickyMeasurement(){
-      if(stickyMeasureScheduled) return;
-      stickyMeasureScheduled = true;
-      window.requestAnimationFrame(()=>{
-        stickyMeasureScheduled = false;
-        measureStickyElements();
-      });
-    }
-
     function updateVerticalDensityMode(){
       if(!document.body) return;
       let height = 0;
@@ -5754,19 +6206,16 @@
       }
     }
 
-    function scheduleLayoutMeasurements(){
-      updateStickyLayoutMode();
-      scheduleFloatingActionsMeasurement();
-      scheduleStickyMeasurement();
-      updateVerticalDensityMode();
-    }
-
     function scheduleAllMeasurements(){
-      scheduleLayoutMeasurements();
-      scheduleSummaryUpdate();
-      scheduleSummaryProgressRender();
-      scheduleSideNavRender();
-      scheduleSummaryJumpRefresh();
+      updateStickyLayoutMode();
+      updateVerticalDensityMode();
+      if(layoutMeasureScheduled) return;
+      layoutMeasureScheduled = true;
+      window.requestAnimationFrame(()=>{
+        layoutMeasureScheduled = false;
+        updateFloatingActionsMetrics();
+        measureStickyElements();
+      });
     }
 
     function setStickyExpanded(expanded){
@@ -5775,7 +6224,7 @@
       if(!host || !toggle) return;
       host.dataset.expanded = expanded ? '1' : '0';
       toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initStickyOverflowToggle(){
@@ -5985,21 +6434,46 @@
       window.scrollTo({ top: Math.max(0, nextTop), behavior: options && options.instant ? 'auto' : 'smooth' });
     }
 
-    function focusSectionGroupByElement(groupElement){
-      if(!groupElement) return;
-      if(!groupElement.classList || !groupElement.classList.contains('section-group')){
-        groupElement = typeof groupElement.closest === 'function' ? groupElement.closest('.section-group') : null;
-      }
-      if(!groupElement) return;
-      const section = groupElement.closest('[data-section]');
-      if(!section || !section.__groups) return;
+    function focusSectionGroupByElement(target){
+      if(!target) return;
+      let groupElement = null;
+      let section = null;
       let targetGroup = null;
-      (section.__groups || []).forEach(group=>{
-        if(group && group.element === groupElement){
-          targetGroup = group;
+      if(target.classList && target.classList.contains('section-group')){
+        groupElement = target;
+      }else{
+        const anchorId = target.id || '';
+        if(anchorId){
+          const meta = getHeadingGroup(anchorId);
+          if(meta && meta.group && meta.group.element){
+            section = meta.section || meta.group.element.closest('[data-section]');
+            targetGroup = meta.group;
+            groupElement = meta.group.element;
+          }
         }
-      });
-      if(!targetGroup) return;
+        if(!groupElement && target.closest){
+          groupElement = target.closest('.section-group');
+        }
+      }
+      if(!groupElement){
+        return;
+      }
+      if(!section){
+        section = groupElement.closest('[data-section]');
+      }
+      if(!section || !section.__groups){
+        return;
+      }
+      if(!targetGroup){
+        (section.__groups || []).forEach(group=>{
+          if(group && group.element === groupElement){
+            targetGroup = group;
+          }
+        });
+      }
+      if(!targetGroup){
+        return;
+      }
       (section.__groups || []).forEach(group=>{
         if(!group) return;
         const collapse = group !== targetGroup;
@@ -6011,14 +6485,12 @@
       if(section.__state && section.dataset && section.dataset.section){
         writeSectionState(section.dataset.section, section.__state);
       }
+      updateSideNavForSection(section);
       scheduleSummaryProgressRender();
     }
 
     function handleSideNavClick(event){
-      const target = event
-        ? (event.currentTarget
-          || (event.target && typeof event.target.closest === 'function' ? event.target.closest('.side-nav-link') : null))
-        : null;
+      const target=event && event.currentTarget ? event.currentTarget : null;
       if(!target) return;
       const anchorId = target.dataset ? target.dataset.target : '';
       if(!anchorId) return;
@@ -6084,12 +6556,14 @@
         const li=document.createElement('li');
         li.className='side-nav-item';
         li.dataset.page = item.pageId || '';
+        li.dataset.level = String(item.level || 2);
         const btn=document.createElement('button');
         btn.type='button';
         btn.className='side-nav-link';
         btn.textContent=item.label || '未命名群組';
         btn.dataset.target=item.anchorId || '';
         btn.dataset.page=item.pageId || '';
+        btn.dataset.level = String(item.level || 2);
         btn.addEventListener('click', handleSideNavClick);
         const count=document.createElement('span');
         count.className='side-nav-count';
@@ -6106,7 +6580,7 @@
         item.button = btn;
         item.countEl = count;
       });
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
       scheduleSummaryJumpRefresh();
       scheduleSummaryProgressRender();
     }
@@ -6135,6 +6609,7 @@
         const status=item.status || determineProgressStatus(stats.filled || 0, stats.required || 0);
         btn.dataset.target=item.anchorId || '';
         btn.dataset.page=item.pageId || '';
+        btn.dataset.level = String(item.level || 2);
         btn.dataset.status=status;
         const label=document.createElement('span');
         label.className='chip-label';
@@ -6151,7 +6626,7 @@
         btn.addEventListener('click', handleSideNavClick);
         root.appendChild(btn);
       });
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function getWizardJumpSelect(){
@@ -6340,43 +6815,41 @@
     function registerSideNavGroups(){
       const state = getSideNavElements();
       if(!state.root || !state.list) return;
-      state.items = [];
-      const navRecords = Array.isArray(headingSpecState.navItems) ? headingSpecState.navItems : [];
-      const recordMap = new Map();
-      navRecords.forEach(record=>{
-        if(record && record.groupElement){
-          recordMap.set(record.groupElement, record);
+      const items=[];
+      forEachHeading(function(entry){
+        if(!entry || entry.level <= 1) return;
+        const anchorEl=document.getElementById(entry.id);
+        if(!anchorEl) return;
+        const groupMeta=getHeadingGroup(entry.id);
+        const section = groupMeta ? groupMeta.section : null;
+        const group = groupMeta ? groupMeta.group : null;
+        const sectionId = section && section.dataset ? section.dataset.section || '' : '';
+        const stats = (section && group && section.__groupStats && section.__groupStats[group.id])
+          ? section.__groupStats[group.id]
+          : { filled:0, required:0 };
+        const status = group
+          ? determineProgressStatus(stats.filled || 0, stats.required || 0)
+          : (stats.required > 0 ? determineProgressStatus(stats.filled || 0, stats.required || 0) : 'optional');
+        const item = {
+          sectionId: sectionId,
+          pageId: entry.page || '',
+          groupId: group ? group.id : '',
+          anchorId: entry.id,
+          headingId: entry.id,
+          label: entry.label || '',
+          level: entry.level || 2,
+          stats: { filled: stats.filled || 0, required: stats.required || 0 },
+          status: status,
+          element:null,
+          button:null,
+          countEl:null
+        };
+        if(group){
+          group.navItem = item;
         }
+        items.push(item);
       });
-      document.querySelectorAll('[data-section]').forEach(section=>{
-        const sectionId = section.dataset ? section.dataset.section || '' : '';
-        const pageSection = section.closest('.page-section');
-        const defaultPageId = pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '';
-        (section.__groups || []).forEach(group=>{
-          if(!group || !group.element) return;
-          const record = recordMap.get(group.element);
-          if(!record) return;
-          const stats = section.__groupStats && section.__groupStats[group.id]
-            ? section.__groupStats[group.id]
-            : { filled:0, required:0 };
-          const anchorId = record.anchorId || (group.element.id || ensureElementId(group.element, `${sectionId || 'section'}-group-${group.id}`));
-          const labelText = record.node && record.node.label ? record.node.label : (group.toggle ? group.toggle.textContent.trim() : `群組 ${group.id}`);
-          const navItem = {
-            sectionId,
-            pageId: record.pageId || defaultPageId,
-            groupId: group.id,
-            anchorId,
-            label: labelText,
-            stats: { filled: stats.filled || 0, required: stats.required || 0 },
-            status: determineProgressStatus(stats.filled || 0, stats.required || 0),
-            element:null,
-            button:null,
-            countEl:null
-          };
-          group.navItem = navItem;
-          state.items.push(navItem);
-        });
-      });
+      state.items = items;
       scheduleSideNavRender();
       scheduleSummaryJumpRefresh();
       scheduleSummaryProgressRender();
@@ -6384,80 +6857,37 @@
 
     function updateSideNavForSection(section){
       if(!section) return;
-      const sectionId = section.dataset ? section.dataset.section || '' : '';
-      if(!sectionId) return;
       const state = getSideNavElements();
       if(!state.items.length) return;
-      (section.__groups || []).forEach(group=>{
-        if(!group || !group.navItem) return;
-        const stats = section.__groupStats && section.__groupStats[group.id] ? section.__groupStats[group.id] : { filled:0, required:0 };
+      if(!section.__headingGroupMap) return;
+      Object.keys(section.__headingGroupMap).forEach(anchorId=>{
+        const group = section.__headingGroupMap[anchorId];
+        if(!group) return;
+        const navItem = group.navItem;
+        if(!navItem) return;
+        const stats = section.__groupStats && group.id ? section.__groupStats[group.id] : { filled:0, required:0 };
         const status = determineProgressStatus(stats.filled || 0, stats.required || 0);
-        group.navItem.status = status;
-        group.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
-        if(group.navItem.countEl){
-          group.navItem.countEl.textContent = formatSideNavCount(group.navItem.stats.filled, group.navItem.stats.required);
+        navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
+        navItem.status = status;
+        if(navItem.countEl){
+          navItem.countEl.textContent = formatSideNavCount(navItem.stats.filled, navItem.stats.required);
         }
-        if(group.navItem.element){
-          group.navItem.element.dataset.status = status;
+        if(navItem.element){
+          navItem.element.dataset.status = status;
         }
-        if(group.toggle && group.navItem.button){
-          const text = group.toggle.textContent.trim();
-          if(text){
-            group.navItem.button.textContent = text;
-            group.navItem.label = text;
+        if(navItem.button){
+          if(group.toggle){
+            const text = (group.toggle.textContent || '').trim();
+            if(text){
+              navItem.label = text;
+              navItem.button.textContent = text;
+            }
           }
-          group.navItem.button.dataset.status = status;
-        }else if(group.navItem.button){
-          group.navItem.button.dataset.status = status;
+          navItem.button.dataset.status = status;
         }
       });
       scheduleSummaryJumpRefresh();
       scheduleSummaryProgressRender();
-    }
-
-    function ensureGoalsPageDefaults(){
-      const pageSection = document.querySelector('.page-section[data-page="goals"]');
-      if(!pageSection) return;
-      const sections = pageSection.querySelectorAll('[data-section]');
-      if(!sections.length) return;
-      sections.forEach(section=>{
-        if(!section) return;
-        section.dataset.hideFilled = '0';
-        section.dataset.showAdvanced = '1';
-        const sectionId = section.dataset ? section.dataset.section : '';
-        const state = section.__state || (section.__state = readSectionState(sectionId));
-        let changed = false;
-        if(state.hideFilled){
-          state.hideFilled = false;
-          changed = true;
-        }
-        if(!state.showAdvanced){
-          state.showAdvanced = true;
-          changed = true;
-        }
-        if(!state.collapsedGroups || typeof state.collapsedGroups !== 'object' || Object.keys(state.collapsedGroups).length){
-          state.collapsedGroups = {};
-          changed = true;
-        }
-        const firstGroup = section.__groups && section.__groups.length ? section.__groups[0] : null;
-        section.__state = state;
-        applySectionState(section, state);
-        if(firstGroup){
-          setGroupCollapsed(section, firstGroup, false, { save:false });
-        }else{
-          const firstGroupEl = section.querySelector('.section-group');
-          if(firstGroupEl){
-            firstGroupEl.dataset.collapsed = '0';
-          }
-        }
-        updateSectionProgress(section);
-        updateAllGroupEmptyStates(section);
-        updateToggleButtons(section);
-        if(sectionId && changed){
-          writeSectionState(sectionId, state);
-        }
-      });
-      scheduleAllMeasurements();
     }
 
     const CHECKCOL_PRIORITY_MAP = {
@@ -6585,54 +7015,42 @@
 
     function updateCheckcolEnhancements(box){
       if(!box || !box.__checkcolState) return;
-      const state = box.__checkcolState;
-      const wrapper = state.wrapper;
-      const chipsHost = state.chips;
-      const summaryLabel = state.summaryLabel;
-      const toggle = state.toggle;
       const labels = Array.from(box.querySelectorAll('label'));
-      chipsHost.innerHTML='';
-      let selectedCount = 0;
+      let hasChecked = false;
       labels.forEach(label=>{
         const input = label.querySelector('input[type=checkbox]');
         const checked = !!(input && input.checked);
-        label.dataset.checked = checked ? '1' : '0';
         if(checked){
-          selectedCount++;
-          const chip=document.createElement('span');
-          chip.className='checkcol-chip';
-          chip.textContent = getCheckcolLabelValue(label) || (input ? input.value : '');
-          chipsHost.appendChild(chip);
+          label.setAttribute('data-checked', '1');
+          hasChecked = true;
+        }else{
+          label.removeAttribute('data-checked');
         }
       });
-      const prevCollapsed = wrapper.dataset.collapsed;
-      const hadSelection = wrapper.dataset.hasSelection === '1';
-      wrapper.dataset.hasSelection = selectedCount ? '1' : '0';
-      let collapseChanged = false;
-      if(selectedCount === 0){
-        if(wrapper.dataset.collapsed !== '0'){
-          wrapper.dataset.collapsed = '0';
-          collapseChanged = prevCollapsed !== '0';
-        }
-        wrapper.dataset.manualToggle = '0';
+      const audit = getUiAuditState();
+      if(audit && labels.length){
+        audit.checkcol_highlight_exists = true;
+      }
+    }
+
+    function updateSectionSelectionSummary(box){
+      if(!box || !box.__checkcolState) return;
+      const wrapper = box.__checkcolState.wrapper;
+      if(!wrapper) return;
+      const section = wrapper.closest('[data-section]') || box.closest('[data-section]');
+      if(!section) return;
+      const badge = ensureSectionSelectionBadge(section);
+      if(!badge) return;
+      let total = 0;
+      section.querySelectorAll('.checkcol-wrapper').forEach(node=>{
+        total += Number(node.dataset.selectedCount || 0);
+      });
+      if(total > 0){
+        badge.textContent = `本區已選（${total}）`;
+        badge.dataset.hidden = '0';
       }else{
-        const autoCollapse = shouldUseMobileDefaults() && wrapper.dataset.manualToggle !== '1';
-        if(autoCollapse && wrapper.dataset.collapsed !== '1'){
-          wrapper.dataset.collapsed = '1';
-          collapseChanged = true;
-        }
-      }
-      if(summaryLabel) summaryLabel.textContent = `已選（${selectedCount}）`;
-      if(toggle){
-        const collapsed = wrapper.dataset.collapsed === '1';
-        toggle.textContent = collapsed ? '展開清單' : '收合清單';
-        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-        if(box.id && !toggle.getAttribute('aria-controls')){
-          toggle.setAttribute('aria-controls', box.id);
-        }
-      }
-      if(collapseChanged || hadSelection !== (wrapper.dataset.hasSelection === '1')){
-        scheduleLayoutMeasurements();
+        badge.textContent = '';
+        badge.dataset.hidden = '1';
       }
     }
 
@@ -6642,40 +7060,10 @@
       if(!box || box.__checkcolState) return;
       const wrapper=document.createElement('div');
       wrapper.className='checkcol-wrapper';
-      wrapper.dataset.collapsed='0';
-      wrapper.dataset.hasSelection='0';
-      wrapper.dataset.manualToggle='0';
       const parent = box.parentNode;
       if(parent){ parent.insertBefore(wrapper, box); }
       wrapper.appendChild(box);
-      const footer=document.createElement('div');
-      footer.className='checkcol-footer';
-      const summaryLabel=document.createElement('span');
-      summaryLabel.className='checkcol-summary-label';
-      summaryLabel.textContent='已選（0）';
-      const chips=document.createElement('div');
-      chips.className='checkcol-selected-chips';
-      const toggle=document.createElement('button');
-      toggle.type='button';
-      toggle.className='checkcol-toggle';
-      toggle.textContent='收合清單';
-      if(box.id){
-        toggle.setAttribute('aria-controls', box.id);
-      }
-      toggle.setAttribute('aria-expanded', 'true');
-      toggle.addEventListener('click', ()=>{
-        const collapsed = wrapper.dataset.collapsed === '1';
-        wrapper.dataset.collapsed = collapsed ? '0' : '1';
-        wrapper.dataset.manualToggle='1';
-        toggle.textContent = collapsed ? '收合清單' : '展開清單';
-        toggle.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
-        scheduleLayoutMeasurements();
-      });
-      footer.appendChild(summaryLabel);
-      footer.appendChild(chips);
-      footer.appendChild(toggle);
-      wrapper.appendChild(footer);
-      box.__checkcolState = { wrapper, footer, summaryLabel, chips, toggle };
+      box.__checkcolState = { wrapper };
       box.dataset.checkcolEnhanced = '1';
       box.addEventListener('change', ()=>updateCheckcolEnhancements(box));
       box.addEventListener('input', ()=>updateCheckcolEnhancements(box));
@@ -6768,7 +7156,7 @@
         try{ window.localStorage.setItem(FONT_SCALE_STORAGE_KEY, normalized); }catch(err){}
       }
       updateFontScaleButtons(normalized);
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function setSectionHideFilled(section, hide, options){
@@ -6909,7 +7297,7 @@
         try{ window.localStorage.setItem(UI_MODE_STORAGE_KEY, normalized); }catch(err){}
       }
 
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initUiPresetControls(){
@@ -7254,13 +7642,52 @@
           groups.push(current);
         }
         if(isTitlebar){
-          if(current){
-            const label=node.querySelector('.h4, .h3, .h2, .h1, label, span');
-            const titleText=label ? label.textContent.trim() : (node.textContent || '').trim();
-            if(titleText){
-              current.title = titleText;
-              if(current.element && current.element.dataset) current.element.dataset.title = titleText;
+          let anchorId='';
+          let headingEl=node.querySelector('#' + (node.dataset && node.dataset.anchor ? node.dataset.anchor : '')) || node.querySelector('h1, h2, h3, h4, h5, h6');
+          if(headingEl){
+            anchorId = headingEl.id || headingEl.dataset.anchor || '';
+            if(!anchorId){
+              anchorId = (headingEl.textContent || '').trim();
             }
+            if(!headingEl.dataset.anchor) headingEl.dataset.anchor = anchorId;
+            if(anchorId && !headingEl.id) headingEl.id = anchorId;
+            if(headingEl.parentNode && headingEl.parentNode !== node){
+              headingEl.parentNode.removeChild(headingEl);
+            }else if(headingEl.parentNode === node){
+              node.removeChild(headingEl);
+            }
+          }
+          const remainingNodes = Array.from(node.childNodes);
+          remainingNodes.forEach(child=>node.removeChild(child));
+          if(current){
+            if(!current.title){
+              const labelText = headingEl ? (headingEl.textContent || '').trim() : (node.textContent || '').trim();
+              if(labelText){
+                current.title = labelText;
+                if(current.element && current.element.dataset) current.element.dataset.title = labelText;
+              }
+            }
+            const emptyMarker = current.empty || current.body.querySelector('.section-group-empty');
+            if(headingEl){
+              current.body.insertBefore(headingEl, emptyMarker);
+            }
+            if(remainingNodes.length){
+              const fragment=document.createDocumentFragment();
+              remainingNodes.forEach(child=>{
+                if(child.nodeType===1 && child.tagName && child.tagName.toLowerCase()==='label' && !child.children.length){
+                  return;
+                }
+                fragment.appendChild(child);
+              });
+              if(fragment.childNodes.length){
+                const ref = headingEl ? headingEl.nextSibling : emptyMarker;
+                current.body.insertBefore(fragment, ref);
+              }
+            }
+          }
+          if(anchorId && current){
+            current.element.dataset.headingId = anchorId;
+            registerHeadingGroup(anchorId, section, current);
           }
           if(node.parentNode) node.parentNode.removeChild(node);
           continue;
@@ -7555,9 +7982,6 @@
         const stats = groupStats[group.id] || { filled:0, required:0 };
         const status = determineProgressStatus(stats.filled || 0, stats.required || 0);
         group.element.dataset.status = status;
-        if(group.progress){
-          group.progress.textContent = formatProgressDisplay(stats.filled || 0, stats.required || 0);
-        }
         if(group.navItem){
           group.navItem.status = status;
           group.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
@@ -7625,9 +8049,28 @@
       label.dataset.hidden='0';
     }
 
+    function ensureSectionSelectionBadge(section){
+      if(!section) return null;
+      if(section.__selectionBadge && section.__selectionBadge.isConnected){
+        return section.__selectionBadge;
+      }
+      const header = section.querySelector('.titlebar');
+      if(!header) return null;
+      let badge = header.querySelector('.section-selection-badge');
+      if(!badge){
+        badge = document.createElement('span');
+        badge.className = 'section-selection-badge';
+        badge.dataset.hidden = '1';
+        header.appendChild(badge);
+      }
+      section.__selectionBadge = badge;
+      return badge;
+    }
+
     function createSectionControls(section){
       const header = section.querySelector('.titlebar');
       if(!header) return;
+      ensureSectionSelectionBadge(section);
       const controls = document.createElement('div');
       controls.className = 'section-controls';
       const sectionKey = section.dataset && section.dataset.section ? section.dataset.section : 'section';
@@ -7826,14 +8269,13 @@
     }
 
     function initSectionViews(){
+      resetHeadingGroupRegistry();
       ensureAllGroupBodies(document);
       const sections = document.querySelectorAll('[data-section]');
       sections.forEach(section=>setupSection(section));
       sectionViewsReady = true;
-      const headingReport = applyHeadingSpecToDom();
       registerSideNavGroups();
       sections.forEach(section=>updateSideNavForSection(section));
-      logHeadingSpecReport(headingReport);
       scheduleSideNavRender();
       scheduleSummaryUpdate();
     }
@@ -9618,17 +10060,17 @@
     }
 
     const SECTION1_PREVIEW_META = Object.freeze([
-      { key:'overview', title:'基本資料', anchor:'s1_age' },
-      { key:'vision', title:'視力狀態', anchor:'s1_vision' },
-      { key:'hearing', title:'聽力程度', anchor:'s1_hearing_level' },
-      { key:'painLesion', title:'疼痛與皮膚', anchor:'s1_pain' },
-      { key:'swallow', title:'吞嚥與飲食', anchor:'s1_swallow' },
-      { key:'mobility', title:'移動功能', anchor:'s1_transfer' },
-      { key:'adl', title:'ADL／排泄', anchor:'s1_adl_eating' },
-      { key:'life', title:'IADL／情緒與睡眠', anchor:'s1_phone' },
-      { key:'disease', title:'醫療與用藥', anchor:'s1_dhx_box' },
-      { key:'actions', title:'建議措施', anchor:'s1_actions_list' },
-      { key:'notes', title:'補充內容', anchor:'s1_notes' }
+      { key:'overview', title:'基本資料', anchor:'h3-goals-s1', fieldId:'s1_age' },
+      { key:'vision', title:'視力狀態', anchor:'h3-goals-s1', fieldId:'s1_vision' },
+      { key:'hearing', title:'聽力程度', anchor:'h3-goals-s1', fieldId:'s1_hearing_level' },
+      { key:'painLesion', title:'疼痛與皮膚', anchor:'h3-goals-s1', fieldId:'s1_pain' },
+      { key:'swallow', title:'吞嚥與飲食', anchor:'h3-goals-s1', fieldId:'s1_swallow' },
+      { key:'mobility', title:'移動功能', anchor:'h3-goals-s1', fieldId:'s1_transfer' },
+      { key:'adl', title:'ADL／排泄', anchor:'h3-goals-s1', fieldId:'s1_adl_eating' },
+      { key:'life', title:'IADL／情緒與睡眠', anchor:'h3-goals-s1', fieldId:'s1_phone' },
+      { key:'disease', title:'醫療與用藥', anchor:'h3-goals-s1', fieldId:'s1_dhx_box' },
+      { key:'actions', title:'建議措施', anchor:'h3-goals-s1', fieldId:'s1_actions_list' },
+      { key:'notes', title:'補充內容', anchor:'h3-goals-s1', fieldId:'s1_notes' }
     ]);
 
     const SECTION1_PREVIOUS_STORAGE_KEY = 'AA01.section1.previousSegments';
@@ -9750,7 +10192,7 @@
         anchorBtn.type='button';
         anchorBtn.className='small';
         anchorBtn.textContent='回到來源欄位';
-        anchorBtn.addEventListener('click', function(){ jumpToField(segment.anchor); });
+        anchorBtn.addEventListener('click', function(){ jumpToField(segment.anchor, segment.fieldId); });
         actions.appendChild(anchorBtn);
         header.appendChild(actions);
         card.appendChild(header);
@@ -10202,45 +10644,77 @@
       runSection1Rules();
     }
 
-    function jumpToField(fieldId){
-      if(!fieldId) return;
-      const el=document.getElementById(fieldId);
-      if(!el){
-        setActivePage('goals');
+    function jumpToField(anchorId, focusId){
+      if(!anchorId && !focusId) return;
+      const anchorEl = anchorId ? document.getElementById(anchorId) : null;
+      const focusElCandidate = focusId ? document.getElementById(focusId) : null;
+      const targetEl = anchorEl || focusElCandidate;
+      if(!targetEl){
+        const fallbackPage = anchorId ? (document.getElementById(anchorId)?.closest('.page-section')?.dataset.page || 'goals') : 'goals';
+        setActivePage(fallbackPage || 'goals');
         return;
       }
-      if(blockIfPlanGroupLocked(el)) return;
-      const step = resolveWizardStepForElement(el);
+      if(blockIfPlanGroupLocked(targetEl)) return;
+      const step = resolveWizardStepForElement(targetEl);
       if(step && isWizardStepLocked(step)){
         handleWizardStepLocked(step);
         return;
       }
-      const section = el.closest ? el.closest('.page-section') : null;
-      const pageId = section && section.dataset ? section.dataset.page : 'goals';
+      const section = targetEl.closest ? targetEl.closest('.page-section') : null;
+      let pageId = section && section.dataset ? section.dataset.page : '';
+      if(!pageId && anchorEl){
+        const anchorSection = anchorEl.closest ? anchorEl.closest('.page-section') : null;
+        pageId = anchorSection && anchorSection.dataset ? anchorSection.dataset.page : '';
+      }
+      const performScroll = ()=>{
+        let anchorNode = null;
+        if(anchorId){
+          anchorNode = document.getElementById(anchorId);
+        }
+        if(anchorNode){
+          focusSectionGroupByElement(anchorNode);
+        }else{
+          focusSectionGroupByElement(targetEl);
+        }
+        if(anchorNode){
+          scrollToAnchorId(anchorId);
+        }else if(targetEl.scrollIntoView){
+          targetEl.scrollIntoView({ behavior:'smooth', block:'start' });
+        }else{
+          const rect = targetEl.getBoundingClientRect();
+          const offset = Math.max(0, currentScrollOffset || 0);
+          const top = window.pageYOffset + rect.top - offset;
+          window.scrollTo({ top: top < 0 ? 0 : top, behavior:'smooth' });
+        }
+        let focusTarget = focusElCandidate || null;
+        if(!focusTarget){
+          if(targetEl.matches && targetEl.matches('input,select,textarea,button,[tabindex]')){
+            focusTarget = targetEl;
+          }else{
+            focusTarget = targetEl.querySelector ? targetEl.querySelector('input,select,textarea,button,[tabindex]') : null;
+          }
+        }
+        if(focusTarget && typeof focusTarget.focus === 'function'){
+          focusTarget.focus({ preventScroll:true });
+        }
+      };
+      const scheduleScroll = ()=>{ window.requestAnimationFrame(performScroll); };
       if(step){
         if(!setCurrentWizardStep(step, { scroll:false })){
           return;
         }
-      }else{
-        if(setActivePage(pageId || 'goals') === false){
+        scheduleScroll();
+        return;
+      }
+      const desiredPage = pageId || 'goals';
+      if(desiredPage !== currentPageId){
+        if(setActivePage(desiredPage) === false){
           return;
         }
+        scheduleScroll();
+      }else{
+        performScroll();
       }
-      const scrollTask=()=>{
-        if(typeof el.scrollIntoView === 'function'){
-          el.scrollIntoView({ behavior:'smooth', block:'start' });
-        }else{
-          const rect=el.getBoundingClientRect();
-          const offset=Math.max(0, currentScrollOffset || 0);
-          const top=window.pageYOffset + rect.top - offset;
-          window.scrollTo({ top: top < 0 ? 0 : top, behavior:'smooth' });
-        }
-        let focusEl=null;
-        if(typeof el.focus === 'function'){ focusEl=el; }
-        else{ focusEl=el.querySelector('input,select,textarea,button,[tabindex]'); }
-        if(focusEl && typeof focusEl.focus === 'function'){ focusEl.focus({ preventScroll:true }); }
-      };
-      window.requestAnimationFrame(()=>{ window.requestAnimationFrame(scrollTask); });
     }
 
 
@@ -10774,8 +11248,6 @@
       refreshCheckcol('s2_sources');
     }
     function toggleDisCategory(){
-      // 若使用者由錯誤提示點入，可一鍵跳轉
-      // 例：jumpToField('s2_dis_cat');
       const levelEl=document.getElementById('s2_dis_level');
       if(!levelEl) return;
       const catEl=document.getElementById('s2_dis_cat');
@@ -10798,23 +11270,7 @@
       const srcs=[...document.querySelectorAll('#s2_sources input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
       const id=document.getElementById('s2_id').value;
       const lv=document.getElementById('s2_dis_level').value;
-      const catSel=document.getElementById('s2_dis_cat'); 
-      const cat=(catSel && catSel.value)? catSel.value : '';
-
-      // 驗證：等級≠無 → 類別必填
-      const disCatBox=document.getElementById('disCatBox');
-      if(lv && lv !== '無'){
-        if(!cat){
-          if(disCatBox){ disCatBox.classList.add('input-invalid'); }
-          // 導覽提示
-          showValidationToast({ type:'warn', message:'請選擇「身心障礙類別」。' });
-        }else{
-          if(disCatBox){ disCatBox.classList.remove('input-invalid'); }
-        }
-      }else{
-        if(disCatBox){ disCatBox.classList.remove('input-invalid'); }
-      }
-
+      const catSel=document.getElementById('s2_dis_cat'); const cat=(catSel && catSel.value)? catSel.value : '';
       let s='';
       if(srcs.length) s+=`主要經濟來源為${srcs.join('、')}`;
       if(id){ s += (s? '，':'') + `戶籍/福利身分為${id}`; }
@@ -10855,43 +11311,15 @@
       buildS3();
     }
     function buildS3(){
-      const typeSel=document.getElementById('s3_type'); 
-      let type=typeSel.value;
-      if(type==='其他'){ 
-        const t=document.getElementById('s3_type_other').value.trim(); 
-        if(t) type=t; 
-      }
+      const typeSel=document.getElementById('s3_type'); let type=typeSel.value;
+      if(type==='其他'){ const t=document.getElementById('s3_type_other').value.trim(); if(t) type=t; }
       const own=document.getElementById('s3_own').value;
-
       const rentAmountInput=document.getElementById('s3_rent_amount');
       const rentFeeSelect=document.getElementById('s3_rent_fee');
-      const amountWrap=document.getElementById('s3_rent_amount_wrap');
-      const feeWrap=document.getElementById('s3_rent_fee_wrap');
-
       let rentInfo='';
-
       if(own==='租賃'){
         const rawAmount=(rentAmountInput?.value || '').trim();
         const feeValue=(rentFeeSelect?.value || '').trim();
-
-        // 驗證：租賃需填寫金額與是否含管理費
-        let invalid=false;
-        if(!rawAmount){
-          invalid=true;
-          if(amountWrap) amountWrap.classList.add('input-invalid');
-        }else{
-          if(amountWrap) amountWrap.classList.remove('input-invalid');
-        }
-        if(!feeValue){
-          invalid=true;
-          if(feeWrap) feeWrap.classList.add('input-invalid');
-        }else{
-          if(feeWrap) feeWrap.classList.remove('input-invalid');
-        }
-        if(invalid){
-          showValidationToast({ type:'warn', message:'居住權屬為「租賃」時，請填寫「租金金額」並選擇「是否含管理費」。' });
-        }
-
         if(rawAmount){
           const numeric=parseInt(rawAmount,10);
           const formatted=!Number.isNaN(numeric) && numeric>=0 ? numeric.toLocaleString('zh-TW') : rawAmount;
@@ -10900,16 +11328,11 @@
         }else if(feeValue){
           rentInfo = feeValue;
         }
-      }else{
-        if(amountWrap) amountWrap.classList.remove('input-invalid');
-        if(feeWrap) feeWrap.classList.remove('input-invalid');
       }
-
       const clean=document.getElementById('s3_clean').value;
       const smell=document.getElementById('s3_smell').value;
       const fac=[...document.querySelectorAll('#s3_fac input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
       const aids=[...document.querySelectorAll('#s3_aids input[type=checkbox]')].filter(x=>x.checked).map(x=>x.value);
-
       if(!type) { document.getElementById('section3_out').value=''; return; }
       let base=`現居住於${own}${type}`;
       if(rentInfo){ base += `，${rentInfo}`; }
@@ -11674,18 +12097,20 @@
     };
 
     const PLAN_CATEGORY_GROUPS = [
-      { id:'BC', label:'居家服務（B/C）', includes:['B','C'] },
-      { id:'D', label:'專業服務（D）', includes:['D'] },
-      { id:'G', label:'喘息服務（G）', includes:['G'] },
-      { id:'EF', label:'輔具及無障礙補助（E/F）', includes:['EF'] },
-      { id:'SC', label:'短期照顧（SC）', includes:['SC'] },
-      { id:'MEAL', label:'營養餐飲服務（OT）', includes:['MEAL'] },
-      { id:'OTHER', label:'其他服務', includes:['OTHER'] }
+      { id:'B', label:'（一）B碼', includes:['B'], anchor:'h3-exec-b' },
+      { id:'C', label:'（二）C碼', includes:['C'], anchor:'h3-exec-c' },
+      { id:'D', label:'（三）D碼', includes:['D'], anchor:'h3-exec-d' },
+      { id:'EF', label:'（四）E.F碼', includes:['EF'], anchor:'h3-exec-ef' },
+      { id:'G', label:'（五）G碼', includes:['G'], anchor:'h3-exec-g' },
+      { id:'SC', label:'（六）SC碼', includes:['SC'], anchor:'h3-exec-sc' },
+      { id:'MEAL', label:'（七）營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' }
     ];
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
       (group.includes || []).forEach(cat=>{ PLAN_CATEGORY_LOOKUP[String(cat).toUpperCase()] = group.id; });
     });
+    const PLAN_CATEGORY_FALLBACK_ID = 'MEAL';
+    const UNKNOWN_PLAN_CATEGORY_KEYS = new Set();
 
     function determineServiceCategory(code){
       if(!code) return '';
@@ -11703,7 +12128,12 @@
 
     function getPlanCategoryGroupId(cat){
       const key = String(cat || '').toUpperCase();
-      return PLAN_CATEGORY_LOOKUP[key] || 'OTHER';
+      if(PLAN_CATEGORY_LOOKUP[key]) return PLAN_CATEGORY_LOOKUP[key];
+      if(key && !UNKNOWN_PLAN_CATEGORY_KEYS.has(key)){
+        UNKNOWN_PLAN_CATEGORY_KEYS.add(key);
+        console.warn('未知服務類別，已套用預設分類', key);
+      }
+      return PLAN_CATEGORY_FALLBACK_ID;
     }
 
     function lookupServiceItem(code){
@@ -12844,7 +13274,12 @@
     function planCategoryLabel(cat){
       const groupId = getPlanCategoryGroupId(cat);
       const group = PLAN_CATEGORY_GROUPS.find(item=>item.id === groupId);
-      return group ? group.label : '其他服務';
+      if(!group) return '其他服務';
+      if(group.anchor){
+        const entry = getHeadingEntry(group.anchor);
+        if(entry && entry.label) return entry.label;
+      }
+      return group.label || '其他服務';
     }
 
     function formatSummaryVendorName(entry){
@@ -13283,7 +13718,7 @@
         if(!list || !list.length) return;
         const rows=aggregatePlanSummaryRows(list);
         if(!rows.length) return;
-        groups.push({ id:group.id, label:group.label, rows:rows });
+        groups.push({ id:group.id, label:planCategoryLabel(group.id), rows:rows });
       });
       return groups;
     }
@@ -13427,7 +13862,7 @@
         host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
         setPlanSummaryClipboard('');
         setPlanSummaryPlainText('');
-        scheduleLayoutMeasurements();
+        scheduleAllMeasurements();
         return;
       }
       const header=['服務代碼','服務名稱','承接','指定單位','額度／單位','自費金額','使用頻率／說明'];
@@ -13482,7 +13917,7 @@
       const plainText = plainLines.join('\n');
       setPlanSummaryClipboard(copyText ? `${copyText}\n${totalLine}` : totalLine);
       setPlanSummaryPlainText(plainText ? `${plainText}\n${totalLine}` : totalLine);
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initPlanSummaryCopy(){
@@ -13566,184 +14001,199 @@
       selfPayHintDisplays = {};
       baFrequencyDisplays = {};
       const entries=Object.values(servicePlanState);
-      if(!entries.length){
-        const empty=document.createElement('div');
-        empty.className='hint';
-        empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
-        host.appendChild(empty);
-        scheduleLayoutMeasurements();
-        return;
-      }
       const groupedById={};
       entries.forEach(entry=>{
         if(!entry) return;
-        const rawCategory=(entry.category || determineServiceCategory(entry.code) || 'OTHER').toUpperCase();
+        const rawCategory=(entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
         const groupId=getPlanCategoryGroupId(rawCategory);
         if(!groupedById[groupId]) groupedById[groupId]=[];
         groupedById[groupId].push(entry);
       });
-      let renderedSections=0;
+      let totalEntries=0;
       PLAN_CATEGORY_GROUPS.forEach(group=>{
-        const list=groupedById[group.id];
-        if(!list || !list.length) return;
-        renderedSections++;
-        const sorted=list.slice().sort((a,b)=>(a.code || '').localeCompare(b.code || ''));
-        const section=document.createElement('div');
+        const section=document.createElement('section');
         section.className='plan-category';
-        section.dataset.planGroup = group.id;
-        const title=document.createElement('div');
-        title.className='plan-category-title';
-        title.textContent=group.label;
-        section.appendChild(title);
-        sorted.forEach(entry=>{
-          const entryBox=document.createElement('div');
-          entryBox.className='plan-entry';
-          const header=document.createElement('div');
-          header.className='plan-entry-header';
-          header.textContent=`${entry.code}［${entry.name || ''}］`;
-          entryBox.appendChild(header);
-          const grid=document.createElement('div');
-          grid.className='plan-entry-grid';
-          appendSelfPayField(grid, entry);
-          const entryCategory=(entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
-          if(entryCategory==='B'){
-            if(entry.code && entry.code.indexOf('BB') === 0){
+        section.dataset.planCategory = group.id;
+        const headingWrap=document.createElement('div');
+        headingWrap.className='plan-category-heading';
+        const headingEntry=group.anchor ? getHeadingEntry(group.anchor) : null;
+        const heading=document.createElement('h3');
+        heading.className='h3';
+        if(group.anchor){
+          heading.id = group.anchor;
+          heading.dataset.anchor = group.anchor;
+        }
+        heading.textContent = headingEntry && headingEntry.label ? headingEntry.label : (group.label || '服務項目');
+        headingWrap.appendChild(heading);
+        section.appendChild(headingWrap);
+        const body=document.createElement('div');
+        body.className='plan-category-body';
+        const list=(groupedById[group.id] || []).slice().sort((a,b)=>(a.code || '').localeCompare(b.code || ''));
+        if(list.length){
+          totalEntries += list.length;
+          list.forEach(entry=>{
+            const entryBox=document.createElement('div');
+            entryBox.className='plan-entry';
+            const header=document.createElement('div');
+            header.className='plan-entry-header';
+            header.textContent=`${entry.code}［${entry.name || ''}］`;
+            entryBox.appendChild(header);
+            const grid=document.createElement('div');
+            grid.className='plan-entry-grid';
+            appendSelfPayField(grid, entry);
+            const entryCategory=(entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
+            if(entryCategory==='B'){
+              if(entry.code && entry.code.indexOf('BB') === 0){
+                const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+                grid.appendChild(vendorField.wrap);
+                const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○日照中心'});
+                vendorNameField.wrap.dataset.planVendorName=entry.code;
+                grid.appendChild(vendorNameField.wrap);
+                appendAutoSummaryField(grid, entry, '預估使用概況');
+                const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'系統已提供建議內容，可依個案調整',className:'full'});
+                grid.appendChild(usageField.wrap);
+              }else if(entry.code === 'BD03'){
+                const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+                grid.appendChild(vendorField.wrap);
+                const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○交通車'});
+                vendorNameField.wrap.dataset.planVendorName=entry.code;
+                grid.appendChild(vendorNameField.wrap);
+                appendAutoSummaryField(grid, entry, '預估交通安排');
+                const usageField=createPlanInput(entry,'usage','交通使用方式',{as:'textarea',placeholder:'系統已提供建議內容，可再補充乘車安排',className:'full'});
+                grid.appendChild(usageField.wrap);
+              }else if(isBaCode(entry.code)){
+                const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+                grid.appendChild(vendorField.wrap);
+                const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
+                vendorNameField.wrap.dataset.planVendorName=entry.code;
+                grid.appendChild(vendorNameField.wrap);
+                if(requiresBaManualUnits(entry.code)){
+                  const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                  grid.appendChild(unitVisitField.wrap);
+                }
+                const unitField=createPlanInput(entry,'monthlyUnits','月目標次數',{placeholder:'例：10',attrs:{inputmode:'decimal',min:'0'}});
+                grid.appendChild(unitField.wrap);
+                const weeklyWrap=document.createElement('div');
+                weeklyWrap.className='plan-field full';
+                const weeklyLabel=document.createElement('label');
+                weeklyLabel.textContent='排程換算';
+                weeklyWrap.appendChild(weeklyLabel);
+                const weeklyBox=document.createElement('div');
+                weeklyBox.className='auto-summary-box empty';
+                weeklyBox.dataset.planBaDisplay = entry.code;
+                weeklyWrap.appendChild(weeklyBox);
+                const weeklyHint=document.createElement('div');
+                weeklyHint.className='plan-hint';
+                weeklyHint.textContent='每週次數以 4.5 週換算，排程取整；金額計算仍以向下取整（元）。';
+                weeklyWrap.appendChild(weeklyHint);
+                grid.appendChild(weeklyWrap);
+                baFrequencyDisplays[entry.code] = weeklyBox;
+                appendAutoSummaryField(grid, entry, '預估使用概況');
+                const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+                grid.appendChild(usageField.wrap);
+              }else{
+                const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+                grid.appendChild(vendorField.wrap);
+                const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
+                vendorNameField.wrap.dataset.planVendorName=entry.code;
+                grid.appendChild(vendorNameField.wrap);
+                const weeklyField=createPlanInput(entry,'weeklyFreq','每週次數',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                grid.appendChild(weeklyField.wrap);
+                const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                grid.appendChild(unitVisitField.wrap);
+                const extraVisitField=createPlanInput(entry,'monthlyExtraVisits','每月額外次數',{type:'number',attrs:{step:'1',min:'0',inputmode:'decimal'}});
+                grid.appendChild(extraVisitField.wrap);
+                const extraUnitField=createPlanInput(entry,'monthlyExtraUnit','額外每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                grid.appendChild(extraUnitField.wrap);
+                const extraDescField=createPlanInput(entry,'monthlyExtraDesc','額外排班說明',{placeholder:'例：雙十國慶排班 2 次'});
+                grid.appendChild(extraDescField.wrap);
+                appendAutoSummaryField(grid, entry, '預估使用概況');
+                const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+                grid.appendChild(usageField.wrap);
+              }
+            }else if(entryCategory==='C'){
               const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
               grid.appendChild(vendorField.wrap);
-              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○日照中心'});
+              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○專業服務單位'});
               vendorNameField.wrap.dataset.planVendorName=entry.code;
               grid.appendChild(vendorNameField.wrap);
-              appendAutoSummaryField(grid, entry, '預估使用概況');
-              const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'系統已提供建議內容，可依個案調整',className:'full'});
+              const frequencyField=createPlanInput(entry,'frequency','頻率/時數',{placeholder:'例：每月 2 次，每次 60 分鐘'});
+              grid.appendChild(frequencyField.wrap);
+              const usageField=createPlanInput(entry,'usage','服務內容',{as:'textarea',placeholder:'例：評估院內復能程度，提供衛教指導與復健訓練'});
               grid.appendChild(usageField.wrap);
-            }else if(entry.code === 'BD03'){
+            }else if(entryCategory==='D'){
               const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
               grid.appendChild(vendorField.wrap);
               const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○交通車'});
               vendorNameField.wrap.dataset.planVendorName=entry.code;
               grid.appendChild(vendorNameField.wrap);
-              appendAutoSummaryField(grid, entry, '預估交通安排');
-              const usageField=createPlanInput(entry,'usage','交通使用方式',{as:'textarea',placeholder:'系統已提供建議內容，可再補充乘車安排',className:'full'});
+              const routeField=createPlanInput(entry,'route','接送路線',{placeholder:'例：住家→日照中心→住家'});
+              grid.appendChild(routeField.wrap);
+              const periodField=createPlanInput(entry,'period','服務期間',{placeholder:'例：113年01月~113年12月'});
+              grid.appendChild(periodField.wrap);
+              const frequencyField=createPlanInput(entry,'frequency','頻率',{placeholder:'例：每週 2 次'});
+              grid.appendChild(frequencyField.wrap);
+              const usageField=createPlanInput(entry,'usage','交通需求與安排',{as:'textarea',placeholder:'例：安排專車接送至日照中心（去程07:30，回程16:30）'});
               grid.appendChild(usageField.wrap);
-            }else if(isBaCode(entry.code)){
-              const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
-              grid.appendChild(vendorField.wrap);
-              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
-              vendorNameField.wrap.dataset.planVendorName=entry.code;
-              grid.appendChild(vendorNameField.wrap);
-              if(requiresBaManualUnits(entry.code)){
-                const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-                grid.appendChild(unitVisitField.wrap);
-              }
-              const unitField=createPlanInput(entry,'monthlyUnits','月目標次數',{placeholder:'例：10',attrs:{inputmode:'decimal',min:'0'}});
-              grid.appendChild(unitField.wrap);
-              const weeklyWrap=document.createElement('div');
-              weeklyWrap.className='plan-field full';
-              const weeklyLabel=document.createElement('label');
-              weeklyLabel.textContent='排程換算';
-              weeklyWrap.appendChild(weeklyLabel);
-              const weeklyBox=document.createElement('div');
-              weeklyBox.className='auto-summary-box empty';
-              weeklyBox.dataset.planBaDisplay = entry.code;
-              weeklyWrap.appendChild(weeklyBox);
-              const weeklyHint=document.createElement('div');
-              weeklyHint.className='plan-hint';
-              weeklyHint.textContent='每週次數以 4.5 週換算，排程取整；金額計算仍以向下取整（元）。';
-              weeklyWrap.appendChild(weeklyHint);
-              grid.appendChild(weeklyWrap);
-              baFrequencyDisplays[entry.code] = weeklyBox;
-              appendAutoSummaryField(grid, entry, '預估使用概況');
-              const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+            }else if(entryCategory==='EF'){
+              const originalField=createPlanInput(entry,'original','原核定金額',{placeholder:'例：28,000'});
+              grid.appendChild(originalField.wrap);
+              const plannedField=createPlanInput(entry,'planned','核定金額',{placeholder:'例：28,000'});
+              grid.appendChild(plannedField.wrap);
+              const remainField=createPlanInput(entry,'remaining','餘額',{placeholder:'例：剩餘20單位'});
+              grid.appendChild(remainField.wrap);
+              const usageField=createPlanInput(entry,'usage','服務說明',{as:'textarea',placeholder:'例：核配金額依長照中心核定，將安排輔具廠商製作與裝設。'});
+              grid.appendChild(usageField.wrap);
+            }else if(entryCategory==='G'){
+              const plannedField=createPlanInput(entry,'planned','核定額度',{placeholder:'例：12日'});
+              grid.appendChild(plannedField.wrap);
+              const remainField=createPlanInput(entry,'remaining','餘額',{placeholder:'例：剩餘8日'});
+              grid.appendChild(remainField.wrap);
+              const usageField=createPlanInput(entry,'usage','喘息安排',{as:'textarea',placeholder:'例：安排週三全日喘息，主要照顧者於此時段休息並處理家務。'});
+              grid.appendChild(usageField.wrap);
+            }else if(entryCategory==='SC'){
+              const periodField=createPlanInput(entry,'period','短照額度期間',{placeholder:'例：113年01月~113年12月'});
+              grid.appendChild(periodField.wrap);
+              const noteField=createPlanInput(entry,'usage','比例或使用說明',{as:'textarea',placeholder:'例：本月短照占比18%，符合政策規範（≦20%）。'});
+              grid.appendChild(noteField.wrap);
+            }else if(entryCategory==='MEAL'){
+              const mealsField=createPlanInput(entry,'mealsPerDay','1日核定餐數',{placeholder:'例：2（午、晚餐）'});
+              grid.appendChild(mealsField.wrap);
+              const mealTypeField=createPlanInput(entry,'mealType','餐別／質地',{placeholder:'例：午餐、晚餐；軟質餐'});
+              grid.appendChild(mealTypeField.wrap);
+              const usageField=createPlanInput(entry,'usage','送餐備註',{as:'textarea',placeholder:'例：含到宅關懷與餐點保溫指導；列冊中低收入戶享有補助。'});
               grid.appendChild(usageField.wrap);
             }else{
-              const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
-              grid.appendChild(vendorField.wrap);
-              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
-              vendorNameField.wrap.dataset.planVendorName=entry.code;
-              grid.appendChild(vendorNameField.wrap);
-              const weeklyField=createPlanInput(entry,'weeklyFreq','每週次數',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-              grid.appendChild(weeklyField.wrap);
-              const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-              grid.appendChild(unitVisitField.wrap);
-              const extraVisitField=createPlanInput(entry,'monthlyExtraVisits','每月額外次數',{type:'number',attrs:{step:'1',min:'0',inputmode:'decimal'}});
-              grid.appendChild(extraVisitField.wrap);
-              const extraUnitField=createPlanInput(entry,'monthlyExtraUnit','額外每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-              grid.appendChild(extraUnitField.wrap);
-              const extraDescField=createPlanInput(entry,'monthlyExtraDesc','額外使用說明',{placeholder:'例：搭配陪同就醫使用'});
-              extraDescField.wrap.classList.add('full');
-              grid.appendChild(extraDescField.wrap);
-              const unitField=createPlanInput(entry,'monthlyUnits','月單位',{placeholder:'例：32',attrs:{inputmode:'decimal'}});
-              grid.appendChild(unitField.wrap);
-              const freqField=createPlanInput(entry,'frequency','頻率／計算說明',{as:'textarea',placeholder:'系統依數值自動產生，可再補充',className:'full'});
-              grid.appendChild(freqField.wrap);
-              const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+              const usageField=createPlanInput(entry,'usage','服務說明',{as:'textarea',placeholder:'請填寫此服務之使用方式或補充說明'});
               grid.appendChild(usageField.wrap);
             }
-          }else if(entryCategory==='C'){
-            const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
-            grid.appendChild(vendorField.wrap);
-            const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○專業服務單位'});
-            vendorNameField.wrap.dataset.planVendorName=entry.code;
-            grid.appendChild(vendorNameField.wrap);
-            const periodField=createPlanInput(entry,'period','服務期間',{placeholder:'例：113年01月至113年03月'});
-            grid.appendChild(periodField.wrap);
-            const usageField=createPlanInput(entry,'usage','單次規劃說明',{as:'textarea',placeholder:'請描述專業服務內容與案主/家屬配合情況'});
-            grid.appendChild(usageField.wrap);
-          }else if(entryCategory==='EF'){
-            const periodField=createPlanInput(entry,'period','補助額度期間',{placeholder:'例：113年01月~113年12月'});
-            grid.appendChild(periodField.wrap);
-            const originalField=createPlanInput(entry,'original','原有額度（元）',{placeholder:'例：20000',attrs:{inputmode:'decimal'}});
-            grid.appendChild(originalField.wrap);
-            const approveField=createPlanInput(entry,'planned','本次核定（元）',{placeholder:'例：12000',attrs:{inputmode:'decimal'}});
-            grid.appendChild(approveField.wrap);
-            const remainField=createPlanInput(entry,'remaining','剩餘額度（元）',{placeholder:'例：8000',attrs:{inputmode:'decimal'}});
-            grid.appendChild(remainField.wrap);
-            const usageField=createPlanInput(entry,'usage','輔具／無障礙重點（選填）',{as:'textarea',placeholder:'例：浴室增設扶手、防滑墊；家屬可配合施工時程。'});
-            grid.appendChild(usageField.wrap);
-          }else if(entryCategory==='G'){
-            const periodField=createPlanInput(entry,'period','喘息額度期間',{placeholder:'例：113年01月~113年12月'});
-            grid.appendChild(periodField.wrap);
-            const plannedField=createPlanInput(entry,'planned','本次規劃（時數／單位）',{placeholder:'例：40單位',attrs:{inputmode:'decimal'}});
-            grid.appendChild(plannedField.wrap);
-            const remainField=createPlanInput(entry,'remaining','餘額',{placeholder:'例：剩餘20單位'});
-            grid.appendChild(remainField.wrap);
-            const usageField=createPlanInput(entry,'usage','喘息安排與配合狀況',{as:'textarea',placeholder:'例：安排週三全日喘息，主要照顧者於此時段休息並處理家務。'});
-            grid.appendChild(usageField.wrap);
-          }else if(entryCategory==='SC'){
-            const periodField=createPlanInput(entry,'period','短照額度期間',{placeholder:'例：113年01月~113年12月'});
-            grid.appendChild(periodField.wrap);
-            const noteField=createPlanInput(entry,'usage','比例或使用說明',{as:'textarea',placeholder:'例：本月短照占比18%，符合政策規範（≦20%）。'});
-            grid.appendChild(noteField.wrap);
-          }else if(entryCategory==='MEAL'){
-            const mealsField=createPlanInput(entry,'mealsPerDay','1日核定餐數',{placeholder:'例：2（午、晚餐）'});
-            grid.appendChild(mealsField.wrap);
-            const mealTypeField=createPlanInput(entry,'mealType','餐別／質地',{placeholder:'例：午餐、晚餐；軟質餐'});
-            grid.appendChild(mealTypeField.wrap);
-            const usageField=createPlanInput(entry,'usage','送餐備註',{as:'textarea',placeholder:'例：含到宅關懷與餐點保溫指導；列冊中低收入戶享有補助。'});
-            grid.appendChild(usageField.wrap);
-          }else{
-            const usageField=createPlanInput(entry,'usage','服務說明',{as:'textarea',placeholder:'請填寫此服務之使用方式或補充說明'});
-            grid.appendChild(usageField.wrap);
-          }
-          entryBox.appendChild(grid);
-          section.appendChild(entryBox);
-          if(isBaCode(entry.code)){
-            updateBaEntryDerived(entry.code, {skipPreview:true});
-          }
-          updatePlanVendorVisibility(entry.code);
-          if(!(entry.code && entry.code.indexOf('BB') === 0) && entry.code !== 'BD03' && !isBaCode(entry.code)){
-            updatePlanMonthlyComputation(entry.code, {skipPreview:true});
-          }
-        });
+            entryBox.appendChild(grid);
+            body.appendChild(entryBox);
+            if(isBaCode(entry.code)){
+              updateBaEntryDerived(entry.code, {skipPreview:true});
+            }
+            updatePlanVendorVisibility(entry.code);
+            if(!(entry.code && entry.code.indexOf('BB') === 0) && entry.code !== 'BD03' && !isBaCode(entry.code)){
+              updatePlanMonthlyComputation(entry.code, {skipPreview:true});
+            }
+          });
+        }else{
+          const hint=document.createElement('div');
+          hint.className='plan-empty-hint';
+          hint.textContent='尚未選擇此類服務。';
+          body.appendChild(hint);
+        }
+        section.appendChild(body);
         host.appendChild(section);
       });
-      if(!renderedSections){
-        const empty=document.createElement('div');
-        empty.className='hint';
-        empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
-        host.appendChild(empty);
+      host.dataset.empty = totalEntries > 0 ? '0' : '1';
+      const headingMissing = applyHeadingSpecToDom() || [];
+      handleHeadingSpecValidation({ missing: headingMissing });
+      if(sectionViewsReady){
+        refreshExecutionHeadingRegistry();
       }
-      scheduleLayoutMeasurements();
+      scheduleSummaryUpdate();
+      scheduleAllMeasurements();
     }
     function updateSelfPayHint(code){
       if(!code) return;
@@ -15276,11 +15726,8 @@
       toast.dataset.target = payload.target || '';
       toast.dataset.page = payload.page || '';
       toast.dataset.step = (payload.step !== undefined && payload.step !== null) ? String(payload.step) : '';
-      toast.dataset.action = payload.action || '';
       if(actionBtn){
-        const actionLabel = payload.actionLabel || (payload.target ? '前往修正' : '前往修正');
-        actionBtn.textContent = actionLabel;
-        actionBtn.style.display = (payload.target || payload.action) ? '' : 'none';
+        actionBtn.style.display = payload.target ? '' : 'none';
       }
     }
 
@@ -15293,11 +15740,7 @@
       toast.dataset.page='';
       toast.dataset.type='';
       toast.dataset.step='';
-      toast.dataset.action='';
-      if(action){
-        action.style.display='';
-        action.textContent='前往修正';
-      }
+      if(action){ action.style.display=''; }
     }
 
     function initValidationToast(){
@@ -15311,16 +15754,7 @@
           const targetId=toast.dataset.target;
           const stepValue=toast.dataset.step;
           const step = stepValue ? Number(stepValue) : null;
-          const actionMode = toast.dataset.action || '';
           hideValidationToast();
-          if(actionMode === 'heading-spec'){
-            const report = applyHeadingSpecToDom();
-            registerSideNavGroups();
-            document.querySelectorAll('[data-section]').forEach(section=>updateSideNavForSection(section));
-            logHeadingSpecReport(report);
-            scheduleAllMeasurements();
-            return;
-          }
           if(pageId) setActivePage(pageId, { step: step });
           else if(step) setCurrentWizardStep(step, { scroll:false });
           focusErrorTarget(targetId);
@@ -15334,10 +15768,7 @@
 
     function handleErrorSummaryClick(evt){
       if(evt) evt.preventDefault();
-      const link = evt
-        ? (evt.currentTarget
-          || (evt.target && typeof evt.target.closest === 'function' ? evt.target.closest('[data-page]') : null))
-        : null;
+      const link=evt && evt.currentTarget ? evt.currentTarget : null;
       if(!link) return;
       const pageId=link.dataset.page;
       const fieldId=link.dataset.target;
@@ -15685,7 +16116,7 @@
         menu.dataset.open='1';
         button.setAttribute('aria-expanded','true');
         attachWizardMoreMenuEvents();
-        scheduleFloatingActionsMeasurement();
+        scheduleAllMeasurements();
       }
     }
 
@@ -15700,7 +16131,7 @@
       }
       detachWizardMoreMenuEvents();
       if(wasOpen){
-        scheduleFloatingActionsMeasurement();
+        scheduleAllMeasurements();
       }
     }
 
@@ -15844,7 +16275,7 @@
       currentPageId = finalPageId;
       updatePageTabActiveState(finalPageId);
       scheduleSideNavRender();
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
       scheduleSummaryProgressRender();
     }
 
@@ -16020,7 +16451,7 @@
         updateWizardButtons();
       }
       refreshWizardJumpOptions();
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initFloatingActions(){
@@ -16057,18 +16488,16 @@
         });
       }
       updateWizardButtons();
-      scheduleFloatingActionsMeasurement();
+      scheduleAllMeasurements();
     }
 
 
         /* ===== 初始化 ===== */
     function handlePageTabClick(event){
-      const btn = event
-        ? (event.currentTarget
-          || (event.target && typeof event.target.closest === 'function' ? event.target.closest('[data-page]') : null))
-        : null;
-      if(!btn) return;
-      const pageId = btn.dataset ? btn.dataset.page : '';
+      const el = event ? (event.currentTarget || event.target) : null;
+      if(!el) return;
+      const btn = el.closest ? el.closest('[data-page]') : el;
+      const pageId = btn && btn.dataset ? btn.dataset.page : '';
       setActivePage(pageId);
     }
 
@@ -16098,108 +16527,10 @@
           changed = true;
         }
         if(isActive){
-          const datasetPage = section.dataset ? (section.dataset.page || '') : '';
-          if(datasetPage){
-            finalPageId = datasetPage;
-          }else if(typeof section.getAttribute === 'function'){
-            finalPageId = section.getAttribute('data-page') || '';
-          }else{
-            finalPageId = '';
-          }
+          finalPageId = section.dataset ? (section.dataset.page || '') : (section.getAttribute('data-page') || '');
         }
       });
       return { finalPageId, changed };
-    }
-
-    function getSectionPageId(section){
-      if(!section) return '';
-      if(section.dataset && section.dataset.page){
-        return section.dataset.page;
-      }
-      if(typeof section.getAttribute === 'function'){
-        return section.getAttribute('data-page') || '';
-      }
-      return '';
-    }
-
-    function pageExistsInSections(sections, pageId){
-      if(!Array.isArray(sections) || !sections.length || !pageId){
-        return false;
-      }
-      for(let i=0;i<sections.length;i++){
-        const section = sections[i];
-        if(!section) continue;
-        if(getSectionPageId(section) === pageId){
-          return true;
-        }
-      }
-      return false;
-    }
-
-    function findActivePageId(sections){
-      if(!Array.isArray(sections) || !sections.length){
-        return '';
-      }
-      for(let i=0;i<sections.length;i++){
-        const section = sections[i];
-        if(!section || !section.dataset) continue;
-        if(section.dataset.active === '1'){
-          const pageId = getSectionPageId(section);
-          if(pageId){
-            return pageId;
-          }
-        }
-      }
-      return '';
-    }
-
-    function findFirstSectionPageId(sections){
-      if(!Array.isArray(sections) || !sections.length){
-        return '';
-      }
-      for(let i=0;i<sections.length;i++){
-        const section = sections[i];
-        if(!section) continue;
-        const pageId = getSectionPageId(section);
-        if(pageId){
-          return pageId;
-        }
-      }
-      return '';
-    }
-
-    function resolvePageOrderFallback(sections){
-      if(!Array.isArray(sections) || !sections.length || !Array.isArray(PAGE_ORDER)){
-        return '';
-      }
-      for(let i=0;i<PAGE_ORDER.length;i++){
-        const candidate = PAGE_ORDER[i];
-        if(candidate && pageExistsInSections(sections, candidate)){
-          return candidate;
-        }
-      }
-      return '';
-    }
-
-    function normalizeRequestedPageId(rawPageId, sections){
-      const requested = typeof rawPageId === 'string' ? rawPageId.trim() : (rawPageId ? String(rawPageId) : '');
-      if(requested){
-        if((Array.isArray(PAGE_ORDER) && PAGE_ORDER.indexOf(requested) !== -1) || pageExistsInSections(sections, requested)){
-          return requested;
-        }
-      }
-      if(pageExistsInSections(sections, currentPageId)){
-        return currentPageId;
-      }
-      const activeId = findActivePageId(sections);
-      if(activeId){
-        return activeId;
-      }
-      const orderMatch = resolvePageOrderFallback(sections);
-      if(orderMatch){
-        return orderMatch;
-      }
-      return findFirstSectionPageId(sections);
     }
 
     function updatePageTabActiveState(finalPageId){
@@ -16215,10 +16546,140 @@
       });
     }
 
+    function applyGoalsSectionDefaults(section){
+      if(!section || !section.dataset) return false;
+      const state = section.__state || (section.__state = readSectionState(section.dataset.section));
+      let changed = false;
+      if(state.hideFilled){
+        state.hideFilled = false;
+        changed = true;
+      }
+      if(!state.showAdvanced){
+        state.showAdvanced = true;
+        changed = true;
+      }
+      section.dataset.hideFilled = '0';
+      section.dataset.showAdvanced = '1';
+      const groups = Array.isArray(section.__groups) ? section.__groups : [];
+      if(groups.length){
+        const firstGroup = groups.find(group=>group && group.element) || groups[0];
+        if(firstGroup){
+          if(state.collapsedGroups && state.collapsedGroups[firstGroup.id]){
+            delete state.collapsedGroups[firstGroup.id];
+            changed = true;
+          }
+          setGroupCollapsed(section, firstGroup, false, { save:false });
+        }
+      }
+      applySectionState(section, state);
+      updateAllGroupEmptyStates(section);
+      if(changed){
+        writeSectionState(section.dataset.section, state);
+      }
+      return changed;
+    }
+
+    function ensureGoalsPageDefaults(activeSection){
+      const planGroup=document.getElementById('contactVisitGroup');
+      if(planGroup){
+        planGroup.dataset.planLocked = '0';
+        planGroup.dataset.collapsed = '0';
+      }
+      const host = activeSection || document.querySelector('.page-section[data-page="goals"]');
+      if(!host){
+        const audit = getUiAuditState();
+        if(audit){
+          audit.goals_defaults_ok = false;
+          audit.contactVisit_init_open = !!(planGroup && planGroup.dataset && planGroup.dataset.planLocked === '0' && planGroup.dataset.collapsed === '0');
+        }
+        return;
+      }
+      const sections = host.querySelectorAll('[data-section]');
+      sections.forEach(section=>{
+        if(applyGoalsSectionDefaults(section)){
+          updateSideNavForSection(section);
+        }
+      });
+      const audit = getUiAuditState();
+      if(audit){
+        const defaultsApplied = Array.from(sections).every(section=>{
+          if(!section || !section.dataset) return false;
+          const hideOk = section.dataset.hideFilled === '0';
+          const showOk = section.dataset.showAdvanced === '1';
+          const firstGroup = section.querySelector('.section-group');
+          const firstGroupOpen = !firstGroup || firstGroup.dataset.collapsed !== '1';
+          return hideOk && showOk && firstGroupOpen;
+        });
+        audit.goals_defaults_ok = defaultsApplied;
+        audit.contactVisit_init_open = !!(planGroup && planGroup.dataset && planGroup.dataset.planLocked === '0' && planGroup.dataset.collapsed === '0');
+      }
+      scheduleSummaryProgressRender();
+      scheduleSummaryUpdate();
+      scheduleSideNavRender();
+      scheduleAllMeasurements();
+    }
+
+    function inspectPageSectionVisibility(activeSection){
+      const section = activeSection || document.querySelector(`.page-section[data-page="${currentPageId}"]`);
+      if(!section) return;
+      const groups = section.querySelectorAll('.section-group');
+      if(!groups.length) return;
+      const rect = section.getBoundingClientRect();
+      if(rect.height > 2) return;
+      let culprit = section;
+      let reason = 'unknown';
+      let node = section;
+      while(node && node !== document.body){
+        const style = window.getComputedStyle(node);
+        if(style.display === 'none'){
+          culprit = node;
+          reason = 'display:none';
+          break;
+        }
+        if(style.visibility === 'hidden'){
+          culprit = node;
+          reason = 'visibility:hidden';
+          break;
+        }
+        if((style.overflow === 'hidden' || style.overflowY === 'hidden' || style.overflowX === 'hidden') && node.scrollHeight === 0){
+          culprit = node;
+          reason = 'overflow hidden (zero height)';
+          break;
+        }
+        node = node.parentElement;
+      }
+      let fixed = false;
+      if(culprit){
+        if(culprit.dataset && culprit.dataset.collapsed === '1'){
+          culprit.dataset.collapsed = '0';
+          fixed = true;
+        }
+        if(culprit.style){
+          if(culprit.style.display === 'none'){
+            culprit.style.display = '';
+            fixed = true;
+          }
+          if(culprit.style.visibility === 'hidden'){
+            culprit.style.visibility = '';
+            fixed = true;
+          }
+        }
+      }
+      console.warn('頁面高度巡檢', {
+        page: section.dataset ? section.dataset.page : currentPageId,
+        reason,
+        culprit,
+        fixed
+      });
+      if(fixed){
+        scheduleAllMeasurements();
+      }
+    }
+
     function setActivePage(pageId, options){
       const sections = Array.from(document.querySelectorAll('.page-section'));
       if(!sections.length) return false;
-      const requestedId = normalizeRequestedPageId(pageId, sections);
+      const requestedId = typeof pageId === 'string' ? pageId : (pageId ? String(pageId) : '');
       const opts = options || {};
       const targetStep = requestedId ? determineWizardStepForPage(requestedId, opts) : null;
       if(targetStep !== null && isWizardStepLocked(targetStep)){
@@ -16229,7 +16690,7 @@
       if(requestedId){
         for(let i=0;i<sections.length;i++){
           const section = sections[i];
-          if(section && getSectionPageId(section) === requestedId){
+          if(section && section.dataset && section.dataset.page === requestedId){
             activeSection = section;
             break;
           }
@@ -16240,29 +16701,15 @@
       }
       if(!activeSection) return false;
       const activation = applyPageActivation(sections, activeSection);
-      let finalPageId = activation.finalPageId;
-      if(!finalPageId){
-        finalPageId = getSectionPageId(activeSection) || '';
-      }
-      const previousPageId = currentPageId || '';
-      let resolvedPageId = finalPageId || '';
-      if(!resolvedPageId && requestedId){
-        resolvedPageId = requestedId;
-      }
-      if(!resolvedPageId && previousPageId){
-        resolvedPageId = previousPageId;
-      }
-      if(!resolvedPageId){
-        resolvedPageId = findFirstSectionPageId(sections);
-      }
-      currentPageId = resolvedPageId || '';
-      updatePageTabActiveState(resolvedPageId);
+      const finalPageId = activation.finalPageId || (activeSection.dataset ? (activeSection.dataset.page || '') : '');
+      currentPageId = finalPageId;
+      updatePageTabActiveState(finalPageId);
       let effectiveStep = null;
-      if(resolvedPageId){
-        if(resolvedPageId === requestedId){
+      if(finalPageId){
+        if(finalPageId === requestedId){
           effectiveStep = targetStep;
         }else{
-          effectiveStep = determineWizardStepForPage(resolvedPageId, {});
+          effectiveStep = determineWizardStepForPage(finalPageId, {});
         }
       }
       if(effectiveStep !== null){
@@ -16271,12 +16718,13 @@
         updateWizardButtons();
         syncTabStatuses();
       }
-      scheduleSideNavRender();
-      scheduleLayoutMeasurements();
-      scheduleSummaryProgressRender();
-      if(resolvedPageId === 'goals'){
-        window.requestAnimationFrame(()=>ensureGoalsPageDefaults());
+      if(finalPageId === 'goals'){
+        ensureGoalsPageDefaults(activeSection);
       }
+      inspectPageSectionVisibility(activeSection);
+      scheduleSideNavRender();
+      scheduleAllMeasurements();
+      scheduleSummaryProgressRender();
       return true;
     }
 
@@ -16305,7 +16753,7 @@
     ]);
 
     const basicInfoState = { complete:false };
-    const planGroupState = { locked:true, pendingExpand:false };
+    const planGroupState = { locked:true, pendingExpand:false, hasOpened:false };
 
     function isBasicInfoComplete(){
       for(let i=0;i<BASIC_INFO_REQUIRED_FIELDS.length;i++){
@@ -16362,16 +16810,16 @@
           if(planGroupState.locked){
             if(groupElement.dataset.collapsed !== '1'){
               groupElement.dataset.collapsed = '1';
-              scheduleStickyMeasurement();
-              scheduleLayoutMeasurements();
+              scheduleAllMeasurements();
             }
+            planGroupState.hasOpened = false;
           }else if(shouldExpand){
             if(groupElement.dataset.collapsed !== '0'){
               groupElement.dataset.collapsed = '0';
-              scheduleStickyMeasurement();
-              scheduleLayoutMeasurements();
+              scheduleAllMeasurements();
             }
             planGroupState.pendingExpand = false;
+            planGroupState.hasOpened = true;
           }
         }
         return;
@@ -16391,9 +16839,11 @@
         if(ctrl.element.dataset.collapsed !== '1'){
           ctrl.applyState(true);
         }
+        planGroupState.hasOpened = false;
       }else if(shouldExpand){
         ctrl.applyState(false);
         planGroupState.pendingExpand = false;
+        planGroupState.hasOpened = true;
       }
     }
 
@@ -16409,7 +16859,8 @@
       planGroupState.locked = !!locked;
       if(planGroupState.locked){
         planGroupState.pendingExpand = false;
-      }else if(shouldExpand){
+        planGroupState.hasOpened = false;
+      }else if(shouldExpand || !planGroupState.hasOpened){
         planGroupState.pendingExpand = true;
       }
       applyPlanGroupLockState({ expand: shouldExpand });
@@ -16637,6 +17088,12 @@
       const groups=document.querySelectorAll('.group');
       groups.forEach(group=>{
         if(!group) return;
+        if(group.closest('.section-group-body')){
+          group.dataset.collapsible = '0';
+          group.querySelectorAll('.group-collapse').forEach(btn=>btn.remove());
+          ensureGroupContentWrapper(group);
+          return;
+        }
         if(group.querySelector(':scope > .group-header')) return;
         const collapsible = !(group.dataset && (group.dataset.collapsible === '0' || group.dataset.collapsible === 'disabled'));
         let heading=group.querySelector(':scope > .h1, :scope > .heading-tier');
@@ -16695,8 +17152,7 @@
           const ariaLabel=titleText ? `${actionText} ${titleText}` : actionText;
           if(toggle) toggle.setAttribute('aria-label', ariaLabel);
           if(label) label.textContent = actionText;
-          scheduleStickyMeasurement();
-          scheduleLayoutMeasurements();
+          scheduleAllMeasurements();
         };
         if(collapsible && toggle){
           const controller={ element:group, applyState, toggle };
@@ -16753,13 +17209,13 @@
       buildSection1(); // 初次預覽一次
     }
 
-    window.addEventListener('resize', scheduleLayoutMeasurements);
-    window.addEventListener('orientationchange', scheduleLayoutMeasurements);
-    window.addEventListener('focusin', scheduleLayoutMeasurements);
-    window.addEventListener('focusout', scheduleLayoutMeasurements);
+    window.addEventListener('resize', scheduleAllMeasurements);
+    window.addEventListener('orientationchange', scheduleAllMeasurements);
+    window.addEventListener('focusin', scheduleAllMeasurements);
+    window.addEventListener('focusout', scheduleAllMeasurements);
     if(window.visualViewport){
-      window.visualViewport.addEventListener('resize', scheduleLayoutMeasurements);
-      window.visualViewport.addEventListener('scroll', scheduleLayoutMeasurements);
+      window.visualViewport.addEventListener('resize', scheduleAllMeasurements);
+      window.visualViewport.addEventListener('scroll', scheduleAllMeasurements);
     }
 
     function applyEllipsisTooltips(){
@@ -16777,7 +17233,26 @@
       });
     }
 
-    window.addEventListener('load', ()=>{
+    function initializeSidebarOnLoad(){
+      hoistNestedPageSections();
+      dedupeGoalsSection();
+      if(document.querySelector('.page-section .page-section')){
+        console.error('偵測到巢狀 page-section，請檢查去重程序。');
+      }
+      prepareCaseProfileLayout();
+      renderServicePlanEditor();
+      applyHeadingSpecToDom();
+      const headingSpecReport = logHeadingSpecReport();
+      handleHeadingSpecValidation(headingSpecReport);
+      initHeadingSpecToast();
+      ensureAllGroupBodies(document);
+      initGroupCollapsibles();
+      initSectionViews();
+      refreshExecutionHeadingRegistry();
+      applyHeadingSpecVersionUpgrade();
+      ensureGoalsPageDefaults();
+      scheduleSummaryUpdate();
+      scheduleAllMeasurements();
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
       }
@@ -16786,7 +17261,6 @@
       initWizardFlow();
       initFloatingActions();
       initPlanSummaryCopy();
-      initPageTabs();
       initSideNavToggle();
       initValidationToast();
       initDateInputs();
@@ -16796,12 +17270,9 @@
       loadConsultants();
       initCmsLevelButtons();
       loadServiceCatalog();
-
-      prepareCaseProfileLayout();
-      ensureAllGroupBodies(document);
-      initGroupCollapsibles();
       initBasicInfoValidation();
       initStickyOverflowToggle();
+      initPageTabs();
 
       // S1
       renderS1(); initSection1State();
@@ -16905,111 +17376,19 @@
       updateConsultVisitText();
       buildApprovalPlanPreview();
 
-      initSectionViews();
-
       applyInitialUiPreferences();
 
       initAutoSave();
 
       applyEllipsisTooltips();
 
-      scheduleLayoutMeasurements();
+      scheduleAllMeasurements();
 
-    });
-  </script>
-  <script>
-  /* ===== Safety stubs (若外部未提供，避免 ReferenceError) ===== */
-  (function(){
-    const NOP = ()=>{};
-    if(typeof window.resolveWizardStepForElement!=='function'){ window.resolveWizardStepForElement = NOP; }
-    if(typeof window.resolveWizardStepForField!=='function'){ window.resolveWizardStepForField = NOP; }
-    if(typeof window.isWizardStepLocked!=='function'){ window.isWizardStepLocked = ()=>false; }
-    if(typeof window.handleWizardStepLocked!=='function'){ window.handleWizardStepLocked = NOP; }
-    if(typeof window.updateWizardVisual!=='function'){ window.updateWizardVisual = NOP; }
-    if(typeof window.setCurrentWizardStep!=='function'){ window.setCurrentWizardStep = ()=>true; }
-    if(typeof window.setActivePage!=='function'){ window.setActivePage = ()=>true; }
-    if(typeof window.showValidationToast!=='function'){
-      window.showValidationToast = ({type='warn', message='請檢查欄位內容。', action='', actionLabel=''}={})=>{
-        const toast=document.getElementById('validationToast');
-        if(!toast) return;
-        const textEl=document.getElementById('validationToastText');
-        const actionBtn=document.getElementById('validationToastAction');
-        toast.dataset.type=type;
-        toast.dataset.target='';
-        toast.dataset.page='';
-        toast.dataset.step='';
-        toast.dataset.action = action || '';
-        if(textEl){ textEl.textContent = message || ''; }
-        if(actionBtn){
-          const label = actionLabel || (action ? '重新套用' : '前往修正');
-          actionBtn.textContent = label;
-          actionBtn.style.display = action ? '' : 'none';
-        }
-        toast.dataset.show='1';
-      };
-    }
-    if(typeof window.hideValidationToast!=='function'){
-      window.hideValidationToast = ()=>{
-        const toast=document.getElementById('validationToast');
-        if(!toast) return;
-        const actionBtn=document.getElementById('validationToastAction');
-        toast.dataset.show='0';
-        toast.dataset.action='';
-        if(actionBtn){
-          actionBtn.style.display='';
-          actionBtn.textContent='前往修正';
-        }
-      };
-    }
-  })();
-  </script>
-  <script>
-  /* ===== App bootstrap ===== */
-  (function(){
-    function safe(fn){ try{ fn&&fn(); }catch(e){ /* console.warn(e) */ } }
+      reportUiAudit();
 
-    function boot(){
-      // 版面/排版升級與卡片化
-      safe(prepareCaseProfileLayout);
-      // 嚴格先渲染 S1 字典（因後續會用到 refreshCheckcols）
-      safe(renderS1);
-      // 其餘段落初始化
-      safe(renderS2);
-      safe(renderS3);
-      safe(buildS2);
-      safe(buildS3);
-
-      // 表單/檢核/預覽
-      safe(initFormRules);
-      safe(initSection1Preview);
-
-      // 區塊化、進度與導覽（必須在 DOM 都 ready 後）
-      safe(initSectionViews);
-      safe(registerSideNavGroups);
-
-      // 工具列與外觀
-      safe(initUiPresetControls);
-      safe(initFontScaleControls);
-      safe(initStickyOverflowToggle);
-      safe(initSideNavToggle);
-
-      // 日期欄快捷鍵
-      safe(initDateInputs);
-
-      // 自動儲存
-      safe(initAutoSave);
-
-      // 首次度量
-      safe(scheduleLayoutMeasurements);
-      safe(scheduleSummaryUpdate);
     }
 
-    if(document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', boot, { once:true });
-    }else{
-      boot();
-    }
-  })();
+    window.addEventListener('load', initializeSidebarOnLoad);
   </script>
 </body>
 </html>
