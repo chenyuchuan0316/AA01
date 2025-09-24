@@ -2871,7 +2871,8 @@
   </div>
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
-    <section class="group card-main" id="contactVisitGroup" data-collapsed="0" data-plan-locked="1">
+    <section id="contactVisitGroup" class="group card-main"
+             data-plan-locked="0" data-collapsed="0">
       <div class="group-header">
         <div class="titlebar">
           <span class="h1">計畫目標</span>
@@ -4330,6 +4331,273 @@
       notes:'其他備註'
     };
 
+    /* ===== Heading spec ===== */
+    const HEADING_SPEC_VERSION = '2025-09-24';
+
+    const HEADING_SPEC = Object.freeze([
+      /* =================== H1：基本資訊 =================== */
+      {
+        id:'h1-basic', tag:'h1', label:'基本資訊', page:'basic',
+        children:[
+          { id:'h2-basic-unit-code',      tag:'h2', label:'單位代碼' },
+          { id:'h2-basic-case-manager',    tag:'h2', label:'個案管理師' },
+          { id:'h2-basic-case-name',       tag:'h2', label:'個案姓名' },
+          { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' },
+          { id:'h2-basic-cms-level',       tag:'h2', label:'CMS 等級' }
+        ]
+      },
+
+      /* =================== H1：計畫目標 =================== */
+      {
+        id:'h1-goals', tag:'h1', label:'計畫目標', page:'goals',
+        children:[
+
+          /* H2 一、電聯日期 */
+          {
+            id:'h2-goals-call', tag:'h2', label:'一、電聯日期',
+            children:[
+              { id:'h3-goals-call-date',    tag:'h3', label:'電聯日期' },
+              { id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪' }
+            ]
+          },
+
+          /* H2 二、家訪日期 */
+          {
+            id:'h2-goals-homevisit', tag:'h2', label:'二、家訪日期',
+            children:[
+              { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' },
+              { id:'h3-goals-prep-date',      tag:'h3', label:'出院日期' }
+            ]
+          },
+
+          /* H2 三、偕同訪視者 */
+          {
+            id:'h2-goals-companions', tag:'h2', label:'三、偕同訪視者',
+            children:[
+              { id:'h3-goals-primary-rel',  tag:'h3', label:'主要照顧者關係' },
+              { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' },
+              { id:'h3-goals-extra-rel',    tag:'h3', label:'其他參與者關係' },
+              { id:'h3-goals-extra-name',   tag:'h3', label:'其他參與者姓名' }
+            ]
+          },
+
+          /* H2 四、個案概況（六大分項） */
+          {
+            id:'h2-goals-overview', tag:'h2', label:'四、個案概況',
+            children:[
+
+              /* H3 （一）身心概況 */
+              {
+                id:'h3-goals-s1', tag:'h3', label:'（一）身心概況',
+                children:[
+                  { id:'h4-goals-s1-basic', tag:'h4', label:'基本資料（年齡／性別／語言）' },
+                  {
+                    id:'h4-goals-s1-sensory', tag:'h4', label:'感官功能',
+                    children:[
+                      { id:'h5-goals-s1-vision',  tag:'h5', label:'視力' },
+                      { id:'h5-goals-s1-hearing', tag:'h5', label:'聽力' }
+                    ]
+                  },
+                  {
+                    id:'h4-goals-s1-oral', tag:'h4', label:'口腔與吞嚥功能',
+                    children:[
+                      { id:'h5-goals-s1-swallow',    tag:'h5', label:'吞嚥功能' },
+                      { id:'h5-goals-s1-oral-teeth', tag:'h5', label:'口腔與牙齒' }
+                    ]
+                  },
+                  {
+                    id:'h4-goals-s1-mobility', tag:'h4', label:'移動功能',
+                    children:[
+                      { id:'h5-goals-s1-transfer', tag:'h5', label:'起身／移位能力' },
+                      { id:'h5-goals-s1-walk',     tag:'h5', label:'行走與上下樓梯' },
+                      { id:'h5-goals-s1-balance',  tag:'h5', label:'平衡程度' },
+                      { id:'h5-goals-s1-sitting',  tag:'h5', label:'坐姿穩定性與輪椅安全' },
+                      { id:'h5-goals-s1-gait',     tag:'h5', label:'步態' }
+                    ]
+                  },
+                  {
+                    id:'h4-goals-s1-adl', tag:'h4', label:'ADL（日常生活活動）',
+                    children:[
+                      { id:'h5-goals-s1-adl-items', tag:'h5', label:'進食／盥洗／洗澡／穿脫衣／如廁清潔' }
+                    ]
+                  },
+                  {
+                    id:'h4-goals-s1-iadl', tag:'h4', label:'IADL（工具性日常活動）',
+                    children:[
+                      { id:'h5-goals-s1-iadl-items', tag:'h5', label:'電話／購物／備餐／餐具清／家務／財務' }
+                    ]
+                  },
+                  {
+                    id:'h4-goals-s1-excretion', tag:'h4', label:'排泄功能',
+                    children:[
+                      { id:'h5-goals-s1-urine-day',   tag:'h5', label:'日間排尿' },
+                      { id:'h5-goals-s1-urine-night', tag:'h5', label:'夜間排尿' },
+                      { id:'h5-goals-s1-nocturia',    tag:'h5', label:'夜尿次數' }
+                    ]
+                  },
+                  {
+                    id:'h4-goals-s1-health', tag:'h4', label:'健康狀況與病史',
+                    children:[
+                      { id:'h5-goals-s1-dhx',        tag:'h5', label:'慢性病史' },
+                      { id:'h5-goals-s1-surgery',    tag:'h5', label:'手術史' },
+                      { id:'h5-goals-s1-allergy',    tag:'h5', label:'藥物過敏' },
+                      { id:'h5-goals-s1-medication', tag:'h5', label:'現用藥物' },
+                      { id:'h5-goals-s1-clinic',     tag:'h5', label:'固定就醫單位' },
+                      { id:'h5-goals-s1-rx',         tag:'h5', label:'處方型態' },
+                      { id:'h5-goals-s1-med-manage', tag:'h5', label:'用藥管理方式' },
+                      { id:'h5-goals-s1-transport',  tag:'h5', label:'就醫交通方式' },
+                      { id:'h5-goals-s1-devices',    tag:'h5', label:'管路／裝置' },
+                      { id:'h5-goals-s1-disability', tag:'h5', label:'身心障礙資訊（唯讀同步）' }
+                    ]
+                  },
+                  {
+                    id:'h4-goals-s1-psych', tag:'h4', label:'心理與行為狀態',
+                    children:[
+                      { id:'h5-goals-s1-emotion',  tag:'h5', label:'情緒狀態' },
+                      { id:'h5-goals-s1-behavior', tag:'h5', label:'行為表現' },
+                      { id:'h5-goals-s1-cognition',tag:'h5', label:'認知功能' },
+                      { id:'h5-goals-s1-awareness',tag:'h5', label:'意識狀態' },
+                      { id:'h5-goals-s1-sleep',    tag:'h5', label:'睡眠品質與原因' },
+                      { id:'h5-goals-s1-daytime',  tag:'h5', label:'白天活動' },
+                      { id:'h5-goals-s1-pain',     tag:'h5', label:'疼痛與強度／部位' },
+                      { id:'h5-goals-s1-lesion',   tag:'h5', label:'皮膚病灶' }
+                    ]
+                  },
+                  {
+                    id:'h4-goals-s1-summary', tag:'h4', label:'總結建議',
+                    children:[
+                      { id:'h5-goals-s1-actions', tag:'h5', label:'建議措施' },
+                      { id:'h5-goals-s1-notes',   tag:'h5', label:'補充內容' }
+                    ]
+                  }
+                ]
+              },
+
+              /* H3 （二）經濟收入 */
+              {
+                id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入',
+                children:[
+                  { id:'h4-goals-s2-sources',    tag:'h4', label:'主要經濟來源（多選）' },
+                  { id:'h4-goals-s2-id',         tag:'h4', label:'戶籍／福利身分' },
+                  {
+                    id:'h4-goals-s2-dis-level', tag:'h4', label:'身心障礙等級',
+                    children:[
+                      { id:'h5-goals-s2-dis-cat',  tag:'h5', label:'身心障礙類別（條件顯示）' },
+                      { id:'h5-goals-s2-dis-sync', tag:'h5', label:'跨段同步顯示（至身心概況）' }
+                    ]
+                  }
+                ]
+              },
+
+              /* H3 （三）居住環境 */
+              {
+                id:'h3-goals-s3', tag:'h3', label:'（三）居住環境',
+                children:[
+                  { id:'h4-goals-s3-type',          tag:'h4', label:'居住型態' },
+                  { id:'h4-goals-s3-own',           tag:'h4', label:'居住權屬' },
+                  { id:'h4-goals-s3-clean',         tag:'h4', label:'整潔度／異味' },
+                  { id:'h4-goals-s3-rent',          tag:'h4', label:'租賃細項（租金／管理費）' },
+                  { id:'h4-goals-s3-accessibility', tag:'h4', label:'無障礙設施' },
+                  { id:'h4-goals-s3-aids',          tag:'h4', label:'輔具' }
+                ]
+              },
+
+              /* H3 （四）社會支持 */
+              {
+                id:'h3-goals-s4', tag:'h3', label:'（四）社會支持',
+                children:[
+                  { id:'h4-goals-s4-primary',  tag:'h4', label:'主照者關係／姓名／同住' },
+                  { id:'h4-goals-s4-decider',  tag:'h4', label:'主要聯繫人／決策者' },
+                  { id:'h4-goals-s4-cocare',   tag:'h4', label:'共同照顧者（多筆）' },
+                  { id:'h4-goals-s4-formal',   tag:'h4', label:'正式資源（居服／日照／專業／交通／喘息／送餐）' },
+                  { id:'h4-goals-s4-informal', tag:'h4', label:'非正式資源（據點／鄰里／宗教／財團）' },
+                  { id:'h4-goals-s4-risk',     tag:'h4', label:'高風險評估' }
+                ]
+              },
+
+              /* H3 （五）其他 */
+              {
+                id:'h3-goals-s5', tag:'h3', label:'（五）其他',
+                children:[
+                  { id:'h4-goals-s5-background', tag:'h4', label:'成長背景／職業／習慣' }
+                ]
+              },
+
+              /* H3 （六）複評評值 */
+              {
+                id:'h3-goals-s6', tag:'h3', label:'（六）複評評值',
+                children:[
+                  { id:'h4-goals-s6-before', tag:'h4', label:'介入前' },
+                  { id:'h4-goals-s6-after',  tag:'h4', label:'介入後' }
+                ]
+              }
+            ]
+          },
+
+          /* H2 五、照顧目標 */
+          {
+            id:'h2-goals-targets', tag:'h2', label:'五、照顧目標',
+            children:[
+              { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' },
+              { id:'h3-goals-targets-short',    tag:'h3', label:'（二）短期目標（0–3 個月）' },
+              { id:'h3-goals-targets-mid',      tag:'h3', label:'（三）中期目標（3–4 個月）' },
+              { id:'h3-goals-targets-long',     tag:'h3', label:'（四）長期目標（4–6 個月）' }
+            ]
+          },
+
+          /* H2 六、不一致原因說明 */
+          {
+            id:'h2-goals-mismatch', tag:'h2', label:'六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
+            children:[
+              { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距' },
+              { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形' },
+              { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響' }
+            ]
+          }
+        ]
+      },
+
+      /* =================== H1：計畫執行規劃 =================== */
+      {
+        id:'h1-exec', tag:'h1', label:'計畫執行規劃', page:'execution',
+        children:[
+          {
+            id:'h2-exec-services', tag:'h2', label:'一、長照服務核定項目、頻率',
+            children:[
+              { id:'h3-exec-b',          tag:'h3', label:'（一）B碼' },
+              { id:'h3-exec-c',          tag:'h3', label:'（二）C碼' },
+              { id:'h3-exec-d',          tag:'h3', label:'（三）D碼' },
+              { id:'h3-exec-ef',         tag:'h3', label:'（四）E.F碼' },
+              { id:'h3-exec-g',          tag:'h3', label:'（五）G碼' },
+              { id:'h3-exec-sc',         tag:'h3', label:'（六）SC碼' },
+              { id:'h3-exec-nutrition',  tag:'h3', label:'（七）營養餐飲服務' },
+              { id:'h3-exec-emergency',  tag:'h3', label:'（八）緊急救援服務' }
+            ]
+          },
+          { id:'h2-exec-referral',        tag:'h2', label:'二、轉介其他服務資源' },
+          { id:'h2-exec-station',         tag:'h2', label:'三、巷弄長照站資訊與意願' },
+          { id:'h2-exec-emergency-note',  tag:'h2', label:'四、緊急救援服務說明' },
+          { id:'h2-exec-attachment2',     tag:'h2', label:'附件二（服務計畫明細）預覽' },
+          { id:'h2-exec-attachment1',     tag:'h2', label:'附件一：計畫執行規劃預覽' }
+        ]
+      },
+
+      /* =================== H1：其他備註 =================== */
+      {
+        id:'h1-notes', tag:'h1', label:'其他備註', page:'notes',
+        children:[
+          { id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜可備註於此）' }
+        ]
+      }
+    ]);
+
+    const headingSpecState = {
+      flat: [],
+      map: new Map(),
+      report: null,
+      navItems: []
+    };
+
     const simpleGroupControllers = {};
 
     const SIDE_NAV_MEDIA_QUERY = '(max-width: 1279px)';
@@ -4799,6 +5067,261 @@
       items:[],
       renderScheduled:false
     };
+
+    function flattenHeadingSpec(nodes, parentId, out, inheritedPage){
+      if(!Array.isArray(nodes)) return;
+      const list = out || [];
+      const parent = parentId || null;
+      const fallbackPage = inheritedPage || '';
+      nodes.forEach(node=>{
+        if(!node || !node.id) return;
+        const entry = {
+          id: node.id,
+          node,
+          parentId: parent,
+          page: node.page || fallbackPage
+        };
+        list.push(entry);
+        if(Array.isArray(node.children) && node.children.length){
+          flattenHeadingSpec(node.children, node.id, list, node.page || entry.page);
+        }
+      });
+      return list;
+    }
+
+    function ensureHeadingSpecFlat(){
+      if(Array.isArray(headingSpecState.flat) && headingSpecState.flat.length){
+        return headingSpecState.flat;
+      }
+      headingSpecState.flat = flattenHeadingSpec(HEADING_SPEC, null, [], '');
+      return headingSpecState.flat;
+    }
+
+    function normalizeHeadingText(text){
+      return (text || '')
+        .replace(/[\s\u3000]+/g, '')
+        .replace(/[：:；;]/g, match=>match === ':' ? '：' : match)
+        .trim();
+    }
+
+    function findHeadingContext(entry, parentRecord){
+      if(parentRecord && parentRecord.element){
+        const parentEl = parentRecord.element;
+        const group = parentEl.closest('.section-group');
+        if(group){
+          const body = group.querySelector(':scope > .section-group-body');
+          if(body) return body;
+          return group;
+        }
+        const card = parentEl.closest('.section-card');
+        if(card){
+          const cardBody = card.querySelector(':scope > .section-card-body, :scope > .contact-visit-card-body');
+          if(cardBody) return cardBody;
+          return card;
+        }
+        const container = parentEl.closest('.group');
+        if(container){
+          const content = container.querySelector(':scope > .group-content');
+          if(content) return content;
+          return container;
+        }
+      }
+      if(entry && entry.page){
+        const pageSection=document.querySelector(`.page-section[data-page="${entry.page}"]`);
+        if(pageSection) return pageSection;
+      }
+      return document;
+    }
+
+    function queryHeadingElements(context, node){
+      const selectorsByTag = {
+        h1: '.h1, h1, label.h1, span.h1, .heading-tier',
+        h2: '.h2, h2, label.h2, span.h2, .heading-tier',
+        h3: '.h3, h3, label.h3, span.h3, .heading-tier',
+        h4: '.h4, h4, label.h4, span.h4, .heading-tier',
+        h5: '.h5, h5, label.h5, span.h5, .heading-tier'
+      };
+      const selector = selectorsByTag[(node && node.tag || '').toLowerCase()] || '.h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5, .heading-tier';
+      const root = context && context.querySelectorAll ? context : document;
+      return Array.from(root.querySelectorAll(selector));
+    }
+
+    function findHeadingCandidate(context, node){
+      if(!node) return null;
+      const root = context && context.querySelector ? context : document;
+      let candidate = root.querySelector(`[data-heading-id="${node.id}"]`);
+      if(candidate) return candidate;
+      const existing=document.getElementById(node.id);
+      if(existing) return existing;
+      const normalizedLabel = normalizeHeadingText(node.label);
+      if(!normalizedLabel) return null;
+      const elements=queryHeadingElements(root, node);
+      for(let i=0;i<elements.length;i++){
+        const el=elements[i];
+        if(!el || !el.textContent) continue;
+        const text=normalizeHeadingText(el.textContent);
+        if(text && text === normalizedLabel){
+          if(!candidate) candidate = el;
+          if(el.closest('.titlebar') || el.closest('.group-header')){
+            return el;
+          }
+        }
+      }
+      return candidate;
+    }
+
+    function ensureHeadingElement(node, context){
+      const element = findHeadingCandidate(context, node);
+      if(element) return element;
+      const target = context && context.appendChild ? context : document.body || document;
+      if(!target || !target.insertBefore) return null;
+      const created = document.createElement('span');
+      created.className = `${node.tag || 'h3'} heading-generated`;
+      created.textContent = node.label || node.id || '';
+      if(target.firstChild){
+        target.insertBefore(created, target.firstChild);
+      }else{
+        target.appendChild(created);
+      }
+      return created;
+    }
+
+    function assignHeadingMetadata(element, node, entry){
+      if(!element || !node) return;
+      if(element.id !== node.id){
+        element.id = node.id;
+      }
+      element.dataset.headingId = node.id;
+      if(node.label) element.dataset.headingLabel = node.label;
+      if(entry && entry.page){
+        element.dataset.headingPage = entry.page;
+      }
+    }
+
+    function cleanupHeadingDuplicates(root){
+      const containers = (root || document).querySelectorAll('.titlebar, .group-header');
+      containers.forEach(container=>{
+        const headings = Array.from(container.querySelectorAll('.h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5, .heading-tier'));
+        const seen = new Map();
+        headings.forEach(el=>{
+          const text = normalizeHeadingText(el.textContent);
+          if(!text) return;
+          const hasSpec = !!(el.dataset && el.dataset.headingId);
+          if(!seen.has(text)){
+            seen.set(text, { element: el, hasSpec });
+            return;
+          }
+          const info = seen.get(text);
+          if(info.hasSpec && !hasSpec){
+            el.remove();
+          }else if(!info.hasSpec && hasSpec){
+            if(info.element && info.element.parentNode){
+              info.element.parentNode.removeChild(info.element);
+            }
+            seen.set(text, { element: el, hasSpec:true });
+          }else{
+            el.remove();
+          }
+        });
+      });
+    }
+
+    function buildHeadingNavigationCache(){
+      const items = [];
+      headingSpecState.map.forEach(record=>{
+        if(!record || !record.node || !record.element) return;
+        const tag = (record.node.tag || '').toLowerCase();
+        if(tag !== 'h2' && tag !== 'h3') return;
+        const anchorElement = record.element;
+        const groupElement = anchorElement.closest('.section-group');
+        if(!groupElement) return;
+        const section = groupElement.closest('[data-section]');
+        const pageSection = section ? section.closest('.page-section') : anchorElement.closest('.page-section');
+        const pageId = record.entry && record.entry.page ? record.entry.page : (pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '');
+        if(!anchorElement.id) anchorElement.id = record.node.id;
+        items.push({
+          node: record.node,
+          entry: record.entry,
+          element: anchorElement,
+          groupElement,
+          section,
+          pageId,
+          anchorId: anchorElement.id
+        });
+      });
+      headingSpecState.navItems = items;
+    }
+
+    function getHeadingNavigationItems(){
+      const items = Array.isArray(headingSpecState.navItems) ? headingSpecState.navItems : [];
+      return items.map(item=>{
+        const section = item.section;
+        const groupElement = item.groupElement;
+        let stats = { filled:0, required:0 };
+        let status = 'pending';
+        if(section && section.__groupStats && groupElement && groupElement.dataset){
+          const key = groupElement.dataset.groupId || '';
+          if(key && section.__groupStats[key]){
+            const raw = section.__groupStats[key];
+            stats = { filled: raw.filled || 0, required: raw.required || 0 };
+            status = determineProgressStatus(stats.filled, stats.required);
+          }
+        }
+        return {
+          sectionId: section && section.dataset ? section.dataset.section || '' : '',
+          pageId: item.pageId || '',
+          groupId: groupElement && groupElement.dataset ? groupElement.dataset.groupId || '' : '',
+          anchorId: item.anchorId,
+          label: item.node.label || item.node.id,
+          stats,
+          status,
+          element:null,
+          button:null,
+          countEl:null
+        };
+      });
+    }
+
+    function applyHeadingSpecToDom(){
+      const flat = ensureHeadingSpecFlat();
+      const map = new Map();
+      const report = { applied: [], missing: [] };
+      flat.forEach(entry=>{
+        const parentRecord = entry.parentId ? map.get(entry.parentId) : null;
+        const context = findHeadingContext(entry, parentRecord);
+        const element = ensureHeadingElement(entry.node, context);
+        if(element){
+          assignHeadingMetadata(element, entry.node, entry);
+          map.set(entry.node.id, { node: entry.node, element, entry });
+          report.applied.push(entry.node.id);
+        }else{
+          report.missing.push(entry.node);
+        }
+      });
+      headingSpecState.map = map;
+      headingSpecState.report = report;
+      cleanupHeadingDuplicates(document);
+      buildHeadingNavigationCache();
+      return report;
+    }
+
+    function logHeadingSpecReport(report){
+      const result = report || headingSpecState.report;
+      if(!result) return;
+      if(typeof console !== 'undefined' && console.info){
+        console.info('[HeadingSpec]', {
+          version: HEADING_SPEC_VERSION,
+          applied: Array.isArray(result.applied) ? result.applied.length : 0,
+          missing: Array.isArray(result.missing) ? result.missing.length : 0
+        });
+      }
+      if(Array.isArray(result.missing) && result.missing.length){
+        const labels = result.missing.map(node=>node && node.label ? node.label : (node ? node.id : '')).filter(Boolean);
+        const preview = labels.slice(0, 5).join('、');
+        const message = labels.length > 5 ? `缺少標題錨點：${preview}…` : `缺少標題錨點：${preview}`;
+        showValidationToast({ type:'warn', message, action:'heading-spec', actionLabel:'重新套用' });
+      }
+    }
     const SUMMARY_PROGRESS_STATE = { root:null, scheduled:false };
     const SUMMARY_JUMP_STATE = { select:null, scheduled:false };
 
@@ -5237,6 +5760,14 @@
       updateVerticalDensityMode();
     }
 
+    function scheduleAllMeasurements(){
+      scheduleLayoutMeasurements();
+      scheduleSummaryUpdate();
+      scheduleSummaryProgressRender();
+      scheduleSideNavRender();
+      scheduleSummaryJumpRefresh();
+    }
+
     function setStickyExpanded(expanded){
       const host=document.getElementById('appSticky');
       const toggle=document.getElementById('stickyOverflowToggle');
@@ -5454,7 +5985,11 @@
     }
 
     function focusSectionGroupByElement(groupElement){
-      if(!groupElement || !groupElement.classList || !groupElement.classList.contains('section-group')) return;
+      if(!groupElement) return;
+      if(!groupElement.classList || !groupElement.classList.contains('section-group')){
+        groupElement = typeof groupElement.closest === 'function' ? groupElement.closest('.section-group') : null;
+      }
+      if(!groupElement) return;
       const section = groupElement.closest('[data-section]');
       if(!section || !section.__groups) return;
       let targetGroup = null;
@@ -5802,34 +6337,40 @@
       const state = getSideNavElements();
       if(!state.root || !state.list) return;
       state.items = [];
+      const navRecords = Array.isArray(headingSpecState.navItems) ? headingSpecState.navItems : [];
+      const recordMap = new Map();
+      navRecords.forEach(record=>{
+        if(record && record.groupElement){
+          recordMap.set(record.groupElement, record);
+        }
+      });
       document.querySelectorAll('[data-section]').forEach(section=>{
         const sectionId = section.dataset ? section.dataset.section || '' : '';
         const pageSection = section.closest('.page-section');
-        const pageId = pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '';
+        const defaultPageId = pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '';
         (section.__groups || []).forEach(group=>{
           if(!group || !group.element) return;
-          if(!group.element.id){
-            const navId = `${sectionId || 'section'}-group-${group.id}`;
-            group.element.id = navId;
-          }
-          const label = group.toggle ? group.toggle.textContent.trim() : '';
+          const record = recordMap.get(group.element);
+          if(!record) return;
           const stats = section.__groupStats && section.__groupStats[group.id]
             ? section.__groupStats[group.id]
             : { filled:0, required:0 };
-          const item = {
+          const anchorId = record.anchorId || (group.element.id || ensureElementId(group.element, `${sectionId || 'section'}-group-${group.id}`));
+          const labelText = record.node && record.node.label ? record.node.label : (group.toggle ? group.toggle.textContent.trim() : `群組 ${group.id}`);
+          const navItem = {
             sectionId,
-            pageId,
+            pageId: record.pageId || defaultPageId,
             groupId: group.id,
-            anchorId: group.element.id,
-            label: label || `群組 ${group.id}`,
+            anchorId,
+            label: labelText,
             stats: { filled: stats.filled || 0, required: stats.required || 0 },
             status: determineProgressStatus(stats.filled || 0, stats.required || 0),
             element:null,
             button:null,
             countEl:null
           };
-          group.navItem = item;
-          state.items.push(item);
+          group.navItem = navItem;
+          state.items.push(navItem);
         });
       });
       scheduleSideNavRender();
@@ -5868,6 +6409,51 @@
       });
       scheduleSummaryJumpRefresh();
       scheduleSummaryProgressRender();
+    }
+
+    function ensureGoalsPageDefaults(){
+      const pageSection = document.querySelector('.page-section[data-page="goals"]');
+      if(!pageSection) return;
+      const sections = pageSection.querySelectorAll('[data-section]');
+      if(!sections.length) return;
+      sections.forEach(section=>{
+        if(!section) return;
+        section.dataset.hideFilled = '0';
+        section.dataset.showAdvanced = '1';
+        const sectionId = section.dataset ? section.dataset.section : '';
+        const state = section.__state || (section.__state = readSectionState(sectionId));
+        let changed = false;
+        if(state.hideFilled){
+          state.hideFilled = false;
+          changed = true;
+        }
+        if(!state.showAdvanced){
+          state.showAdvanced = true;
+          changed = true;
+        }
+        if(!state.collapsedGroups || typeof state.collapsedGroups !== 'object' || Object.keys(state.collapsedGroups).length){
+          state.collapsedGroups = {};
+          changed = true;
+        }
+        const firstGroup = section.__groups && section.__groups.length ? section.__groups[0] : null;
+        section.__state = state;
+        applySectionState(section, state);
+        if(firstGroup){
+          setGroupCollapsed(section, firstGroup, false, { save:false });
+        }else{
+          const firstGroupEl = section.querySelector('.section-group');
+          if(firstGroupEl){
+            firstGroupEl.dataset.collapsed = '0';
+          }
+        }
+        updateSectionProgress(section);
+        updateAllGroupEmptyStates(section);
+        updateToggleButtons(section);
+        if(sectionId && changed){
+          writeSectionState(sectionId, state);
+        }
+      });
+      scheduleAllMeasurements();
     }
 
     const CHECKCOL_PRIORITY_MAP = {
@@ -7240,8 +7826,10 @@
       const sections = document.querySelectorAll('[data-section]');
       sections.forEach(section=>setupSection(section));
       sectionViewsReady = true;
+      const headingReport = applyHeadingSpecToDom();
       registerSideNavGroups();
       sections.forEach(section=>updateSideNavForSection(section));
+      logHeadingSpecReport(headingReport);
       scheduleSideNavRender();
       scheduleSummaryUpdate();
     }
@@ -14684,8 +15272,11 @@
       toast.dataset.target = payload.target || '';
       toast.dataset.page = payload.page || '';
       toast.dataset.step = (payload.step !== undefined && payload.step !== null) ? String(payload.step) : '';
+      toast.dataset.action = payload.action || '';
       if(actionBtn){
-        actionBtn.style.display = payload.target ? '' : 'none';
+        const actionLabel = payload.actionLabel || (payload.target ? '前往修正' : '前往修正');
+        actionBtn.textContent = actionLabel;
+        actionBtn.style.display = (payload.target || payload.action) ? '' : 'none';
       }
     }
 
@@ -14698,7 +15289,11 @@
       toast.dataset.page='';
       toast.dataset.type='';
       toast.dataset.step='';
-      if(action){ action.style.display=''; }
+      toast.dataset.action='';
+      if(action){
+        action.style.display='';
+        action.textContent='前往修正';
+      }
     }
 
     function initValidationToast(){
@@ -14712,7 +15307,16 @@
           const targetId=toast.dataset.target;
           const stepValue=toast.dataset.step;
           const step = stepValue ? Number(stepValue) : null;
+          const actionMode = toast.dataset.action || '';
           hideValidationToast();
+          if(actionMode === 'heading-spec'){
+            const report = applyHeadingSpecToDom();
+            registerSideNavGroups();
+            document.querySelectorAll('[data-section]').forEach(section=>updateSideNavForSection(section));
+            logHeadingSpecReport(report);
+            scheduleAllMeasurements();
+            return;
+          }
           if(pageId) setActivePage(pageId, { step: step });
           else if(step) setCurrentWizardStep(step, { scroll:false });
           focusErrorTarget(targetId);
@@ -15549,6 +16153,9 @@
       scheduleSideNavRender();
       scheduleLayoutMeasurements();
       scheduleSummaryProgressRender();
+      if(finalPageId === 'goals'){
+        window.requestAnimationFrame(()=>ensureGoalsPageDefaults());
+      }
       return true;
     }
 
@@ -16201,11 +16808,22 @@
     if(typeof window.setCurrentWizardStep!=='function'){ window.setCurrentWizardStep = ()=>true; }
     if(typeof window.setActivePage!=='function'){ window.setActivePage = ()=>true; }
     if(typeof window.showValidationToast!=='function'){
-      window.showValidationToast = ({type='warn', message='請檢查欄位內容。'}={})=>{
+      window.showValidationToast = ({type='warn', message='請檢查欄位內容。', action='', actionLabel=''}={})=>{
         const toast=document.getElementById('validationToast');
         if(!toast) return;
+        const textEl=document.getElementById('validationToastText');
+        const actionBtn=document.getElementById('validationToastAction');
         toast.dataset.type=type;
-        document.getElementById('validationToastText').textContent=message||'';
+        toast.dataset.target='';
+        toast.dataset.page='';
+        toast.dataset.step='';
+        toast.dataset.action = action || '';
+        if(textEl){ textEl.textContent = message || ''; }
+        if(actionBtn){
+          const label = actionLabel || (action ? '重新套用' : '前往修正');
+          actionBtn.textContent = label;
+          actionBtn.style.display = action ? '' : 'none';
+        }
         toast.dataset.show='1';
       };
     }
@@ -16213,7 +16831,13 @@
       window.hideValidationToast = ()=>{
         const toast=document.getElementById('validationToast');
         if(!toast) return;
+        const actionBtn=document.getElementById('validationToastAction');
         toast.dataset.show='0';
+        toast.dataset.action='';
+        if(actionBtn){
+          actionBtn.style.display='';
+          actionBtn.textContent='前往修正';
+        }
       };
     }
   })();
