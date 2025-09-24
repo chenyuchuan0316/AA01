@@ -17242,15 +17242,15 @@
       prepareCaseProfileLayout();
       renderServicePlanEditor();
       applyHeadingSpecToDom();
+      const headingSpecReport = logHeadingSpecReport();
+      handleHeadingSpecValidation(headingSpecReport);
+      initHeadingSpecToast();
       ensureAllGroupBodies(document);
       initGroupCollapsibles();
-      initHeadingSpecToast();
       initSectionViews();
       refreshExecutionHeadingRegistry();
       applyHeadingSpecVersionUpgrade();
       ensureGoalsPageDefaults();
-      const headingSpecReport = logHeadingSpecReport();
-      handleHeadingSpecValidation(headingSpecReport);
       scheduleSummaryUpdate();
       scheduleAllMeasurements();
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
