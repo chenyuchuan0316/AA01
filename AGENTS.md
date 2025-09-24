@@ -11,7 +11,7 @@
 ## 檔案職責
 | 檔名 | 職責說明 |
 | ---- | -------- |
-| `AppCore.gs` | 進入點腳本，負責建立自訂功能表、開啟 `Sidebar.html`，並串接核心流程（例如 `applyAndSaveAA01(data)`／舊別名 `applyAndSave(form)`）。 |
+| `AppCore.gs` | 進入點腳本，負責建立自訂功能表、開啟 `Sidebar.html`，並串接核心流程（例如 `applyAndSave(form)`）。 |
 | `DataStore.gs` | 提供資料存取與快取邏輯，例如外部表單、名單或設定值的讀寫。不得混入畫面控制或檔案複製邏輯。 |
 | `Sidebar.html` | 側欄前端，包含 HTML/CSS/原生 JavaScript，負責輸入介面、表單驗證與與 GAS 後端互動。 |
 | `README.md` | 維護專案說明、環境設定、操作流程與重要變更紀錄。任何功能調整都需同步更新。 |
@@ -29,7 +29,7 @@
 2. 文件類調整需同步更新 `README.md` 的對應段落（環境設定、運作流程或介面說明）。
 3. 檢查程式縮排為 2 空格，且遵守 GAS 支援語法（避免使用 `async/await`、`Proxy` 等高階特性）。
 4. 若調整檔案職責或流程，記得更新本檔案的對應段落。
-5. 透過 Google Apps Script IDE 實際執行一次主流程（`applyAndSaveAA01` 或相關觸發函式），確認產出無誤。
+5. 透過 Google Apps Script IDE 實際執行一次主流程（`applyAndSave` 或相關觸發函式），確認產出無誤。
 
 ## Git 協作與提交規範
 - **分支策略**：採用 GitHub Flow。每項需求或修正建立 `feature/<summary>`、`fix/<summary>` 或 `docs/<summary>` 分支；完成後發送 PR，待審核者核准後由作者自行合併。
@@ -54,7 +54,7 @@
 - **審查重點**：Code Review 時需再次確認提交未包含個資、授權截圖等敏感資訊，並確保 README 的安全性提示與實作同步。
 
 ## 測試策略
-- **核心流程測試**：於 Apps Script IDE 手動執行 `applyAndSaveAA01(data)`（或舊別名 `applyAndSave(form)`），使用最小與完整的表單資料，確認文件複製、命名與內容寫入皆成功。
+- **核心流程測試**：於 Apps Script IDE 手動執行 `applyAndSave(form)`，使用最小與完整的表單資料，確認文件複製、命名與內容寫入皆成功。
 - **資料來源驗證**：如果有對 `DataStore.gs` 的調整，需確認外部資源（Google Sheet、SpreadsheetApp 等）權限正確，並以測試資料跑過一次讀寫。
 - **錯誤處理檢查**：刻意提供缺漏欄位或錯誤格式，確保前端提示與後端防呆邏輯正常。
 - **回歸測試**：針對受影響的段落函式（例如 `applyH1_*`），再次執行並比對輸出段落是否維持原本格式與占位符替換。

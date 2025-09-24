@@ -4308,7 +4308,7 @@
     <div class="group">
       <div class="group-content">
         <div class="btnbar">
-        <button class="primary" onclick="submitAA01()">產出（複製/升版並開啟新檔）</button>
+        <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
       </div>
         <div id="errorSummary" data-show="0"></div>
         <div id="msg" class="hint" style="margin-top:var(--space-xs);"></div>
@@ -4367,97 +4367,6 @@
   </div>
 
   <script>
-    /**
-     * 維護提醒：
-     * - 本檔唯一標題來源：HEADINGS；新增標題請同時更新 HEADING_DOM_TARGETS（如需要）
-     * - UI 排程請統一使用 AA01.batchFrame(key, fn)
-     */
-    (function(){
-      function ensureSingleMount(){
-        var app = document.getElementById('appContainer');
-        if(!app) throw new Error('Missing #appContainer');
-        if(app.querySelector('.page-section .page-section')){
-          throw new Error('Nested .page-section detected. Stop and fix template.');
-        }
-      }
-      window.ensureSingleMount = ensureSingleMount;
-    })();
-
-    var AA01 = window.AA01 || (window.AA01 = {});
-    AA01.batchFrame = (function(){
-      var queued = {};
-      var raf = window.requestAnimationFrame || function(cb){ return setTimeout(cb,16); };
-      return function(key, fn){
-        if(queued[key]) return;
-        queued[key] = true;
-        raf(function(){
-          queued[key] = false;
-          try { if(typeof fn === 'function'){ fn(); } } catch(e){ console.error(e); }
-        });
-      };
-    })();
-
-    AA01.collect = function(root){
-      var scope = root || document;
-      var getInputValue = function(selector){
-        var el = scope.querySelector(selector);
-        return el && typeof el.value === 'string' ? el.value.trim() : '';
-      };
-      var unitCode = getInputValue('#unitCode');
-      var caseManagerName = getInputValue('#caseManagerName');
-      var caseName = getInputValue('#caseName');
-      var consultName = getInputValue('#consultName');
-      var primaryRel = getInputValue('#primaryRel');
-      var primaryName = getInputValue('#primaryName');
-      if(!primaryRel){
-        primaryRel = '本人';
-        if(!primaryName) primaryName = caseName;
-      }
-      var data = {
-        unitCode: unitCode,
-        caseManagerName: caseManagerName,
-        caseName: caseName,
-        consultName: consultName,
-        cmsLevel: getCmsLevel(),
-        callDate: getDateBox('callDate'),
-        isConsultVisit: !!(scope.querySelector('#isConsultVisit') && scope.querySelector('#isConsultVisit').checked),
-        visitDate: getDateBox('visitDate'),
-        isDischarge: !!(scope.querySelector('#isDischarge') && scope.querySelector('#isDischarge').checked),
-        dischargeDate: getDateBox('dischargeDate'),
-        primaryCaregiverRel: primaryRel,
-        primaryCaregiverName: primaryName,
-        includePrimary: true,
-        extras: collectExtras(),
-        consentParties: buildConsentParties(),
-        section1: (scope.querySelector('#section1_out')?.value || '').trim().replace(/^（一）身心概況：/, ''),
-        section2: (scope.querySelector('#section2_out')?.value || '').trim(),
-        section3: (scope.querySelector('#section3_out')?.value || '').trim(),
-        section4: (scope.querySelector('#section4_out')?.value || '').trim(),
-        section5: (scope.querySelector('#section5')?.value || '').trim(),
-        section6: (scope.querySelector('#section6_struct')?.value || '').trim(),
-        problemKeys: getSelectedProblems(),
-        problemNote: (scope.querySelector('#problemNote')?.value || '').trim(),
-        short_care: (scope.querySelector('#short_care')?.value || '').trim(),
-        short_prof: (scope.querySelector('#short_prof')?.value || '').trim(),
-        short_car: (scope.querySelector('#short_car')?.value || '').trim(),
-        short_resp: (scope.querySelector('#short_resp')?.value || '').trim(),
-        short_access: (scope.querySelector('#short_access')?.value || '').trim(),
-        short_meal: (scope.querySelector('#short_meal')?.value || '').trim(),
-        mid_care: (scope.querySelector('#mid_care')?.value || '').trim(),
-        mid_prof: (scope.querySelector('#mid_prof')?.value || '').trim(),
-        mid_car: (scope.querySelector('#mid_car')?.value || '').trim(),
-        mid_resp: (scope.querySelector('#mid_resp')?.value || '').trim(),
-        mid_access: (scope.querySelector('#mid_access')?.value || '').trim(),
-        mid_meal: (scope.querySelector('#mid_meal')?.value || '').trim(),
-        long_goal: (scope.querySelector('#long_goal')?.value || '').trim(),
-        servicePlan: serializeServicePlan(),
-        planMeta: Object.assign({}, planMetaState),
-        planText: (scope.querySelector('#plan_text')?.value || '').trim(),
-        planOther: (scope.querySelector('#plan_other')?.value || '').trim()
-      };
-      return data;
-    };
-
     /* ===== 版面配置工具 ===== */
     const FONT_SCALE_STORAGE_KEY = 'AA01.fontScale';
     const FONT_SCALE_DEFAULT = 'sm';
@@ -4498,103 +4407,286 @@
     const HEADING_SPEC_VERSION = '2024-04-01';
     const HEADING_SPEC_VERSION_STORAGE_KEY = 'AA01.headingSpec.version';
 
-    const HEADINGS = Object.freeze([
-      Object.freeze({
+    const HEADING_SPEC = [
+      {
         id:'h1-basic', tag:'h1', label:'基本資訊', page:'basic',
-        children:Object.freeze([
-          Object.freeze({ id:'h2-basic-unit-code', tag:'h2', label:'單位代碼' }),
-          Object.freeze({ id:'h2-basic-case-manager', tag:'h2', label:'個案管理師' }),
-          Object.freeze({ id:'h2-basic-case-name', tag:'h2', label:'個案姓名' }),
-          Object.freeze({ id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' }),
-          Object.freeze({ id:'h2-basic-cms-level', tag:'h2', label:'CMS 等級' })
-        ])
-      }),
-      Object.freeze({
+        children:[
+          { id:'h2-basic-unit-code', tag:'h2', label:'單位代碼' },
+          { id:'h2-basic-case-manager', tag:'h2', label:'個案管理師' },
+          { id:'h2-basic-case-name', tag:'h2', label:'個案姓名' },
+          { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' },
+          { id:'h2-basic-cms-level', tag:'h2', label:'CMS 等級' }
+        ]
+      },
+      {
         id:'h1-goals', tag:'h1', label:'計畫目標', page:'goals',
-        children:Object.freeze([
-          Object.freeze({
+        children:[
+          {
             id:'h2-goals-call', tag:'h2', label:'一、電聯日期',
-            children:Object.freeze([
-              Object.freeze({ id:'h3-goals-call-date', tag:'h3', label:'電聯日期' }),
-              Object.freeze({ id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪' })
-            ])
-          }),
-          Object.freeze({
+            children:[
+              { id:'h3-goals-call-date', tag:'h3', label:'電聯日期' }
+            ]
+          },
+          {
             id:'h2-goals-homevisit', tag:'h2', label:'二、家訪日期',
-            children:Object.freeze([
-              Object.freeze({ id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' }),
-              Object.freeze({ id:'h3-goals-prep-date', tag:'h3', label:'出院日期' })
-            ])
-          }),
-          Object.freeze({
+            children:[
+              { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' },
+              { id:'h3-goals-prep-date', tag:'h3', label:'出院日期' }
+            ]
+          },
+          {
             id:'h2-goals-companions', tag:'h2', label:'三、偕同訪視者',
-            children:Object.freeze([
-              Object.freeze({ id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係' }),
-              Object.freeze({ id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' }),
-              Object.freeze({ id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' }),
-              Object.freeze({ id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' })
-            ])
-          }),
-          Object.freeze({
+            children:[
+              { id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係' },
+              { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' },
+              { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' },
+              { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' }
+            ]
+          },
+          {
             id:'h2-goals-overview', tag:'h2', label:'四、個案概況',
-            children:Object.freeze([
-              Object.freeze({ id:'h3-goals-s1', tag:'h3', label:'（一）身心概況' }),
-              Object.freeze({ id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入' }),
-              Object.freeze({ id:'h3-goals-s3', tag:'h3', label:'（三）居住環境' }),
-              Object.freeze({ id:'h3-goals-s4', tag:'h3', label:'（四）社會支持' }),
-              Object.freeze({ id:'h3-goals-s5', tag:'h3', label:'（五）其他' }),
-              Object.freeze({ id:'h3-goals-s6', tag:'h3', label:'（六）複評評值' })
-            ])
-          }),
-          Object.freeze({
+            children:[
+              { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況' },
+              { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入' },
+              { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境' },
+              { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持' },
+              { id:'h3-goals-s5', tag:'h3', label:'（五）其他' },
+              { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值' }
+            ]
+          },
+          {
             id:'h2-goals-targets', tag:'h2', label:'五、照顧目標',
-            children:Object.freeze([
-              Object.freeze({ id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' }),
-              Object.freeze({ id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標（0–3 個月）' }),
-              Object.freeze({ id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標（3–4 個月）' }),
-              Object.freeze({ id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標（4–6 個月）' })
-            ])
-          }),
-          Object.freeze({
-            id:'h2-goals-mismatch', tag:'h2', label:'六、不一致原因說明',
-            children:Object.freeze([
-              Object.freeze({ id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成狀況及差距' }),
-              Object.freeze({ id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源變動情形' }),
-              Object.freeze({ id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案／影響' })
-            ])
-          })
-        ])
-      }),
-      Object.freeze({
+            children:[
+              { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' },
+              { id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標(0-3個月)' },
+              { id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標(3-4個月)' },
+              { id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標(4-6個月)' }
+            ]
+          },
+          {
+            id:'h2-goals-mismatch', tag:'h2', label:'六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
+            children:[
+              { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距' },
+              { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形' },
+              { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響' }
+            ]
+          }
+        ]
+      },
+      {
         id:'h1-exec', tag:'h1', label:'計畫執行規劃', page:'execution',
-        children:Object.freeze([
-          Object.freeze({
+        children:[
+          {
             id:'h2-exec-services', tag:'h2', label:'一、長照服務核定項目、頻率',
-            children:Object.freeze([
-              Object.freeze({ id:'h3-exec-b', tag:'h3', label:'（一）B碼' }),
-              Object.freeze({ id:'h3-exec-c', tag:'h3', label:'（二）C碼' }),
-              Object.freeze({ id:'h3-exec-d', tag:'h3', label:'（三）D碼' }),
-              Object.freeze({ id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼' }),
-              Object.freeze({ id:'h3-exec-g', tag:'h3', label:'（五）G碼' }),
-              Object.freeze({ id:'h3-exec-sc', tag:'h3', label:'（六）SC碼' }),
-              Object.freeze({ id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務' }),
-              Object.freeze({ id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務' })
-            ])
-          }),
-          Object.freeze({ id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源' }),
-          Object.freeze({ id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願' }),
-          Object.freeze({ id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明' }),
-          Object.freeze({ id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽' }),
-          Object.freeze({ id:'h2-exec-attachment1', tag:'h2', label:'附件一（計畫執行規劃預覽）' })
-        ])
-      }),
-      Object.freeze({
+            children:[
+              { id:'h3-exec-b', tag:'h3', label:'（一）B碼' },
+              { id:'h3-exec-c', tag:'h3', label:'（二）C碼' },
+              { id:'h3-exec-d', tag:'h3', label:'（三）D碼' },
+              { id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼' },
+              { id:'h3-exec-g', tag:'h3', label:'（五）G碼' },
+              { id:'h3-exec-sc', tag:'h3', label:'（六）SC碼' },
+              { id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務' },
+              { id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務' }
+            ]
+          },
+          { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源' }
+        ]
+      },
+      {
         id:'h1-notes', tag:'h1', label:'其他備註', page:'notes',
-        children:Object.freeze([
-          Object.freeze({ id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜）' })
-        ])
-      })
-    ]);
+        children:[
+          { id:'h2-notes-other', tag:'h2', label:'其他(個案特殊狀況或其他未盡事宜可備註於此)' }
+        ]
+      }
+    ];
+
+    // === 標題權威清單（只列 H1～H3；H4/H5 由各卡內小標自行管理）===
+    const EXPECTED_HEADINGS = [
+      // H1
+      { id:'h1-basic', tag:'h1', label:'基本資訊' },
+      { id:'h1-goals', tag:'h1', label:'計畫目標' },
+      { id:'h1-exec',  tag:'h1', label:'計畫執行規劃' },
+      { id:'h1-notes', tag:'h1', label:'其他備註' },
+
+      // H2 under H1 基本資訊
+      { id:'h2-basic-unit-code',     tag:'h2', label:'單位代碼' },
+      { id:'h2-basic-case-manager',  tag:'h2', label:'個案管理師' },
+      { id:'h2-basic-case-name',     tag:'h2', label:'個案姓名' },
+      { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' },
+      { id:'h2-basic-cms-level',     tag:'h2', label:'CMS 等級' },
+
+      // H2 under H1 計畫目標
+      { id:'h2-goals-call',          tag:'h2', label:'一、電聯日期' },
+      { id:'h2-goals-homevisit',     tag:'h2', label:'二、家訪日期' },
+      { id:'h2-goals-companions',    tag:'h2', label:'三、偕同訪視者' },
+      { id:'h2-goals-overview',      tag:'h2', label:'四、個案概況' },
+      { id:'h2-goals-targets',       tag:'h2', label:'五、照顧目標' },
+      { id:'h2-goals-mismatch',      tag:'h2', label:'六、不一致原因說明' },
+
+      // H3 under H2 一、電聯日期
+      { id:'h3-goals-call-date',     tag:'h3', label:'電聯日期' },
+      { id:'h3-goals-call-consult',  tag:'h3', label:'照顧專員約訪' }, // ★此次新增
+
+      // H3 under H2 二、家訪日期
+      { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' },
+      { id:'h3-goals-prep-date',      tag:'h3', label:'出院日期' },
+
+      // H3 under H2 三、偕同訪視者
+      { id:'h3-goals-primary-rel',  tag:'h3', label:'主要照顧者關係' },
+      { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' },
+      { id:'h3-goals-extra-rel',    tag:'h3', label:'其他參與者關係' },
+      { id:'h3-goals-extra-name',   tag:'h3', label:'其他參與者姓名' },
+
+      // H3 under H2 四、個案概況（只至 H3 節點）
+      { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況' },
+      { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入' },
+      { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境' },
+      { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持' },
+      { id:'h3-goals-s5', tag:'h3', label:'（五）其他' },
+      { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值' },
+
+      // H3 under H2 五、照顧目標
+      { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' },
+      { id:'h3-goals-targets-short',    tag:'h3', label:'（二）短期目標（0–3 個月）' },
+      { id:'h3-goals-targets-mid',      tag:'h3', label:'（三）中期目標（3–4 個月）' },
+      { id:'h3-goals-targets-long',     tag:'h3', label:'（四）長期目標（4–6 個月）' },
+
+      // H3 under H2 六、不一致原因說明
+      { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成狀況及差距' },
+      { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源變動情形' },
+      { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案／影響' },
+
+      // H2 under H1 計畫執行規劃（此區僅 H2）
+      { id:'h2-exec-services',     tag:'h2', label:'一、長照服務核定項目、頻率' },
+      { id:'h2-exec-referral',     tag:'h2', label:'二、轉介其他服務資源' },
+      { id:'h2-exec-station',      tag:'h2', label:'三、巷弄長照站資訊與意願' },
+      { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明' },
+      { id:'h2-exec-attachment2',  tag:'h2', label:'附件二（服務計畫明細）預覽' },
+      { id:'h2-exec-attachment1',  tag:'h2', label:'附件一（計畫執行規劃預覽）' },
+
+      // H2 under H1 其他備註（此區僅 H2）
+      { id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜）' }
+    ];
+
+    function collectExistingHeadingIds(entries, collector){
+      if(!Array.isArray(entries)) return;
+      for(var i=0; i<entries.length; i++){
+        var entry = entries[i];
+        if(!entry || !entry.id) continue;
+        collector.add(entry.id);
+        if(Array.isArray(entry.children) && entry.children.length){
+          collectExistingHeadingIds(entry.children, collector);
+        }
+      }
+    }
+
+    function findHeadingSpecNodeById(entries, id){
+      if(!Array.isArray(entries)) return null;
+      for(var i=0; i<entries.length; i++){
+        var entry = entries[i];
+        if(!entry || !entry.id) continue;
+        if(entry.id === id) return entry;
+        if(Array.isArray(entry.children) && entry.children.length){
+          var found = findHeadingSpecNodeById(entry.children, id);
+          if(found) return found;
+        }
+      }
+      return null;
+    }
+
+    function insertHeadingNode(node, parentId){
+      if(!node || !node.id) return false;
+      if(!parentId){
+        HEADING_SPEC.push(node);
+        return true;
+      }
+      var parentNode = findHeadingSpecNodeById(HEADING_SPEC, parentId);
+      if(!parentNode){
+        console.warn('找不到父節點，無法插入標題：', node.id, 'parent:', parentId);
+        return false;
+      }
+      if(!Array.isArray(parentNode.children)){
+        parentNode.children = [];
+      }
+      parentNode.children.push(node);
+      return true;
+    }
+
+    function resolveExpectedParentMap(){
+      var parentMap = {};
+      var lastH1 = null;
+      var lastH2 = null;
+      for(var i=0; i<EXPECTED_HEADINGS.length; i++){
+        var entry = EXPECTED_HEADINGS[i];
+        if(!entry || !entry.id) continue;
+        var tag = (entry.tag || '').toLowerCase();
+        if(tag === 'h1'){
+          parentMap[entry.id] = null;
+          lastH1 = entry.id;
+          lastH2 = null;
+        }else if(tag === 'h2'){
+          parentMap[entry.id] = lastH1;
+          lastH2 = entry.id;
+        }else if(tag === 'h3'){
+          parentMap[entry.id] = lastH2 || lastH1;
+        }else{
+          parentMap[entry.id] = lastH2 || lastH1;
+        }
+      }
+      return parentMap;
+    }
+
+    // === 將 EXPECTED_HEADINGS 與現有 HEADING_SPEC 比對後補齊（不破壞原排序）===
+    function mergeExpectedHeadingsIntoSpec(){
+      if(!Array.isArray(HEADING_SPEC)){
+        console.error('HEADING_SPEC 非陣列，請檢查初始化。');
+        return;
+      }
+      var existing = new Set();
+      collectExistingHeadingIds(HEADING_SPEC, existing);
+      var parentMap = resolveExpectedParentMap();
+      var additions = [];
+      for(var i=0; i<EXPECTED_HEADINGS.length; i++){
+        var entry = EXPECTED_HEADINGS[i];
+        if(!entry || !entry.id) continue;
+        if(existing.has(entry.id)) continue;
+        var node = {
+          id:entry.id,
+          tag:entry.tag,
+          label:entry.label
+        };
+        if(entry.tag && entry.tag.toLowerCase() !== 'h3'){
+          node.children = [];
+        }
+        var parentId = parentMap[entry.id] || null;
+        if(insertHeadingNode(node, parentId)){
+          additions.push(entry.id);
+          existing.add(entry.id);
+        }
+      }
+      if(additions.length === 0){
+        console.info('HEADING_SPEC 已包含所有預期 H1～H3。');
+        return;
+      }
+      rebuildHeadingIndex();
+      console.info('已補入缺漏標題：', additions);
+    }
+
+    // === 檢查 DOM 目標映射缺漏（只針對目前確定需新增的一筆）===
+    function ensureDomTargets(){
+      if(typeof HEADING_DOM_TARGETS !== 'object' || !HEADING_DOM_TARGETS){
+        console.error('HEADING_DOM_TARGETS 未初始化。');
+        return;
+      }
+      if(!HEADING_DOM_TARGETS['h3-goals-call-consult']){
+        HEADING_DOM_TARGETS['h3-goals-call-consult'] = {
+          selector:'#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox',
+          mode:'labelHeading',
+          className:'h3'
+        };
+        console.info('已新增 DOM 對應：h3-goals-call-consult');
+      }
+    }
 
     const HEADING_INDEX = {};
     let HEADING_INDEX_ORDER = 0;
@@ -4625,7 +4717,7 @@
         delete HEADING_INDEX[key];
       });
       HEADING_INDEX_ORDER = 0;
-      assignHeadingEntries(HEADINGS, null);
+      assignHeadingEntries(HEADING_SPEC, null);
       return HEADING_INDEX;
     }
 
@@ -4869,6 +4961,232 @@
       if(!root || !root.querySelectorAll) return;
       const groups = root.querySelectorAll('.group');
       groups.forEach(group=>ensureGroupContentWrapper(group));
+    }
+
+    function ensureUniqueIdsWithin(root){
+      if(!root || !root.querySelectorAll) return;
+      const preferred = Object.create(null);
+      const nodes = Array.from(document.querySelectorAll('[id]'));
+      nodes.forEach(node=>{
+        if(!node || !node.id) return;
+        const key=node.id;
+        const insideRoot = root.contains ? root.contains(node) : false;
+        const record = preferred[key];
+        if(!record || (insideRoot && !record.inside)){
+          preferred[key] = { node, inside: insideRoot };
+        }
+      });
+      const used = new Set();
+      const counters = Object.create(null);
+      nodes.forEach(node=>{
+        if(!node || !node.id) return;
+        const key=node.id;
+        const record = preferred[key];
+        if(record && record.node === node){
+          used.add(key);
+          return;
+        }
+        let base = key;
+        let index = counters[base] || 1;
+        let candidate = `${base}__${index}`;
+        while(used.has(candidate) || (document.getElementById(candidate) && document.getElementById(candidate) !== node)){
+          index += 1;
+          candidate = `${base}__${index}`;
+        }
+        counters[base] = index + 1;
+        const scope = node.closest ? (node.closest('[data-section]') || node.closest('.group') || node.parentElement || root || document) : document;
+        updateIdReferences(key, candidate, scope);
+        node.id = candidate;
+        used.add(candidate);
+      });
+    }
+
+    function updateIdReferences(oldId, newId, scope){
+      if(!oldId || !newId || oldId === newId) return;
+      const root = scope && scope.querySelectorAll ? scope : document;
+      const attrList=['for','aria-controls','aria-describedby','aria-labelledby','aria-owns','aria-activedescendant'];
+      attrList.forEach(attr=>{
+        root.querySelectorAll(`[${attr}]`).forEach(el=>{
+          const value=el.getAttribute(attr);
+          if(!value) return;
+          if(attr === 'for' || attr === 'aria-controls'){
+            if(value === oldId){
+              el.setAttribute(attr, newId);
+            }
+            return;
+          }
+          const parts=value.split(/\s+/).filter(Boolean);
+          let changed=false;
+          for(let i=0;i<parts.length;i++){
+            if(parts[i] === oldId){
+              parts[i] = newId;
+              changed=true;
+            }
+          }
+          if(changed){
+            el.setAttribute(attr, parts.join(' '));
+          }
+        });
+      });
+      root.querySelectorAll(`[href="#${oldId}"]`).forEach(el=>{
+        el.setAttribute('href', `#${newId}`);
+      });
+    }
+
+    function escapeCssId(id){
+      if(typeof id !== 'string') return '';
+      if(window.CSS && typeof window.CSS.escape === 'function'){
+        return window.CSS.escape(id);
+      }
+      return id.replace(/([\\.#:\[\]\(\),>+~*^$|='"{}\s])/g, '\\$1');
+    }
+
+    function dedupeElementsById(id, preferredRoot, options){
+      if(!id) return null;
+      let selector = '#' + escapeCssId(id);
+      let nodes = [];
+      try{
+        nodes = Array.from(document.querySelectorAll(selector));
+      }catch(err){
+        try{
+          nodes = Array.from(document.querySelectorAll('#' + id));
+        }catch(err2){
+          nodes = [];
+        }
+      }
+      if(nodes.length <= 1){
+        return nodes[0] || null;
+      }
+      const preferFn = options && typeof options.prefer === 'function' ? options.prefer : null;
+      let primary = null;
+      if(preferFn){
+        primary = nodes.find(node=>preferFn(node)) || null;
+      }
+      if(!primary && preferredRoot && typeof preferredRoot.contains === 'function'){
+        primary = nodes.find(node=>preferredRoot.contains(node)) || null;
+      }
+      if(!primary){
+        primary = nodes[0];
+      }
+      nodes.forEach(node=>{
+        if(node && node !== primary && node.parentNode){
+          node.parentNode.removeChild(node);
+        }
+      });
+      return primary;
+    }
+
+    function sectionHasAnchors(section, anchors){
+      if(!section || !section.querySelector || !Array.isArray(anchors) || !anchors.length){
+        return true;
+      }
+      for(let i=0;i<anchors.length;i++){
+        const id=anchors[i];
+        if(!id) continue;
+        let selector = '#' + escapeCssId(id);
+        let found = false;
+        try{
+          found = !!section.querySelector(selector);
+        }catch(err){
+          try{
+            found = !!section.querySelector('#' + id);
+          }catch(err2){
+            found = false;
+          }
+        }
+        if(!found){
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function dedupePageSection(pageId, options){
+      if(!pageId) return null;
+      const sections = Array.from(document.querySelectorAll(`.page-section[data-page="${pageId}"]`));
+      if(!sections.length) return null;
+      const anchors = (options && Array.isArray(options.anchorIds)) ? options.anchorIds : [];
+      const preferredRoot = options && options.preferredRoot ? options.preferredRoot : null;
+      let primary = null;
+      if(preferredRoot && typeof preferredRoot.contains === 'function'){
+        primary = sections.find(section=>preferredRoot.contains(section) && sectionHasAnchors(section, anchors))
+          || sections.find(section=>preferredRoot.contains(section))
+          || null;
+      }
+      if(!primary && anchors.length){
+        primary = sections.find(section=>sectionHasAnchors(section, anchors)) || null;
+      }
+      if(!primary){
+        primary = sections[0];
+      }
+      sections.forEach(section=>{
+        if(section && section !== primary && section.parentNode){
+          section.parentNode.removeChild(section);
+        }
+      });
+      const dedupeIds = (options && Array.isArray(options.dedupeIds) && options.dedupeIds.length) ? options.dedupeIds : anchors;
+      if(primary && dedupeIds && dedupeIds.length){
+        dedupeIds.forEach(id=>dedupeElementsById(id, primary));
+      }
+      return primary;
+    }
+
+    function hoistNestedPageSections(){
+      const container=document.getElementById('appContainer');
+      if(!container) return;
+      let guard=0;
+      let nested=container.querySelector('.page-section .page-section');
+      while(nested && guard<500){
+        guard++;
+        const parentSection = nested.parentElement ? nested.parentElement.closest('.page-section') : null;
+        if(!parentSection || parentSection === nested || !container.contains(parentSection)){
+          nested = container.querySelector('.page-section .page-section');
+          continue;
+        }
+        const reference = parentSection.nextSibling;
+        container.insertBefore(nested, reference);
+        nested = container.querySelector('.page-section .page-section');
+      }
+      queuePostStructureRefresh();
+    }
+
+    function dedupeGoalsSection(){
+      const documentRoot = document.body || document.documentElement || document;
+      const appContainer = dedupeElementsById('appContainer', documentRoot, {
+        prefer: node=>node && node.querySelector && node.querySelector('.page-section[data-page]')
+      }) || document.getElementById('appContainer');
+      const configs = [
+        { pageId:'basic', anchorIds:['basicInfoGroup'], preferredRoot:appContainer },
+        { pageId:'goals', anchorIds:['contactVisitGroup'], preferredRoot:appContainer, dedupeIds:['contactVisitGroup'] },
+        { pageId:'execution', anchorIds:['planExecutionCard','planSummaryCard','planExecutionPreviewCard'], preferredRoot:appContainer },
+        { pageId:'notes', anchorIds:['planOtherGroup'], preferredRoot:appContainer }
+      ];
+      configs.forEach(cfg=>dedupePageSection(cfg.pageId, cfg));
+      const globalConfigs = [
+        { id:'appSticky', prefer: node=>node && node.querySelector && node.querySelector('.wizard') },
+        { id:'sideNav', prefer: node=>node && node.querySelector && node.querySelector('.side-nav-list') },
+        { id:'sideNavToggleButton' },
+        { id:'sideNavBackdrop' },
+        { id:'summaryProgressList', prefer: node=>node && node.classList && node.classList.contains('summary-progress-list') },
+        { id:'wizardSteps', prefer: node=>node && node.querySelector && node.querySelector('.wizard-step') },
+        { id:'pageTabs', prefer: node=>node && node.querySelector && node.querySelector('[data-page]') },
+        { id:'floatingActions' },
+        { id:'validationToast' },
+        { id:'headingSpecToast' }
+      ];
+      const rootForGlobals = appContainer || documentRoot;
+      globalConfigs.forEach(cfg=>dedupeElementsById(cfg.id, rootForGlobals, cfg));
+      if(appContainer){
+        ensureUniqueIdsWithin(appContainer);
+      }
+      queuePostStructureRefresh();
+    }
+
+    function queuePostStructureRefresh(){
+      scheduleAllMeasurements();
+      scheduleSummaryUpdate();
+      scheduleSideNavRender();
+      scheduleSummaryProgressRender();
     }
 
     function createCardFromTitlebar(titlebar, sectionKey){
@@ -5273,17 +5591,14 @@
       }
       cleanupEmptyContainers(section);
       normalizeLayout(section);
-      queueMeasurements();
+      scheduleAllMeasurements();
     }
 
     function prepareCaseProfileLayout(){
       document.querySelectorAll('[data-section]').forEach(section=>upgradeLegacyContainers(section));
       enforceSection1CardLayout();
       applyGridUtilities(document);
-      queueMeasurements();
-      queueSummaryUpdate();
-      queueSideNavRender();
-      queueSummaryProgress();
+      queuePostStructureRefresh();
     }
 
     const HEADING_DOM_TARGETS = Object.freeze({
@@ -5296,7 +5611,6 @@
       'h1-goals': { selector:'#contactVisitGroup .titlebar .h1', mode:'replace', className:'h1' },
       'h2-goals-call': { selector:'#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2', mode:'replace', className:'h2' },
       'h3-goals-call-date': { selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' },
-      'h3-goals-call-consult': { selector:'#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox', mode:'labelHeading', className:'h3' },
       'h2-goals-homevisit': { selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
       'h3-goals-homevisit-date': { selector:'#contactVisitGroup label[for="visitDate"]', mode:'labelHeading', className:'h3' },
       'h3-goals-prep-date': { selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3', label:'出院日期' },
@@ -5458,8 +5772,8 @@
         if(!heading) return;
         registerHeadingGroup(anchorId, meta.section, meta.group);
       });
-      queueSideNavRender();
-      queueSummaryJumpRefresh();
+      scheduleSideNavRender();
+      scheduleSummaryJumpRefresh();
     }
 
     function collectHeadingSpecStatus(){
@@ -5476,12 +5790,12 @@
     function logHeadingSpecReport(){
       const report = collectHeadingSpecStatus();
       if(!window || !window.console) return report;
-      if(console.groupCollapsed){ console.groupCollapsed('HEADINGS 驗證報告'); }
-      else if(console.group){ console.group('HEADINGS 驗證報告'); }
+      if(console.groupCollapsed){ console.groupCollapsed('HEADING_SPEC 驗證報告'); }
+      else if(console.group){ console.group('HEADING_SPEC 驗證報告'); }
       if(report.missing.length){
-        console.warn('缺少 HEADINGS 定義的標題錨點', report.missing);
+        console.warn('缺少定義的標題錨點', report.missing);
       }else{
-        console.info('所有 HEADINGS 定義的錨點皆已就緒。');
+        console.info('所有 HEADING_SPEC 定義的錨點皆已就緒。');
       }
       if(console.groupEnd){ console.groupEnd(); }
       return report;
@@ -5630,10 +5944,10 @@
       });
       persistHeadingSpecVersion(HEADING_SPEC_VERSION);
       if(changed){
-        queueSummaryProgress();
-        queueSummaryUpdate();
-        queueSideNavRender();
-        queueMeasurements();
+        scheduleSummaryProgressRender();
+        scheduleSummaryUpdate();
+        scheduleSideNavRender();
+        scheduleAllMeasurements();
       }
       return changed;
     }
@@ -5641,15 +5955,17 @@
     const PAGE_ORDER = ['basic','goals','execution','notes'];
     let summaryElements = null;
     let sideSummaryElements = null;
+    let summaryUpdateScheduled = false;
     let lastSavedTimestamp = null;
 
     const SIDE_NAV_STATE = {
       root:null,
       list:null,
-      items:[]
+      items:[],
+      renderScheduled:false
     };
-    const SUMMARY_PROGRESS_STATE = { root:null };
-    const SUMMARY_JUMP_STATE = { select:null };
+    const SUMMARY_PROGRESS_STATE = { root:null, scheduled:false };
+    const SUMMARY_JUMP_STATE = { select:null, scheduled:false };
 
     const UI_AUDIT_STATE = {
       discharge_label_ok:false,
@@ -5703,9 +6019,11 @@
     let currentUiMode = UI_MODE_DEFAULT;
     let currentPageId = 'basic';
     let currentScrollOffset = 0;
+    let layoutMeasureScheduled = false;
     let currentStickyLayoutMode = '';
     let sectionViewsReady = false;
     let currentVerticalDensityMode = '';
+    let planStateSyncScheduled = false;
     let planStateSyncOptions = null;
     const wizardMoreMenuState = { outsideHandler:null, keydownHandler:null };
 
@@ -5945,11 +6263,11 @@
       buildPlanSummaryPreview();
       renderSection1Preview(section1PreviewState.segments || []);
       refreshCheckcols(document);
-      queueMeasurements();
-      queueSummaryUpdate();
+      scheduleAllMeasurements();
+      scheduleSummaryUpdate();
     }
 
-    function queueAutoSave(){
+    function scheduleAutoSave(){
       if(isRestoringDraft || !draftLoadComplete) return;
       if(autoSaveTimer) clearTimeout(autoSaveTimer);
       autoSaveTimer = setTimeout(()=>{
@@ -5964,7 +6282,7 @@
       if(!snapshot) return;
       if(writeAutoSaveDraft(snapshot)){
         lastSavedTimestamp = snapshot.timestamp;
-        queueSummaryUpdate();
+        scheduleSummaryUpdate();
       }
     }
 
@@ -5982,7 +6300,7 @@
 
     function handleDraftChangeEvent(){
       if(isRestoringDraft) return;
-      queueAutoSave();
+      scheduleAutoSave();
     }
 
     function initAutoSave(){
@@ -5991,19 +6309,20 @@
       host.addEventListener('change', handleDraftChangeEvent, true);
       restoreAutoSaveDraft();
       draftLoadComplete = true;
-      queueSummaryUpdate();
+      scheduleSummaryUpdate();
     }
 
-    function flushPlanStateSync(){
-      const opts = planStateSyncOptions || {};
-      planStateSyncOptions = null;
-      syncPlanStateWithSelections(Object.assign({ force:true }, opts));
-    }
-
-    function queuePlanStateSync(options){
+    function schedulePlanStateSync(options){
       if(!planStateSyncOptions){ planStateSyncOptions = Object.assign({}, options); }
       else if(options){ planStateSyncOptions = Object.assign(planStateSyncOptions, options); }
-      AA01.batchFrame('plan-sync', flushPlanStateSync);
+      if(planStateSyncScheduled) return;
+      planStateSyncScheduled = true;
+      window.requestAnimationFrame(()=>{
+        planStateSyncScheduled = false;
+        const opts = planStateSyncOptions || {};
+        planStateSyncOptions = null;
+        syncPlanStateWithSelections(Object.assign({ force:true }, opts));
+      });
     }
 
     function updateFloatingActionsMetrics(){
@@ -6088,15 +6407,16 @@
       }
     }
 
-    function flushMeasurements(){
+    function scheduleAllMeasurements(){
       updateStickyLayoutMode();
       updateVerticalDensityMode();
-      updateFloatingActionsMetrics();
-      measureStickyElements();
-    }
-
-    function queueMeasurements(){
-      AA01.batchFrame('measure', flushMeasurements);
+      if(layoutMeasureScheduled) return;
+      layoutMeasureScheduled = true;
+      window.requestAnimationFrame(()=>{
+        layoutMeasureScheduled = false;
+        updateFloatingActionsMetrics();
+        measureStickyElements();
+      });
     }
 
     function setStickyExpanded(expanded){
@@ -6105,7 +6425,7 @@
       if(!host || !toggle) return;
       host.dataset.expanded = expanded ? '1' : '0';
       toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      queueMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initStickyOverflowToggle(){
@@ -6264,8 +6584,13 @@
       if(els.primary) els.primary.textContent = (hasMetrics && metrics.primary) ? metrics.primary : '—';
     }
 
-    function queueSummaryUpdate(){
-      AA01.batchFrame('summary', refreshStickySummary);
+    function scheduleSummaryUpdate(){
+      if(summaryUpdateScheduled) return;
+      summaryUpdateScheduled = true;
+      window.requestAnimationFrame(()=>{
+        summaryUpdateScheduled = false;
+        refreshStickySummary();
+      });
     }
 
     function getSideNavElements(){
@@ -6357,12 +6682,12 @@
       });
       updateToggleButtons(section);
       updateAllGroupEmptyStates(section);
-      queueSideNavRender();
+      scheduleSideNavRender();
       if(section.__state && section.dataset && section.dataset.section){
         writeSectionState(section.dataset.section, section.__state);
       }
       updateSideNavForSection(section);
-      queueSummaryProgress();
+      scheduleSummaryProgressRender();
     }
 
     function handleSideNavClick(event){
@@ -6424,7 +6749,7 @@
       syncSideNavToggleAvailability(visibleItems.length > 0);
       if(!visibleItems.length){
         state.root.dataset.empty = '1';
-        queueSummaryJumpRefresh();
+        scheduleSummaryJumpRefresh();
         return;
       }
       state.root.dataset.empty = '0';
@@ -6456,9 +6781,9 @@
         item.button = btn;
         item.countEl = count;
       });
-      queueMeasurements();
-      queueSummaryJumpRefresh();
-      queueSummaryProgress();
+      scheduleAllMeasurements();
+      scheduleSummaryJumpRefresh();
+      scheduleSummaryProgressRender();
     }
 
     function renderSummaryProgress(){
@@ -6502,7 +6827,7 @@
         btn.addEventListener('click', handleSideNavClick);
         root.appendChild(btn);
       });
-      queueMeasurements();
+      scheduleAllMeasurements();
     }
 
     function getWizardJumpSelect(){
@@ -6553,8 +6878,13 @@
       if(typeof select.blur === 'function'){ select.blur(); }
     }
 
-    function queueSummaryProgress(){
-      AA01.batchFrame('progress', renderSummaryProgress);
+    function scheduleSummaryProgressRender(){
+      if(SUMMARY_PROGRESS_STATE.scheduled) return;
+      SUMMARY_PROGRESS_STATE.scheduled = true;
+      window.requestAnimationFrame(()=>{
+        SUMMARY_PROGRESS_STATE.scheduled = false;
+        renderSummaryProgress();
+      });
     }
 
     function getSummaryJumpSelect(){
@@ -6567,8 +6897,13 @@
       return SUMMARY_JUMP_STATE.select;
     }
 
-    function queueSummaryJumpRefresh(){
-      AA01.batchFrame('jump', refreshSummaryJumpOptions);
+    function scheduleSummaryJumpRefresh(){
+      if(SUMMARY_JUMP_STATE.scheduled) return;
+      SUMMARY_JUMP_STATE.scheduled = true;
+      window.requestAnimationFrame(()=>{
+        SUMMARY_JUMP_STATE.scheduled = false;
+        refreshSummaryJumpOptions();
+      });
     }
 
     function refreshSummaryJumpOptions(){
@@ -6669,8 +7004,13 @@
       select.blur();
     }
 
-    function queueSideNavRender(){
-      AA01.batchFrame('sidenav', renderSideNav);
+    function scheduleSideNavRender(){
+      if(SIDE_NAV_STATE.renderScheduled) return;
+      SIDE_NAV_STATE.renderScheduled = true;
+      window.requestAnimationFrame(()=>{
+        SIDE_NAV_STATE.renderScheduled = false;
+        renderSideNav();
+      });
     }
 
     function registerSideNavGroups(){
@@ -6711,9 +7051,9 @@
         items.push(item);
       });
       state.items = items;
-      queueSideNavRender();
-      queueSummaryJumpRefresh();
-      queueSummaryProgress();
+      scheduleSideNavRender();
+      scheduleSummaryJumpRefresh();
+      scheduleSummaryProgressRender();
     }
 
     function updateSideNavForSection(section){
@@ -6747,8 +7087,8 @@
           navItem.button.dataset.status = status;
         }
       });
-      queueSummaryJumpRefresh();
-      queueSummaryProgress();
+      scheduleSummaryJumpRefresh();
+      scheduleSummaryProgressRender();
     }
 
     const CHECKCOL_PRIORITY_MAP = {
@@ -7017,7 +7357,7 @@
         try{ window.localStorage.setItem(FONT_SCALE_STORAGE_KEY, normalized); }catch(err){}
       }
       updateFontScaleButtons(normalized);
-      queueMeasurements();
+      scheduleAllMeasurements();
     }
 
     function setSectionHideFilled(section, hide, options){
@@ -7158,7 +7498,7 @@
         try{ window.localStorage.setItem(UI_MODE_STORAGE_KEY, normalized); }catch(err){}
       }
 
-      queueMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initUiPresetControls(){
@@ -7850,7 +8190,7 @@
       });
       updateAllGroupEmptyStates(section);
       updateSideNavForSection(section);
-      queueSummaryUpdate();
+      scheduleSummaryUpdate();
     }
 
     function createSectionProgress(section){
@@ -7997,8 +8337,8 @@
         }
         writeSectionState(section.dataset.section, state);
         updateToggleButtons(section);
-        queueSideNavRender();
-        queueSummaryProgress();
+        scheduleSideNavRender();
+        scheduleSummaryProgressRender();
       });
       updateToggleButtons(section);
     }
@@ -8098,8 +8438,8 @@
               setGroupCollapsed(section, group, true);
               updateToggleButtons(section);
               updateAllGroupEmptyStates(section);
-              queueSideNavRender();
-              queueSummaryProgress();
+              scheduleSideNavRender();
+              scheduleSummaryProgressRender();
             }
           });
         }
@@ -8137,8 +8477,8 @@
       sectionViewsReady = true;
       registerSideNavGroups();
       sections.forEach(section=>updateSideNavForSection(section));
-      queueSideNavRender();
-      queueSummaryUpdate();
+      scheduleSideNavRender();
+      scheduleSummaryUpdate();
     }
 
     /* ===== 個管師名單 ===== */
@@ -8178,7 +8518,7 @@
           select.selectedIndex=0;
         }
         buildApprovalPlanPreview();
-        queueSummaryUpdate();
+        scheduleSummaryUpdate();
         updateBasicInfoCompletion({ silent:true });
       }).getCaseManagersByUnit(unit);
     }
@@ -8221,7 +8561,7 @@
         }
         updateConsultVisitText();
         toggleCallDateByConsultVisit();
-        queueSummaryUpdate();
+        scheduleSummaryUpdate();
         updateBasicInfoCompletion({ silent:true });
       }).getConsultantsByUnit(unit);
     }
@@ -8276,7 +8616,7 @@
       enforcePrimaryExclusionOnExtras();
       updateParticipantConflictHint();
       buildApprovalPlanPreview();
-      if(!isRestoringDraft) queueAutoSave();
+      if(!isRestoringDraft) scheduleAutoSave();
     }
 
     function resetExtras(){
@@ -9256,7 +9596,7 @@
       updateActionRemoveButtons();
       updateActionHint();
       buildSection1();
-      if(!isRestoringDraft && draftLoadComplete) queueAutoSave();
+      if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
     }
 
     function restoreActionEntries(list){
@@ -10559,12 +10899,12 @@
           focusTarget.focus({ preventScroll:true });
         }
       };
-      const queueScroll = ()=>{ window.requestAnimationFrame(performScroll); };
+      const scheduleScroll = ()=>{ window.requestAnimationFrame(performScroll); };
       if(step){
         if(!setCurrentWizardStep(step, { scroll:false })){
           return;
         }
-        queueScroll();
+        scheduleScroll();
         return;
       }
       const desiredPage = pageId || 'goals';
@@ -10572,7 +10912,7 @@
         if(setActivePage(desiredPage) === false){
           return;
         }
-        queueScroll();
+        scheduleScroll();
       }else{
         performScroll();
       }
@@ -12311,7 +12651,7 @@
     function syncPlanStateWithSelections(options){
       options = options || {};
       if(isRestoringDraft && !options.force){
-        queuePlanStateSync(options);
+        schedulePlanStateSync(options);
         return;
       }
       const skipPreview = !!options.skipPreview;
@@ -12334,7 +12674,7 @@
         buildPlanSummaryPreview();
         buildApprovalPlanPreview();
       }
-      if(!isRestoringDraft && draftLoadComplete) queueAutoSave();
+      if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
     }
 
     function isFiniteNumber(value){
@@ -13723,7 +14063,7 @@
         host.innerHTML='<div class="hint">尚未選擇服務項目。</div>';
         setPlanSummaryClipboard('');
         setPlanSummaryPlainText('');
-        queueMeasurements();
+        scheduleAllMeasurements();
         return;
       }
       const header=['服務代碼','服務名稱','承接','指定單位','額度／單位','自費金額','使用頻率／說明'];
@@ -13778,7 +14118,7 @@
       const plainText = plainLines.join('\n');
       setPlanSummaryClipboard(copyText ? `${copyText}\n${totalLine}` : totalLine);
       setPlanSummaryPlainText(plainText ? `${plainText}\n${totalLine}` : totalLine);
-      queueMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initPlanSummaryCopy(){
@@ -14053,8 +14393,8 @@
       if(sectionViewsReady){
         refreshExecutionHeadingRegistry();
       }
-      queueSummaryUpdate();
-      queueMeasurements();
+      scheduleSummaryUpdate();
+      scheduleAllMeasurements();
     }
     function updateSelfPayHint(code){
       if(!code) return;
@@ -14491,8 +14831,8 @@
       });
       refreshDayCareAvailability();
       syncPlanStateWithSelections();
-      queueSummaryUpdate();
-      if(!isRestoringDraft && draftLoadComplete) queueAutoSave();
+      scheduleSummaryUpdate();
+      if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
       updateBasicInfoCompletion(options);
     }
 
@@ -14948,7 +15288,7 @@
       const row=document.getElementById(`cc-${idx}`);
       if(row) row.remove();
       buildSection4();
-      if(!isRestoringDraft) queueAutoSave();
+      if(!isRestoringDraft) scheduleAutoSave();
     }
 
     function resetCoCare(){
@@ -15716,13 +16056,16 @@
       return { ok: issues.length === 0, issues: issues };
     }
 
-    function submitAA01(){
+    function applyAndSave(){
       const msg=document.getElementById('msg');
       if(msg) msg.textContent='';
       hideValidationToast();
       renderErrorSummary([]);
+      const unitCode=document.getElementById('unitCode').value;
+      const caseManagerName=document.getElementById('caseManagerName').value;
       const caseNameInput=document.getElementById('caseName');
       const caseName=(caseNameInput?.value||'').trim();
+      const consultName=(document.getElementById('consultName').value||'').trim();
       const errors=[];
       if(!caseName){
         if(caseNameInput){
@@ -15732,6 +16075,9 @@
       }else if(caseNameInput){
         caseNameInput.classList.remove('input-invalid');
       }
+      let primaryCaregiverRel = (document.getElementById('primaryRel').value||'').trim();
+      let primaryCaregiverName= (document.getElementById('primaryName').value||'').trim();
+      if(!primaryCaregiverRel){ primaryCaregiverRel='本人'; if(!primaryCaregiverName) primaryCaregiverName = caseName; }
 
       const conditionalValidation = validateConditionalRequired();
       if(!conditionalValidation.ok){
@@ -15825,33 +16171,66 @@
         return;
       }
 
-      const container = document.getElementById('appContainer');
-      const data = AA01.collect(container);
+      const consentParties = buildConsentParties();
+      const form = {
+        unitCode, caseManagerName, caseName, consultName,
+        cmsLevel: getCmsLevel(),
+        callDate: getDateBox('callDate'),
+        isConsultVisit: document.getElementById('isConsultVisit').checked,
+        visitDate: getDateBox('visitDate'),
+        isDischarge: document.getElementById('isDischarge').checked,
+        dischargeDate: getDateBox('dischargeDate'),
+        // 三、偕同訪視者
+        primaryCaregiverRel: primaryCaregiverRel,
+        primaryCaregiverName: primaryCaregiverName,
+        includePrimary: true,              // 固定預設輸出
+        extras: collectExtras(),
+        consentParties: consentParties,
+        // 四、個案概況（已組句）
+        section1: (document.getElementById('section1_out').value || '').trim().replace(/^（一）身心概況：/, ''),
+        section2: (document.getElementById('section2_out').value || '').trim(),
+        section3: (document.getElementById('section3_out').value || '').trim(),
+        section4: (document.getElementById('section4_out').value || '').trim(),
+        section5: (document.getElementById('section5').value || '').trim(),
+        section6: (document.getElementById('section6_struct').value || '').trim(),
+        // 五、照顧目標
+        problemKeys: getSelectedProblems(),
+        problemNote: (document.getElementById('problemNote').value || '').trim(),
+        short_care: (document.getElementById('short_care').value || '').trim(),
+        short_prof: (document.getElementById('short_prof').value || '').trim(),
+        short_car : (document.getElementById('short_car').value  || '').trim(),
+        short_resp: (document.getElementById('short_resp').value || '').trim(),
+        short_access: (document.getElementById('short_access').value || '').trim(),
+        short_meal: (document.getElementById('short_meal').value || '').trim(),
+        mid_care: (document.getElementById('mid_care').value || '').trim(),
+        mid_prof: (document.getElementById('mid_prof').value || '').trim(),
+        mid_car : (document.getElementById('mid_car').value  || '').trim(),
+        mid_resp: (document.getElementById('mid_resp').value || '').trim(),
+        mid_access: (document.getElementById('mid_access').value || '').trim(),
+        mid_meal: (document.getElementById('mid_meal').value || '').trim(),
+        long_goal: (document.getElementById('long_goal').value || '').trim(),
+        servicePlan: serializeServicePlan(),
+        planMeta: Object.assign({}, planMetaState),
+        planText: (document.getElementById('plan_text').value || '').trim(),
+        planOther: (document.getElementById('plan_other')?.value || '').trim()
+      };
+
       google.script.run
-        .withSuccessHandler(AA01.ui.afterSave)
-        .withFailureHandler(AA01.ui.afterSaveError)
-        .applyAndSaveAA01(data);
+        .withSuccessHandler(res=>{
+          renderOutputMessage(res);
+          persistSection1Previous();
+          clearStyleCheckerMarks();
+          renderSection1Preview(section1PreviewState.segments);
+          clearAutoSaveDraft();
+          lastSavedTimestamp = Date.now();
+          scheduleSummaryUpdate();
+          if (res && res.file && res.file.url) openProducedFile(res.file.url);
+        })
+        .withFailureHandler(err=>{
+          msg.innerHTML = '<span class="danger">錯誤：</span>' + (err && err.message ? err.message : err);
+        })
+        .applyAndSave(form);
     }
-
-    AA01.ui = AA01.ui || {};
-    AA01.ui.afterSave = function(res){
-      renderOutputMessage(res);
-      persistSection1Previous();
-      clearStyleCheckerMarks();
-      renderSection1Preview(section1PreviewState.segments);
-      clearAutoSaveDraft();
-      lastSavedTimestamp = Date.now();
-      queueSummaryUpdate();
-      if(res && res.file && res.file.url){
-        openProducedFile(res.file.url);
-      }
-    };
-
-    AA01.ui.afterSaveError = function(err){
-      const msg = document.getElementById('msg');
-      if(!msg) return;
-      msg.innerHTML = '<span class="danger">錯誤：</span>' + (err && err.message ? err.message : err);
-    };
 
 
     /* ===== Wizard Flow 與浮動操作 ===== */
@@ -15938,7 +16317,7 @@
         menu.dataset.open='1';
         button.setAttribute('aria-expanded','true');
         attachWizardMoreMenuEvents();
-        queueMeasurements();
+        scheduleAllMeasurements();
       }
     }
 
@@ -15953,7 +16332,7 @@
       }
       detachWizardMoreMenuEvents();
       if(wasOpen){
-        queueMeasurements();
+        scheduleAllMeasurements();
       }
     }
 
@@ -16096,9 +16475,9 @@
       const finalPageId = activation.finalPageId || targetPageId;
       currentPageId = finalPageId;
       updatePageTabActiveState(finalPageId);
-      queueSideNavRender();
-      queueMeasurements();
-      queueSummaryProgress();
+      scheduleSideNavRender();
+      scheduleAllMeasurements();
+      scheduleSummaryProgressRender();
     }
 
     function determineWizardStepForPage(pageId, options){
@@ -16273,7 +16652,7 @@
         updateWizardButtons();
       }
       refreshWizardJumpOptions();
-      queueMeasurements();
+      scheduleAllMeasurements();
     }
 
     function initFloatingActions(){
@@ -16295,7 +16674,7 @@
         });
       }
       if(saveBtn){
-        saveBtn.addEventListener('click', function(){ submitAA01(); });
+        saveBtn.addEventListener('click', function(){ applyAndSave(); });
       }
       if(prevCompact){
         prevCompact.addEventListener('click', function(){
@@ -16310,7 +16689,7 @@
         });
       }
       updateWizardButtons();
-      queueMeasurements();
+      scheduleAllMeasurements();
     }
 
 
@@ -16435,10 +16814,10 @@
         audit.goals_defaults_ok = defaultsApplied;
         audit.contactVisit_init_open = !!(planGroup && planGroup.dataset && planGroup.dataset.planLocked === '0' && planGroup.dataset.collapsed === '0');
       }
-      queueSummaryProgress();
-      queueSummaryUpdate();
-      queueSideNavRender();
-      queueMeasurements();
+      scheduleSummaryProgressRender();
+      scheduleSummaryUpdate();
+      scheduleSideNavRender();
+      scheduleAllMeasurements();
     }
 
     function inspectPageSectionVisibility(activeSection){
@@ -16494,7 +16873,7 @@
         fixed
       });
       if(fixed){
-        queueMeasurements();
+        scheduleAllMeasurements();
       }
     }
 
@@ -16544,9 +16923,9 @@
         ensureGoalsPageDefaults(activeSection);
       }
       inspectPageSectionVisibility(activeSection);
-      queueSideNavRender();
-      queueMeasurements();
-      queueSummaryProgress();
+      scheduleSideNavRender();
+      scheduleAllMeasurements();
+      scheduleSummaryProgressRender();
       return true;
     }
 
@@ -16632,13 +17011,13 @@
           if(planGroupState.locked){
             if(groupElement.dataset.collapsed !== '1'){
               groupElement.dataset.collapsed = '1';
-              queueMeasurements();
+              scheduleAllMeasurements();
             }
             planGroupState.hasOpened = false;
           }else if(shouldExpand){
             if(groupElement.dataset.collapsed !== '0'){
               groupElement.dataset.collapsed = '0';
-              queueMeasurements();
+              scheduleAllMeasurements();
             }
             planGroupState.pendingExpand = false;
             planGroupState.hasOpened = true;
@@ -16974,7 +17353,7 @@
           const ariaLabel=titleText ? `${actionText} ${titleText}` : actionText;
           if(toggle) toggle.setAttribute('aria-label', ariaLabel);
           if(label) label.textContent = actionText;
-          queueMeasurements();
+          scheduleAllMeasurements();
         };
         if(collapsible && toggle){
           const controller={ element:group, applyState, toggle };
@@ -17031,13 +17410,13 @@
       buildSection1(); // 初次預覽一次
     }
 
-    window.addEventListener('resize', queueMeasurements);
-    window.addEventListener('orientationchange', queueMeasurements);
-    window.addEventListener('focusin', queueMeasurements);
-    window.addEventListener('focusout', queueMeasurements);
+    window.addEventListener('resize', scheduleAllMeasurements);
+    window.addEventListener('orientationchange', scheduleAllMeasurements);
+    window.addEventListener('focusin', scheduleAllMeasurements);
+    window.addEventListener('focusout', scheduleAllMeasurements);
     if(window.visualViewport){
-      window.visualViewport.addEventListener('resize', queueMeasurements);
-      window.visualViewport.addEventListener('scroll', queueMeasurements);
+      window.visualViewport.addEventListener('resize', scheduleAllMeasurements);
+      window.visualViewport.addEventListener('scroll', scheduleAllMeasurements);
     }
 
     function applyEllipsisTooltips(){
@@ -17056,30 +17435,28 @@
     }
 
     function initializeSidebarOnLoad(){
-      try{
-        if(typeof ensureSingleMount === 'function'){
-          ensureSingleMount();
-        }
-      }catch(mountError){
-        console.error('偵測到巢狀 page-section，請檢查模板：', mountError);
-        try{ initValidationToast(); }catch(toastInitError){ console.error('初始化驗證提示時發生錯誤：', toastInitError); }
-        if(typeof showValidationToast === 'function'){
-          showValidationToast({
-            type:'warn',
-            message:(mountError && mountError.message) ? mountError.message : '偵測到版面掛載問題，請檢查模板結構。'
-          });
-        }
-        return;
+      hoistNestedPageSections();
+      dedupeGoalsSection();
+      if(document.querySelector('.page-section .page-section')){
+        console.error('偵測到巢狀 page-section，請檢查去重程序。');
       }
       prepareCaseProfileLayout();
       renderServicePlanEditor();
       let headingSpecReport = null;
-      try{
+      if(typeof window !== 'undefined' && !window.__HEADING_SPEC_PATCHED__){
+        window.__HEADING_SPEC_PATCHED__ = true;
+        try{
+          mergeExpectedHeadingsIntoSpec();
+          ensureDomTargets();
+          applyHeadingSpecToDom();
+          headingSpecReport = logHeadingSpecReport();
+        }catch(err){
+          console.error('修補 H1～H3 及 DOM 對應時發生錯誤：', err);
+        }
+      }
+      if(!headingSpecReport){
         applyHeadingSpecToDom();
         headingSpecReport = logHeadingSpecReport();
-      }catch(err){
-        console.error('套用 HEADINGS 時發生錯誤：', err);
-        headingSpecReport = collectHeadingSpecStatus();
       }
       handleHeadingSpecValidation(headingSpecReport);
       initHeadingSpecToast();
@@ -17089,8 +17466,8 @@
       refreshExecutionHeadingRegistry();
       applyHeadingSpecVersionUpgrade();
       ensureGoalsPageDefaults();
-      queueSummaryUpdate();
-      queueMeasurements();
+      scheduleSummaryUpdate();
+      scheduleAllMeasurements();
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
       }
@@ -17177,7 +17554,7 @@
           syncSocialPrimary();
           updateParticipantConflictHint();
           buildApprovalPlanPreview();
-          queueSummaryUpdate();
+          scheduleSummaryUpdate();
         });
       }
       const primaryNameField=document.getElementById('primaryName');
@@ -17185,7 +17562,7 @@
         primaryNameField.addEventListener('input', ()=>{
           syncSocialPrimary();
           buildApprovalPlanPreview();
-          queueSummaryUpdate();
+          scheduleSummaryUpdate();
         });
       }
       const caseNameInput=document.getElementById('caseName');
@@ -17194,19 +17571,19 @@
         caseNameInput.addEventListener('input', syncSocialPrimary);
         caseNameInput.addEventListener('input', updateConsultVisitText);
         caseNameInput.addEventListener('input', buildApprovalPlanPreview);
-        caseNameInput.addEventListener('input', queueSummaryUpdate);
+        caseNameInput.addEventListener('input', scheduleSummaryUpdate);
       }
       const consultSelect=document.getElementById('consultName');
       if(consultSelect){
         consultSelect.addEventListener('change', updateConsultVisitText);
-        consultSelect.addEventListener('change', queueSummaryUpdate);
+        consultSelect.addEventListener('change', scheduleSummaryUpdate);
         consultSelect.addEventListener('change', ()=>{ updateBasicInfoCompletion(); });
       }
       document.getElementById('s1_gender')?.addEventListener('change', buildApprovalPlanPreview);
       const caseManagerSelect=document.getElementById('caseManagerName');
       if(caseManagerSelect){
         caseManagerSelect.addEventListener('change', buildApprovalPlanPreview);
-        caseManagerSelect.addEventListener('change', queueSummaryUpdate);
+        caseManagerSelect.addEventListener('change', scheduleSummaryUpdate);
         caseManagerSelect.addEventListener('change', ()=>{ updateBasicInfoCompletion(); });
       }
 
@@ -17220,7 +17597,7 @@
 
       applyEllipsisTooltips();
 
-      queueMeasurements();
+      scheduleAllMeasurements();
 
       reportUiAudit();
 
