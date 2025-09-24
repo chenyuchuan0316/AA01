@@ -325,7 +325,7 @@ const HEADING_SPEC = Object.freeze([
 ### 檢核與維護流程
 
 1. **程式碼變更審查**：任何會影響標題輸出的 PR，都必須附上以此規格為基準的檢查結果，逐一列出新增、刪除或改動的節點並說明調整理由。
-2. **回歸測試**：執行 `applyAndSave(form)` 產生最新文件，確認輸出段落的標題階層與 `HEADING_SPEC` 完全一致，避免因模板或程式重構遺漏節點。
+2. **回歸測試**：執行 `applyAndSaveAA01(data)`（或舊版別名 `applyAndSave(form)`）產生最新文件，確認輸出段落的標題階層與 `HEADING_SPEC` 完全一致，避免因模板或程式重構遺漏節點。
 3. **版本同步**：若 `HEADING_SPEC` 有變動，請同步更新 `HEADING_SPEC_VERSION`，並在提交訊息與 `AGENTS.md` 的規範段落註記此次修改內容，方便後續追蹤。
 
 ---
@@ -337,8 +337,9 @@ HtmlService：Sidebar.html
    ├── showSidebar()（Google Docs 側欄模式）
    └── doGet()（Apps Script Web App 模式）
           ├── 收集輸入、組句、基本驗證
-          └── 呼叫 google.script.run.applyAndSave(form)
-                  └── AppCore.gs / applyAndSave(form)
+         └── 呼叫 google.script.run.applyAndSaveAA01(data)
+                 └── AppCore.gs / writeAA01Plan(body, data)
+                        └── applyAndSaveAA01(data)（`applyAndSave` 將沿用並轉呼叫此流程）
                         ├── 文件寫入器（H1 段落、附件頁）
                         └── 服務資料查詢（透過 DataStore.gs）
 ```
@@ -353,7 +354,7 @@ HtmlService：Sidebar.html
 | 檔案 | 內容摘要 |
 | --- | --- |
 | `AGENTS.md` | 專案維護指南與開發原則。|
-| `AppCore.gs` | 入口流程、文件寫入、通用工具與人員名單查詢皆集中於此；`applyH1_*` 會透過 `renderSimpleTemplate` 套用模板字典輸出段落。亦提供 `getServiceCatalog()` 給前端取得服務資料。|
+| `AppCore.gs` | 入口流程、文件寫入、通用工具與人員名單查詢皆集中於此；`applyH1_*` 會透過 `renderSimpleTemplate` 套用模板字典輸出段落。亦提供 `writeAA01Plan(body, data)`、`applyAndSaveAA01(data)` 與 `getServiceCatalog()` 等 API 給前端與其他模組。|
 | `DataStore.gs` | 外部資源 ID、桃園市長照給付資料庫靜態表，以及 H1 段落所需的模板與詞彙表，供 `AppCore.gs` 與前端查詢。|
 | `Sidebar.html` | 側欄 UI 與邏輯。負責收集使用者輸入、產生描述文字、基本驗證與呼叫後端函式。|
 
@@ -395,7 +396,7 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
    - 確認模板文件與輸出資料夾的共用權限允許 Apps Script 帳號存取。
 
 3. **授權**
-   - 第一次執行 `showSidebar` 或 `applyAndSave` 時，需授權 Apps Script 存取 Docs/Drive/Sheets。
+  - 第一次執行 `showSidebar` 或 `applyAndSaveAA01`（含舊別名 `applyAndSave`）時，需授權 Apps Script 存取 Docs/Drive/Sheets。
 
 4. **測試**
    - 於模板文件中重新載入頁面，應看到「計畫助手」功能表。
@@ -434,10 +435,10 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
    - 初始化時預設「電聯日期」「家訪日期」為今日，並透過 `google.script.run` 載入個管師及照專名單。
    - 使用者輸入資料時即時重組段落文字（特別是「(一)身心概況」等長段落），並以分段卡片呈現；可透過「只看變更」切換上一次提交與目前輸入的差異（資料存於 `localStorage` 的 `AA01.section1.previousSegments`）。
    - 送出前依序執行欄位驗證、跨欄位規則引擎（`FORM_RULES`）與樣式檢查器：規則可自動隱藏/清空/修正欄位並在必要時阻擋提交，樣式檢查器則檢查半形標點、連續空白等問題並以 Toast 告知。
-   - 將所有欄位整合成 `form` 物件，呼叫 `applyAndSave(form)`。
+   - 使用 `AA01.collect` 彙整欄位為資料物件後，呼叫 `google.script.run.applyAndSaveAA01(data)`（保留 `applyAndSave(form)` 做為舊版別名）。
 
 3. **後端寫入** (`AppCore.gs`)
-   - `applyAndSave` 先計算新檔名稱（`FNA1_YYYYMMDD_個案姓名_個管師姓名_V{版號}`），並以「個案×個管師」為唯一鍵遞增版號。
+   - `applyAndSaveAA01` 先計算新檔名稱（`FNA1_YYYYMMDD_個案姓名_個管師姓名_V{版號}`），並以「個案×個管師」為唯一鍵遞增版號。
    - 於 `OUTPUT_FOLDER_ID` 指定的資料夾中，以 `TEMPLATE_DOC_ID` 為模板建立副本並開啟 Body。
    - `DOCUMENT_WRITERS` 依序呼叫 `applyH1_*` 函式處理各段落（邏輯集中於 `AppCore.gs`）：
     - `applyH1_CallDate` / `applyH1_VisitDate`：更新標題列文字或插入出院日期。
@@ -633,7 +634,7 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
 * 調整輸出格式：優先修改 `AppCore.gs` 內對應的 `applyH1_*` 段落，必要時更新同檔案中的共用工具函式；若涉及固定句構或詞彙，請同步調整 `DataStore.gs` 的 `H1_*` 模板字典後再套用。
 * 新增欄位：
   1. 在 `Sidebar.html` 新增 UI 與資料整合邏輯。
-  2. 調整 `applyAndSave` 的 `form` 組裝。
+  2. 調整 `AA01.collect` 與 `applyAndSaveAA01` 的資料組裝。
   3. 在 `AppCore.gs` 中對應的 `applyH1_*` 函式使用新欄位。
 * 更新給付資料：若桃園市長照給付標準調整，請同步更新 `桃園市_長照給付資料庫_v1.xlsx` 並重新產出 `DataStore.gs` 中的 `TAOYUAN_LTC_DATA` 段落，同時檢視 `Sidebar.html` 內的服務代碼敘述是否對應。
 * 即時欄位驗證：若新增欄位需依條件顯示錯誤提示，請於 `Sidebar.html` 的 `validateSection1` 或相關段落驗證函式補強，維持與 UI 提示一致。
