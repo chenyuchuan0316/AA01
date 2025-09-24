@@ -624,6 +624,10 @@
       cursor:pointer;
       transition:background .2s ease, border-color .2s ease, color .2s ease;
     }
+    .summary-progress-chip[data-level="3"]{ padding-left:calc(var(--space-sm) + 12px); }
+    .summary-progress-chip[data-level="4"]{ padding-left:calc(var(--space-sm) + 20px); }
+    .summary-progress-chip[data-level="5"]{ padding-left:calc(var(--space-sm) + 28px); }
+    .summary-progress-chip[data-level="6"]{ padding-left:calc(var(--space-sm) + 36px); }
     .summary-progress-chip .chip-label{ white-space:nowrap; }
     .summary-progress-chip .chip-count{ font-variant-numeric:tabular-nums; color:#1f2937; }
     .summary-progress-chip[data-status="complete"]{ background:var(--status-complete-bg); border-color:var(--status-complete-border); color:var(--status-complete-text); }
@@ -1667,12 +1671,47 @@
       border-radius:var(--radius);
       background:#fff;
       padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
     }
-    .plan-category-title{
+    .extras-heading-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+      gap:var(--space-sm);
+      margin-bottom:var(--space-xs);
+      align-items:end;
+    }
+    @media (max-width:720px){
+      .extras-heading-grid{ grid-template-columns:1fr; }
+    }
+    .plan-category-heading{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--space-sm);
+    }
+    .plan-category-heading .h3{
       font-weight:700;
-      font-size:1.05rem;
       color:var(--title);
-      margin-bottom:var(--space-sm);
+      margin:0;
+    }
+    .plan-category-body{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
+    }
+    .plan-category-meta{
+      border-style:dashed;
+      background:var(--card-alt);
+    }
+    .plan-empty-hint{
+      font-size:0.95rem;
+      color:var(--label);
+      padding:var(--space-sm);
+      border:1px dashed var(--border);
+      border-radius:var(--radius);
+      background:#f8fafc;
     }
     .plan-entry{
       border:1px dashed var(--border);
@@ -2128,6 +2167,10 @@
       background:#fff;
       transition:background .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
+    .side-nav-item[data-level="3"]{ padding-left:calc(var(--space-sm) + 12px); }
+    .side-nav-item[data-level="4"]{ padding-left:calc(var(--space-sm) + 20px); }
+    .side-nav-item[data-level="5"]{ padding-left:calc(var(--space-sm) + 28px); }
+    .side-nav-item[data-level="6"]{ padding-left:calc(var(--space-sm) + 36px); }
     .side-nav-item:focus-within{ box-shadow:0 0 0 2px var(--accent-weak); }
     .side-nav-link{
       flex:1;
@@ -4142,6 +4185,15 @@
             <p>若同一服務由不同單位提供，或同時含自費段，請個別建立明細並清楚標註說明。</p>
           </div>
           <div id="planEditor" class="plan-editor"></div>
+          <div class="plan-category plan-category-meta" data-plan-category="EMERGENCY">
+            <div class="plan-category-heading">
+              <h3 class="h3" id="h3-exec-emergency" data-anchor="h3-exec-emergency">（八）緊急救援服務</h3>
+            </div>
+            <div class="plan-category-body">
+              <label class="h4" for="plan_emergency_note">救援需求說明</label>
+              <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
+            </div>
+          </div>
         </section>
 
         <section class="section-card" id="planReferralSection">
@@ -4149,12 +4201,6 @@
             <label class="h2">二、轉介其他服務資源</label>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
-        </section>
-
-        <section class="section-card" id="planStationSection">
-          <div class="titlebar">
-            <label class="h2">三、巷弄長照站資訊與意願</label>
-          </div>
           <div class="plan-meta-grid">
             <div>
               <label class="h3" for="plan_station_info">巷弄長照站資訊</label>
@@ -4169,14 +4215,6 @@
               </select>
             </div>
           </div>
-        </section>
-
-        <section class="section-card" id="planEmergencySection">
-          <div class="titlebar">
-            <label class="h2">四、緊急救援服務說明</label>
-          </div>
-          <label class="h3" for="plan_emergency_note">救援需求說明</label>
-          <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
         </section>
 
         <section class="section-card" id="planSummaryGroup">
@@ -4323,7 +4361,158 @@
       notes:'其他備註'
     };
 
+    const HEADING_SPEC_VERSION = '2024-04-01';
+    const HEADING_SPEC_VERSION_STORAGE_KEY = 'AA01.headingSpec.version';
+
+    const HEADING_SPEC = Object.freeze([
+      {
+        id:'h1-basic', tag:'h1', label:'基本資訊', page:'basic',
+        children:[
+          { id:'h2-basic-unit-code', tag:'h2', label:'單位代碼' },
+          { id:'h2-basic-case-manager', tag:'h2', label:'個案管理師' },
+          { id:'h2-basic-case-name', tag:'h2', label:'個案姓名' },
+          { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' },
+          { id:'h2-basic-cms-level', tag:'h2', label:'CMS 等級' }
+        ]
+      },
+      {
+        id:'h1-goals', tag:'h1', label:'計畫目標', page:'goals',
+        children:[
+          {
+            id:'h2-goals-call', tag:'h2', label:'一、電聯日期',
+            children:[
+              { id:'h3-goals-call-date', tag:'h3', label:'電聯日期' }
+            ]
+          },
+          {
+            id:'h2-goals-homevisit', tag:'h2', label:'二、家訪日期',
+            children:[
+              { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' },
+              { id:'h3-goals-prep-date', tag:'h3', label:'出院日期' }
+            ]
+          },
+          {
+            id:'h2-goals-companions', tag:'h2', label:'三、偕同訪視者',
+            children:[
+              { id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係' },
+              { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' },
+              { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' },
+              { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' }
+            ]
+          },
+          {
+            id:'h2-goals-overview', tag:'h2', label:'四、個案概況',
+            children:[
+              { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況' },
+              { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入' },
+              { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境' },
+              { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持' },
+              { id:'h3-goals-s5', tag:'h3', label:'（五）其他' },
+              { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值' }
+            ]
+          },
+          {
+            id:'h2-goals-targets', tag:'h2', label:'五、照顧目標',
+            children:[
+              { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' },
+              { id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標(0-3個月)' },
+              { id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標(3-4個月)' },
+              { id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標(4-6個月)' }
+            ]
+          },
+          {
+            id:'h2-goals-mismatch', tag:'h2', label:'六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
+            children:[
+              { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距' },
+              { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形' },
+              { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響' }
+            ]
+          }
+        ]
+      },
+      {
+        id:'h1-exec', tag:'h1', label:'計畫執行規劃', page:'execution',
+        children:[
+          {
+            id:'h2-exec-services', tag:'h2', label:'一、長照服務核定項目、頻率',
+            children:[
+              { id:'h3-exec-b', tag:'h3', label:'（一）B碼' },
+              { id:'h3-exec-c', tag:'h3', label:'（二）C碼' },
+              { id:'h3-exec-d', tag:'h3', label:'（三）D碼' },
+              { id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼' },
+              { id:'h3-exec-g', tag:'h3', label:'（五）G碼' },
+              { id:'h3-exec-sc', tag:'h3', label:'（六）SC碼' },
+              { id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務' },
+              { id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務' }
+            ]
+          },
+          { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源' }
+        ]
+      },
+      {
+        id:'h1-notes', tag:'h1', label:'其他備註', page:'notes',
+        children:[
+          { id:'h2-notes-other', tag:'h2', label:'其他(個案特殊狀況或其他未盡事宜可備註於此)' }
+        ]
+      }
+    ]);
+
+    const HEADING_INDEX = (function(){
+      const index = {};
+      let order = 0;
+      function assign(entries, parent){
+        if(!Array.isArray(entries)) return;
+        entries.forEach(entry=>{
+          if(!entry || !entry.id) return;
+          const node = {
+            id:entry.id,
+            label:entry.label || '',
+            tag:entry.tag || (parent ? parent.tag : 'h1'),
+            level:entry.tag ? Number(entry.tag.replace(/[^0-9]/g,'')) || (parent ? parent.level + 1 : 1) : (parent ? parent.level + 1 : 1),
+            page:entry.page || (parent ? parent.page : ''),
+            parentId:parent ? parent.id : null,
+            order:order++,
+            children:Array.isArray(entry.children) ? entry.children.map(child=>child.id) : []
+          };
+          index[node.id] = node;
+          if(Array.isArray(entry.children) && entry.children.length){
+            assign(entry.children, node);
+          }
+        });
+      }
+      assign(HEADING_SPEC, null);
+      return index;
+    })();
+
+    function getHeadingEntry(anchorId){
+      return anchorId ? HEADING_INDEX[anchorId] || null : null;
+    }
+
+    function forEachHeading(callback){
+      if(typeof callback !== 'function') return;
+      const ids = Object.keys(HEADING_INDEX).sort(function(a,b){
+        return HEADING_INDEX[a].order - HEADING_INDEX[b].order;
+      });
+      ids.forEach(id=>callback(HEADING_INDEX[id]));
+    }
+
     const simpleGroupControllers = {};
+    const headingGroupRegistry = {};
+
+    function registerHeadingGroup(anchorId, section, group){
+      if(!anchorId || !section || !group) return;
+      headingGroupRegistry[anchorId] = { section:section, group:group };
+      if(!section.__headingGroupMap){ section.__headingGroupMap = {}; }
+      section.__headingGroupMap[anchorId] = group;
+    }
+
+    function resetHeadingGroupRegistry(){
+      Object.keys(headingGroupRegistry).forEach(function(key){ delete headingGroupRegistry[key]; });
+    }
+
+    function getHeadingGroup(anchorId){
+      return anchorId ? headingGroupRegistry[anchorId] || null : null;
+    }
 
     const SIDE_NAV_MEDIA_QUERY = '(max-width: 1279px)';
     const SIDE_NAV_TOGGLE_STATE = { button:null, backdrop:null, media:null, expanded:false };
@@ -5036,6 +5225,262 @@
       applyGridUtilities(document);
     }
 
+    const HEADING_DOM_TARGETS = Object.freeze({
+      'h1-basic': { selector:'#basicInfoGroup .titlebar .h1', mode:'replace', className:'h1' },
+      'h2-basic-unit-code': { selector:'#basicInfoGroup label[for="unitCode"]', mode:'labelHeading', className:'h2' },
+      'h2-basic-case-manager': { selector:'#basicInfoGroup label[for="caseManagerName"]', mode:'labelHeading', className:'h2' },
+      'h2-basic-case-name': { selector:'#basicInfoGroup label[for="caseName"]', mode:'labelHeading', className:'h2' },
+      'h2-basic-consultant-name': { selector:'#basicInfoGroup label[for="consultName"]', mode:'labelHeading', className:'h2' },
+      'h2-basic-cms-level': { selector:'.cms-level-row > label[for="cmsLevelValue"]', mode:'labelHeading', className:'h2' },
+      'h1-goals': { selector:'#contactVisitGroup .titlebar .h1', mode:'replace', className:'h1' },
+      'h2-goals-call': { selector:'#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-call-date': { selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' },
+      'h2-goals-homevisit': { selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-homevisit-date': { selector:'#contactVisitGroup label[for="visitDate"]', mode:'labelHeading', className:'h3' },
+      'h3-goals-prep-date': { selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3' },
+      'h2-goals-companions': { selector:'#visitPartnersGroup .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-primary-rel': { selector:'#visitPartnersGroup label[for="primaryRel"]', mode:'labelHeading', className:'h3' },
+      'h3-goals-primary-name': { selector:'#visitPartnersGroup label[for="primaryName"]', mode:'labelHeading', className:'h3' },
+      'h2-goals-overview': { selector:'#caseOverviewGroup .titlebar .h2', mode:'replace', className:'h2 heading-tier heading-tier--primary' },
+      'h3-goals-s1': { selector:'#section1_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s2': { selector:'#section2_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s3': { selector:'#section3_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s4': { selector:'#section4_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s5': { selector:'#section5_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-s6': { selector:'#section6_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h2-goals-targets': { selector:'#careGoalsGroup .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-targets-problems': { selector:'#careGoals_block > .titlebar:nth-of-type(1) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-targets-short': { selector:'#careGoals_block > .titlebar:nth-of-type(2) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-targets-mid': { selector:'#careGoals_block > .titlebar:nth-of-type(3) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h3-goals-targets-long': { selector:'#careGoals_block > .titlebar:nth-of-type(4) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
+      'h2-goals-mismatch': { selector:'#mismatchPlanGroup .titlebar .h2', mode:'replace', className:'h2' },
+      'h3-goals-mismatch-1': { selector:'#mismatchPlanGroup textarea#reason1', mode:'previousLabelHeading', className:'h3' },
+      'h3-goals-mismatch-2': { selector:'#mismatchPlanGroup textarea#reason2', mode:'previousLabelHeading', className:'h3' },
+      'h3-goals-mismatch-3': { selector:'#mismatchPlanGroup textarea#reason3', mode:'previousLabelHeading', className:'h3' },
+      'h1-exec': { selector:'.page-section[data-page="execution"] .group > .group-header .titlebar .h1', mode:'replace', className:'h1' },
+      'h2-exec-services': { selector:'#planExecutionGroup .titlebar label', mode:'replace', className:'h2' },
+      'h3-exec-b': { selector:'#planEditor .plan-category[data-plan-category="B"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-c': { selector:'#planEditor .plan-category[data-plan-category="C"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-d': { selector:'#planEditor .plan-category[data-plan-category="D"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-ef': { selector:'#planEditor .plan-category[data-plan-category="EF"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-g': { selector:'#planEditor .plan-category[data-plan-category="G"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-sc': { selector:'#planEditor .plan-category[data-plan-category="SC"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-nutrition': { selector:'#planEditor .plan-category[data-plan-category="MEAL"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h3-exec-emergency': { selector:'#planExecutionGroup .plan-category[data-plan-category="EMERGENCY"] .plan-category-heading h3', mode:'replace', className:'h3' },
+      'h2-exec-referral': { selector:'#planReferralSection .titlebar label', mode:'replace', className:'h2' },
+      'h1-notes': { selector:'#planOtherGroup .titlebar .h1', mode:'replace', className:'h1' },
+      'h2-notes-other': { selector:'#planOtherGroup .section-card .titlebar .h2, #planOtherGroup .section-card .titlebar span.h2', mode:'replace', className:'h2' }
+    });
+
+    function applyHeadingSpecToDom(){
+      const missing = [];
+      Object.keys(HEADING_DOM_TARGETS).forEach(function(anchorId){
+        const entry = getHeadingEntry(anchorId);
+        const config = HEADING_DOM_TARGETS[anchorId];
+        if(!entry || !config) return;
+        const tagName = (entry.tag || 'h3').toLowerCase();
+        const className = config.className || (entry.tag ? entry.tag.toLowerCase() : '');
+        if(config.mode === 'replace'){
+          let target = null;
+          try{ target = document.querySelector(config.selector); }catch(err){ target = null; }
+          if(!target){ missing.push(anchorId); return; }
+          if(target.id === anchorId && target.tagName && target.tagName.toLowerCase() === tagName){
+            target.dataset.anchor = anchorId;
+            target.textContent = entry.label || '';
+            if(className){ target.className = className; }
+            return;
+          }
+          const heading = document.createElement(entry.tag || 'h3');
+          if(className){ heading.className = className; }
+          heading.id = anchorId;
+          heading.dataset.anchor = anchorId;
+          heading.textContent = entry.label || '';
+          target.parentNode.replaceChild(heading, target);
+          return;
+        }
+        if(config.mode === 'labelHeading'){
+          let label = null;
+          try{ label = document.querySelector(config.selector); }catch(err){ label = null; }
+          if(!label){ missing.push(anchorId); return; }
+          let heading = label.querySelector('#' + anchorId);
+          const desiredTag = entry.tag || 'h3';
+          if(!heading || heading.tagName.toLowerCase() !== desiredTag.toLowerCase()){
+            heading = document.createElement(desiredTag);
+            label.innerHTML = '';
+            label.appendChild(heading);
+          }
+          heading.id = anchorId;
+          heading.dataset.anchor = anchorId;
+          heading.textContent = entry.label || '';
+          heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
+          return;
+        }
+        if(config.mode === 'previousLabelHeading'){
+          let field = null;
+          try{ field = document.querySelector(config.selector); }catch(err){ field = null; }
+          if(!field){ missing.push(anchorId); return; }
+          const label = field ? field.closest('div')?.querySelector('label') || field.parentElement?.querySelector('label') : null;
+          if(!label){ missing.push(anchorId); return; }
+          let heading = label.querySelector('#' + anchorId);
+          const desiredTag = entry.tag || 'h3';
+          if(!heading || heading.tagName.toLowerCase() !== desiredTag.toLowerCase()){
+            heading = document.createElement(desiredTag);
+            label.innerHTML = '';
+            label.appendChild(heading);
+          }
+          heading.id = anchorId;
+          heading.dataset.anchor = anchorId;
+          heading.textContent = entry.label || '';
+          heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
+        }
+      });
+      ensureGoalsExtraHeadings();
+      if(missing.length){
+        console.warn('缺少標題對應元素', missing);
+      }
+    }
+
+    function ensureGoalsExtraHeadings(){
+      const entryRel = getHeadingEntry('h3-goals-extra-rel');
+      const entryName = getHeadingEntry('h3-goals-extra-name');
+      const host = document.getElementById('extras');
+      if(!host || !entryRel || !entryName) return;
+      let wrap = document.getElementById('extrasHeading');
+      if(!wrap){
+        wrap = document.createElement('div');
+        wrap.id = 'extrasHeading';
+        wrap.className = 'extras-heading-grid';
+        host.parentNode.insertBefore(wrap, host);
+      }
+      if(!document.getElementById('h3-goals-extra-rel')){
+        const relHeading = document.createElement(entryRel.tag || 'h3');
+        relHeading.id = entryRel.id;
+        relHeading.dataset.anchor = entryRel.id;
+        relHeading.className = 'h3';
+        relHeading.textContent = entryRel.label || '';
+        wrap.appendChild(relHeading);
+      }
+      if(!document.getElementById('h3-goals-extra-name')){
+        const nameHeading = document.createElement(entryName.tag || 'h3');
+        nameHeading.id = entryName.id;
+        nameHeading.dataset.anchor = entryName.id;
+        nameHeading.className = 'h3';
+        nameHeading.textContent = entryName.label || '';
+        wrap.appendChild(nameHeading);
+      }
+    }
+
+    function refreshExecutionHeadingRegistry(){
+      if(!sectionViewsReady) return;
+      const meta = getHeadingGroup('h2-exec-services');
+      if(!meta || !meta.section || !meta.group) return;
+      const anchors = [];
+      if(typeof PLAN_CATEGORY_GROUPS !== 'undefined' && Array.isArray(PLAN_CATEGORY_GROUPS)){
+        PLAN_CATEGORY_GROUPS.forEach(function(group){
+          if(group && group.anchor){ anchors.push(group.anchor); }
+        });
+      }
+      anchors.push('h3-exec-emergency');
+      anchors.forEach(function(anchorId){
+        if(!anchorId) return;
+        const heading = document.getElementById(anchorId);
+        if(!heading) return;
+        registerHeadingGroup(anchorId, meta.section, meta.group);
+      });
+      scheduleSideNavRender();
+      scheduleSummaryJumpRefresh();
+    }
+
+    function collectHeadingSpecStatus(){
+      const missing = [];
+      forEachHeading(function(entry){
+        if(!entry || !entry.id) return;
+        if(!document.getElementById(entry.id)){
+          missing.push(entry.id);
+        }
+      });
+      return { missing };
+    }
+
+    function logHeadingSpecReport(){
+      const report = collectHeadingSpecStatus();
+      if(!window || !window.console) return report;
+      if(console.groupCollapsed){ console.groupCollapsed('HEADING_SPEC 驗證報告'); }
+      else if(console.group){ console.group('HEADING_SPEC 驗證報告'); }
+      if(report.missing.length){
+        console.warn('缺少定義的標題錨點', report.missing);
+      }else{
+        console.info('所有 HEADING_SPEC 定義的錨點皆已就緒。');
+      }
+      if(console.groupEnd){ console.groupEnd(); }
+      return report;
+    }
+
+    function readHeadingSpecVersion(){
+      const store = getSafeLocalStorage();
+      if(!store) return null;
+      try{
+        const value = store.getItem(HEADING_SPEC_VERSION_STORAGE_KEY);
+        return value || null;
+      }catch(err){
+        return null;
+      }
+    }
+
+    function persistHeadingSpecVersion(version){
+      const store = getSafeLocalStorage();
+      if(!store) return;
+      try{ store.setItem(HEADING_SPEC_VERSION_STORAGE_KEY, version); }catch(err){}
+    }
+
+    function applyHeadingSpecVersionUpgrade(){
+      const stored = readHeadingSpecVersion();
+      if(stored === HEADING_SPEC_VERSION) return false;
+      let changed = false;
+      const sections = document.querySelectorAll('[data-section]');
+      sections.forEach(section=>{
+        if(!section) return;
+        const state = section.__state || (section.__state = readSectionState(section.dataset.section));
+        let updated = false;
+        if(state.hideFilled){
+          state.hideFilled = false;
+          updated = true;
+        }
+        if(!state.showAdvanced){
+          state.showAdvanced = true;
+          updated = true;
+        }
+        section.dataset.hideFilled = '0';
+        section.dataset.showAdvanced = '1';
+        const groups = Array.isArray(section.__groups) ? section.__groups : [];
+        if(groups.length){
+          const firstGroup = groups.find(group=>group && group.element) || groups[0];
+          if(firstGroup){
+            if(state.collapsedGroups && state.collapsedGroups[firstGroup.id]){
+              delete state.collapsedGroups[firstGroup.id];
+              updated = true;
+            }
+            setGroupCollapsed(section, firstGroup, false, { save:false });
+          }
+        }
+        applySectionState(section, state);
+        updateAllGroupEmptyStates(section);
+        if(updated){
+          writeSectionState(section.dataset.section, state);
+          updateSideNavForSection(section);
+          changed = true;
+        }
+      });
+      persistHeadingSpecVersion(HEADING_SPEC_VERSION);
+      if(changed){
+        scheduleSummaryProgressRender();
+        scheduleSummaryUpdate();
+        scheduleSideNavRender();
+        scheduleAllMeasurements();
+      }
+      return changed;
+    }
+
     const PAGE_ORDER = ['basic','goals','execution','notes'];
     let summaryElements = null;
     let sideSummaryElements = null;
@@ -5688,17 +6133,46 @@
       window.scrollTo({ top: Math.max(0, nextTop), behavior: options && options.instant ? 'auto' : 'smooth' });
     }
 
-    function focusSectionGroupByElement(groupElement){
-      if(!groupElement || !groupElement.classList || !groupElement.classList.contains('section-group')) return;
-      const section = groupElement.closest('[data-section]');
-      if(!section || !section.__groups) return;
+    function focusSectionGroupByElement(target){
+      if(!target) return;
+      let groupElement = null;
+      let section = null;
       let targetGroup = null;
-      (section.__groups || []).forEach(group=>{
-        if(group && group.element === groupElement){
-          targetGroup = group;
+      if(target.classList && target.classList.contains('section-group')){
+        groupElement = target;
+      }else{
+        const anchorId = target.id || '';
+        if(anchorId){
+          const meta = getHeadingGroup(anchorId);
+          if(meta && meta.group && meta.group.element){
+            section = meta.section || meta.group.element.closest('[data-section]');
+            targetGroup = meta.group;
+            groupElement = meta.group.element;
+          }
         }
-      });
-      if(!targetGroup) return;
+        if(!groupElement && target.closest){
+          groupElement = target.closest('.section-group');
+        }
+      }
+      if(!groupElement){
+        return;
+      }
+      if(!section){
+        section = groupElement.closest('[data-section]');
+      }
+      if(!section || !section.__groups){
+        return;
+      }
+      if(!targetGroup){
+        (section.__groups || []).forEach(group=>{
+          if(group && group.element === groupElement){
+            targetGroup = group;
+          }
+        });
+      }
+      if(!targetGroup){
+        return;
+      }
       (section.__groups || []).forEach(group=>{
         if(!group) return;
         const collapse = group !== targetGroup;
@@ -5710,6 +6184,7 @@
       if(section.__state && section.dataset && section.dataset.section){
         writeSectionState(section.dataset.section, section.__state);
       }
+      updateSideNavForSection(section);
       scheduleSummaryProgressRender();
     }
 
@@ -5780,12 +6255,14 @@
         const li=document.createElement('li');
         li.className='side-nav-item';
         li.dataset.page = item.pageId || '';
+        li.dataset.level = String(item.level || 2);
         const btn=document.createElement('button');
         btn.type='button';
         btn.className='side-nav-link';
         btn.textContent=item.label || '未命名群組';
         btn.dataset.target=item.anchorId || '';
         btn.dataset.page=item.pageId || '';
+        btn.dataset.level = String(item.level || 2);
         btn.addEventListener('click', handleSideNavClick);
         const count=document.createElement('span');
         count.className='side-nav-count';
@@ -5831,6 +6308,7 @@
         const status=item.status || determineProgressStatus(stats.filled || 0, stats.required || 0);
         btn.dataset.target=item.anchorId || '';
         btn.dataset.page=item.pageId || '';
+        btn.dataset.level = String(item.level || 2);
         btn.dataset.status=status;
         const label=document.createElement('span');
         label.className='chip-label';
@@ -6036,37 +6514,41 @@
     function registerSideNavGroups(){
       const state = getSideNavElements();
       if(!state.root || !state.list) return;
-      state.items = [];
-      document.querySelectorAll('[data-section]').forEach(section=>{
-        const sectionId = section.dataset ? section.dataset.section || '' : '';
-        const pageSection = section.closest('.page-section');
-        const pageId = pageSection && pageSection.dataset ? pageSection.dataset.page || '' : '';
-        (section.__groups || []).forEach(group=>{
-          if(!group || !group.element) return;
-          if(!group.element.id){
-            const navId = `${sectionId || 'section'}-group-${group.id}`;
-            group.element.id = navId;
-          }
-          const label = group.toggle ? group.toggle.textContent.trim() : '';
-          const stats = section.__groupStats && section.__groupStats[group.id]
-            ? section.__groupStats[group.id]
-            : { filled:0, required:0 };
-          const item = {
-            sectionId,
-            pageId,
-            groupId: group.id,
-            anchorId: group.element.id,
-            label: label || `群組 ${group.id}`,
-            stats: { filled: stats.filled || 0, required: stats.required || 0 },
-            status: determineProgressStatus(stats.filled || 0, stats.required || 0),
-            element:null,
-            button:null,
-            countEl:null
-          };
+      const items=[];
+      forEachHeading(function(entry){
+        if(!entry || entry.level <= 1) return;
+        const anchorEl=document.getElementById(entry.id);
+        if(!anchorEl) return;
+        const groupMeta=getHeadingGroup(entry.id);
+        const section = groupMeta ? groupMeta.section : null;
+        const group = groupMeta ? groupMeta.group : null;
+        const sectionId = section && section.dataset ? section.dataset.section || '' : '';
+        const stats = (section && group && section.__groupStats && section.__groupStats[group.id])
+          ? section.__groupStats[group.id]
+          : { filled:0, required:0 };
+        const status = group
+          ? determineProgressStatus(stats.filled || 0, stats.required || 0)
+          : (stats.required > 0 ? determineProgressStatus(stats.filled || 0, stats.required || 0) : 'optional');
+        const item = {
+          sectionId: sectionId,
+          pageId: entry.page || '',
+          groupId: group ? group.id : '',
+          anchorId: entry.id,
+          headingId: entry.id,
+          label: entry.label || '',
+          level: entry.level || 2,
+          stats: { filled: stats.filled || 0, required: stats.required || 0 },
+          status: status,
+          element:null,
+          button:null,
+          countEl:null
+        };
+        if(group){
           group.navItem = item;
-          state.items.push(item);
-        });
+        }
+        items.push(item);
       });
+      state.items = items;
       scheduleSideNavRender();
       scheduleSummaryJumpRefresh();
       scheduleSummaryProgressRender();
@@ -6074,31 +6556,33 @@
 
     function updateSideNavForSection(section){
       if(!section) return;
-      const sectionId = section.dataset ? section.dataset.section || '' : '';
-      if(!sectionId) return;
       const state = getSideNavElements();
       if(!state.items.length) return;
-      (section.__groups || []).forEach(group=>{
-        if(!group || !group.navItem) return;
-        const stats = section.__groupStats && section.__groupStats[group.id] ? section.__groupStats[group.id] : { filled:0, required:0 };
+      if(!section.__headingGroupMap) return;
+      Object.keys(section.__headingGroupMap).forEach(anchorId=>{
+        const group = section.__headingGroupMap[anchorId];
+        if(!group) return;
+        const navItem = group.navItem;
+        if(!navItem) return;
+        const stats = section.__groupStats && group.id ? section.__groupStats[group.id] : { filled:0, required:0 };
         const status = determineProgressStatus(stats.filled || 0, stats.required || 0);
-        group.navItem.status = status;
-        group.navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
-        if(group.navItem.countEl){
-          group.navItem.countEl.textContent = formatSideNavCount(group.navItem.stats.filled, group.navItem.stats.required);
+        navItem.stats = { filled: stats.filled || 0, required: stats.required || 0 };
+        navItem.status = status;
+        if(navItem.countEl){
+          navItem.countEl.textContent = formatSideNavCount(navItem.stats.filled, navItem.stats.required);
         }
-        if(group.navItem.element){
-          group.navItem.element.dataset.status = status;
+        if(navItem.element){
+          navItem.element.dataset.status = status;
         }
-        if(group.toggle && group.navItem.button){
-          const text = group.toggle.textContent.trim();
-          if(text){
-            group.navItem.button.textContent = text;
-            group.navItem.label = text;
+        if(navItem.button){
+          if(group.toggle){
+            const text = (group.toggle.textContent || '').trim();
+            if(text){
+              navItem.label = text;
+              navItem.button.textContent = text;
+            }
           }
-          group.navItem.button.dataset.status = status;
-        }else if(group.navItem.button){
-          group.navItem.button.dataset.status = status;
+          navItem.button.dataset.status = status;
         }
       });
       scheduleSummaryJumpRefresh();
@@ -6899,13 +7383,52 @@
           groups.push(current);
         }
         if(isTitlebar){
-          if(current){
-            const label=node.querySelector('.h4, .h3, .h2, .h1, label, span');
-            const titleText=label ? label.textContent.trim() : (node.textContent || '').trim();
-            if(titleText){
-              current.title = titleText;
-              if(current.element && current.element.dataset) current.element.dataset.title = titleText;
+          let anchorId='';
+          let headingEl=node.querySelector('#' + (node.dataset && node.dataset.anchor ? node.dataset.anchor : '')) || node.querySelector('h1, h2, h3, h4, h5, h6');
+          if(headingEl){
+            anchorId = headingEl.id || headingEl.dataset.anchor || '';
+            if(!anchorId){
+              anchorId = (headingEl.textContent || '').trim();
             }
+            if(!headingEl.dataset.anchor) headingEl.dataset.anchor = anchorId;
+            if(anchorId && !headingEl.id) headingEl.id = anchorId;
+            if(headingEl.parentNode && headingEl.parentNode !== node){
+              headingEl.parentNode.removeChild(headingEl);
+            }else if(headingEl.parentNode === node){
+              node.removeChild(headingEl);
+            }
+          }
+          const remainingNodes = Array.from(node.childNodes);
+          remainingNodes.forEach(child=>node.removeChild(child));
+          if(current){
+            if(!current.title){
+              const labelText = headingEl ? (headingEl.textContent || '').trim() : (node.textContent || '').trim();
+              if(labelText){
+                current.title = labelText;
+                if(current.element && current.element.dataset) current.element.dataset.title = labelText;
+              }
+            }
+            const emptyMarker = current.empty || current.body.querySelector('.section-group-empty');
+            if(headingEl){
+              current.body.insertBefore(headingEl, emptyMarker);
+            }
+            if(remainingNodes.length){
+              const fragment=document.createDocumentFragment();
+              remainingNodes.forEach(child=>{
+                if(child.nodeType===1 && child.tagName && child.tagName.toLowerCase()==='label' && !child.children.length){
+                  return;
+                }
+                fragment.appendChild(child);
+              });
+              if(fragment.childNodes.length){
+                const ref = headingEl ? headingEl.nextSibling : emptyMarker;
+                current.body.insertBefore(fragment, ref);
+              }
+            }
+          }
+          if(anchorId && current){
+            current.element.dataset.headingId = anchorId;
+            registerHeadingGroup(anchorId, section, current);
           }
           if(node.parentNode) node.parentNode.removeChild(node);
           continue;
@@ -7471,6 +7994,7 @@
     }
 
     function initSectionViews(){
+      resetHeadingGroupRegistry();
       ensureAllGroupBodies(document);
       const sections = document.querySelectorAll('[data-section]');
       sections.forEach(section=>setupSection(section));
@@ -9261,17 +9785,17 @@
     }
 
     const SECTION1_PREVIEW_META = Object.freeze([
-      { key:'overview', title:'基本資料', anchor:'s1_age' },
-      { key:'vision', title:'視力狀態', anchor:'s1_vision' },
-      { key:'hearing', title:'聽力程度', anchor:'s1_hearing_level' },
-      { key:'painLesion', title:'疼痛與皮膚', anchor:'s1_pain' },
-      { key:'swallow', title:'吞嚥與飲食', anchor:'s1_swallow' },
-      { key:'mobility', title:'移動功能', anchor:'s1_transfer' },
-      { key:'adl', title:'ADL／排泄', anchor:'s1_adl_eating' },
-      { key:'life', title:'IADL／情緒與睡眠', anchor:'s1_phone' },
-      { key:'disease', title:'醫療與用藥', anchor:'s1_dhx_box' },
-      { key:'actions', title:'建議措施', anchor:'s1_actions_list' },
-      { key:'notes', title:'補充內容', anchor:'s1_notes' }
+      { key:'overview', title:'基本資料', anchor:'h3-goals-s1', fieldId:'s1_age' },
+      { key:'vision', title:'視力狀態', anchor:'h3-goals-s1', fieldId:'s1_vision' },
+      { key:'hearing', title:'聽力程度', anchor:'h3-goals-s1', fieldId:'s1_hearing_level' },
+      { key:'painLesion', title:'疼痛與皮膚', anchor:'h3-goals-s1', fieldId:'s1_pain' },
+      { key:'swallow', title:'吞嚥與飲食', anchor:'h3-goals-s1', fieldId:'s1_swallow' },
+      { key:'mobility', title:'移動功能', anchor:'h3-goals-s1', fieldId:'s1_transfer' },
+      { key:'adl', title:'ADL／排泄', anchor:'h3-goals-s1', fieldId:'s1_adl_eating' },
+      { key:'life', title:'IADL／情緒與睡眠', anchor:'h3-goals-s1', fieldId:'s1_phone' },
+      { key:'disease', title:'醫療與用藥', anchor:'h3-goals-s1', fieldId:'s1_dhx_box' },
+      { key:'actions', title:'建議措施', anchor:'h3-goals-s1', fieldId:'s1_actions_list' },
+      { key:'notes', title:'補充內容', anchor:'h3-goals-s1', fieldId:'s1_notes' }
     ]);
 
     const SECTION1_PREVIOUS_STORAGE_KEY = 'AA01.section1.previousSegments';
@@ -9393,7 +9917,7 @@
         anchorBtn.type='button';
         anchorBtn.className='small';
         anchorBtn.textContent='回到來源欄位';
-        anchorBtn.addEventListener('click', function(){ jumpToField(segment.anchor); });
+        anchorBtn.addEventListener('click', function(){ jumpToField(segment.anchor, segment.fieldId); });
         actions.appendChild(anchorBtn);
         header.appendChild(actions);
         card.appendChild(header);
@@ -9845,45 +10369,77 @@
       runSection1Rules();
     }
 
-    function jumpToField(fieldId){
-      if(!fieldId) return;
-      const el=document.getElementById(fieldId);
-      if(!el){
-        setActivePage('goals');
+    function jumpToField(anchorId, focusId){
+      if(!anchorId && !focusId) return;
+      const anchorEl = anchorId ? document.getElementById(anchorId) : null;
+      const focusElCandidate = focusId ? document.getElementById(focusId) : null;
+      const targetEl = anchorEl || focusElCandidate;
+      if(!targetEl){
+        const fallbackPage = anchorId ? (document.getElementById(anchorId)?.closest('.page-section')?.dataset.page || 'goals') : 'goals';
+        setActivePage(fallbackPage || 'goals');
         return;
       }
-      if(blockIfPlanGroupLocked(el)) return;
-      const step = resolveWizardStepForElement(el);
+      if(blockIfPlanGroupLocked(targetEl)) return;
+      const step = resolveWizardStepForElement(targetEl);
       if(step && isWizardStepLocked(step)){
         handleWizardStepLocked(step);
         return;
       }
-      const section = el.closest ? el.closest('.page-section') : null;
-      const pageId = section && section.dataset ? section.dataset.page : 'goals';
+      const section = targetEl.closest ? targetEl.closest('.page-section') : null;
+      let pageId = section && section.dataset ? section.dataset.page : '';
+      if(!pageId && anchorEl){
+        const anchorSection = anchorEl.closest ? anchorEl.closest('.page-section') : null;
+        pageId = anchorSection && anchorSection.dataset ? anchorSection.dataset.page : '';
+      }
+      const performScroll = ()=>{
+        let anchorNode = null;
+        if(anchorId){
+          anchorNode = document.getElementById(anchorId);
+        }
+        if(anchorNode){
+          focusSectionGroupByElement(anchorNode);
+        }else{
+          focusSectionGroupByElement(targetEl);
+        }
+        if(anchorNode){
+          scrollToAnchorId(anchorId);
+        }else if(targetEl.scrollIntoView){
+          targetEl.scrollIntoView({ behavior:'smooth', block:'start' });
+        }else{
+          const rect = targetEl.getBoundingClientRect();
+          const offset = Math.max(0, currentScrollOffset || 0);
+          const top = window.pageYOffset + rect.top - offset;
+          window.scrollTo({ top: top < 0 ? 0 : top, behavior:'smooth' });
+        }
+        let focusTarget = focusElCandidate || null;
+        if(!focusTarget){
+          if(targetEl.matches && targetEl.matches('input,select,textarea,button,[tabindex]')){
+            focusTarget = targetEl;
+          }else{
+            focusTarget = targetEl.querySelector ? targetEl.querySelector('input,select,textarea,button,[tabindex]') : null;
+          }
+        }
+        if(focusTarget && typeof focusTarget.focus === 'function'){
+          focusTarget.focus({ preventScroll:true });
+        }
+      };
+      const scheduleScroll = ()=>{ window.requestAnimationFrame(performScroll); };
       if(step){
         if(!setCurrentWizardStep(step, { scroll:false })){
           return;
         }
-      }else{
-        if(setActivePage(pageId || 'goals') === false){
+        scheduleScroll();
+        return;
+      }
+      const desiredPage = pageId || 'goals';
+      if(desiredPage !== currentPageId){
+        if(setActivePage(desiredPage) === false){
           return;
         }
+        scheduleScroll();
+      }else{
+        performScroll();
       }
-      const scrollTask=()=>{
-        if(typeof el.scrollIntoView === 'function'){
-          el.scrollIntoView({ behavior:'smooth', block:'start' });
-        }else{
-          const rect=el.getBoundingClientRect();
-          const offset=Math.max(0, currentScrollOffset || 0);
-          const top=window.pageYOffset + rect.top - offset;
-          window.scrollTo({ top: top < 0 ? 0 : top, behavior:'smooth' });
-        }
-        let focusEl=null;
-        if(typeof el.focus === 'function'){ focusEl=el; }
-        else{ focusEl=el.querySelector('input,select,textarea,button,[tabindex]'); }
-        if(focusEl && typeof focusEl.focus === 'function'){ focusEl.focus({ preventScroll:true }); }
-      };
-      window.requestAnimationFrame(()=>{ window.requestAnimationFrame(scrollTask); });
     }
 
 
@@ -11266,18 +11822,20 @@
     };
 
     const PLAN_CATEGORY_GROUPS = [
-      { id:'BC', label:'居家服務（B/C）', includes:['B','C'] },
-      { id:'D', label:'專業服務（D）', includes:['D'] },
-      { id:'G', label:'喘息服務（G）', includes:['G'] },
-      { id:'EF', label:'輔具及無障礙補助（E/F）', includes:['EF'] },
-      { id:'SC', label:'短期照顧（SC）', includes:['SC'] },
-      { id:'MEAL', label:'營養餐飲服務（OT）', includes:['MEAL'] },
-      { id:'OTHER', label:'其他服務', includes:['OTHER'] }
+      { id:'B', label:'（一）B碼', includes:['B'], anchor:'h3-exec-b' },
+      { id:'C', label:'（二）C碼', includes:['C'], anchor:'h3-exec-c' },
+      { id:'D', label:'（三）D碼', includes:['D'], anchor:'h3-exec-d' },
+      { id:'EF', label:'（四）E.F碼', includes:['EF'], anchor:'h3-exec-ef' },
+      { id:'G', label:'（五）G碼', includes:['G'], anchor:'h3-exec-g' },
+      { id:'SC', label:'（六）SC碼', includes:['SC'], anchor:'h3-exec-sc' },
+      { id:'MEAL', label:'（七）營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' }
     ];
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
       (group.includes || []).forEach(cat=>{ PLAN_CATEGORY_LOOKUP[String(cat).toUpperCase()] = group.id; });
     });
+    const PLAN_CATEGORY_FALLBACK_ID = 'MEAL';
+    const UNKNOWN_PLAN_CATEGORY_KEYS = new Set();
 
     function determineServiceCategory(code){
       if(!code) return '';
@@ -11295,7 +11853,12 @@
 
     function getPlanCategoryGroupId(cat){
       const key = String(cat || '').toUpperCase();
-      return PLAN_CATEGORY_LOOKUP[key] || 'OTHER';
+      if(PLAN_CATEGORY_LOOKUP[key]) return PLAN_CATEGORY_LOOKUP[key];
+      if(key && !UNKNOWN_PLAN_CATEGORY_KEYS.has(key)){
+        UNKNOWN_PLAN_CATEGORY_KEYS.add(key);
+        console.warn('未知服務類別，已套用預設分類', key);
+      }
+      return PLAN_CATEGORY_FALLBACK_ID;
     }
 
     function lookupServiceItem(code){
@@ -12436,7 +12999,12 @@
     function planCategoryLabel(cat){
       const groupId = getPlanCategoryGroupId(cat);
       const group = PLAN_CATEGORY_GROUPS.find(item=>item.id === groupId);
-      return group ? group.label : '其他服務';
+      if(!group) return '其他服務';
+      if(group.anchor){
+        const entry = getHeadingEntry(group.anchor);
+        if(entry && entry.label) return entry.label;
+      }
+      return group.label || '其他服務';
     }
 
     function formatSummaryVendorName(entry){
@@ -12875,7 +13443,7 @@
         if(!list || !list.length) return;
         const rows=aggregatePlanSummaryRows(list);
         if(!rows.length) return;
-        groups.push({ id:group.id, label:group.label, rows:rows });
+        groups.push({ id:group.id, label:planCategoryLabel(group.id), rows:rows });
       });
       return groups;
     }
@@ -13158,183 +13726,197 @@
       selfPayHintDisplays = {};
       baFrequencyDisplays = {};
       const entries=Object.values(servicePlanState);
-      if(!entries.length){
-        const empty=document.createElement('div');
-        empty.className='hint';
-        empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
-        host.appendChild(empty);
-        scheduleAllMeasurements();
-        return;
-      }
       const groupedById={};
       entries.forEach(entry=>{
         if(!entry) return;
-        const rawCategory=(entry.category || determineServiceCategory(entry.code) || 'OTHER').toUpperCase();
+        const rawCategory=(entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
         const groupId=getPlanCategoryGroupId(rawCategory);
         if(!groupedById[groupId]) groupedById[groupId]=[];
         groupedById[groupId].push(entry);
       });
-      let renderedSections=0;
+      let totalEntries=0;
       PLAN_CATEGORY_GROUPS.forEach(group=>{
-        const list=groupedById[group.id];
-        if(!list || !list.length) return;
-        renderedSections++;
-        const sorted=list.slice().sort((a,b)=>(a.code || '').localeCompare(b.code || ''));
-        const section=document.createElement('div');
+        const section=document.createElement('section');
         section.className='plan-category';
-        section.dataset.planGroup = group.id;
-        const title=document.createElement('div');
-        title.className='plan-category-title';
-        title.textContent=group.label;
-        section.appendChild(title);
-        sorted.forEach(entry=>{
-          const entryBox=document.createElement('div');
-          entryBox.className='plan-entry';
-          const header=document.createElement('div');
-          header.className='plan-entry-header';
-          header.textContent=`${entry.code}［${entry.name || ''}］`;
-          entryBox.appendChild(header);
-          const grid=document.createElement('div');
-          grid.className='plan-entry-grid';
-          appendSelfPayField(grid, entry);
-          const entryCategory=(entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
-          if(entryCategory==='B'){
-            if(entry.code && entry.code.indexOf('BB') === 0){
+        section.dataset.planCategory = group.id;
+        const headingWrap=document.createElement('div');
+        headingWrap.className='plan-category-heading';
+        const headingEntry=group.anchor ? getHeadingEntry(group.anchor) : null;
+        const heading=document.createElement('h3');
+        heading.className='h3';
+        if(group.anchor){
+          heading.id = group.anchor;
+          heading.dataset.anchor = group.anchor;
+        }
+        heading.textContent = headingEntry && headingEntry.label ? headingEntry.label : (group.label || '服務項目');
+        headingWrap.appendChild(heading);
+        section.appendChild(headingWrap);
+        const body=document.createElement('div');
+        body.className='plan-category-body';
+        const list=(groupedById[group.id] || []).slice().sort((a,b)=>(a.code || '').localeCompare(b.code || ''));
+        if(list.length){
+          totalEntries += list.length;
+          list.forEach(entry=>{
+            const entryBox=document.createElement('div');
+            entryBox.className='plan-entry';
+            const header=document.createElement('div');
+            header.className='plan-entry-header';
+            header.textContent=`${entry.code}［${entry.name || ''}］`;
+            entryBox.appendChild(header);
+            const grid=document.createElement('div');
+            grid.className='plan-entry-grid';
+            appendSelfPayField(grid, entry);
+            const entryCategory=(entry.category || determineServiceCategory(entry.code) || '').toUpperCase();
+            if(entryCategory==='B'){
+              if(entry.code && entry.code.indexOf('BB') === 0){
+                const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+                grid.appendChild(vendorField.wrap);
+                const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○日照中心'});
+                vendorNameField.wrap.dataset.planVendorName=entry.code;
+                grid.appendChild(vendorNameField.wrap);
+                appendAutoSummaryField(grid, entry, '預估使用概況');
+                const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'系統已提供建議內容，可依個案調整',className:'full'});
+                grid.appendChild(usageField.wrap);
+              }else if(entry.code === 'BD03'){
+                const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+                grid.appendChild(vendorField.wrap);
+                const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○交通車'});
+                vendorNameField.wrap.dataset.planVendorName=entry.code;
+                grid.appendChild(vendorNameField.wrap);
+                appendAutoSummaryField(grid, entry, '預估交通安排');
+                const usageField=createPlanInput(entry,'usage','交通使用方式',{as:'textarea',placeholder:'系統已提供建議內容，可再補充乘車安排',className:'full'});
+                grid.appendChild(usageField.wrap);
+              }else if(isBaCode(entry.code)){
+                const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+                grid.appendChild(vendorField.wrap);
+                const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
+                vendorNameField.wrap.dataset.planVendorName=entry.code;
+                grid.appendChild(vendorNameField.wrap);
+                if(requiresBaManualUnits(entry.code)){
+                  const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                  grid.appendChild(unitVisitField.wrap);
+                }
+                const unitField=createPlanInput(entry,'monthlyUnits','月目標次數',{placeholder:'例：10',attrs:{inputmode:'decimal',min:'0'}});
+                grid.appendChild(unitField.wrap);
+                const weeklyWrap=document.createElement('div');
+                weeklyWrap.className='plan-field full';
+                const weeklyLabel=document.createElement('label');
+                weeklyLabel.textContent='排程換算';
+                weeklyWrap.appendChild(weeklyLabel);
+                const weeklyBox=document.createElement('div');
+                weeklyBox.className='auto-summary-box empty';
+                weeklyBox.dataset.planBaDisplay = entry.code;
+                weeklyWrap.appendChild(weeklyBox);
+                const weeklyHint=document.createElement('div');
+                weeklyHint.className='plan-hint';
+                weeklyHint.textContent='每週次數以 4.5 週換算，排程取整；金額計算仍以向下取整（元）。';
+                weeklyWrap.appendChild(weeklyHint);
+                grid.appendChild(weeklyWrap);
+                baFrequencyDisplays[entry.code] = weeklyBox;
+                appendAutoSummaryField(grid, entry, '預估使用概況');
+                const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+                grid.appendChild(usageField.wrap);
+              }else{
+                const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
+                grid.appendChild(vendorField.wrap);
+                const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
+                vendorNameField.wrap.dataset.planVendorName=entry.code;
+                grid.appendChild(vendorNameField.wrap);
+                const weeklyField=createPlanInput(entry,'weeklyFreq','每週次數',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                grid.appendChild(weeklyField.wrap);
+                const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                grid.appendChild(unitVisitField.wrap);
+                const extraVisitField=createPlanInput(entry,'monthlyExtraVisits','每月額外次數',{type:'number',attrs:{step:'1',min:'0',inputmode:'decimal'}});
+                grid.appendChild(extraVisitField.wrap);
+                const extraUnitField=createPlanInput(entry,'monthlyExtraUnit','額外每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
+                grid.appendChild(extraUnitField.wrap);
+                const extraDescField=createPlanInput(entry,'monthlyExtraDesc','額外排班說明',{placeholder:'例：雙十國慶排班 2 次'});
+                grid.appendChild(extraDescField.wrap);
+                appendAutoSummaryField(grid, entry, '預估使用概況');
+                const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+                grid.appendChild(usageField.wrap);
+              }
+            }else if(entryCategory==='C'){
               const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
               grid.appendChild(vendorField.wrap);
-              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○日照中心'});
+              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○專業服務單位'});
               vendorNameField.wrap.dataset.planVendorName=entry.code;
               grid.appendChild(vendorNameField.wrap);
-              appendAutoSummaryField(grid, entry, '預估使用概況');
-              const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'系統已提供建議內容，可依個案調整',className:'full'});
+              const frequencyField=createPlanInput(entry,'frequency','頻率/時數',{placeholder:'例：每月 2 次，每次 60 分鐘'});
+              grid.appendChild(frequencyField.wrap);
+              const usageField=createPlanInput(entry,'usage','服務內容',{as:'textarea',placeholder:'例：評估院內復能程度，提供衛教指導與復健訓練'});
               grid.appendChild(usageField.wrap);
-            }else if(entry.code === 'BD03'){
+            }else if(entryCategory==='D'){
               const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
               grid.appendChild(vendorField.wrap);
               const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○交通車'});
               vendorNameField.wrap.dataset.planVendorName=entry.code;
               grid.appendChild(vendorNameField.wrap);
-              appendAutoSummaryField(grid, entry, '預估交通安排');
-              const usageField=createPlanInput(entry,'usage','交通使用方式',{as:'textarea',placeholder:'系統已提供建議內容，可再補充乘車安排',className:'full'});
+              const routeField=createPlanInput(entry,'route','接送路線',{placeholder:'例：住家→日照中心→住家'});
+              grid.appendChild(routeField.wrap);
+              const periodField=createPlanInput(entry,'period','服務期間',{placeholder:'例：113年01月~113年12月'});
+              grid.appendChild(periodField.wrap);
+              const frequencyField=createPlanInput(entry,'frequency','頻率',{placeholder:'例：每週 2 次'});
+              grid.appendChild(frequencyField.wrap);
+              const usageField=createPlanInput(entry,'usage','交通需求與安排',{as:'textarea',placeholder:'例：安排專車接送至日照中心（去程07:30，回程16:30）'});
               grid.appendChild(usageField.wrap);
-            }else if(isBaCode(entry.code)){
-              const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
-              grid.appendChild(vendorField.wrap);
-              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
-              vendorNameField.wrap.dataset.planVendorName=entry.code;
-              grid.appendChild(vendorNameField.wrap);
-              if(requiresBaManualUnits(entry.code)){
-                const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-                grid.appendChild(unitVisitField.wrap);
-              }
-              const unitField=createPlanInput(entry,'monthlyUnits','月目標次數',{placeholder:'例：10',attrs:{inputmode:'decimal',min:'0'}});
-              grid.appendChild(unitField.wrap);
-              const weeklyWrap=document.createElement('div');
-              weeklyWrap.className='plan-field full';
-              const weeklyLabel=document.createElement('label');
-              weeklyLabel.textContent='排程換算';
-              weeklyWrap.appendChild(weeklyLabel);
-              const weeklyBox=document.createElement('div');
-              weeklyBox.className='auto-summary-box empty';
-              weeklyBox.dataset.planBaDisplay = entry.code;
-              weeklyWrap.appendChild(weeklyBox);
-              const weeklyHint=document.createElement('div');
-              weeklyHint.className='plan-hint';
-              weeklyHint.textContent='每週次數以 4.5 週換算，排程取整；金額計算仍以向下取整（元）。';
-              weeklyWrap.appendChild(weeklyHint);
-              grid.appendChild(weeklyWrap);
-              baFrequencyDisplays[entry.code] = weeklyBox;
-              appendAutoSummaryField(grid, entry, '預估使用概況');
-              const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+            }else if(entryCategory==='EF'){
+              const originalField=createPlanInput(entry,'original','原核定金額',{placeholder:'例：28,000'});
+              grid.appendChild(originalField.wrap);
+              const plannedField=createPlanInput(entry,'planned','核定金額',{placeholder:'例：28,000'});
+              grid.appendChild(plannedField.wrap);
+              const remainField=createPlanInput(entry,'remaining','餘額',{placeholder:'例：剩餘20單位'});
+              grid.appendChild(remainField.wrap);
+              const usageField=createPlanInput(entry,'usage','服務說明',{as:'textarea',placeholder:'例：核配金額依長照中心核定，將安排輔具廠商製作與裝設。'});
+              grid.appendChild(usageField.wrap);
+            }else if(entryCategory==='G'){
+              const plannedField=createPlanInput(entry,'planned','核定額度',{placeholder:'例：12日'});
+              grid.appendChild(plannedField.wrap);
+              const remainField=createPlanInput(entry,'remaining','餘額',{placeholder:'例：剩餘8日'});
+              grid.appendChild(remainField.wrap);
+              const usageField=createPlanInput(entry,'usage','喘息安排',{as:'textarea',placeholder:'例：安排週三全日喘息，主要照顧者於此時段休息並處理家務。'});
+              grid.appendChild(usageField.wrap);
+            }else if(entryCategory==='SC'){
+              const periodField=createPlanInput(entry,'period','短照額度期間',{placeholder:'例：113年01月~113年12月'});
+              grid.appendChild(periodField.wrap);
+              const noteField=createPlanInput(entry,'usage','比例或使用說明',{as:'textarea',placeholder:'例：本月短照占比18%，符合政策規範（≦20%）。'});
+              grid.appendChild(noteField.wrap);
+            }else if(entryCategory==='MEAL'){
+              const mealsField=createPlanInput(entry,'mealsPerDay','1日核定餐數',{placeholder:'例：2（午、晚餐）'});
+              grid.appendChild(mealsField.wrap);
+              const mealTypeField=createPlanInput(entry,'mealType','餐別／質地',{placeholder:'例：午餐、晚餐；軟質餐'});
+              grid.appendChild(mealTypeField.wrap);
+              const usageField=createPlanInput(entry,'usage','送餐備註',{as:'textarea',placeholder:'例：含到宅關懷與餐點保溫指導；列冊中低收入戶享有補助。'});
               grid.appendChild(usageField.wrap);
             }else{
-              const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
-              grid.appendChild(vendorField.wrap);
-              const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○服務單位'});
-              vendorNameField.wrap.dataset.planVendorName=entry.code;
-              grid.appendChild(vendorNameField.wrap);
-              const weeklyField=createPlanInput(entry,'weeklyFreq','每週次數',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-              grid.appendChild(weeklyField.wrap);
-              const unitVisitField=createPlanInput(entry,'unitPerVisit','每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-              grid.appendChild(unitVisitField.wrap);
-              const extraVisitField=createPlanInput(entry,'monthlyExtraVisits','每月額外次數',{type:'number',attrs:{step:'1',min:'0',inputmode:'decimal'}});
-              grid.appendChild(extraVisitField.wrap);
-              const extraUnitField=createPlanInput(entry,'monthlyExtraUnit','額外每次單位',{type:'number',attrs:{step:'0.5',min:'0',inputmode:'decimal'}});
-              grid.appendChild(extraUnitField.wrap);
-              const extraDescField=createPlanInput(entry,'monthlyExtraDesc','額外使用說明',{placeholder:'例：搭配陪同就醫使用'});
-              extraDescField.wrap.classList.add('full');
-              grid.appendChild(extraDescField.wrap);
-              const unitField=createPlanInput(entry,'monthlyUnits','月單位',{placeholder:'例：32',attrs:{inputmode:'decimal'}});
-              grid.appendChild(unitField.wrap);
-              const freqField=createPlanInput(entry,'frequency','頻率／計算說明',{as:'textarea',placeholder:'系統依數值自動產生，可再補充',className:'full'});
-              grid.appendChild(freqField.wrap);
-              const usageField=createPlanInput(entry,'usage','使用方式或案主期待',{as:'textarea',placeholder:'請描述服務內容、案主期待或家屬配合情況'});
+              const usageField=createPlanInput(entry,'usage','服務說明',{as:'textarea',placeholder:'請填寫此服務之使用方式或補充說明'});
               grid.appendChild(usageField.wrap);
             }
-          }else if(entryCategory==='C'){
-            const vendorField=createPlanInput(entry,'vendorMode','供應模式',{as:'select',options:[{value:'輪派',label:'輪派'},{value:'指定',label:'指定'}]});
-            grid.appendChild(vendorField.wrap);
-            const vendorNameField=createPlanInput(entry,'vendorName','指定單位',{placeholder:'例：○○○專業服務單位'});
-            vendorNameField.wrap.dataset.planVendorName=entry.code;
-            grid.appendChild(vendorNameField.wrap);
-            const periodField=createPlanInput(entry,'period','服務期間',{placeholder:'例：113年01月至113年03月'});
-            grid.appendChild(periodField.wrap);
-            const usageField=createPlanInput(entry,'usage','單次規劃說明',{as:'textarea',placeholder:'請描述專業服務內容與案主/家屬配合情況'});
-            grid.appendChild(usageField.wrap);
-          }else if(entryCategory==='EF'){
-            const periodField=createPlanInput(entry,'period','補助額度期間',{placeholder:'例：113年01月~113年12月'});
-            grid.appendChild(periodField.wrap);
-            const originalField=createPlanInput(entry,'original','原有額度（元）',{placeholder:'例：20000',attrs:{inputmode:'decimal'}});
-            grid.appendChild(originalField.wrap);
-            const approveField=createPlanInput(entry,'planned','本次核定（元）',{placeholder:'例：12000',attrs:{inputmode:'decimal'}});
-            grid.appendChild(approveField.wrap);
-            const remainField=createPlanInput(entry,'remaining','剩餘額度（元）',{placeholder:'例：8000',attrs:{inputmode:'decimal'}});
-            grid.appendChild(remainField.wrap);
-            const usageField=createPlanInput(entry,'usage','輔具／無障礙重點（選填）',{as:'textarea',placeholder:'例：浴室增設扶手、防滑墊；家屬可配合施工時程。'});
-            grid.appendChild(usageField.wrap);
-          }else if(entryCategory==='G'){
-            const periodField=createPlanInput(entry,'period','喘息額度期間',{placeholder:'例：113年01月~113年12月'});
-            grid.appendChild(periodField.wrap);
-            const plannedField=createPlanInput(entry,'planned','本次規劃（時數／單位）',{placeholder:'例：40單位',attrs:{inputmode:'decimal'}});
-            grid.appendChild(plannedField.wrap);
-            const remainField=createPlanInput(entry,'remaining','餘額',{placeholder:'例：剩餘20單位'});
-            grid.appendChild(remainField.wrap);
-            const usageField=createPlanInput(entry,'usage','喘息安排與配合狀況',{as:'textarea',placeholder:'例：安排週三全日喘息，主要照顧者於此時段休息並處理家務。'});
-            grid.appendChild(usageField.wrap);
-          }else if(entryCategory==='SC'){
-            const periodField=createPlanInput(entry,'period','短照額度期間',{placeholder:'例：113年01月~113年12月'});
-            grid.appendChild(periodField.wrap);
-            const noteField=createPlanInput(entry,'usage','比例或使用說明',{as:'textarea',placeholder:'例：本月短照占比18%，符合政策規範（≦20%）。'});
-            grid.appendChild(noteField.wrap);
-          }else if(entryCategory==='MEAL'){
-            const mealsField=createPlanInput(entry,'mealsPerDay','1日核定餐數',{placeholder:'例：2（午、晚餐）'});
-            grid.appendChild(mealsField.wrap);
-            const mealTypeField=createPlanInput(entry,'mealType','餐別／質地',{placeholder:'例：午餐、晚餐；軟質餐'});
-            grid.appendChild(mealTypeField.wrap);
-            const usageField=createPlanInput(entry,'usage','送餐備註',{as:'textarea',placeholder:'例：含到宅關懷與餐點保溫指導；列冊中低收入戶享有補助。'});
-            grid.appendChild(usageField.wrap);
-          }else{
-            const usageField=createPlanInput(entry,'usage','服務說明',{as:'textarea',placeholder:'請填寫此服務之使用方式或補充說明'});
-            grid.appendChild(usageField.wrap);
-          }
-          entryBox.appendChild(grid);
-          section.appendChild(entryBox);
-          if(isBaCode(entry.code)){
-            updateBaEntryDerived(entry.code, {skipPreview:true});
-          }
-          updatePlanVendorVisibility(entry.code);
-          if(!(entry.code && entry.code.indexOf('BB') === 0) && entry.code !== 'BD03' && !isBaCode(entry.code)){
-            updatePlanMonthlyComputation(entry.code, {skipPreview:true});
-          }
-        });
+            entryBox.appendChild(grid);
+            body.appendChild(entryBox);
+            if(isBaCode(entry.code)){
+              updateBaEntryDerived(entry.code, {skipPreview:true});
+            }
+            updatePlanVendorVisibility(entry.code);
+            if(!(entry.code && entry.code.indexOf('BB') === 0) && entry.code !== 'BD03' && !isBaCode(entry.code)){
+              updatePlanMonthlyComputation(entry.code, {skipPreview:true});
+            }
+          });
+        }else{
+          const hint=document.createElement('div');
+          hint.className='plan-empty-hint';
+          hint.textContent='尚未選擇此類服務。';
+          body.appendChild(hint);
+        }
+        section.appendChild(body);
         host.appendChild(section);
       });
-      if(!renderedSections){
-        const empty=document.createElement('div');
-        empty.className='hint';
-        empty.textContent='尚未選擇服務項目。請先於「正式資源」區勾選服務。';
-        host.appendChild(empty);
+      host.dataset.empty = totalEntries > 0 ? '0' : '1';
+      applyHeadingSpecToDom();
+      if(sectionViewsReady){
+        refreshExecutionHeadingRegistry();
       }
+      scheduleSummaryUpdate();
       scheduleAllMeasurements();
     }
     function updateSelfPayHint(code){
@@ -15688,6 +16270,120 @@
       });
     }
 
+    function applyGoalsSectionDefaults(section){
+      if(!section || !section.dataset) return false;
+      const state = section.__state || (section.__state = readSectionState(section.dataset.section));
+      let changed = false;
+      if(state.hideFilled){
+        state.hideFilled = false;
+        changed = true;
+      }
+      if(!state.showAdvanced){
+        state.showAdvanced = true;
+        changed = true;
+      }
+      section.dataset.hideFilled = '0';
+      section.dataset.showAdvanced = '1';
+      const groups = Array.isArray(section.__groups) ? section.__groups : [];
+      if(groups.length){
+        const firstGroup = groups.find(group=>group && group.element) || groups[0];
+        if(firstGroup){
+          if(state.collapsedGroups && state.collapsedGroups[firstGroup.id]){
+            delete state.collapsedGroups[firstGroup.id];
+            changed = true;
+          }
+          setGroupCollapsed(section, firstGroup, false, { save:false });
+        }
+      }
+      applySectionState(section, state);
+      updateAllGroupEmptyStates(section);
+      if(changed){
+        writeSectionState(section.dataset.section, state);
+      }
+      return changed;
+    }
+
+    function ensureGoalsPageDefaults(activeSection){
+      const planGroup=document.getElementById('contactVisitGroup');
+      if(planGroup){
+        planGroup.dataset.planLocked = '0';
+        planGroup.dataset.collapsed = '0';
+      }
+      const host = activeSection || document.querySelector('.page-section[data-page="goals"]');
+      if(!host) return;
+      const sections = host.querySelectorAll('[data-section]');
+      let changed = false;
+      sections.forEach(section=>{
+        if(applyGoalsSectionDefaults(section)){
+          changed = true;
+          updateSideNavForSection(section);
+        }
+      });
+      if(changed){
+        scheduleSummaryProgressRender();
+        scheduleSummaryUpdate();
+        scheduleSideNavRender();
+      }
+      scheduleAllMeasurements();
+    }
+
+    function inspectPageSectionVisibility(activeSection){
+      const section = activeSection || document.querySelector(`.page-section[data-page="${currentPageId}"]`);
+      if(!section) return;
+      const groups = section.querySelectorAll('.section-group');
+      if(!groups.length) return;
+      const rect = section.getBoundingClientRect();
+      if(rect.height > 2) return;
+      let culprit = section;
+      let reason = 'unknown';
+      let node = section;
+      while(node && node !== document.body){
+        const style = window.getComputedStyle(node);
+        if(style.display === 'none'){
+          culprit = node;
+          reason = 'display:none';
+          break;
+        }
+        if(style.visibility === 'hidden'){
+          culprit = node;
+          reason = 'visibility:hidden';
+          break;
+        }
+        if((style.overflow === 'hidden' || style.overflowY === 'hidden' || style.overflowX === 'hidden') && node.scrollHeight === 0){
+          culprit = node;
+          reason = 'overflow hidden (zero height)';
+          break;
+        }
+        node = node.parentElement;
+      }
+      let fixed = false;
+      if(culprit){
+        if(culprit.dataset && culprit.dataset.collapsed === '1'){
+          culprit.dataset.collapsed = '0';
+          fixed = true;
+        }
+        if(culprit.style){
+          if(culprit.style.display === 'none'){
+            culprit.style.display = '';
+            fixed = true;
+          }
+          if(culprit.style.visibility === 'hidden'){
+            culprit.style.visibility = '';
+            fixed = true;
+          }
+        }
+      }
+      console.warn('頁面高度巡檢', {
+        page: section.dataset ? section.dataset.page : currentPageId,
+        reason,
+        culprit,
+        fixed
+      });
+      if(fixed){
+        scheduleAllMeasurements();
+      }
+    }
+
     function setActivePage(pageId, options){
       const sections = Array.from(document.querySelectorAll('.page-section'));
       if(!sections.length) return false;
@@ -15730,6 +16426,10 @@
         updateWizardButtons();
         syncTabStatuses();
       }
+      if(finalPageId === 'goals'){
+        ensureGoalsPageDefaults(activeSection);
+      }
+      inspectPageSectionVisibility(activeSection);
       scheduleSideNavRender();
       scheduleAllMeasurements();
       scheduleSummaryProgressRender();
@@ -16236,9 +16936,22 @@
     }
 
     function initializeSidebarOnLoad(){
-      // 先排除重複的 page-section 與全域 ID，避免後續初始化操作到錯誤節點
       hoistNestedPageSections();
       dedupeGoalsSection();
+      if(document.querySelector('.page-section .page-section')){
+        console.error('偵測到巢狀 page-section，請檢查去重程序。');
+      }
+      prepareCaseProfileLayout();
+      renderServicePlanEditor();
+      applyHeadingSpecToDom();
+      ensureAllGroupBodies(document);
+      initGroupCollapsibles();
+      initSectionViews();
+      refreshExecutionHeadingRegistry();
+      applyHeadingSpecVersionUpgrade();
+      logHeadingSpecReport();
+      scheduleSummaryUpdate();
+      scheduleAllMeasurements();
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
       }
@@ -16247,7 +16960,6 @@
       initWizardFlow();
       initFloatingActions();
       initPlanSummaryCopy();
-      initPageTabs();
       initSideNavToggle();
       initValidationToast();
       initDateInputs();
@@ -16257,12 +16969,9 @@
       loadConsultants();
       initCmsLevelButtons();
       loadServiceCatalog();
-
-      prepareCaseProfileLayout();
-      ensureAllGroupBodies(document);
-      initGroupCollapsibles();
       initBasicInfoValidation();
       initStickyOverflowToggle();
+      initPageTabs();
 
       // S1
       renderS1(); initSection1State();
@@ -16365,8 +17074,6 @@
       toggleCallDateByConsultVisit();
       updateConsultVisitText();
       buildApprovalPlanPreview();
-
-      initSectionViews();
 
       applyInitialUiPreferences();
 
