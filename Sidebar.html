@@ -4008,6 +4008,9 @@
               <h3 class="h3" id="h3-exec-emergency" data-anchor="h3-exec-emergency">（八）緊急救援服務</h3>
             </div>
             <div class="plan-category-body">
+              <div class="titlebar titlebar--mt-sm">
+                <span class="h2" id="execEmergencyHeadingTarget"></span>
+              </div>
               <label class="h4" for="plan_emergency_note">救援需求說明</label>
               <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
             </div>
@@ -4019,6 +4022,9 @@
             <label class="h2">二、轉介其他服務資源</label>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
+          <div class="titlebar titlebar--mt-sm">
+            <span class="h2" id="execStationHeadingTarget"></span>
+          </div>
           <div class="plan-meta-grid">
             <div>
               <label class="h3" for="plan_station_info">巷弄長照站資訊</label>
@@ -4324,8 +4330,10 @@
           },
           { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源',
             dom:{ selector:'#planReferralCard .titlebar label', mode:'replace', className:'h2' } },
-          { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願' },
-          { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明' },
+          { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願',
+            dom:{ selector:'#execStationHeadingTarget', mode:'replace', className:'h2' } },
+          { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明',
+            dom:{ selector:'#execEmergencyHeadingTarget', mode:'replace', className:'h2' } },
           { id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽' },
           { id:'h2-exec-attachment1', tag:'h2', label:'附件一：計畫執行規劃預覽' }
         ]
