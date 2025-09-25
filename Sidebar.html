@@ -1690,6 +1690,19 @@
       gap:var(--space-sm);
       margin-bottom:12px;
     }
+    .plan-summary-controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:var(--space-xs);
+      margin-bottom:var(--space-sm);
+      align-items:center;
+    }
+    .plan-summary-controls .inline-checkbox{
+      margin:0;
+    }
+    .plan-summary-controls .hint{
+      margin:0;
+    }
     
     
     .plan-summary-total-card{
@@ -2738,11 +2751,19 @@
                     <label class="h3" for="primaryName">主要照顧者姓名</label>
                     <input id="primaryName" type="text" placeholder="請輸入">
                   </div>
+                  <div class="field-intro" data-field-size="medium">
+                    <label class="h3" for="primaryPhone">主要照顧者電話</label>
+                    <input id="primaryPhone" type="tel" inputmode="tel" placeholder="例如：0912-345678">
+                  </div>
                 </div>
                 <input type="hidden" id="includePrimary" value="true">
                 <div class="titlebar titlebar--mt-xxs">
                   <label class="h3">其他參與者</label>
                   <button type="button" class="small button-add" data-ic="plus" onclick="addExtraRow()">新增參與者</button>
+                </div>
+                <div id="extrasHeading" class="extras-heading-grid">
+                  <h3 id="h3-goals-extra-rel" class="h3" data-anchor="h3-goals-extra-rel">其他參與者關係</h3>
+                  <h3 id="h3-goals-extra-name" class="h3" data-anchor="h3-goals-extra-name">其他參與者姓名</h3>
                 </div>
                 <div id="extras"></div>
                 <div id="extras_conflict" role="status" aria-live="polite"></div>
@@ -3991,6 +4012,12 @@
           <div class="summary-actions">
             <button type="button" class="small" id="planSummaryCopyBtn">複製表格</button>
             <button type="button" class="small" id="planSummaryCopyPlainBtn">複製為純文字</button>
+          </div>
+          <div class="plan-summary-controls">
+            <label class="inline-checkbox" for="hasForeignCare">
+              <input id="hasForeignCare" type="checkbox" /> 案家聘有外籍看護（扣減 30%）
+            </label>
+            <div class="hint">勾選後將自動扣減 CMS 月額度 30%，計算餘額與自付額時一併套用。</div>
           </div>
           <span class="h3">額度統計</span>
           <div id="planSummaryTotals" class="plan-summary-totals">
@@ -5299,37 +5326,50 @@
     }
 
     function ensureGoalsExtraHeadings(){
+      const host = document.getElementById('extras');
+      if(!host) return;
       const entryRel = getHeadingNode('h3-goals-extra-rel');
       const entryName = getHeadingNode('h3-goals-extra-name');
-      const host = document.getElementById('extras');
-      if(!host || !entryRel || !entryName) return;
+      const relId = 'h3-goals-extra-rel';
+      const nameId = 'h3-goals-extra-name';
       let wrap = document.getElementById('extrasHeading');
       if(!wrap){
         wrap = document.createElement('div');
         wrap.id = 'extrasHeading';
         wrap.className = 'extras-heading-grid';
-        host.parentNode.insertBefore(wrap, host);
+        if(host.parentNode){
+          host.parentNode.insertBefore(wrap, host);
+        }
+      }else if(!wrap.classList.contains('extras-heading-grid')){
+        wrap.className = 'extras-heading-grid';
       }
-      let relHeading = document.getElementById('h3-goals-extra-rel');
-      if(!relHeading){
-        relHeading = document.createElement(entryRel.tag || 'h3');
-        relHeading.id = entryRel.id;
-        relHeading.dataset.anchor = entryRel.id;
-        relHeading.className = 'h3';
-        relHeading.textContent = entryRel.label || '';
-        wrap.appendChild(relHeading);
-      }
-      recordHeadingDom(entryRel.id, relHeading);
-      let nameHeading = document.getElementById('h3-goals-extra-name');
-      if(!nameHeading){
-        nameHeading = document.createElement(entryName.tag || 'h3');
-        nameHeading.id = entryName.id;
-        nameHeading.dataset.anchor = entryName.id;
-        nameHeading.className = 'h3';
-        nameHeading.textContent = entryName.label || '';
-        wrap.appendChild(nameHeading);
-      }
-      recordHeadingDom(entryName.id, nameHeading);
+      const ensureHeading = function(current, config, id){
+        const desiredTag = (config && config.tag) ? String(config.tag) : 'h3';
+        const desiredLabel = config && config.label ? config.label : '';
+        const desiredClass = config && config.tag ? config.tag.toLowerCase() : 'h3';
+        const fallbackLabel = id === relId ? '其他參與者關係' : '其他參與者姓名';
+        if(!current || current.tagName.toLowerCase() !== desiredTag.toLowerCase()){
+          const nextHeading = document.createElement(desiredTag);
+          nextHeading.id = id;
+          if(current && current.parentNode === wrap){
+            wrap.replaceChild(nextHeading, current);
+          }else{
+            wrap.appendChild(nextHeading);
+          }
+          current = nextHeading;
+        }
+        current.id = id;
+        current.dataset.anchor = id;
+        current.className = desiredClass || 'h3';
+        current.textContent = desiredLabel || current.textContent || fallbackLabel;
+        return current;
+      };
+      let relHeading = document.getElementById(relId);
+      relHeading = ensureHeading(relHeading, entryRel, relId);
+      recordHeadingDom(relId, relHeading);
+      let nameHeading = document.getElementById(nameId);
+      nameHeading = ensureHeading(nameHeading, entryName, nameId);
+      recordHeadingDom(nameId, nameHeading);
     }
 
     function refreshExecutionHeadingRegistry(){
@@ -6088,6 +6128,13 @@
       if(Array.isArray(draft.servicePlan)) restoreServicePlan(draft.servicePlan);
       if(draft.planMeta && typeof draft.planMeta === 'object'){
         Object.assign(planMetaState, draft.planMeta);
+        if(Object.prototype.hasOwnProperty.call(draft.planMeta, 'foreignCare')){
+          const foreignCareField = document.getElementById('hasForeignCare');
+          if(foreignCareField){
+            foreignCareField.checked = !!draft.planMeta.foreignCare;
+            try{ foreignCareField.dispatchEvent(new Event('change', { bubbles:true })); }catch(err){}
+          }
+        }
       }
       updateParticipantConflictHint();
       syncSocialPrimary();
@@ -11733,7 +11780,8 @@
       referralExtra: '',
       stationInfo: '',
       stationWillingness: '',
-      emergencyNote: ''
+      emergencyNote: '',
+      foreignCare: false
     };
 
     const PLAN_CATEGORY_GROUPS = [
@@ -14260,6 +14308,17 @@
       if(stationWill){ stationWill.addEventListener('change', evt=>{ planMetaState.stationWillingness = evt.target.value; buildApprovalPlanPreview(); }); }
       const emergency=document.getElementById('plan_emergency_note');
       if(emergency){ emergency.addEventListener('input', evt=>{ planMetaState.emergencyNote = evt.target.value; buildApprovalPlanPreview(); }); }
+      const foreignCareField=document.getElementById('hasForeignCare');
+      if(foreignCareField){
+        const syncForeignCare = ()=>{
+          planMetaState.foreignCare = hasForeignCareFlag();
+          buildPlanSummaryPreview();
+          scheduleSummaryUpdate();
+          if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
+        };
+        foreignCareField.addEventListener('change', syncForeignCare);
+        syncForeignCare();
+      }
     }
 
     function setCmsLevel(level, options){
@@ -14684,9 +14743,8 @@
       let name=nameInput ? nameInput.value.trim() : '';
       if(!rel){ rel='本人'; if(!name) name=caseName; }
       if(!name){ alert('三、偕同訪視者的主要照顧者尚未完整。'); return; }
-      const sourcePhone = (document.getElementById('primaryPhone')?.value
-        || document.getElementById('primaryTel')?.value
-        || document.getElementById('primaryContactPhone')?.value || '').trim();
+      const phoneField = document.getElementById('primaryPhone');
+      const sourcePhone = phoneField ? (phoneField.value || '').trim() : '';
       const deciderRel=document.getElementById('sp_deciderRel');
       const deciderName=document.getElementById('sp_deciderName');
       const deciderPhone=document.getElementById('sp_deciderPhone');
@@ -15650,6 +15708,7 @@
         mid_meal: (document.getElementById('mid_meal').value || '').trim(),
         long_goal: (document.getElementById('long_goal').value || '').trim(),
         servicePlan: serializeServicePlan(),
+        hasForeignCare: hasForeignCareFlag(),
         planMeta: Object.assign({}, planMetaState),
         planText: (document.getElementById('plan_text').value || '').trim(),
         planOther: (document.getElementById('plan_other')?.value || '').trim()
@@ -16947,6 +17006,7 @@
       planMetaState.stationInfo = document.getElementById('plan_station_info')?.value || '';
       planMetaState.stationWillingness = document.getElementById('plan_station_willingness')?.value || '';
       planMetaState.emergencyNote = document.getElementById('plan_emergency_note')?.value || '';
+      planMetaState.foreignCare = hasForeignCareFlag();
       syncPlanStateWithSelections();
       buildApprovalPlanPreview();
       renderProblems(); limitProblems();
