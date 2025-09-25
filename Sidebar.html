@@ -45,7 +45,7 @@
       --fs-ctrl:18px;
 
       --radius:10px;
-      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --shadow:0 10px 30px rgba(15,23,42,0.08);
       --ctrl-padding-block:var(--space-xs);
       --ctrl-padding-inline:var(--space-sm);
       --button-padding-inline:var(--space-md);
@@ -465,7 +465,7 @@
     .group[data-collapsed="1"] .group-content{ display:none; }
     .group-collapse{
       border:none;
-      background:rgba(11,87,208,.08);
+      background:rgba(11,87,208,0.08);
       color:var(--accent);
       font-weight:600;
       font-size:0.9rem;
@@ -479,7 +479,7 @@
     }
     .group-collapse:hover,
     .group-collapse:focus-visible{
-      background:rgba(11,87,208,.16);
+      background:rgba(11,87,208,0.16);
       outline:none;
     }
     .group-collapse-icon{ display:inline-block; transition:transform .2s ease; }
@@ -1371,7 +1371,7 @@
     .checkcol input[type=checkbox]{ width:var(--checkbox); height:var(--checkbox); }
     .checkcol label[data-auto="1"]{
       border-color:rgba(11,87,208,.4);
-      background:rgba(11,87,208,.08);
+      background:rgba(11,87,208,0.08);
     }
 
     /* 需要固定欄寬的首欄位（關係/姓名等） */
@@ -1436,7 +1436,7 @@
     .virtual-checklist-viewport{ position:relative; max-height:320px; overflow-y:auto; }
     .virtual-checklist-visible{ position:absolute; top:0; left:0; right:0; display:flex; flex-direction:column; }
     .virtual-checklist-spacer{ height:0; width:1px; }
-    .virtual-checklist-item{ display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-xs) var(--space-sm); border-bottom:1px solid rgba(15,23,42,.08); background:#fff; }
+    .virtual-checklist-item{ display:flex; align-items:center; gap:var(--space-xs); padding:var(--space-xs) var(--space-sm); border-bottom:1px solid rgba(15,23,42,0.08); background:#fff; }
     .virtual-checklist-item:last-child{ border-bottom:none; }
     .virtual-checklist-item input[type="checkbox"]{ width:var(--checkbox); height:var(--checkbox); }
     .virtual-checklist-print{ display:none; margin-top:var(--space-xs); font-size:0.9rem; line-height:1.45; color:#0f172a; }
@@ -2017,7 +2017,7 @@
       align-items:center;
       padding:6px 12px;
       border-radius:999px;
-      background:rgba(11,87,208,.08);
+      background:rgba(11,87,208,0.08);
       color:var(--accent);
       font-weight:600;
       min-height:38px;
@@ -2225,7 +2225,7 @@
       padding-bottom:max(var(--space-xs), calc(env(safe-area-inset-bottom) + var(--space-xs)));
       background:rgba(255,255,255,.95);
       border-top:1px solid rgba(148,163,184,.35);
-      box-shadow:0 -6px 18px rgba(15,23,42,.08);
+      box-shadow:0 -6px 18px rgba(15,23,42,0.08);
       backdrop-filter:saturate(160%) blur(12px);
       -webkit-backdrop-filter:saturate(160%) blur(12px);
       z-index:80;
@@ -2267,7 +2267,7 @@
       border:1px solid var(--border);
       border-radius:12px;
       background:#fff;
-      box-shadow:0 16px 32px rgba(15,23,42,.16);
+      box-shadow:0 16px 32px rgba(15,23,42,0.16);
       padding:var(--space-xs);
       display:none;
       flex-direction:column;
@@ -2443,13 +2443,13 @@
     .group[data-plan-locked="1"] .group-header{ opacity:.85; }
     .group[data-plan-locked="1"] .group-collapse{
       cursor:not-allowed;
-      background:rgba(148,163,184,.16);
+      background:rgba(148,163,184,0.16);
       color:#64748b;
       border-color:rgba(148,163,184,.4);
     }
     .group[data-plan-locked="1"] .group-collapse:hover,
     .group[data-plan-locked="1"] .group-collapse:focus-visible{
-      background:rgba(148,163,184,.16);
+      background:rgba(148,163,184,0.16);
       color:#64748b;
     }
     .group-collapse.is-locked .group-collapse-icon{ opacity:.6; }
@@ -2650,7 +2650,7 @@
               <div class="basic-info-row" data-row="1">
                 <div class="basic-info-field unit-code-field field-intro" data-field-size="short">
                   <label class="h3" for="unitCode">單位代碼</label>
-                  <select id="unitCode" onchange="loadManagers(); loadConsultants();">
+                  <select id="unitCode">
                     <option>FNA1</option><option>FNA2</option><option>FNA3</option>
                   </select>
                 </div>
@@ -2716,8 +2716,9 @@
                 <div id="callDateControls" class="datebox">
                   <input id="callDate" type="date">
                 </div>
-                <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
-                  <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
+                <h3 id="h3-goals-call-consult" class="h3" data-anchor="h3-goals-call-consult" style="margin-top:var(--space-sm);">照顧專員約訪</h3>
+                <label class="inline-checkbox" style="display:block; margin-top:var(--space-xxs);">
+                  <input id="isConsultVisit" type="checkbox"> 勾選表示為照顧專員約訪
                 </label>
                 <div id="consultVisitText" class="subtle" style="display:none; margin-top:var(--space-xs);"></div>
               </div>
@@ -2733,7 +2734,7 @@
                   <input id="visitDate" type="date">
                 </div>
                 <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
-                  <input id="isDischarge" type="checkbox" onchange="toggleDischarge()"> 填寫出院日期
+                  <input id="isDischarge" type="checkbox"> 填寫出院日期
                 </label>
                 <div id="dischargeBox" style="display:none; margin-top:var(--space-xs);">
                   <label class="h3" for="dischargeDate">出院日期</label>
@@ -2752,7 +2753,7 @@
                 <div class="row">
                   <div class="field-intro" data-field-size="short">
                     <label class="h3" for="primaryRel">主要照顧者關係</label>
-                    <select id="primaryRel" onchange="enforcePrimaryExclusionOnExtras()">
+                    <select id="primaryRel">
                       <option value="" class="placeholder-option" disabled selected>請選擇</option>
                       <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
                       <optgroup label="子女"><option>案長子</option><option>案次子</option><option>案長女</option><option>案次女</option></optgroup>
@@ -2767,29 +2768,11 @@
                     <label class="h3" for="primaryName">主要照顧者姓名</label>
                     <input id="primaryName" type="text" placeholder="請輸入">
                   </div>
-                  <div class="field-intro" data-field-size="medium">
-                    <label class="h3" for="primaryPhone">主要照顧者電話</label>
-                    <input id="primaryPhone" type="tel" inputmode="tel" placeholder="例如：0912-345678">
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="field-intro" data-field-size="short">
-                    <label class="h4" for="primaryPhone">行動電話</label>
-                    <input id="primaryPhone" type="tel" inputmode="tel" placeholder="例：0912-345-678">
-                  </div>
-                  <div class="field-intro" data-field-size="short">
-                    <label class="h4" for="primaryTel">市話</label>
-                    <input id="primaryTel" type="tel" inputmode="tel" placeholder="例：03-1234567">
-                  </div>
-                  <div class="field-intro" data-field-size="medium">
-                    <label class="h4" for="primaryContactPhone">其他聯絡電話</label>
-                    <input id="primaryContactPhone" type="tel" inputmode="tel" placeholder="可留備援電話，選填">
-                  </div>
                 </div>
                 <input type="hidden" id="includePrimary" value="true">
                 <div class="titlebar titlebar--mt-xxs">
                   <label class="h3">其他參與者</label>
-                  <button type="button" class="small button-add" data-ic="plus" onclick="addExtraRow()">新增參與者</button>
+                  <button type="button" class="small button-add" data-ic="plus" data-action="add-extra-row">新增參與者</button>
                 </div>
                 <div id="extrasHeading" class="extras-heading-grid">
                   <h3 id="h3-goals-extra-rel" class="h3" data-anchor="h3-goals-extra-rel">其他參與者關係</h3>
@@ -2854,7 +2837,7 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_vision">視力程度</label>
-                            <select id="s1_vision" onchange="toggleVisionNotes()">
+                            <select id="s1_vision">
                               <option>視力清晰</option>
                               <option>靠近才能辨識</option>
                               <option>即使配戴眼鏡，仍難以辨識</option>
@@ -2877,7 +2860,7 @@
                             </div>
                             <div id="s1_vision_auto_hint" class="hint auto-hint" style="display:none; margin-top:var(--space-xs);">
                               <span>已依視力狀態預選建議補充（標記為「系統預選」）。</span>
-                              <button type="button" class="small" onclick="resetVisionSuggestions()">還原為預設</button>
+                              <button type="button" class="small" data-action="reset-vision-suggestions">還原為預設</button>
                             </div>
                           </div>
                         </div>
@@ -2887,7 +2870,7 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_hearing_level">聽力程度</label>
-                            <select id="s1_hearing_level" onchange="renderHearingDetails()">
+                            <select id="s1_hearing_level">
                               <option>無明顯異常</option>
                               <option>輕度受損</option>
                               <option>中度受損</option>
@@ -2926,7 +2909,7 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_swallow">吞嚥／嗆咳程度</label>
-                            <select id="s1_swallow" onchange="toggleSwallow()">
+                            <select id="s1_swallow">
                               <option>無困難</option>
                               <option>輕度</option>
                               <option>明顯困難</option>
@@ -2971,7 +2954,7 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_transfer">起身／移位能力</label>
-                            <select id="s1_transfer" onchange="toggleAdlHow('s1_transfer')">
+                            <select id="s1_transfer">
                               <option selected>獨立</option>
                               <option>需要輕扶</option>
                               <option>中度協助</option>
@@ -3022,7 +3005,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_fall_history">跌倒史</label>
-                            <select id="s1_fall_history" onchange="toggleFallDetail()">
+                            <select id="s1_fall_history">
                               <option>無</option>
                               <option>過去1年1次</option>
                               <option>過去1年≧2次</option>
@@ -3036,7 +3019,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_sitting_stability">坐姿穩定性與輪椅安全</label>
-                            <select id="s1_sitting_stability" onchange="toggleSittingSupports()">
+                            <select id="s1_sitting_stability">
                               <option value="" class="placeholder-option" disabled selected>請選擇</option>
                               <option>穩定</option>
                               <option>易前傾</option>
@@ -3075,7 +3058,7 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_adl_eating">進食</label>
-                            <select id="s1_adl_eating" onchange="toggleAdlHow('s1_adl_eating')">
+                            <select id="s1_adl_eating">
                               <option selected>獨立</option>
                               <option>部分協助</option>
                               <option>完全協助</option>
@@ -3084,7 +3067,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_adl_groom">盥洗（刷牙／洗臉）</label>
-                            <select id="s1_adl_groom" onchange="toggleAdlHow('s1_adl_groom')">
+                            <select id="s1_adl_groom">
                               <option selected>獨立</option>
                               <option>部分協助</option>
                               <option>完全協助</option>
@@ -3093,7 +3076,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_adl_bathing">洗澡</label>
-                            <select id="s1_adl_bathing" onchange="toggleAdlHow('s1_adl_bathing')">
+                            <select id="s1_adl_bathing">
                               <option selected>獨立</option>
                               <option>部分協助</option>
                               <option>完全協助</option>
@@ -3102,7 +3085,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_adl_dressing">穿脫衣</label>
-                            <select id="s1_adl_dressing" onchange="toggleAdlHow('s1_adl_dressing')">
+                            <select id="s1_adl_dressing">
                               <option selected>獨立</option>
                               <option>部分協助</option>
                               <option>完全協助</option>
@@ -3111,7 +3094,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_post_toilet">如廁後清潔</label>
-                            <select id="s1_post_toilet" onchange="toggleAdlHow('s1_post_toilet')">
+                            <select id="s1_post_toilet">
                               <option selected>獨立</option>
                               <option>部分協助</option>
                               <option>完全協助</option>
@@ -3135,7 +3118,7 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_phone">電話使用</label>
-                            <select id="s1_phone" onchange="togglePhoneNotes()">
+                            <select id="s1_phone">
                               <option selected>會撥打與接聽</option>
                               <option>僅能接聽</option>
                               <option>不會使用</option>
@@ -3147,12 +3130,12 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_shopping">外出購物</label>
-                            <select id="s1_shopping" onchange="toggleShoppingHow()">
+                            <select id="s1_shopping">
                               <option>可獨立</option>
                               <option selected>需陪同</option>
                               <option>不外出</option>
                             </select>
-                            <select id="s1_shopping_how" style="display:none; margin-top:var(--space-xs);" onchange="toggleShoppingHow()">
+                            <select id="s1_shopping_how" style="display:none; margin-top:var(--space-xs);">
                               <option value="" class="placeholder-option" disabled selected>方式/說明</option>
                               <option>家屬陪同購物</option>
                               <option>由家屬代購</option>
@@ -3165,7 +3148,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_meal_prep">備餐</label>
-                            <select id="s1_meal_prep" onchange="toggleAdlHow('s1_meal_prep')">
+                            <select id="s1_meal_prep">
                               <option>獨立</option>
                               <option selected>部分協助</option>
                               <option>完全由家屬</option>
@@ -3174,12 +3157,12 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_dishwash">餐具清洗</label>
-                            <select id="s1_dishwash" onchange="toggleDishwashHow()">
+                            <select id="s1_dishwash">
                               <option>乾淨</option>
                               <option selected>尚可或不一定乾淨</option>
                               <option>無法自行清洗</option>
                             </select>
-                            <select id="s1_dishwash_how" style="display:none; margin-top:var(--space-xs);" onchange="toggleDishwashHow()">
+                            <select id="s1_dishwash_how" style="display:none; margin-top:var(--space-xs);">
                               <option>由他人代辦</option>
                               <option>其他</option>
                             </select>
@@ -3187,7 +3170,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_housework">家務整理</label>
-                            <select id="s1_housework" onchange="toggleAdlHow('s1_housework')">
+                            <select id="s1_housework">
                               <option>獨立</option>
                               <option selected>部分協助</option>
                               <option>完全由家屬</option>
@@ -3196,7 +3179,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_finance">財務管理</label>
-                            <select id="s1_finance" onchange="toggleAdlHow('s1_finance')">
+                            <select id="s1_finance">
                               <option selected>獨立</option>
                               <option>部分協助</option>
                               <option>他人代辦</option>
@@ -3224,7 +3207,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_urine_day">日間排尿情形</label>
-                            <select id="s1_urine_day" onchange="toggleUrineOther('day')">
+                            <select id="s1_urine_day" data-urine-mode="day">
                               <option selected>正常（4–6次）</option>
                               <option>偏少（少於3次）</option>
                               <option>偏多（7–9次）</option>
@@ -3235,7 +3218,7 @@
                           </div>
                           <div class="field" id="s1_urine_night_wrap" data-field-size="medium">
                             <label class="h3" for="s1_urine_night">夜間排尿情形</label>
-                            <select id="s1_urine_night" onchange="toggleUrineOther('night')">
+                            <select id="s1_urine_night" data-urine-mode="night">
                               <option selected>夜間未起夜</option>
                               <option>夜間起夜1次</option>
                               <option>夜間起夜2–3次</option>
@@ -3309,7 +3292,7 @@
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_visit_transport">就醫交通方式【選填】</label>
-                            <select id="s1_visit_transport" onchange="toggleTransportOther()">
+                            <select id="s1_visit_transport">
                               <option>計程車</option>
                               <option>家屬接送</option>
                               <option>交通接送服務</option>
@@ -3402,12 +3385,12 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_sleep">睡眠品質</label>
-                            <select id="s1_sleep" onchange="toggleSleepReason()">
+                            <select id="s1_sleep">
                               <option>良好</option>
                               <option>尚可</option>
                               <option selected>不佳</option>
                             </select>
-                            <select id="s1_sleep_reason" style="display:none; margin-top:var(--space-xs);" onchange="toggleSleepReasonDetail()">
+                            <select id="s1_sleep_reason" style="display:none; margin-top:var(--space-xs);">
                               <option value="" class="placeholder-option" disabled selected>失眠原因</option>
                               <option>疼痛</option>
                               <option>頻尿</option>
@@ -3436,7 +3419,7 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_pain">疼痛【選填】</label>
-                            <select id="s1_pain" onchange="togglePainCombined()">
+                            <select id="s1_pain">
                               <option selected>無</option>
                               <option>有</option>
                               <option>未知</option>
@@ -3452,17 +3435,17 @@
                           <div class="location-toolbar" id="s1_location_toolbar" style="display:none;">
                             <span class="location-current">目前編輯：<span id="s1_location_active_label">疼痛部位</span></span>
                             <div class="location-switch btnbar">
-                              <button type="button" class="small" data-context="pain" onclick="switchLocationContext('pain')">編輯疼痛部位</button>
-                              <button type="button" class="small" data-context="lesion" onclick="switchLocationContext('lesion')">編輯病灶部位</button>
+                              <button type="button" class="small" data-context="pain" data-action="switch-location-context">編輯疼痛部位</button>
+                              <button type="button" class="small" data-context="lesion" data-action="switch-location-context">編輯病灶部位</button>
                             </div>
                             <div class="location-actions btnbar">
-                              <button type="button" class="small" id="location_copy_btn" onclick="copyLocationFromOther()">同疼痛部位</button>
+                              <button type="button" class="small" id="location_copy_btn" data-action="copy-location-from-other">同疼痛部位</button>
                             </div>
                           </div>
                           <div class="autogrid autogrid--wide">
                             <div class="field" data-field-size="medium">
                               <label class="h3" for="s1_location_region">部位大分類</label>
-                              <select id="s1_location_region" onchange="onSharedRegionChange()">
+                              <select id="s1_location_region">
                                 <option value="" class="placeholder-option" disabled selected>請選擇</option>
                                 <option>頭頸部</option>
                                 <option>上肢</option>
@@ -3473,14 +3456,14 @@
                             </div>
                             <div class="field" data-field-size="medium">
                               <label class="h3" for="s1_location_subregion">細部分位</label>
-                              <select id="s1_location_subregion" onchange="onSharedSubregionChange()">
+                              <select id="s1_location_subregion">
                                 <option value="" class="placeholder-option" disabled selected>請選擇</option>
                               </select>
-                              <input id="s1_location_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:var(--space-xs);" oninput="onSharedSubregionOtherInput()">
+                              <input id="s1_location_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:var(--space-xs);">
                             </div>
                             <div class="field" data-field-size="short">
                               <label class="h3" for="s1_location_laterality">側別</label>
-                              <select id="s1_location_laterality" onchange="onSharedLateralityChange()">
+                              <select id="s1_location_laterality">
                                 <option value="" class="placeholder-option" disabled selected>請選擇</option>
                                 <option>左側</option>
                                 <option>右側</option>
@@ -3492,7 +3475,7 @@
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_lesion_has">皮膚病灶【選填】</label>
-                            <select id="s1_lesion_has" onchange="toggleLesionCombined()">
+                            <select id="s1_lesion_has">
                               <option selected>無</option>
                               <option>有</option>
                               <option>未知</option>
@@ -3500,7 +3483,7 @@
                           </div>
                           <div class="field" id="s1_lesion_layer_wrap" data-field-size="medium" style="display:none;">
                             <label class="h3" for="s1_lesion_layer">病灶層次</label>
-                            <select id="s1_lesion_layer" onchange="toggleLesionLayerOther()">
+                            <select id="s1_lesion_layer">
                               <option>無</option>
                               <option>表皮</option>
                               <option>皮下</option>
@@ -3513,11 +3496,11 @@
                             <label class="h3">病灶大小</label>
                             <div class="lesion-size-grid">
                               <div class="lesion-size-field">
-                                <input id="s1_lesion_length" type="number" min="0" step="0.1" placeholder="長" oninput="updateLesionAreaDisplay()">
+                                <input id="s1_lesion_length" type="number" min="0" step="0.1" placeholder="長">
                                 <span class="unit">cm</span>
                               </div>
                               <div class="lesion-size-field">
-                                <input id="s1_lesion_width" type="number" min="0" step="0.1" placeholder="寬" oninput="updateLesionAreaDisplay()">
+                                <input id="s1_lesion_width" type="number" min="0" step="0.1" placeholder="寬">
                                 <span class="unit">cm</span>
                               </div>
                             </div>
@@ -3531,14 +3514,14 @@
                             <div class="field" data-field-size="medium">
                               <label class="h3">病灶症狀</label>
                               <div class="lesion-mode" id="s1_lesion_mode">
-                                <button type="button" class="small" data-mode="none" onclick="setLesionSymptomMode('none')">無不適</button>
-                                <button type="button" class="small" data-mode="symptom" onclick="setLesionSymptomMode('symptom')">有症狀</button>
+                                <button type="button" class="small" data-mode="none" data-action="set-lesion-symptom-mode">無不適</button>
+                                <button type="button" class="small" data-mode="symptom" data-action="set-lesion-symptom-mode">有症狀</button>
                               </div>
                               <div class="checkcol" id="s1_lesion_sx_box"></div>
                             </div>
                             <div class="field" data-field-size="medium">
                               <label class="h3" for="s1_lesion_eval">醫療評估</label>
-                              <select id="s1_lesion_eval" onchange="toggleLesionHospital()">
+                              <select id="s1_lesion_eval">
                                 <option>未評估</option>
                                 <option>醫師評估無大礙</option>
                                 <option>已安排追蹤</option>
@@ -3563,7 +3546,7 @@
                       <section class="section-card" id="caseProfileActionsCard">
                         <div class="titlebar">
                           <span class="h5 heading-tier heading-tier--subsection">建議措施</span>
-                          <button type="button" class="small" onclick="addActionEntry()">＋新增</button>
+                          <button type="button" class="small" data-action="add-action-entry">＋新增</button>
                         </div>
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="long">
@@ -3616,14 +3599,14 @@
                       </div>
                       <div>
                         <label class="h4">身心障礙等級</label>
-                        <select id="s2_dis_level" onchange="syncDisab()"><!-- 選擇身心障礙等級 -->
+                        <select id="s2_dis_level"><!-- 選擇身心障礙等級 -->
                           <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
                         </select>
                       </div>
                     </div>
                     <div id="disCatBox" style="display:none; margin-top:var(--space-xs);"><!-- 類別欄位，預設隱藏 -->
                       <label class="h4">身心障礙類別（等級≠無才需選）</label>
-                      <select id="s2_dis_cat" onchange="syncDisab()"><!-- 選擇身心障礙類別 --></select>
+                      <select id="s2_dis_cat"><!-- 選擇身心障礙類別 --></select>
                     </div>
                   </div>
                 </div>
@@ -3636,14 +3619,14 @@
                 <div class="autogrid autogrid--wide">
                   <div>
                     <label class="h4">居住型態</label>
-                    <select id="s3_type" onchange="toggleOtherType()">
+                    <select id="s3_type">
                       <option>透天</option><option>鐵皮屋</option><option>公寓</option><option>大樓</option><option>套房</option><option>其他</option>
                     </select>
                     <input id="s3_type_other" type="text" placeholder="請輸入其他型態" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div>
                     <label class="h4">居住權屬</label>
-                    <select id="s3_own" onchange="toggleRentFields()"><option>自有</option><option>租賃</option><option>借住</option></select>
+                    <select id="s3_own"><option>自有</option><option>租賃</option><option>借住</option></select>
                   </div>
                   <div>
                     <label class="h4">整潔度／異味</label>
@@ -3705,7 +3688,7 @@
 
                 <div class="titlebar titlebar--mt-sm">
                   <label class="h4">主要聯繫人/決策者</label>
-                  <button type="button" class="small" onclick="copyFromH1Primary()">設為主照者</button>
+                  <button type="button" class="small" data-action="copy-from-primary">設為主照者</button>
                 </div>
                 <div class="autogrid autogrid--wide">
                   <div class="field-intro">
@@ -3735,7 +3718,7 @@
 
                 <div class="titlebar titlebar--mt-sm">
                   <label class="h4">共同照顧者（可多筆）</label>
-                  <button type="button" class="small" onclick="addCoCare()">＋新增共同照顧者</button>
+                  <button type="button" class="small" data-action="add-co-care">＋新增共同照顧者</button>
                 </div>
                 <div id="coCare"></div>
 
@@ -3748,7 +3731,7 @@
                   <div id="homeCareWrap" style="display:none; margin-top:var(--space-xs);">
                     <div class="titlebar">
                       <label class="h4">居家服務項目（多選）</label>
-                      <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
+                      <button class="small" type="button" data-action="reset-care-phrases">重新套用片語</button>
                     </div>
                     <div id="homeCareList" class="home-care-grid"></div>
                     <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整；如需記錄用量，請於右側欄位輸入數量。</div>
@@ -3756,7 +3739,7 @@
                   <div id="dayCareWrap" style="display:none; margin-top:var(--space-xs);">
                     <div class="titlebar">
                       <label class="h4">日間照顧服務項目（多選）</label>
-                      <button class="small" type="button" onclick="resetCareServicePhrases()">重新套用片語</button>
+                      <button class="small" type="button" data-action="reset-care-phrases">重新套用片語</button>
                     </div>
                     <div id="dayCareList" class="home-care-grid"></div>
                     <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
@@ -3764,7 +3747,7 @@
                   <div id="profServiceWrap" style="display:none; margin-top:var(--space-xs);">
                     <div class="titlebar">
                       <label class="h4">專業服務項目（多選）</label>
-                      <button class="small" type="button" onclick="resetProfessionalPhrases()">重新套用片語</button>
+                      <button class="small" type="button" data-action="reset-professional-phrases">重新套用片語</button>
                     </div>
                     <div id="profServiceList" class="home-care-grid"></div>
                     <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
@@ -3772,7 +3755,7 @@
                   <div id="transportServiceWrap" style="display:none; margin-top:var(--space-xs);">
                     <div class="titlebar">
                       <label class="h4">交通接送項目（多選）</label>
-                      <button class="small" type="button" onclick="resetTransportPhrases()">重新套用片語</button>
+                      <button class="small" type="button" data-action="reset-transport-phrases">重新套用片語</button>
                     </div>
                     <div id="transportServiceList" class="home-care-grid"></div>
                     <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
@@ -3780,7 +3763,7 @@
                   <div id="respServiceWrap" style="display:none; margin-top:var(--space-xs);">
                     <div class="titlebar">
                       <label class="h4">喘息服務項目（多選）</label>
-                      <button class="small" type="button" onclick="resetRespitePhrases()">重新套用片語</button>
+                      <button class="small" type="button" data-action="reset-respite-phrases">重新套用片語</button>
                     </div>
                     <div id="respServiceList" class="home-care-grid"></div>
                     <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
@@ -3788,7 +3771,7 @@
                   <div id="mealServiceWrap" style="display:none; margin-top:var(--space-xs);">
                     <div class="titlebar">
                       <label class="h4">營養送餐項目（多選）</label>
-                      <button class="small" type="button" onclick="resetMealPhrases()">重新套用片語</button>
+                      <button class="small" type="button" data-action="reset-meal-phrases">重新套用片語</button>
                     </div>
                     <div id="mealServiceList" class="home-care-grid"></div>
                     <div class="subtle">勾選後將自動套用至短/中期目標及長期彙整。</div>
@@ -3800,7 +3783,7 @@
                 <div>
                   <label class="h4">非正式資源（多選，每類需填「單位名稱」）</label>
                   <div>
-                    <label class="h5 inline"><input type="checkbox" id="sp_inf_pt" onchange="toggleInfInput('pt')"> 據點</label>
+                    <label class="h5 inline"><input type="checkbox" id="sp_inf_pt" data-inf-toggle="pt"> 據點</label>
                     <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
                     <select id="sp_inf_pt_freq" style="display:none; margin-top:var(--space-xs);"><!-- 據點頻率 -->
                     <option value="">—請選擇頻率—</option>
@@ -3812,7 +3795,7 @@
 
                   </div>
                   <div>
-                    <label class="h5 inline"><input type="checkbox" id="sp_inf_nb" onchange="toggleInfInput('nb')"> 鄰里</label>
+                    <label class="h5 inline"><input type="checkbox" id="sp_inf_nb" data-inf-toggle="nb"> 鄰里</label>
                     <input id="sp_inf_nb_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
                     <select id="sp_inf_nb_freq" style="display:none; margin-top:var(--space-xs);"><!-- 鄰里頻率 -->
                     <option value="">—請選擇頻率—</option>
@@ -3824,7 +3807,7 @@
 
                   </div>
                   <div>
-                    <label class="h5 inline"><input type="checkbox" id="sp_inf_rg" onchange="toggleInfInput('rg')"> 宗教社團</label>
+                    <label class="h5 inline"><input type="checkbox" id="sp_inf_rg" data-inf-toggle="rg"> 宗教社團</label>
                     <input id="sp_inf_rg_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
                     <select id="sp_inf_rg_freq" style="display:none; margin-top:var(--space-xs);"><!-- 宗教社團頻率 -->
                     <option value="">—請選擇頻率—</option>
@@ -3836,7 +3819,7 @@
 
                   </div>
                   <div>
-                    <label class="h5 inline"><input type="checkbox" id="sp_inf_fw" onchange="toggleInfInput('fw')"> 財團／社會福利</label>
+                    <label class="h5 inline"><input type="checkbox" id="sp_inf_fw" data-inf-toggle="fw"> 財團／社會福利</label>
                     <input id="sp_inf_fw_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
                     <select id="sp_inf_fw_freq" style="display:none; margin-top:var(--space-xs);"><!-- 財團頻率 -->
                     <option value="">—請選擇頻率—</option>
@@ -4008,6 +3991,9 @@
               <h3 class="h3" id="h3-exec-emergency" data-anchor="h3-exec-emergency">（八）緊急救援服務</h3>
             </div>
             <div class="plan-category-body">
+              <div class="titlebar titlebar--mt-sm">
+                <h2 class="h2" id="h2-exec-emergency-note" data-anchor="h2-exec-emergency-note">四、緊急救援服務說明</h2>
+              </div>
               <label class="h4" for="plan_emergency_note">救援需求說明</label>
               <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
             </div>
@@ -4019,6 +4005,9 @@
             <label class="h2">二、轉介其他服務資源</label>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
+          <div class="titlebar titlebar--mt-sm">
+            <h2 class="h2" id="h2-exec-station" data-anchor="h2-exec-station">三、巷弄長照站資訊與意願</h2>
+          </div>
           <div class="plan-meta-grid">
             <div>
               <label class="h3" for="plan_station_info">巷弄長照站資訊</label>
@@ -4078,8 +4067,8 @@
           </div>
           <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
           <div class="plan-summary-controls">
-            <label class="inline-checkbox plan-summary-foreign-toggle" for="hasForeignCare">
-              <input id="hasForeignCare" type="checkbox"> 案家聘有外籍看護（自動扣減 30% 額度）
+            <label class="inline-checkbox plan-summary-foreign-toggle">
+              案家聘有外籍看護（自動扣減 30% 額度）
             </label>
             <div class="hint plan-summary-controls-hint">若未扣減或無聘用，請取消勾選。</div>
           </div>
@@ -4103,7 +4092,7 @@
     <div class="group">
       <div class="group-content">
         <div class="btnbar">
-        <button class="primary" onclick="applyAndSave()">產出（複製/升版並開啟新檔）</button>
+        <button class="primary" data-action="apply-and-save">產出（複製/升版並開啟新檔）</button>
       </div>
         <div id="errorSummary" data-show="0"></div>
         <div id="msg" class="hint" style="margin-top:var(--space-xs);"></div>
@@ -4225,7 +4214,7 @@
               { id:'h3-goals-call-date', tag:'h3', label:'電聯日期',
                 dom:{ selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' } },
               { id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪',
-                dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox', mode:'labelHeading', className:'h3' } }
+                dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] h3[data-anchor="h3-goals-call-consult"]', mode:'replace', className:'h3' } }
             ]
           },
           {
@@ -4246,8 +4235,10 @@
                 dom:{ selector:'#visitPartnersCard label[for="primaryRel"]', mode:'labelHeading', className:'h3' } },
               { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名',
                 dom:{ selector:'#visitPartnersCard label[for="primaryName"]', mode:'labelHeading', className:'h3' } },
-              { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' },
-              { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' }
+              { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係',
+                dom:{ selector:'#extrasHeading #h3-goals-extra-rel', mode:'replace', className:'h3' } },
+              { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名',
+                dom:{ selector:'#extrasHeading #h3-goals-extra-name', mode:'replace', className:'h3' } }
             ]
           },
           {
@@ -4324,10 +4315,14 @@
           },
           { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源',
             dom:{ selector:'#planReferralCard .titlebar label', mode:'replace', className:'h2' } },
-          { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願' },
-          { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明' },
-          { id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽' },
-          { id:'h2-exec-attachment1', tag:'h2', label:'附件一：計畫執行規劃預覽' }
+          { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願',
+            dom:{ selector:'#planReferralCard #h2-exec-station', mode:'replace', className:'h2' } },
+          { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明',
+            dom:{ selector:'#planExecutionCard #h2-exec-emergency-note', mode:'replace', className:'h2' } },
+          { id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽',
+            dom:{ selector:'#planSummaryCard .titlebar label', mode:'replace', className:'h2' } },
+          { id:'h2-exec-attachment1', tag:'h2', label:'附件一：計畫執行規劃預覽',
+            dom:{ selector:'#planExecutionPreviewCard .titlebar label', mode:'replace', className:'h2' } }
         ]
       },
       {
@@ -5125,12 +5120,6 @@
         el.classList.add('checkgrid');
         el.querySelectorAll('label').forEach(label=>label.classList.add('check-item'));
       });
-    }
-
-    function upgradeLegacyContainers(section){
-      if(!section) return;
-      normalizeLayout(section);
-      applyGridUtilities(section);
     }
 
     function enforceSection1CardLayout(){
@@ -7139,9 +7128,17 @@
       if(!box) return;
       if(res && res.file && res.file.url){
         const messageText = res && res.message ? escapeHtml(res.message) : '已建立新檔';
-        const safeUrl = escapeHtml(res.file.url);
+        const rawUrl = res.file.url;
+        const safeUrl = escapeHtml(rawUrl);
         const safeName = escapeHtml(res.file.name || '新文件');
-        box.innerHTML = `${messageText} → <a href="${safeUrl}" target="_blank" rel="noopener">${safeName}</a> <button type="button" class="small" data-url="${safeUrl}" onclick="openProducedFile(this.dataset.url)">開啟</button>`;
+        box.innerHTML = `${messageText} → <a href="${safeUrl}" target="_blank" rel="noopener">${safeName}</a>`;
+        const openBtn=document.createElement('button');
+        openBtn.type='button';
+        openBtn.className='small';
+        openBtn.textContent='開啟';
+        openBtn.addEventListener('click', ()=>{ openProducedFile(rawUrl); });
+        box.appendChild(document.createTextNode(' '));
+        box.appendChild(openBtn);
       }else{
         box.textContent = res && res.message ? res.message : '';
       }
@@ -8107,25 +8104,69 @@
       const wrap=document.createElement('div');
       wrap.className='extra-row';
       wrap.id=`extra-${idx}`;
-      wrap.innerHTML=`
-      <div class="field-intro" data-field-size="short">
-        <label class="h3" for="ex-role-${idx}">其他參與者關係</label>
-        <select id="ex-role-${idx}" onchange="toggleCustomRole(${idx}, 'ex')">
-          ${roleOptionsHTML(true)}
-        </select>
-        <input id="ex-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
-      </div>
-      <div class="field-intro" data-field-size="medium">
-        <label class="h3" for="ex-name-${idx}">其他參與者姓名</label>
-        <input id="ex-name-${idx}" type="text" placeholder="姓名，例如：李○○">
-      </div>
-      <div class="extra-row-actions">
-        <button type="button" class="extra-remove" aria-label="移除參與者" title="移除參與者" onclick="removeExtraRow(${idx})">
-          <span aria-hidden="true">×</span>
-        </button>
-      </div>`;
+      const roleField=document.createElement('div');
+      roleField.className='field-intro';
+      roleField.dataset.fieldSize='short';
+
+      const roleLabel=document.createElement('label');
+      roleLabel.className='h3';
+      roleLabel.setAttribute('for', `ex-role-${idx}`);
+      roleLabel.textContent='其他參與者關係';
+
+      const roleSelect=document.createElement('select');
+      roleSelect.id=`ex-role-${idx}`;
+      roleSelect.innerHTML=roleOptionsHTML(true);
+      roleSelect.addEventListener('change', ()=>{ toggleCustomRole(idx, 'ex'); });
+
+      const roleCustom=document.createElement('input');
+      roleCustom.id=`ex-custom-${idx}`;
+      roleCustom.type='text';
+      roleCustom.placeholder='自訂角色';
+      roleCustom.style.display='none';
+      roleCustom.style.marginTop='var(--space-xs)';
+
+      roleField.appendChild(roleLabel);
+      roleField.appendChild(roleSelect);
+      roleField.appendChild(roleCustom);
+
+      const nameField=document.createElement('div');
+      nameField.className='field-intro';
+      nameField.dataset.fieldSize='medium';
+
+      const nameLabel=document.createElement('label');
+      nameLabel.className='h3';
+      nameLabel.setAttribute('for', `ex-name-${idx}`);
+      nameLabel.textContent='其他參與者姓名';
+
+      const nameInput=document.createElement('input');
+      nameInput.id=`ex-name-${idx}`;
+      nameInput.type='text';
+      nameInput.placeholder='姓名，例如：李○○';
+
+      nameField.appendChild(nameLabel);
+      nameField.appendChild(nameInput);
+
+      const actionField=document.createElement('div');
+      actionField.className='extra-row-actions';
+
+      const removeBtn=document.createElement('button');
+      removeBtn.type='button';
+      removeBtn.className='extra-remove';
+      removeBtn.setAttribute('aria-label','移除參與者');
+      removeBtn.title='移除參與者';
+      removeBtn.addEventListener('click', ()=>{ removeExtraRow(idx); });
+
+      const removeIcon=document.createElement('span');
+      removeIcon.setAttribute('aria-hidden','true');
+      removeIcon.textContent='×';
+      removeBtn.appendChild(removeIcon);
+      actionField.appendChild(removeBtn);
+
+      wrap.appendChild(roleField);
+      wrap.appendChild(nameField);
+      wrap.appendChild(actionField);
       host.appendChild(wrap);
-      enforcePrimaryExclusionOnSelect(document.getElementById(`ex-role-${idx}`));
+      enforcePrimaryExclusionOnSelect(roleSelect);
       updateParticipantConflictHint();
     }
     function toggleCustomRole(idx, prefix){
@@ -8161,7 +8202,7 @@
         const nameInput=document.getElementById(`ex-name-${currentIndex}`);
         let appliedCustom = false;
         if(select){
-          const hasOption = rawRole && [...select.options].some(opt=>opt.value===rawRole);
+          const hasOption = rawRole && Array.from(select.options).some(opt=>opt.value===rawRole);
           if(hasOption){
             select.value = rawRole;
           }else if(rawRole){
@@ -8331,43 +8372,55 @@
     let activeLocationContext = 'pain';
     let lesionSymptomMode = 'none';
 
+    function appendCheckbox(container, config){
+      if(!container) return null;
+      const label=document.createElement('label');
+      const input=document.createElement('input');
+      input.type='checkbox';
+      if(config.id){ input.id=config.id; }
+      if(config.value !== undefined){ input.value=config.value; }
+      if(typeof config.onChange === 'function'){ input.addEventListener('change', config.onChange); }
+      label.appendChild(input);
+      const text=config.text !== undefined ? config.text : String(config.value ?? '');
+      label.appendChild(document.createTextNode(` ${text}`));
+      container.appendChild(label);
+      return { label, input };
+    }
+
     // 渲染
     function renderS1() {
-      // 視力補充
-      const vbox=document.getElementById('s1_vision_note_box'); vbox.innerHTML='';
-      S1_VISION_NOTES.forEach(name=>{
-        const id='vnote_'+name;
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${name}" id="${id}" onchange="onVisionNoteChange(event)"> ${name}`;
-        vbox.appendChild(lab);
-      });
+      const vbox=document.getElementById('s1_vision_note_box');
+      if(vbox){
+        vbox.innerHTML='';
+        S1_VISION_NOTES.forEach(name=>{
+          appendCheckbox(vbox, { id:`vnote_${name}`, value:name, text:name, onChange:onVisionNoteChange });
+        });
+      }
 
       // 病灶症狀（互斥：無不適）
       setupLesionSymptomsBox();
 
-      // 慢性病
-      const dhx=document.getElementById('s1_dhx_box'); dhx.innerHTML='';
-      S1_DHX_LIST.forEach(name=>{
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleDhxOther()"> ${name}`;
-        dhx.appendChild(lab);
-      });
+      const dhx=document.getElementById('s1_dhx_box');
+      if(dhx){
+        dhx.innerHTML='';
+        S1_DHX_LIST.forEach(name=>{
+          appendCheckbox(dhx, { value:name, text:name, onChange:toggleDhxOther });
+        });
+      }
 
-      // 現用藥別
-      const meds=document.getElementById('s1_med_classes_box'); meds.innerHTML='';
-      S1_MED_CLASSES.forEach(name=>{
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleMedOther()"> ${name}`;
-        meds.appendChild(lab);
-      });
+      const meds=document.getElementById('s1_med_classes_box');
+      if(meds){
+        meds.innerHTML='';
+        S1_MED_CLASSES.forEach(name=>{
+          appendCheckbox(meds, { value:name, text:name, onChange:toggleMedOther });
+        });
+      }
 
       const langBox=document.getElementById('s1_lang_box');
       if(langBox){
         langBox.innerHTML='';
         S1_LANG_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="lang_${i}"> ${name}`;
-          langBox.appendChild(lab);
+          appendCheckbox(langBox, { id:`lang_${i}`, value:name, text:name });
         });
       }
 
@@ -8375,9 +8428,7 @@
       if(swallowBox){
         swallowBox.innerHTML='';
         S1_SWALLOW_SX_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="swallow_${i}"> ${name}`;
-          swallowBox.appendChild(lab);
+          appendCheckbox(swallowBox, { id:`swallow_${i}`, value:name, text:name });
         });
       }
 
@@ -8385,9 +8436,7 @@
       if(dietBox){
         dietBox.innerHTML='';
         S1_DIET_TEXTURE_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="diet_${i}"> ${name}`;
-          dietBox.appendChild(lab);
+          appendCheckbox(dietBox, { id:`diet_${i}`, value:name, text:name });
         });
       }
 
@@ -8395,9 +8444,7 @@
       if(tubeBox){
         tubeBox.innerHTML='';
         S1_FEEDING_TUBE_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="tube_${i}"> ${name}`;
-          tubeBox.appendChild(lab);
+          appendCheckbox(tubeBox, { id:`tube_${i}`, value:name, text:name });
         });
       }
 
@@ -8405,9 +8452,7 @@
       if(oralBox){
         oralBox.innerHTML='';
         S1_ORAL_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="oral_${i}"> ${name}`;
-          oralBox.appendChild(lab);
+          appendCheckbox(oralBox, { id:`oral_${i}`, value:name, text:name });
         });
       }
 
@@ -8415,9 +8460,7 @@
       if(excretionBox){
         excretionBox.innerHTML='';
         S1_EXCRETION_AID_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="exaid_${i}" onchange="updateExcretionAidEffects()"> ${name}`;
-          excretionBox.appendChild(lab);
+          appendCheckbox(excretionBox, { id:`exaid_${i}`, value:name, text:name, onChange:updateExcretionAidEffects });
         });
       }
 
@@ -8425,9 +8468,7 @@
       if(balanceBox){
         balanceBox.innerHTML='';
         S1_BALANCE_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="balance_${i}"> ${name}`;
-          balanceBox.appendChild(lab);
+          appendCheckbox(balanceBox, { id:`balance_${i}`, value:name, text:name });
         });
       }
 
@@ -8435,9 +8476,7 @@
       if(sittingSupportBox){
         sittingSupportBox.innerHTML='';
         S1_SITTING_SUPPORT_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="sit_${i}"> ${name}`;
-          sittingSupportBox.appendChild(lab);
+          appendCheckbox(sittingSupportBox, { id:`sit_${i}`, value:name, text:name });
         });
       }
 
@@ -8445,18 +8484,15 @@
       if(emotionBox){
         emotionBox.innerHTML='';
         S1_EMOTION_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="emotion_${i}"> ${name}`;
-          emotionBox.appendChild(lab);
+          appendCheckbox(emotionBox, { id:`emotion_${i}`, value:name, text:name });
         });
       }
+
       const behaviorBox=document.getElementById('s1_behavior_box');
       if(behaviorBox){
         behaviorBox.innerHTML='';
         S1_BEHAVIOR_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="behavior_${i}"> ${name}`;
-          behaviorBox.appendChild(lab);
+          appendCheckbox(behaviorBox, { id:`behavior_${i}`, value:name, text:name });
         });
       }
 
@@ -8464,10 +8500,7 @@
       if(phoneNoteBox){
         phoneNoteBox.innerHTML='';
         S1_PHONE_NOTE_OPTIONS.forEach((name,i)=>{
-          const handler = name==='其他' ? ' onchange="togglePhoneNoteOther()"' : '';
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="phonenote_${i}"${handler}> ${name}`;
-          phoneNoteBox.appendChild(lab);
+          appendCheckbox(phoneNoteBox, { id:`phonenote_${i}`, value:name, text:name, onChange: name==='其他' ? togglePhoneNoteOther : undefined });
         });
       }
 
@@ -8475,9 +8508,7 @@
       if(deviceBox){
         deviceBox.innerHTML='';
         S1_DEVICE_OPTIONS.forEach((name,i)=>{
-          const lab=document.createElement('label');
-          lab.innerHTML=`<input type="checkbox" value="${name}" id="device_${i}"> ${name}`;
-          deviceBox.appendChild(lab);
+          appendCheckbox(deviceBox, { id:`device_${i}`, value:name, text:name });
         });
       }
 
@@ -8489,10 +8520,7 @@
       if(!box) return;
       box.innerHTML='';
       S1_LESION_SX_LIST.forEach(name=>{
-        const id = 'lsx_'+name;
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${name}" id="${id}" onchange="syncNoDiscomfort('s1_lesion_sx_box')"> ${name}`;
-        box.appendChild(lab);
+        appendCheckbox(box, { id:`lsx_${name}`, value:name, text:name, onChange:()=>syncNoDiscomfort('s1_lesion_sx_box') });
       });
       box.dataset.mode = lesionSymptomMode;
       setLesionSymptomMode(lesionSymptomMode);
@@ -8584,10 +8612,7 @@
       if(!items.includes(extra)) items.push(extra);
       box.innerHTML = '';
       items.forEach((txt, i)=>{
-        const id = 'hear_'+i;
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${txt}" id="${id}" onchange="toggleHearingDeviceAdherence()"> ${txt}`;
-        box.appendChild(lab);
+        appendCheckbox(box, { id:`hear_${i}`, value:txt, text:txt, onChange:toggleHearingDeviceAdherence });
       });
       wrap.style.display='';
       toggleHearingDeviceAdherence();
@@ -10957,9 +10982,7 @@
     function renderS2(){
       const host=document.getElementById('s2_sources'); host.innerHTML='';
       S2_SOURCES.forEach((name,i)=>{
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS2()"> ${name}`;
-        host.appendChild(lab);
+        appendCheckbox(host, { id:`s2_source_${i}`, value:name, text:name, onChange:buildS2 });
       });
       const catSel=document.getElementById('s2_dis_cat');
       if(catSel){
@@ -11007,9 +11030,13 @@
     const S3_AIDS= ['輪椅','助行器','拐杖','照顧床','氣墊床','便盆椅','助行拐'];
     function renderS3(){
       const facHost=document.getElementById('s3_fac'); facHost.innerHTML='';
-      S3_FAC.forEach((name)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS3()"> ${name}`; facHost.appendChild(lab);});
+      S3_FAC.forEach((name,i)=>{
+        appendCheckbox(facHost, { id:`s3_fac_${i}`, value:name, text:name, onChange:buildS3 });
+      });
       const aidsHost=document.getElementById('s3_aids'); aidsHost.innerHTML='';
-      S3_AIDS.forEach((name)=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" value="${name}" onchange="buildS3()"> ${name}`; aidsHost.appendChild(lab);});
+      S3_AIDS.forEach((name,i)=>{
+        appendCheckbox(aidsHost, { id:`s3_aid_${i}`, value:name, text:name, onChange:buildS3 });
+      });
       refreshCheckcol('s3_fac');
       refreshCheckcol('s3_aids');
     }
@@ -11568,17 +11595,23 @@
       const host=document.getElementById('sp_formal');
       host.innerHTML='';
       baFrequencyDisplays = {};
-      FORMAL.forEach((name)=>{
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${name}" onchange="toggleGoalInputs()"> ${name}`;
-        host.appendChild(lab);
+      FORMAL.forEach((name,i)=>{
+        appendCheckbox(host, { id:`formal_${i}`, value:name, text:name, onChange:toggleGoalInputs });
       });
       const rHost=document.getElementById('sp_risks');
       rHost.innerHTML='';
       RISKS.forEach((it,i)=>{
-        const lab=document.createElement('label');
-        lab.innerHTML=`<input type="checkbox" value="${it[0]}"> ${i+1}. ${it[0]} <span class="muted">（${it[1]}）</span>`;
-        rHost.appendChild(lab);
+        const label=document.createElement('label');
+        const input=document.createElement('input');
+        input.type='checkbox';
+        input.value=it[0];
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(` ${i+1}. ${it[0]} `));
+        const hint=document.createElement('span');
+        hint.className='muted';
+        hint.textContent=`（${it[1]}）`;
+        label.appendChild(hint);
+        rHost.appendChild(label);
       });
       toggleGoalInputs();
       refreshCheckcol('sp_formal');
@@ -14795,11 +14828,8 @@
       let name=nameInput ? nameInput.value.trim() : '';
       if(!rel){ rel='本人'; if(!name) name=caseName; }
       if(!name){ alert('三、偕同訪視者的主要照顧者尚未完整。'); return; }
-      const phoneField = document.getElementById('primaryPhone');
-      const sourcePhone = phoneField ? (phoneField.value || '').trim() : '';
       const deciderRel=document.getElementById('sp_deciderRel');
       const deciderName=document.getElementById('sp_deciderName');
-      const deciderPhone=document.getElementById('sp_deciderPhone');
       if(deciderRel){
         const optionExists=[...deciderRel.options].some(opt=>opt.value===rel);
         deciderRel.value = optionExists ? rel : '';
@@ -14809,10 +14839,6 @@
         deciderName.value = name;
         deciderName.dispatchEvent(new Event('input', {bubbles:true}));
       }
-      if(deciderPhone){
-        deciderPhone.value = sourcePhone;
-        deciderPhone.dispatchEvent(new Event('input', {bubbles:true}));
-      }
       syncQuickWho();
       buildSection4();
     }
@@ -14820,17 +14846,57 @@
       const host=document.getElementById('coCare');
       const idx=coCareIdx++;
       const wrap=document.createElement('div'); wrap.className='row'; wrap.id=`cc-${idx}`;
-      wrap.innerHTML=`
-        <div class="field-intro">
-          <label class="h4">關係</label>
-          <select id="cc-rel-${idx}" onchange="toggleCustomRole(${idx}, 'cc')">
-            ${roleOptionsHTML()}
-          </select>
-          <input id="cc-custom-${idx}" type="text" placeholder="自訂角色" style="display:none; margin-top:var(--space-xs);">
-        </div>
-        <div class="field-intro"><label class="h4">姓名</label><input id="cc-name-${idx}" type="text" placeholder="例如：李○○"></div>
-        <div style="flex:0; align-self:flex-end;"><button class="small" onclick="removeCoCareRow(${idx})">移除</button></div>
-      `;
+
+      const relField=document.createElement('div');
+      relField.className='field-intro';
+
+      const relLabel=document.createElement('label');
+      relLabel.className='h4';
+      relLabel.textContent='關係';
+
+      const relSelect=document.createElement('select');
+      relSelect.id=`cc-rel-${idx}`;
+      relSelect.innerHTML=roleOptionsHTML();
+      relSelect.addEventListener('change', ()=>{ toggleCustomRole(idx, 'cc'); });
+
+      const relCustom=document.createElement('input');
+      relCustom.id=`cc-custom-${idx}`;
+      relCustom.type='text';
+      relCustom.placeholder='自訂角色';
+      relCustom.style.display='none';
+      relCustom.style.marginTop='var(--space-xs)';
+
+      relField.appendChild(relLabel);
+      relField.appendChild(relSelect);
+      relField.appendChild(relCustom);
+
+      const nameField=document.createElement('div');
+      nameField.className='field-intro';
+      const nameLabel=document.createElement('label');
+      nameLabel.className='h4';
+      nameLabel.textContent='姓名';
+      const nameInput=document.createElement('input');
+      nameInput.id=`cc-name-${idx}`;
+      nameInput.type='text';
+      nameInput.placeholder='例如：李○○';
+      nameField.appendChild(nameLabel);
+      nameField.appendChild(nameInput);
+
+      const actionField=document.createElement('div');
+      actionField.style.flex='0';
+      actionField.style.alignSelf='flex-end';
+
+      const removeBtn=document.createElement('button');
+      removeBtn.className='small';
+      removeBtn.type='button';
+      removeBtn.textContent='移除';
+      removeBtn.addEventListener('click', ()=>{ removeCoCareRow(idx); });
+
+      actionField.appendChild(removeBtn);
+
+      wrap.appendChild(relField);
+      wrap.appendChild(nameField);
+      wrap.appendChild(actionField);
       host.appendChild(wrap);
     }
 
@@ -14861,7 +14927,7 @@
         const nameInput=document.getElementById(`cc-name-${currentIndex}`);
         let appliedCustom=false;
         if(select){
-          const hasOption = rel && [...select.options].some(opt=>opt.value===rel);
+          const hasOption = rel && Array.from(select.options).some(opt=>opt.value===rel);
           if(hasOption){
             select.value = rel;
           }else if(rel){
@@ -15733,9 +15799,6 @@
         // 三、偕同訪視者
         primaryCaregiverRel: primaryCaregiverRel,
         primaryCaregiverName: primaryCaregiverName,
-        primaryPhone: (document.getElementById('primaryPhone')?.value || '').trim(),
-        primaryTel: (document.getElementById('primaryTel')?.value || '').trim(),
-        primaryContactPhone: (document.getElementById('primaryContactPhone')?.value || '').trim(),
         includePrimary: true,              // 固定預設輸出
         extras: collectExtras(),
         consentParties: consentParties,
@@ -16971,6 +17034,90 @@
       window.visualViewport.addEventListener('scroll', scheduleAllMeasurements);
     }
 
+    function bindElement(selector, eventName, handler){
+      const element=document.querySelector(selector);
+      if(element){
+        element.addEventListener(eventName, handler);
+      }
+    }
+
+    function bindElements(selector, eventName, handler){
+      document.querySelectorAll(selector).forEach(element=>{
+        element.addEventListener(eventName, handler);
+      });
+    }
+
+    function bindAction(action, handler){
+      document.querySelectorAll(`[data-action="${action}"]`).forEach(element=>{
+        element.addEventListener('click', event=>{
+          event.preventDefault();
+          handler(event);
+        });
+      });
+    }
+
+    function initEventBindings(){
+      bindElement('#unitCode','change', ()=>{ loadManagers(); loadConsultants(); });
+      bindElement('#isConsultVisit','change', toggleCallDateByConsultVisit);
+      bindElement('#isDischarge','change', toggleDischarge);
+      bindElement('#primaryRel','change', enforcePrimaryExclusionOnExtras);
+      bindElement('#s1_vision','change', toggleVisionNotes);
+      bindElement('#s1_hearing_level','change', renderHearingDetails);
+      bindElement('#s1_swallow','change', toggleSwallow);
+      ['#s1_transfer','#s1_adl_eating','#s1_adl_groom','#s1_adl_bathing','#s1_adl_dressing','#s1_post_toilet','#s1_meal_prep','#s1_housework','#s1_finance'].forEach(selector=>{
+        bindElement(selector,'change', event=>{ toggleAdlHow(event.currentTarget.id); });
+      });
+      bindElement('#s1_fall_history','change', toggleFallDetail);
+      bindElement('#s1_sitting_stability','change', toggleSittingSupports);
+      bindElement('#s1_phone','change', togglePhoneNotes);
+      ['#s1_shopping','#s1_shopping_how'].forEach(selector=>{ bindElement(selector,'change', toggleShoppingHow); });
+      ['#s1_dishwash','#s1_dishwash_how'].forEach(selector=>{ bindElement(selector,'change', toggleDishwashHow); });
+      bindElements('[data-urine-mode]','change', event=>{
+        const mode=event.currentTarget.getAttribute('data-urine-mode');
+        if(mode){ toggleUrineOther(mode); }
+      });
+      bindElement('#s1_visit_transport','change', toggleTransportOther);
+      bindElement('#s1_sleep','change', toggleSleepReason);
+      bindElement('#s1_sleep_reason','change', toggleSleepReasonDetail);
+      bindElement('#s1_pain','change', togglePainCombined);
+      bindElement('#s1_location_region','change', onSharedRegionChange);
+      bindElement('#s1_location_subregion','change', onSharedSubregionChange);
+      bindElement('#s1_location_laterality','change', onSharedLateralityChange);
+      bindElement('#s1_location_subregion_other','input', onSharedSubregionOtherInput);
+      bindElement('#s1_lesion_has','change', toggleLesionCombined);
+      bindElement('#s1_lesion_layer','change', toggleLesionLayerOther);
+      bindElement('#s1_lesion_eval','change', toggleLesionHospital);
+      ['#s1_lesion_length','#s1_lesion_width'].forEach(selector=>{ bindElement(selector,'input', updateLesionAreaDisplay); });
+      bindElement('#s2_dis_level','change', syncDisab);
+      bindElement('#s2_dis_cat','change', syncDisab);
+      bindElement('#s3_type','change', toggleOtherType);
+      bindElement('#s3_own','change', toggleRentFields);
+      bindElements('input[data-inf-toggle]','change', event=>{
+        const key=event.currentTarget.dataset.infToggle;
+        if(key){ toggleInfInput(key); }
+      });
+      bindAction('add-extra-row', ()=>{ addExtraRow(); });
+      bindAction('reset-vision-suggestions', resetVisionSuggestions);
+      bindAction('switch-location-context', event=>{
+        const context=event.currentTarget.dataset.context;
+        if(context){ switchLocationContext(context); }
+      });
+      bindAction('copy-location-from-other', ()=>{ copyLocationFromOther(); });
+      bindAction('set-lesion-symptom-mode', event=>{
+        const mode=event.currentTarget.dataset.mode;
+        if(mode){ setLesionSymptomMode(mode); }
+      });
+      bindAction('add-action-entry', ()=>{ addActionEntry(); });
+      bindAction('copy-from-primary', copyFromH1Primary);
+      bindAction('add-co-care', addCoCare);
+      bindAction('reset-care-phrases', resetCareServicePhrases);
+      bindAction('reset-professional-phrases', resetProfessionalPhrases);
+      bindAction('reset-transport-phrases', resetTransportPhrases);
+      bindAction('reset-respite-phrases', resetRespitePhrases);
+      bindAction('reset-meal-phrases', resetMealPhrases);
+      bindAction('apply-and-save', applyAndSave);
+    }
+
     function applyEllipsisTooltips(){
       const selector='.group > label:first-child, .titlebar > label:first-child';
       document.querySelectorAll(selector).forEach(label=>{
@@ -16997,6 +17144,7 @@
       initHeadingSchemaToast();
       registerDevDiagnostics();
       initGroupCollapsibles();
+      initEventBindings();
       initSectionViews();
       refreshExecutionHeadingRegistry();
       ensureGoalsPageDefaults();
@@ -17122,6 +17270,7 @@
       }
 
       toggleCallDateByConsultVisit();
+      toggleDischarge();
       updateConsultVisitText();
       buildApprovalPlanPreview();
 
