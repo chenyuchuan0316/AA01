@@ -70,295 +70,161 @@
 - 若有外部依賴（例如雲端硬碟範本、第三方 API），請於 README 的環境設定段落補充取得方式與權限需求。
 - 圖片或附件應存放於專案內適當目錄，並在 README 中提供說明或連結。
 
-## HEADING_SPEC 版本控管與審查流程
-- 所有標題階層的增減都必須對應到下列 `HEADING_SPEC`，並於程式碼審查中逐項對照，避免側欄或輸出文件遺漏章節。調整任一節點時請同步更新 `HEADING_SPEC_VERSION`。
+## HEADING_SCHEMA 版本控管與審查流程
+- 所有標題階層的增減都必須對應到下列 `HEADING_SCHEMA`，並於程式碼審查中逐項對照，避免側欄或輸出文件遺漏章節。調整任一節點時請同步更新 `HEADING_SCHEMA_VERSION`。
 
 ```javascript
-/* ===== 完整版 HEADING_SPEC（for CODEX 指令直接覆蓋） ===== */
-const HEADING_SPEC_VERSION = '2025-09-24';
+/* ===== 完整版 HEADING_SCHEMA（for CODEX 指令直接覆蓋） ===== */
+const HEADING_SCHEMA_VERSION = '2025-10-01';
 
-const HEADING_SPEC = Object.freeze([
-  /* =================== H1：基本資訊 =================== */
+const HEADING_SCHEMA = Object.freeze([
   {
     id:'h1-basic', tag:'h1', label:'基本資訊', page:'basic',
+    dom:{ selector:'#basicInfoGroup .titlebar .h1', mode:'replace', className:'h1' },
     children:[
-      { id:'h2-basic-unit-code',      tag:'h2', label:'單位代碼' },
-      { id:'h2-basic-case-manager',    tag:'h2', label:'個案管理師' },
-      { id:'h2-basic-case-name',       tag:'h2', label:'個案姓名' },
-      { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' },
-      { id:'h2-basic-cms-level',       tag:'h2', label:'CMS 等級' }
+      { id:'h2-basic-unit-code', tag:'h2', label:'單位代碼',
+        dom:{ selector:'#basicInfoGroup label[for="unitCode"]', mode:'labelHeading', className:'h2' } },
+      { id:'h2-basic-case-manager', tag:'h2', label:'個案管理師',
+        dom:{ selector:'#basicInfoGroup label[for="caseManagerName"]', mode:'labelHeading', className:'h2' } },
+      { id:'h2-basic-case-name', tag:'h2', label:'個案姓名',
+        dom:{ selector:'#basicInfoGroup label[for="caseName"]', mode:'labelHeading', className:'h2' } },
+      { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名',
+        dom:{ selector:'#basicInfoGroup label[for="consultName"]', mode:'labelHeading', className:'h2' } },
+      { id:'h2-basic-cms-level', tag:'h2', label:'CMS 等級',
+        dom:{ selector:'.cms-level-row > label[for="cmsLevelValue"]', mode:'labelHeading', className:'h2' } }
     ]
   },
-
-  /* =================== H1：計畫目標 =================== */
   {
     id:'h1-goals', tag:'h1', label:'計畫目標', page:'goals',
+    dom:{ selector:'#contactVisitGroup .titlebar .h1', mode:'replace', className:'h1' },
     children:[
-
-      /* H2 一、電聯日期 */
       {
         id:'h2-goals-call', tag:'h2', label:'一、電聯日期',
+        dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2', mode:'replace', className:'h2' },
         children:[
-          { id:'h3-goals-call-date',    tag:'h3', label:'電聯日期' },
-          { id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪' } // checkbox
+          { id:'h3-goals-call-date', tag:'h3', label:'電聯日期',
+            dom:{ selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' } },
+          { id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪',
+            dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox', mode:'labelHeading', className:'h3' } }
         ]
       },
-
-      /* H2 二、家訪日期 */
       {
         id:'h2-goals-homevisit', tag:'h2', label:'二、家訪日期',
+        dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
         children:[
-          { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' },
-          { id:'h3-goals-prep-date',      tag:'h3', label:'出院日期' }
+          { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期',
+            dom:{ selector:'#contactVisitGroup label[for="visitDate"]', mode:'labelHeading', className:'h3' } },
+          { id:'h3-goals-prep-date', tag:'h3', label:'出院日期',
+            dom:{ selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3' } }
         ]
       },
-
-      /* H2 三、偕同訪視者 */
       {
         id:'h2-goals-companions', tag:'h2', label:'三、偕同訪視者',
+        dom:{ selector:'#visitPartnersCard .titlebar .h2', mode:'replace', className:'h2' },
         children:[
-          { id:'h3-goals-primary-rel',  tag:'h3', label:'主要照顧者關係' },
-          { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' },
-          { id:'h3-goals-extra-rel',    tag:'h3', label:'其他參與者關係' },
-          { id:'h3-goals-extra-name',   tag:'h3', label:'其他參與者姓名' }
+          { id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係',
+            dom:{ selector:'#visitPartnersCard label[for="primaryRel"]', mode:'labelHeading', className:'h3' } },
+          { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名',
+            dom:{ selector:'#visitPartnersCard label[for="primaryName"]', mode:'labelHeading', className:'h3' } },
+          { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' },
+          { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' }
         ]
       },
-
-      /* H2 四、個案概況（六大分項） */
       {
         id:'h2-goals-overview', tag:'h2', label:'四、個案概況',
+        dom:{ selector:'#caseOverviewGroup .titlebar .h2', mode:'replace', className:'h2 heading-tier heading-tier--primary' },
         children:[
-
-          /* H3 （一）身心概況：細化到 H5/H6，對齊現有 UI 群組 */
-          {
-            id:'h3-goals-s1', tag:'h3', label:'（一）身心概況',
-            children:[
-
-              /* 基本資料 */
-              { id:'h4-goals-s1-basic', tag:'h4', label:'基本資料（年齡／性別／語言）' },
-
-              /* 感官功能 */
-              {
-                id:'h4-goals-s1-sensory', tag:'h4', label:'感官功能',
-                children:[
-                  { id:'h5-goals-s1-vision',  tag:'h5', label:'視力' },
-                  { id:'h5-goals-s1-hearing', tag:'h5', label:'聽力' }
-                ]
-              },
-
-              /* 口腔與吞嚥 */
-              {
-                id:'h4-goals-s1-oral', tag:'h4', label:'口腔與吞嚥功能',
-                children:[
-                  { id:'h5-goals-s1-swallow',    tag:'h5', label:'吞嚥功能' },
-                  { id:'h5-goals-s1-oral-teeth', tag:'h5', label:'口腔與牙齒' }
-                ]
-              },
-
-              /* 移動功能 */
-              {
-                id:'h4-goals-s1-mobility', tag:'h4', label:'移動功能',
-                children:[
-                  { id:'h5-goals-s1-transfer', tag:'h5', label:'起身／移位能力' },
-                  { id:'h5-goals-s1-walk',     tag:'h5', label:'行走與上下樓梯' },
-                  { id:'h5-goals-s1-balance',  tag:'h5', label:'平衡程度' },
-                  { id:'h5-goals-s1-sitting',  tag:'h5', label:'坐姿穩定性與輪椅安全' },
-                  { id:'h5-goals-s1-gait',     tag:'h5', label:'步態' }
-                ]
-              },
-
-              /* ADL */
-              {
-                id:'h4-goals-s1-adl', tag:'h4', label:'ADL（日常生活活動）',
-                children:[
-                  { id:'h5-goals-s1-adl-items', tag:'h5', label:'進食／盥洗／洗澡／穿脫衣／如廁清潔' }
-                ]
-              },
-
-              /* IADL */
-              {
-                id:'h4-goals-s1-iadl', tag:'h4', label:'IADL（工具性日常活動）',
-                children:[
-                  { id:'h5-goals-s1-iadl-items', tag:'h5', label:'電話／購物／備餐／餐具清洗／家務／財務' }
-                ]
-              },
-
-              /* 排泄功能 */
-              {
-                id:'h4-goals-s1-excretion', tag:'h4', label:'排泄功能',
-                children:[
-                  { id:'h5-goals-s1-urine-day',   tag:'h5', label:'日間排尿' },
-                  { id:'h5-goals-s1-urine-night', tag:'h5', label:'夜間排尿' },
-                  { id:'h5-goals-s1-nocturia',    tag:'h5', label:'夜尿次數' }
-                ]
-              },
-
-              /* 健康與病史 */
-              {
-                id:'h4-goals-s1-health', tag:'h4', label:'健康狀況與病史',
-                children:[
-                  { id:'h5-goals-s1-dhx',        tag:'h5', label:'慢性病史' },
-                  { id:'h5-goals-s1-surgery',    tag:'h5', label:'手術史' },
-                  { id:'h5-goals-s1-allergy',    tag:'h5', label:'藥物過敏' },
-                  { id:'h5-goals-s1-medication', tag:'h5', label:'現用藥物' },
-                  { id:'h5-goals-s1-clinic',     tag:'h5', label:'固定就醫單位' },
-                  { id:'h5-goals-s1-rx',         tag:'h5', label:'處方型態' },
-                  { id:'h5-goals-s1-med-manage', tag:'h5', label:'用藥管理方式' },
-                  { id:'h5-goals-s1-transport',  tag:'h5', label:'就醫交通方式' },
-                  { id:'h5-goals-s1-devices',    tag:'h5', label:'管路／裝置' },
-                  { id:'h5-goals-s1-disability', tag:'h5', label:'身心障礙資訊（唯讀同步）' }
-                ]
-              },
-
-              /* 心理與行為 */
-              {
-                id:'h4-goals-s1-psych', tag:'h4', label:'心理與行為狀態',
-                children:[
-                  { id:'h5-goals-s1-emotion',  tag:'h5', label:'情緒狀態' },
-                  { id:'h5-goals-s1-behavior', tag:'h5', label:'行為表現' },
-                  { id:'h5-goals-s1-cognition',tag:'h5', label:'認知功能' },
-                  { id:'h5-goals-s1-awareness',tag:'h5', label:'意識狀態' },
-                  { id:'h5-goals-s1-sleep',    tag:'h5', label:'睡眠品質與原因' },
-                  { id:'h5-goals-s1-daytime',  tag:'h5', label:'白天活動' },
-                  { id:'h5-goals-s1-pain',     tag:'h5', label:'疼痛與強度／部位' },
-                  { id:'h5-goals-s1-lesion',   tag:'h5', label:'皮膚病灶' }
-                ]
-              },
-
-              /* 總結建議 */
-              {
-                id:'h4-goals-s1-summary', tag:'h4', label:'總結建議',
-                children:[
-                  { id:'h5-goals-s1-actions', tag:'h5', label:'建議措施' },
-                  { id:'h5-goals-s1-notes',   tag:'h5', label:'補充內容' }
-                ]
-              }
-            ]
-          },
-
-          /* H3 （二）經濟收入（依你要求完整 H3 之後層級） */
-          {
-            id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入',
-            children:[
-              { id:'h4-goals-s2-sources',    tag:'h4', label:'主要經濟來源（多選）' },
-              { id:'h4-goals-s2-id',         tag:'h4', label:'戶籍／福利身分' },
-              {
-                id:'h4-goals-s2-dis-level', tag:'h4', label:'身心障礙等級',
-                children:[
-                  { id:'h5-goals-s2-dis-cat',  tag:'h5', label:'身心障礙類別（條件顯示）' },
-                  { id:'h5-goals-s2-dis-sync', tag:'h5', label:'跨段同步顯示（至身心概況）' }
-                ]
-              }
-            ]
-          },
-
-          /* H3 （三）居住環境 */
-          {
-            id:'h3-goals-s3', tag:'h3', label:'（三）居住環境',
-            children:[
-              { id:'h4-goals-s3-type',          tag:'h4', label:'居住型態' },
-              { id:'h4-goals-s3-own',           tag:'h4', label:'居住權屬' },
-              { id:'h4-goals-s3-clean',         tag:'h4', label:'整潔度／異味' },
-              { id:'h4-goals-s3-rent',          tag:'h4', label:'租賃細項（租金／管理費）' },
-              { id:'h4-goals-s3-accessibility', tag:'h4', label:'無障礙設施' },
-              { id:'h4-goals-s3-aids',          tag:'h4', label:'輔具' }
-            ]
-          },
-
-          /* H3 （四）社會支持 */
-          {
-            id:'h3-goals-s4', tag:'h3', label:'（四）社會支持',
-            children:[
-              { id:'h4-goals-s4-primary',  tag:'h4', label:'主照者關係／姓名／同住' },
-              { id:'h4-goals-s4-decider',  tag:'h4', label:'主要聯繫人／決策者' },
-              { id:'h4-goals-s4-cocare',   tag:'h4', label:'共同照顧者（多筆）' },
-              { id:'h4-goals-s4-formal',   tag:'h4', label:'正式資源（居服／日照／專業／交通／喘息／送餐）' },
-              { id:'h4-goals-s4-informal', tag:'h4', label:'非正式資源（據點／鄰里／宗教／財團）' },
-              { id:'h4-goals-s4-risk',     tag:'h4', label:'高風險評估' }
-            ]
-          },
-
-          /* H3 （五）其他 */
-          {
-            id:'h3-goals-s5', tag:'h3', label:'（五）其他',
-            children:[
-              { id:'h4-goals-s5-background', tag:'h4', label:'成長背景／職業／習慣' }
-            ]
-          },
-
-          /* H3 （六）複評評值 */
-          {
-            id:'h3-goals-s6', tag:'h3', label:'（六）複評評值',
-            children:[
-              { id:'h4-goals-s6-before', tag:'h4', label:'介入前' },
-              { id:'h4-goals-s6-after',  tag:'h4', label:'介入後' }
-            ]
-          }
+          { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況',
+            dom:{ selector:'#section1_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入',
+            dom:{ selector:'#section2_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境',
+            dom:{ selector:'#section3_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持',
+            dom:{ selector:'#section4_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s5', tag:'h3', label:'（五）其他',
+            dom:{ selector:'#section5_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值',
+            dom:{ selector:'#section6_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
         ]
       },
-
-      /* H2 五、照顧目標 */
       {
         id:'h2-goals-targets', tag:'h2', label:'五、照顧目標',
+        dom:{ selector:'#careGoalsGroup .titlebar .h2', mode:'replace', className:'h2' },
         children:[
-          { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' },
-          { id:'h3-goals-targets-short',    tag:'h3', label:'（二）短期目標（0–3 個月）' },
-          { id:'h3-goals-targets-mid',      tag:'h3', label:'（三）中期目標（3–4 個月）' },
-          { id:'h3-goals-targets-long',     tag:'h3', label:'（四）長期目標（4–6 個月）' }
+          { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題',
+            dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(1) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標（0–3 個月）',
+            dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(2) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標（3–4 個月）',
+            dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(3) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標（4–6 個月）',
+            dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(4) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
         ]
       },
-
-      /* H2 六、不一致原因說明 */
       {
         id:'h2-goals-mismatch', tag:'h2', label:'六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
+        dom:{ selector:'#mismatchPlanGroup .titlebar .h2', mode:'replace', className:'h2' },
         children:[
-          { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距' },
-          { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形' },
-          { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響' }
+          { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距',
+            dom:{ selector:'#mismatchPlanGroup textarea#reason1', mode:'previousLabelHeading', className:'h3' } },
+          { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形',
+            dom:{ selector:'#mismatchPlanGroup textarea#reason2', mode:'previousLabelHeading', className:'h3' } },
+          { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響',
+            dom:{ selector:'#mismatchPlanGroup textarea#reason3', mode:'previousLabelHeading', className:'h3' } }
         ]
       }
     ]
   },
-
-  /* =================== H1：計畫執行規劃 =================== */
   {
     id:'h1-exec', tag:'h1', label:'計畫執行規劃', page:'execution',
+    dom:{ selector:'.page-section[data-page="execution"] .group > .group-header .titlebar .h1', mode:'replace', className:'h1' },
     children:[
       {
         id:'h2-exec-services', tag:'h2', label:'一、長照服務核定項目、頻率',
+        dom:{ selector:'#planExecutionCard .titlebar label', mode:'replace', className:'h2' },
         children:[
-          { id:'h3-exec-b',          tag:'h3', label:'（一）B碼' },
-          { id:'h3-exec-c',          tag:'h3', label:'（二）C碼' },
-          { id:'h3-exec-d',          tag:'h3', label:'（三）D碼' },
-          { id:'h3-exec-ef',         tag:'h3', label:'（四）E.F碼' },
-          { id:'h3-exec-g',          tag:'h3', label:'（五）G碼' },
-          { id:'h3-exec-sc',         tag:'h3', label:'（六）SC碼' },
-          { id:'h3-exec-nutrition',  tag:'h3', label:'（七）營養餐飲服務' },
-          { id:'h3-exec-emergency',  tag:'h3', label:'（八）緊急救援服務' }
+          { id:'h3-exec-b', tag:'h3', label:'（一）B碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="B"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-c', tag:'h3', label:'（二）C碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="C"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-d', tag:'h3', label:'（三）D碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="D"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="EF"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-g', tag:'h3', label:'（五）G碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="G"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-sc', tag:'h3', label:'（六）SC碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="SC"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="MEAL"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務',
+            dom:{ selector:'#planExecutionCard .plan-category[data-plan-category="EMERGENCY"] .plan-category-heading h3', mode:'replace', className:'h3' } }
         ]
       },
-      { id:'h2-exec-referral',        tag:'h2', label:'二、轉介其他服務資源' },
-      { id:'h2-exec-station',         tag:'h2', label:'三、巷弄長照站資訊與意願' },      // 你在新版 HTML 已加入此區塊
-      { id:'h2-exec-emergency-note',  tag:'h2', label:'四、緊急救援服務說明' },          // 新增說明區
-      { id:'h2-exec-attachment2',     tag:'h2', label:'附件二（服務計畫明細）預覽' },    // 預覽區
-      { id:'h2-exec-attachment1',     tag:'h2', label:'附件一：計畫執行規劃預覽' }       // 預覽區
+      { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源',
+        dom:{ selector:'#planReferralCard .titlebar label', mode:'replace', className:'h2' } },
+      { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願' },
+      { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明' },
+      { id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽' },
+      { id:'h2-exec-attachment1', tag:'h2', label:'附件一：計畫執行規劃預覽' }
     ]
   },
-
-  /* =================== H1：其他備註 =================== */
   {
     id:'h1-notes', tag:'h1', label:'其他備註', page:'notes',
+    dom:{ selector:'#planOtherGroup .titlebar .h1', mode:'replace', className:'h1' },
     children:[
-      { id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜可備註於此）' }
+      { id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜可備註於此）',
+        dom:{ selector:'#planOtherGroup .section-card .titlebar .h2, #planOtherGroup .section-card .titlebar span.h2', mode:'replace', className:'h2' } }
     ]
   }
 ]);
 ```
 
 - **審查重點**：
-  1. PR 審核者需逐一比對調整前後的 `HEADING_SPEC`，確認章節未被誤刪或遺漏，並在評論中記錄比對結果。
+  1. PR 審核者需逐一比對調整前後的 `HEADING_SCHEMA`，確認章節未被誤刪或遺漏，並在評論中記錄比對結果。
   2. 任何影響標題輸出的修改必須附上最新產出的文件截圖或段落節點比對結果，證明階層仍與規格一致。
-  3. 若 `HEADING_SPEC` 發生變動，請同時更新 `README.md` 的對應段落並在提交訊息內描述異動原因，以利追蹤。
+  3. 若 `HEADING_SCHEMA` 發生變動，請同時更新 `README.md` 的對應段落並在提交訊息內描述異動原因，以利追蹤。
 
 ## Codex 任務塊
 - 當任務中提供「Codex 指令」或特定 Markdown 區塊時，請完整複製內容，不得自行增刪。

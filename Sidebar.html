@@ -4524,289 +4524,152 @@
       notes:'其他備註'
     };
 
-    const HEADING_SPEC_VERSION = '2024-04-01';
-    const HEADING_SPEC_VERSION_STORAGE_KEY = 'AA01.headingSpec.version';
+    const HEADING_SCHEMA_VERSION = '2025-10-01';
+    const HEADING_SCHEMA_VERSION_STORAGE_KEY = 'AA01.headingSchema.version';
+    const LEGACY_HEADING_VERSION_STORAGE_KEY = 'AA01.headingSpec.version';
 
-    const HEADING_SPEC = [
+    const HEADING_SCHEMA = Object.freeze([
       {
         id:'h1-basic', tag:'h1', label:'基本資訊', page:'basic',
+        dom:{ selector:'#basicInfoGroup .titlebar .h1', mode:'replace', className:'h1' },
         children:[
-          { id:'h2-basic-unit-code', tag:'h2', label:'單位代碼' },
-          { id:'h2-basic-case-manager', tag:'h2', label:'個案管理師' },
-          { id:'h2-basic-case-name', tag:'h2', label:'個案姓名' },
-          { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' },
-          { id:'h2-basic-cms-level', tag:'h2', label:'CMS 等級' }
+          { id:'h2-basic-unit-code', tag:'h2', label:'單位代碼',
+            dom:{ selector:'#basicInfoGroup label[for="unitCode"]', mode:'labelHeading', className:'h2' } },
+          { id:'h2-basic-case-manager', tag:'h2', label:'個案管理師',
+            dom:{ selector:'#basicInfoGroup label[for="caseManagerName"]', mode:'labelHeading', className:'h2' } },
+          { id:'h2-basic-case-name', tag:'h2', label:'個案姓名',
+            dom:{ selector:'#basicInfoGroup label[for="caseName"]', mode:'labelHeading', className:'h2' } },
+          { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名',
+            dom:{ selector:'#basicInfoGroup label[for="consultName"]', mode:'labelHeading', className:'h2' } },
+          { id:'h2-basic-cms-level', tag:'h2', label:'CMS 等級',
+            dom:{ selector:'.cms-level-row > label[for="cmsLevelValue"]', mode:'labelHeading', className:'h2' } }
         ]
       },
       {
         id:'h1-goals', tag:'h1', label:'計畫目標', page:'goals',
+        dom:{ selector:'#contactVisitGroup .titlebar .h1', mode:'replace', className:'h1' },
         children:[
           {
             id:'h2-goals-call', tag:'h2', label:'一、電聯日期',
+            dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-goals-call-date', tag:'h3', label:'電聯日期' }
+              { id:'h3-goals-call-date', tag:'h3', label:'電聯日期',
+                dom:{ selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' } },
+              { id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪',
+                dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox', mode:'labelHeading', className:'h3' } }
             ]
           },
           {
             id:'h2-goals-homevisit', tag:'h2', label:'二、家訪日期',
+            dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' },
-              { id:'h3-goals-prep-date', tag:'h3', label:'出院日期' }
+              { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期',
+                dom:{ selector:'#contactVisitGroup label[for="visitDate"]', mode:'labelHeading', className:'h3' } },
+              { id:'h3-goals-prep-date', tag:'h3', label:'出院日期',
+                dom:{ selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3' } }
             ]
           },
           {
             id:'h2-goals-companions', tag:'h2', label:'三、偕同訪視者',
+            dom:{ selector:'#visitPartnersCard .titlebar .h2', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係' },
-              { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' },
+              { id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係',
+                dom:{ selector:'#visitPartnersCard label[for="primaryRel"]', mode:'labelHeading', className:'h3' } },
+              { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名',
+                dom:{ selector:'#visitPartnersCard label[for="primaryName"]', mode:'labelHeading', className:'h3' } },
               { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' },
               { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' }
             ]
           },
           {
             id:'h2-goals-overview', tag:'h2', label:'四、個案概況',
+            dom:{ selector:'#caseOverviewGroup .titlebar .h2', mode:'replace', className:'h2 heading-tier heading-tier--primary' },
             children:[
-              { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況' },
-              { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入' },
-              { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境' },
-              { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持' },
-              { id:'h3-goals-s5', tag:'h3', label:'（五）其他' },
-              { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值' }
+              { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況',
+                dom:{ selector:'#section1_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入',
+                dom:{ selector:'#section2_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境',
+                dom:{ selector:'#section3_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持',
+                dom:{ selector:'#section4_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-s5', tag:'h3', label:'（五）其他',
+                dom:{ selector:'#section5_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值',
+                dom:{ selector:'#section6_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
             ]
           },
           {
             id:'h2-goals-targets', tag:'h2', label:'五、照顧目標',
+            dom:{ selector:'#careGoalsGroup .titlebar .h2', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' },
-              { id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標(0-3個月)' },
-              { id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標(3-4個月)' },
-              { id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標(4-6個月)' }
+              { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題',
+                dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(1) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標（0–3 個月）',
+                dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(2) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標（3–4 個月）',
+                dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(3) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標（4–6 個月）',
+                dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(4) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
             ]
           },
           {
             id:'h2-goals-mismatch', tag:'h2', label:'六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
+            dom:{ selector:'#mismatchPlanGroup .titlebar .h2', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距' },
-              { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形' },
-              { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響' }
+              { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距',
+                dom:{ selector:'#mismatchPlanGroup textarea#reason1', mode:'previousLabelHeading', className:'h3' } },
+              { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形',
+                dom:{ selector:'#mismatchPlanGroup textarea#reason2', mode:'previousLabelHeading', className:'h3' } },
+              { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響',
+                dom:{ selector:'#mismatchPlanGroup textarea#reason3', mode:'previousLabelHeading', className:'h3' } }
             ]
           }
         ]
       },
       {
         id:'h1-exec', tag:'h1', label:'計畫執行規劃', page:'execution',
+        dom:{ selector:'.page-section[data-page="execution"] .group > .group-header .titlebar .h1', mode:'replace', className:'h1' },
         children:[
           {
             id:'h2-exec-services', tag:'h2', label:'一、長照服務核定項目、頻率',
+            dom:{ selector:'#planExecutionCard .titlebar label', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-exec-b', tag:'h3', label:'（一）B碼' },
-              { id:'h3-exec-c', tag:'h3', label:'（二）C碼' },
-              { id:'h3-exec-d', tag:'h3', label:'（三）D碼' },
-              { id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼' },
-              { id:'h3-exec-g', tag:'h3', label:'（五）G碼' },
-              { id:'h3-exec-sc', tag:'h3', label:'（六）SC碼' },
-              { id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務' },
-              { id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務' }
+              { id:'h3-exec-b', tag:'h3', label:'（一）B碼',
+                dom:{ selector:'#planEditor .plan-category[data-plan-category="B"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+              { id:'h3-exec-c', tag:'h3', label:'（二）C碼',
+                dom:{ selector:'#planEditor .plan-category[data-plan-category="C"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+              { id:'h3-exec-d', tag:'h3', label:'（三）D碼',
+                dom:{ selector:'#planEditor .plan-category[data-plan-category="D"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+              { id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼',
+                dom:{ selector:'#planEditor .plan-category[data-plan-category="EF"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+              { id:'h3-exec-g', tag:'h3', label:'（五）G碼',
+                dom:{ selector:'#planEditor .plan-category[data-plan-category="G"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+              { id:'h3-exec-sc', tag:'h3', label:'（六）SC碼',
+                dom:{ selector:'#planEditor .plan-category[data-plan-category="SC"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+              { id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務',
+                dom:{ selector:'#planEditor .plan-category[data-plan-category="MEAL"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+              { id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務',
+                dom:{ selector:'#planExecutionCard .plan-category[data-plan-category="EMERGENCY"] .plan-category-heading h3', mode:'replace', className:'h3' } }
             ]
           },
-          { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源' }
+          { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源',
+            dom:{ selector:'#planReferralCard .titlebar label', mode:'replace', className:'h2' } },
+          { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願' },
+          { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明' },
+          { id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽' },
+          { id:'h2-exec-attachment1', tag:'h2', label:'附件一：計畫執行規劃預覽' }
         ]
       },
       {
         id:'h1-notes', tag:'h1', label:'其他備註', page:'notes',
+        dom:{ selector:'#planOtherGroup .titlebar .h1', mode:'replace', className:'h1' },
         children:[
-          { id:'h2-notes-other', tag:'h2', label:'其他(個案特殊狀況或其他未盡事宜可備註於此)' }
+          { id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜可備註於此）',
+            dom:{ selector:'#planOtherGroup .section-card .titlebar .h2, #planOtherGroup .section-card .titlebar span.h2', mode:'replace', className:'h2' } }
         ]
       }
-    ];
-
-    // === 標題權威清單（只列 H1～H3；H4/H5 由各卡內小標自行管理）===
-    const EXPECTED_HEADINGS = [
-      // H1
-      { id:'h1-basic', tag:'h1', label:'基本資訊' },
-      { id:'h1-goals', tag:'h1', label:'計畫目標' },
-      { id:'h1-exec',  tag:'h1', label:'計畫執行規劃' },
-      { id:'h1-notes', tag:'h1', label:'其他備註' },
-
-      // H2 under H1 基本資訊
-      { id:'h2-basic-unit-code',     tag:'h2', label:'單位代碼' },
-      { id:'h2-basic-case-manager',  tag:'h2', label:'個案管理師' },
-      { id:'h2-basic-case-name',     tag:'h2', label:'個案姓名' },
-      { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名' },
-      { id:'h2-basic-cms-level',     tag:'h2', label:'CMS 等級' },
-
-      // H2 under H1 計畫目標
-      { id:'h2-goals-call',          tag:'h2', label:'一、電聯日期' },
-      { id:'h2-goals-homevisit',     tag:'h2', label:'二、家訪日期' },
-      { id:'h2-goals-companions',    tag:'h2', label:'三、偕同訪視者' },
-      { id:'h2-goals-overview',      tag:'h2', label:'四、個案概況' },
-      { id:'h2-goals-targets',       tag:'h2', label:'五、照顧目標' },
-      { id:'h2-goals-mismatch',      tag:'h2', label:'六、不一致原因說明' },
-
-      // H3 under H2 一、電聯日期
-      { id:'h3-goals-call-date',     tag:'h3', label:'電聯日期' },
-      { id:'h3-goals-call-consult',  tag:'h3', label:'照顧專員約訪' }, // ★此次新增
-
-      // H3 under H2 二、家訪日期
-      { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期' },
-      { id:'h3-goals-prep-date',      tag:'h3', label:'出院日期' },
-
-      // H3 under H2 三、偕同訪視者
-      { id:'h3-goals-primary-rel',  tag:'h3', label:'主要照顧者關係' },
-      { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名' },
-      { id:'h3-goals-extra-rel',    tag:'h3', label:'其他參與者關係' },
-      { id:'h3-goals-extra-name',   tag:'h3', label:'其他參與者姓名' },
-
-      // H3 under H2 四、個案概況（只至 H3 節點）
-      { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況' },
-      { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入' },
-      { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境' },
-      { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持' },
-      { id:'h3-goals-s5', tag:'h3', label:'（五）其他' },
-      { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值' },
-
-      // H3 under H2 五、照顧目標
-      { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題' },
-      { id:'h3-goals-targets-short',    tag:'h3', label:'（二）短期目標（0–3 個月）' },
-      { id:'h3-goals-targets-mid',      tag:'h3', label:'（三）中期目標（3–4 個月）' },
-      { id:'h3-goals-targets-long',     tag:'h3', label:'（四）長期目標（4–6 個月）' },
-
-      // H3 under H2 六、不一致原因說明
-      { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成狀況及差距' },
-      { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源變動情形' },
-      { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案／影響' },
-
-      // H2 under H1 計畫執行規劃（此區僅 H2）
-      { id:'h2-exec-services',     tag:'h2', label:'一、長照服務核定項目、頻率' },
-      { id:'h2-exec-referral',     tag:'h2', label:'二、轉介其他服務資源' },
-      { id:'h2-exec-station',      tag:'h2', label:'三、巷弄長照站資訊與意願' },
-      { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明' },
-      { id:'h2-exec-attachment2',  tag:'h2', label:'附件二（服務計畫明細）預覽' },
-      { id:'h2-exec-attachment1',  tag:'h2', label:'附件一（計畫執行規劃預覽）' },
-
-      // H2 under H1 其他備註（此區僅 H2）
-      { id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜）' }
-    ];
-
-    function collectExistingHeadingIds(entries, collector){
-      if(!Array.isArray(entries)) return;
-      for(var i=0; i<entries.length; i++){
-        var entry = entries[i];
-        if(!entry || !entry.id) continue;
-        collector.add(entry.id);
-        if(Array.isArray(entry.children) && entry.children.length){
-          collectExistingHeadingIds(entry.children, collector);
-        }
-      }
-    }
-
-    function findHeadingSpecNodeById(entries, id){
-      if(!Array.isArray(entries)) return null;
-      for(var i=0; i<entries.length; i++){
-        var entry = entries[i];
-        if(!entry || !entry.id) continue;
-        if(entry.id === id) return entry;
-        if(Array.isArray(entry.children) && entry.children.length){
-          var found = findHeadingSpecNodeById(entry.children, id);
-          if(found) return found;
-        }
-      }
-      return null;
-    }
-
-    function insertHeadingNode(node, parentId){
-      if(!node || !node.id) return false;
-      if(!parentId){
-        HEADING_SPEC.push(node);
-        return true;
-      }
-      var parentNode = findHeadingSpecNodeById(HEADING_SPEC, parentId);
-      if(!parentNode){
-        console.warn('找不到父節點，無法插入標題：', node.id, 'parent:', parentId);
-        return false;
-      }
-      if(!Array.isArray(parentNode.children)){
-        parentNode.children = [];
-      }
-      parentNode.children.push(node);
-      return true;
-    }
-
-    function resolveExpectedParentMap(){
-      var parentMap = {};
-      var lastH1 = null;
-      var lastH2 = null;
-      for(var i=0; i<EXPECTED_HEADINGS.length; i++){
-        var entry = EXPECTED_HEADINGS[i];
-        if(!entry || !entry.id) continue;
-        var tag = (entry.tag || '').toLowerCase();
-        if(tag === 'h1'){
-          parentMap[entry.id] = null;
-          lastH1 = entry.id;
-          lastH2 = null;
-        }else if(tag === 'h2'){
-          parentMap[entry.id] = lastH1;
-          lastH2 = entry.id;
-        }else if(tag === 'h3'){
-          parentMap[entry.id] = lastH2 || lastH1;
-        }else{
-          parentMap[entry.id] = lastH2 || lastH1;
-        }
-      }
-      return parentMap;
-    }
-
-    // === 將 EXPECTED_HEADINGS 與現有 HEADING_SPEC 比對後補齊（不破壞原排序）===
-    function mergeExpectedHeadingsIntoSpec(){
-      if(!Array.isArray(HEADING_SPEC)){
-        console.error('HEADING_SPEC 非陣列，請檢查初始化。');
-        return;
-      }
-      var existing = new Set();
-      collectExistingHeadingIds(HEADING_SPEC, existing);
-      var parentMap = resolveExpectedParentMap();
-      var additions = [];
-      for(var i=0; i<EXPECTED_HEADINGS.length; i++){
-        var entry = EXPECTED_HEADINGS[i];
-        if(!entry || !entry.id) continue;
-        if(existing.has(entry.id)) continue;
-        var node = {
-          id:entry.id,
-          tag:entry.tag,
-          label:entry.label
-        };
-        if(entry.tag && entry.tag.toLowerCase() !== 'h3'){
-          node.children = [];
-        }
-        var parentId = parentMap[entry.id] || null;
-        if(insertHeadingNode(node, parentId)){
-          additions.push(entry.id);
-          existing.add(entry.id);
-        }
-      }
-      if(additions.length === 0){
-        console.info('HEADING_SPEC 已包含所有預期 H1～H3。');
-        return;
-      }
-      rebuildHeadingIndex();
-      console.info('已補入缺漏標題：', additions);
-    }
-
-    // === 檢查 DOM 目標映射缺漏（只針對目前確定需新增的一筆）===
-    function ensureDomTargets(){
-      if(typeof HEADING_DOM_TARGETS !== 'object' || !HEADING_DOM_TARGETS){
-        console.error('HEADING_DOM_TARGETS 未初始化。');
-        return;
-      }
-      if(!HEADING_DOM_TARGETS['h3-goals-call-consult']){
-        HEADING_DOM_TARGETS['h3-goals-call-consult'] = {
-          selector:'#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox',
-          mode:'labelHeading',
-          className:'h3'
-        };
-        console.info('已新增 DOM 對應：h3-goals-call-consult');
-      }
-    }
+    ]);
 
     const HEADING_INDEX = {};
     let HEADING_INDEX_ORDER = 0;
@@ -4823,7 +4686,8 @@
           page:entry.page || (parent ? parent.page : ''),
           parentId:parent ? parent.id : null,
           order:HEADING_INDEX_ORDER++,
-          children:Array.isArray(entry.children) ? entry.children.map(function(child){ return child.id; }) : []
+          children:Array.isArray(entry.children) ? entry.children.map(function(child){ return child.id; }) : [],
+          dom:entry.dom || null
         };
         HEADING_INDEX[node.id] = node;
         if(Array.isArray(entry.children) && entry.children.length){
@@ -4837,7 +4701,7 @@
         delete HEADING_INDEX[key];
       });
       HEADING_INDEX_ORDER = 0;
-      assignHeadingEntries(HEADING_SPEC, null);
+      assignHeadingEntries(HEADING_SCHEMA, null);
       return HEADING_INDEX;
     }
 
@@ -5721,114 +5585,74 @@
       queuePostStructureRefresh();
     }
 
-    const HEADING_DOM_TARGETS = Object.freeze({
-      'h1-basic': { selector:'#basicInfoGroup .titlebar .h1', mode:'replace', className:'h1' },
-      'h2-basic-unit-code': { selector:'#basicInfoGroup label[for="unitCode"]', mode:'labelHeading', className:'h2' },
-      'h2-basic-case-manager': { selector:'#basicInfoGroup label[for="caseManagerName"]', mode:'labelHeading', className:'h2' },
-      'h2-basic-case-name': { selector:'#basicInfoGroup label[for="caseName"]', mode:'labelHeading', className:'h2' },
-      'h2-basic-consultant-name': { selector:'#basicInfoGroup label[for="consultName"]', mode:'labelHeading', className:'h2' },
-      'h2-basic-cms-level': { selector:'.cms-level-row > label[for="cmsLevelValue"]', mode:'labelHeading', className:'h2' },
-      'h1-goals': { selector:'#contactVisitGroup .titlebar .h1', mode:'replace', className:'h1' },
-      'h2-goals-call': { selector:'#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2', mode:'replace', className:'h2' },
-      'h3-goals-call-date': { selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' },
-      'h2-goals-homevisit': { selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
-      'h3-goals-homevisit-date': { selector:'#contactVisitGroup label[for="visitDate"]', mode:'labelHeading', className:'h3' },
-      'h3-goals-prep-date': { selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3', label:'出院日期' },
-      'h2-goals-companions': { selector:'#visitPartnersCard .titlebar .h2', mode:'replace', className:'h2' },
-      'h3-goals-primary-rel': { selector:'#visitPartnersCard label[for="primaryRel"]', mode:'labelHeading', className:'h3' },
-      'h3-goals-primary-name': { selector:'#visitPartnersCard label[for="primaryName"]', mode:'labelHeading', className:'h3' },
-      'h2-goals-overview': { selector:'#caseOverviewGroup .titlebar .h2', mode:'replace', className:'h2 heading-tier heading-tier--primary' },
-      'h3-goals-s1': { selector:'#section1_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h3-goals-s2': { selector:'#section2_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h3-goals-s3': { selector:'#section3_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h3-goals-s4': { selector:'#section4_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h3-goals-s5': { selector:'#section5_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h3-goals-s6': { selector:'#section6_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h2-goals-targets': { selector:'#careGoalsGroup .titlebar .h2', mode:'replace', className:'h2' },
-      'h3-goals-targets-problems': { selector:'#careGoals_block > .titlebar:nth-of-type(1) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h3-goals-targets-short': { selector:'#careGoals_block > .titlebar:nth-of-type(2) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h3-goals-targets-mid': { selector:'#careGoals_block > .titlebar:nth-of-type(3) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h3-goals-targets-long': { selector:'#careGoals_block > .titlebar:nth-of-type(4) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' },
-      'h2-goals-mismatch': { selector:'#mismatchPlanGroup .titlebar .h2', mode:'replace', className:'h2' },
-      'h3-goals-mismatch-1': { selector:'#mismatchPlanGroup textarea#reason1', mode:'previousLabelHeading', className:'h3' },
-      'h3-goals-mismatch-2': { selector:'#mismatchPlanGroup textarea#reason2', mode:'previousLabelHeading', className:'h3' },
-      'h3-goals-mismatch-3': { selector:'#mismatchPlanGroup textarea#reason3', mode:'previousLabelHeading', className:'h3' },
-      'h1-exec': { selector:'.page-section[data-page="execution"] .group > .group-header .titlebar .h1', mode:'replace', className:'h1' },
-      'h2-exec-services': { selector:'#planExecutionCard .titlebar label', mode:'replace', className:'h2' },
-      'h3-exec-b': { selector:'#planEditor .plan-category[data-plan-category="B"] .plan-category-heading h3', mode:'replace', className:'h3' },
-      'h3-exec-c': { selector:'#planEditor .plan-category[data-plan-category="C"] .plan-category-heading h3', mode:'replace', className:'h3' },
-      'h3-exec-d': { selector:'#planEditor .plan-category[data-plan-category="D"] .plan-category-heading h3', mode:'replace', className:'h3' },
-      'h3-exec-ef': { selector:'#planEditor .plan-category[data-plan-category="EF"] .plan-category-heading h3', mode:'replace', className:'h3' },
-      'h3-exec-g': { selector:'#planEditor .plan-category[data-plan-category="G"] .plan-category-heading h3', mode:'replace', className:'h3' },
-      'h3-exec-sc': { selector:'#planEditor .plan-category[data-plan-category="SC"] .plan-category-heading h3', mode:'replace', className:'h3' },
-      'h3-exec-nutrition': { selector:'#planEditor .plan-category[data-plan-category="MEAL"] .plan-category-heading h3', mode:'replace', className:'h3' },
-      'h3-exec-emergency': { selector:'#planExecutionCard .plan-category[data-plan-category="EMERGENCY"] .plan-category-heading h3', mode:'replace', className:'h3' },
-      'h2-exec-referral': { selector:'#planReferralCard .titlebar label', mode:'replace', className:'h2' },
-      'h1-notes': { selector:'#planOtherGroup .titlebar .h1', mode:'replace', className:'h1' },
-      'h2-notes-other': { selector:'#planOtherGroup .section-card .titlebar .h2, #planOtherGroup .section-card .titlebar span.h2', mode:'replace', className:'h2' }
-    });
-
-    function applyHeadingSpecToDom(){
+    function applyHeadingSchemaToDom(){
       const missing = [];
-      Object.keys(HEADING_DOM_TARGETS).forEach(function(anchorId){
-        const entry = getHeadingEntry(anchorId);
-        const config = HEADING_DOM_TARGETS[anchorId];
-        if(!entry || !config) return;
-        const tagName = (entry.tag || 'h3').toLowerCase();
-        const className = config.className || (entry.tag ? entry.tag.toLowerCase() : '');
-        if(config.mode === 'replace'){
-          let target = null;
-          try{ target = document.querySelector(config.selector); }catch(err){ target = null; }
-          if(!target){ missing.push(anchorId); return; }
-          if(target.id === anchorId && target.tagName && target.tagName.toLowerCase() === tagName){
-            target.dataset.anchor = anchorId;
-            target.textContent = entry.label || '';
-            if(className){ target.className = className; }
+      forEachHeading(function(entry){
+        if(!entry || !entry.id) return;
+        const domConfig = entry.dom;
+        if(!domConfig) return;
+        const configs = Array.isArray(domConfig) ? domConfig : [domConfig];
+        configs.forEach(function(config){
+          if(!config || !config.selector) return;
+          const mode = (config.mode || 'replace').toLowerCase();
+          const className = config.className || (entry.tag ? entry.tag.toLowerCase() : '');
+          const labelText = typeof config.label === 'string' ? config.label : (entry.label || '');
+          if(mode === 'replace'){
+            let target = null;
+            try{ target = document.querySelector(config.selector); }catch(err){ target = null; }
+            if(!target || !target.parentNode){ missing.push(entry.id); return; }
+            if(target.id === entry.id && target.tagName && target.tagName.toLowerCase() === (entry.tag || 'h3').toLowerCase()){
+              target.dataset.anchor = entry.id;
+              target.textContent = labelText;
+              if(className){ target.className = className; }
+              return;
+            }
+            const heading = document.createElement(entry.tag || 'h3');
+            if(className){ heading.className = className; }
+            heading.id = entry.id;
+            heading.dataset.anchor = entry.id;
+            heading.textContent = labelText;
+            target.parentNode.replaceChild(heading, target);
             return;
           }
-          const heading = document.createElement(entry.tag || 'h3');
-          if(className){ heading.className = className; }
-          heading.id = anchorId;
-          heading.dataset.anchor = anchorId;
-          heading.textContent = entry.label || '';
-          target.parentNode.replaceChild(heading, target);
-          return;
-        }
-        if(config.mode === 'labelHeading'){
-          let label = null;
-          try{ label = document.querySelector(config.selector); }catch(err){ label = null; }
-          if(!label){ missing.push(anchorId); return; }
-          let heading = label.querySelector('#' + anchorId);
-          const desiredTag = entry.tag || 'h3';
-          if(!heading || heading.tagName.toLowerCase() !== desiredTag.toLowerCase()){
-            heading = document.createElement(desiredTag);
-            label.innerHTML = '';
-            label.appendChild(heading);
+          if(mode === 'labelheading'){
+            let label = null;
+            try{ label = document.querySelector(config.selector); }catch(err){ label = null; }
+            if(!label){ missing.push(entry.id); return; }
+            let heading = label.querySelector('#' + entry.id);
+            const desiredTag = entry.tag || 'h3';
+            if(!heading || heading.tagName.toLowerCase() !== desiredTag.toLowerCase()){
+              heading = document.createElement(desiredTag);
+              label.innerHTML = '';
+              label.appendChild(heading);
+            }
+            heading.id = entry.id;
+            heading.dataset.anchor = entry.id;
+            heading.textContent = labelText;
+            heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
+            return;
           }
-          heading.id = anchorId;
-          heading.dataset.anchor = anchorId;
-          heading.textContent = entry.label || '';
-          heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
-          return;
-        }
-        if(config.mode === 'previousLabelHeading'){
-          let field = null;
-          try{ field = document.querySelector(config.selector); }catch(err){ field = null; }
-          if(!field){ missing.push(anchorId); return; }
-          const label = field ? field.closest('div')?.querySelector('label') || field.parentElement?.querySelector('label') : null;
-          if(!label){ missing.push(anchorId); return; }
-          let heading = label.querySelector('#' + anchorId);
-          const desiredTag = entry.tag || 'h3';
-          if(!heading || heading.tagName.toLowerCase() !== desiredTag.toLowerCase()){
-            heading = document.createElement(desiredTag);
-            label.innerHTML = '';
-            label.appendChild(heading);
+          if(mode === 'previouslabelheading'){
+            let field = null;
+            try{ field = document.querySelector(config.selector); }catch(err){ field = null; }
+            if(!field){ missing.push(entry.id); return; }
+            const container = field.closest ? field.closest('div') : null;
+            const label = container ? container.querySelector('label') : (field.parentElement ? field.parentElement.querySelector('label') : null);
+            if(!label){ missing.push(entry.id); return; }
+            let heading = label.querySelector('#' + entry.id);
+            const desiredTag = entry.tag || 'h3';
+            if(!heading || heading.tagName.toLowerCase() !== desiredTag.toLowerCase()){
+              heading = document.createElement(desiredTag);
+              label.innerHTML = '';
+              label.appendChild(heading);
+            }
+            heading.id = entry.id;
+            heading.dataset.anchor = entry.id;
+            heading.textContent = labelText;
+            heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
+            return;
           }
-          heading.id = anchorId;
-          heading.dataset.anchor = anchorId;
-          heading.textContent = entry.label || '';
-          heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
-        }
+        });
       });
       ensureGoalsExtraHeadings();
       const audit = getUiAuditState();
@@ -5896,7 +5720,7 @@
       scheduleSummaryJumpRefresh();
     }
 
-    function collectHeadingSpecStatus(){
+    function collectHeadingSchemaStatus(){
       const missing = [];
       forEachHeading(function(entry){
         if(!entry || !entry.id) return;
@@ -5907,33 +5731,33 @@
       return { missing };
     }
 
-    function logHeadingSpecReport(){
-      const report = collectHeadingSpecStatus();
+    function logHeadingSchemaReport(){
+      const report = collectHeadingSchemaStatus();
       if(!window || !window.console) return report;
-      if(console.groupCollapsed){ console.groupCollapsed('HEADING_SPEC 驗證報告'); }
-      else if(console.group){ console.group('HEADING_SPEC 驗證報告'); }
+      if(console.groupCollapsed){ console.groupCollapsed('HEADING_SCHEMA 驗證報告'); }
+      else if(console.group){ console.group('HEADING_SCHEMA 驗證報告'); }
       if(report.missing.length){
         console.warn('缺少定義的標題錨點', report.missing);
       }else{
-        console.info('所有 HEADING_SPEC 定義的錨點皆已就緒。');
+        console.info('所有 HEADING_SCHEMA 定義的錨點皆已就緒。');
       }
       if(console.groupEnd){ console.groupEnd(); }
       return report;
     }
 
-    const HEADING_SPEC_TOAST_STATE = { element:null, message:null, apply:null, dismiss:null };
+    const HEADING_SCHEMA_TOAST_STATE = { element:null, message:null, apply:null, dismiss:null };
 
-    function getHeadingSpecToastState(){
-      if(!HEADING_SPEC_TOAST_STATE.element){
-        HEADING_SPEC_TOAST_STATE.element = document.getElementById('headingSpecToast');
-        HEADING_SPEC_TOAST_STATE.message = document.getElementById('headingSpecToastMessage');
-        HEADING_SPEC_TOAST_STATE.apply = document.getElementById('headingSpecToastApply');
-        HEADING_SPEC_TOAST_STATE.dismiss = document.getElementById('headingSpecToastDismiss');
+    function getHeadingSchemaToastState(){
+      if(!HEADING_SCHEMA_TOAST_STATE.element){
+        HEADING_SCHEMA_TOAST_STATE.element = document.getElementById('headingSpecToast');
+        HEADING_SCHEMA_TOAST_STATE.message = document.getElementById('headingSpecToastMessage');
+        HEADING_SCHEMA_TOAST_STATE.apply = document.getElementById('headingSpecToastApply');
+        HEADING_SCHEMA_TOAST_STATE.dismiss = document.getElementById('headingSpecToastDismiss');
       }
-      if(!HEADING_SPEC_TOAST_STATE.element){
+      if(!HEADING_SCHEMA_TOAST_STATE.element){
         return null;
       }
-      return HEADING_SPEC_TOAST_STATE;
+      return HEADING_SCHEMA_TOAST_STATE;
     }
 
     function formatHeadingNames(anchorIds){
@@ -5944,8 +5768,8 @@
       });
     }
 
-    function showHeadingSpecToast(missing){
-      const state = getHeadingSpecToastState();
+    function showHeadingSchemaToast(missing){
+      const state = getHeadingSchemaToastState();
       if(!state || !state.element || !state.message) return;
       const names = formatHeadingNames(Array.isArray(missing) ? missing : []);
       const text = names.length ? `缺少標題錨點：${names.join('、')}` : '缺少標題錨點';
@@ -5953,22 +5777,22 @@
       state.element.dataset.show = '1';
     }
 
-    function hideHeadingSpecToast(){
-      const state = getHeadingSpecToastState();
+    function hideHeadingSchemaToast(){
+      const state = getHeadingSchemaToastState();
       if(!state || !state.element) return;
       state.element.dataset.show = '0';
     }
 
-    function handleHeadingSpecValidation(report){
+    function handleHeadingSchemaValidation(report){
       const missing = report && Array.isArray(report.missing) ? report.missing : [];
       if(missing.length){
-        showHeadingSpecToast(missing);
+        showHeadingSchemaToast(missing);
         const audit = getUiAuditState();
         if(audit){
           audit.heading_show_toast_if_missing = 'shown';
         }
       }else{
-        hideHeadingSpecToast();
+        hideHeadingSchemaToast();
         const audit = getUiAuditState();
         if(audit){
           if(audit.heading_show_toast_if_missing === 'shown'){
@@ -5982,8 +5806,8 @@
       }
     }
 
-    function initHeadingSpecToast(){
-      const state = getHeadingSpecToastState();
+    function initHeadingSchemaToast(){
+      const state = getHeadingSchemaToastState();
       if(!state || !state.element) return;
       const audit = getUiAuditState();
       if(audit){
@@ -5995,38 +5819,44 @@
       if(state.apply && !state.apply.dataset.boundToast){
         state.apply.dataset.boundToast = '1';
         state.apply.addEventListener('click', ()=>{
-          hideHeadingSpecToast();
-          applyHeadingSpecToDom();
-          const report = logHeadingSpecReport();
-          handleHeadingSpecValidation(report);
+          hideHeadingSchemaToast();
+          applyHeadingSchemaToDom();
+          const report = logHeadingSchemaReport();
+          handleHeadingSchemaValidation(report);
         });
       }
       if(state.dismiss && !state.dismiss.dataset.boundToast){
         state.dismiss.dataset.boundToast = '1';
-        state.dismiss.addEventListener('click', ()=>hideHeadingSpecToast());
+        state.dismiss.addEventListener('click', ()=>hideHeadingSchemaToast());
       }
     }
 
-    function readHeadingSpecVersion(){
+    function readHeadingSchemaVersion(){
       const store = getSafeLocalStorage();
       if(!store) return null;
       try{
-        const value = store.getItem(HEADING_SPEC_VERSION_STORAGE_KEY);
+        let value = store.getItem(HEADING_SCHEMA_VERSION_STORAGE_KEY);
+        if(!value && LEGACY_HEADING_VERSION_STORAGE_KEY){
+          value = store.getItem(LEGACY_HEADING_VERSION_STORAGE_KEY);
+        }
         return value || null;
       }catch(err){
         return null;
       }
     }
 
-    function persistHeadingSpecVersion(version){
+    function persistHeadingSchemaVersion(version){
       const store = getSafeLocalStorage();
       if(!store) return;
-      try{ store.setItem(HEADING_SPEC_VERSION_STORAGE_KEY, version); }catch(err){}
+      try{ store.setItem(HEADING_SCHEMA_VERSION_STORAGE_KEY, version); }catch(err){}
+      if(LEGACY_HEADING_VERSION_STORAGE_KEY && LEGACY_HEADING_VERSION_STORAGE_KEY !== HEADING_SCHEMA_VERSION_STORAGE_KEY){
+        try{ store.removeItem(LEGACY_HEADING_VERSION_STORAGE_KEY); }catch(err){}
+      }
     }
 
-    function applyHeadingSpecVersionUpgrade(){
-      const stored = readHeadingSpecVersion();
-      if(stored === HEADING_SPEC_VERSION) return false;
+    function applyHeadingSchemaVersionUpgrade(){
+      const stored = readHeadingSchemaVersion();
+      if(stored === HEADING_SCHEMA_VERSION) return false;
       let changed = false;
       const sections = document.querySelectorAll('[data-section]');
       sections.forEach(section=>{
@@ -6062,7 +5892,7 @@
           changed = true;
         }
       });
-      persistHeadingSpecVersion(HEADING_SPEC_VERSION);
+      persistHeadingSchemaVersion(HEADING_SCHEMA_VERSION);
       if(changed){
         scheduleSummaryProgressRender();
         scheduleSummaryUpdate();
@@ -14508,8 +14338,8 @@
         host.appendChild(section);
       });
       host.dataset.empty = totalEntries > 0 ? '0' : '1';
-      const headingMissing = applyHeadingSpecToDom() || [];
-      handleHeadingSpecValidation({ missing: headingMissing });
+      const headingMissing = applyHeadingSchemaToDom() || [];
+      handleHeadingSchemaValidation({ missing: headingMissing });
       if(sectionViewsReady){
         refreshExecutionHeadingRegistry();
       }
@@ -17562,29 +17392,27 @@
       }
       prepareCaseProfileLayout();
       renderServicePlanEditor();
-      let headingSpecReport = null;
-      if(typeof window !== 'undefined' && !window.__HEADING_SPEC_PATCHED__){
-        window.__HEADING_SPEC_PATCHED__ = true;
+      let headingSchemaReport = null;
+      if(typeof window !== 'undefined' && !window.__HEADING_SCHEMA_PATCHED__){
+        window.__HEADING_SCHEMA_PATCHED__ = true;
         try{
-          mergeExpectedHeadingsIntoSpec();
-          ensureDomTargets();
-          applyHeadingSpecToDom();
-          headingSpecReport = logHeadingSpecReport();
+          applyHeadingSchemaToDom();
+          headingSchemaReport = logHeadingSchemaReport();
         }catch(err){
-          console.error('修補 H1～H3 及 DOM 對應時發生錯誤：', err);
+          console.error('套用標題結構時發生錯誤：', err);
         }
       }
-      if(!headingSpecReport){
-        applyHeadingSpecToDom();
-        headingSpecReport = logHeadingSpecReport();
+      if(!headingSchemaReport){
+        applyHeadingSchemaToDom();
+        headingSchemaReport = logHeadingSchemaReport();
       }
-      handleHeadingSpecValidation(headingSpecReport);
-      initHeadingSpecToast();
+      handleHeadingSchemaValidation(headingSchemaReport);
+      initHeadingSchemaToast();
       ensureAllGroupBodies(document);
       initGroupCollapsibles();
       initSectionViews();
       refreshExecutionHeadingRegistry();
-      applyHeadingSpecVersionUpgrade();
+      applyHeadingSchemaVersionUpgrade();
       ensureGoalsPageDefaults();
       scheduleSummaryUpdate();
       scheduleAllMeasurements();
