@@ -4672,24 +4672,60 @@
     ]);
 
     const HEADING_INDEX = {};
+    const HEADING_NODE_LIST = [];
+    const HEADING_DOM_REGISTRY = {};
     let HEADING_INDEX_ORDER = 0;
+
+    const VALID_HEADING_TAGS = ['h1','h2','h3','h4','h5','h6'];
+
+    function normalizeHeadingTag(tag, parent){
+      const text = typeof tag === 'string' ? tag.trim().toLowerCase() : '';
+      if(text && VALID_HEADING_TAGS.indexOf(text) !== -1){
+        return text;
+      }
+      if(parent && parent.level){
+        const level = Math.min(6, parent.level + 1);
+        return 'h' + level;
+      }
+      return 'h1';
+    }
+
+    function inferHeadingLevel(tag, parent){
+      if(typeof tag === 'string'){
+        const match = tag.toLowerCase().match(/h([1-6])/);
+        if(match){
+          return Number(match[1]);
+        }
+      }
+      if(parent && typeof parent.level === 'number'){
+        return parent.level + 1;
+      }
+      return 1;
+    }
 
     function assignHeadingEntries(entries, parent){
       if(!Array.isArray(entries)) return;
       entries.forEach(function(entry){
         if(!entry || !entry.id) return;
+        const tag = normalizeHeadingTag(entry.tag, parent);
         const node = {
-          id:entry.id,
+          id:String(entry.id),
           label:entry.label || '',
-          tag:entry.tag || (parent ? parent.tag : 'h1'),
-          level:entry.tag ? Number(entry.tag.replace(/[^0-9]/g,'')) || (parent ? parent.level + 1 : 1) : (parent ? parent.level + 1 : 1),
+          tag:tag,
+          level:inferHeadingLevel(tag, parent),
           page:entry.page || (parent ? parent.page : ''),
           parentId:parent ? parent.id : null,
           order:HEADING_INDEX_ORDER++,
-          children:Array.isArray(entry.children) ? entry.children.map(function(child){ return child.id; }) : [],
-          dom:entry.dom || null
+          children:Array.isArray(entry.children)
+            ? entry.children.map(function(child){ return child && child.id ? child.id : null; }).filter(Boolean)
+            : [],
+          domConfig:entry.dom || null,
+          dom:entry.dom || null,
+          elements:[],
+          element:null
         };
         HEADING_INDEX[node.id] = node;
+        HEADING_NODE_LIST.push(node);
         if(Array.isArray(entry.children) && entry.children.length){
           assignHeadingEntries(entry.children, node);
         }
@@ -4700,6 +4736,10 @@
       Object.keys(HEADING_INDEX).forEach(function(key){
         delete HEADING_INDEX[key];
       });
+      Object.keys(HEADING_DOM_REGISTRY).forEach(function(key){
+        delete HEADING_DOM_REGISTRY[key];
+      });
+      HEADING_NODE_LIST.length = 0;
       HEADING_INDEX_ORDER = 0;
       assignHeadingEntries(HEADING_SCHEMA, null);
       return HEADING_INDEX;
@@ -4707,16 +4747,56 @@
 
     rebuildHeadingIndex();
 
-    function getHeadingEntry(anchorId){
+    function getHeadingNode(anchorId){
       return anchorId ? HEADING_INDEX[anchorId] || null : null;
+    }
+
+    function getHeadingEntry(anchorId){
+      return getHeadingNode(anchorId);
     }
 
     function forEachHeading(callback){
       if(typeof callback !== 'function') return;
-      const ids = Object.keys(HEADING_INDEX).sort(function(a,b){
-        return HEADING_INDEX[a].order - HEADING_INDEX[b].order;
+      HEADING_NODE_LIST
+        .slice()
+        .sort(function(a,b){ return a.order - b.order; })
+        .forEach(function(node){ callback(node); });
+    }
+
+    function getPageOfHeading(anchorId){
+      const node = getHeadingNode(anchorId);
+      return node && node.page ? node.page : '';
+    }
+
+    function resetHeadingDomRegistry(){
+      Object.keys(HEADING_DOM_REGISTRY).forEach(function(key){
+        delete HEADING_DOM_REGISTRY[key];
       });
-      ids.forEach(id=>callback(HEADING_INDEX[id]));
+      HEADING_NODE_LIST.forEach(function(node){
+        if(!node) return;
+        node.elements = [];
+        node.element = null;
+      });
+    }
+
+    function recordHeadingDom(nodeId, element){
+      if(!nodeId || !element) return;
+      const node = getHeadingNode(nodeId);
+      if(node){
+        if(!Array.isArray(node.elements)){
+          node.elements = [];
+        }
+        if(node.elements.indexOf(element) === -1){
+          node.elements.push(element);
+        }
+        node.element = node.elements[0] || element;
+      }
+      if(!HEADING_DOM_REGISTRY[nodeId]){
+        HEADING_DOM_REGISTRY[nodeId] = [];
+      }
+      if(HEADING_DOM_REGISTRY[nodeId].indexOf(element) === -1){
+        HEADING_DOM_REGISTRY[nodeId].push(element);
+      }
     }
 
     const simpleGroupControllers = {};
@@ -5585,11 +5665,12 @@
       queuePostStructureRefresh();
     }
 
-    function applyHeadingSchemaToDom(){
+    function applyHeadingsToDOM(){
+      resetHeadingDomRegistry();
       const missing = [];
       forEachHeading(function(entry){
         if(!entry || !entry.id) return;
-        const domConfig = entry.dom;
+        const domConfig = entry.domConfig || entry.dom;
         if(!domConfig) return;
         const configs = Array.isArray(domConfig) ? domConfig : [domConfig];
         configs.forEach(function(config){
@@ -5601,18 +5682,21 @@
             let target = null;
             try{ target = document.querySelector(config.selector); }catch(err){ target = null; }
             if(!target || !target.parentNode){ missing.push(entry.id); return; }
+            let heading = null;
             if(target.id === entry.id && target.tagName && target.tagName.toLowerCase() === (entry.tag || 'h3').toLowerCase()){
-              target.dataset.anchor = entry.id;
-              target.textContent = labelText;
-              if(className){ target.className = className; }
-              return;
+              heading = target;
+              heading.dataset.anchor = entry.id;
+              heading.textContent = labelText;
+              if(className){ heading.className = className; }
+            }else{
+              heading = document.createElement(entry.tag || 'h3');
+              if(className){ heading.className = className; }
+              heading.id = entry.id;
+              heading.dataset.anchor = entry.id;
+              heading.textContent = labelText;
+              target.parentNode.replaceChild(heading, target);
             }
-            const heading = document.createElement(entry.tag || 'h3');
-            if(className){ heading.className = className; }
-            heading.id = entry.id;
-            heading.dataset.anchor = entry.id;
-            heading.textContent = labelText;
-            target.parentNode.replaceChild(heading, target);
+            recordHeadingDom(entry.id, heading);
             return;
           }
           if(mode === 'labelheading'){
@@ -5630,6 +5714,7 @@
             heading.dataset.anchor = entry.id;
             heading.textContent = labelText;
             heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
+            recordHeadingDom(entry.id, heading);
             return;
           }
           if(mode === 'previouslabelheading'){
@@ -5650,14 +5735,22 @@
             heading.dataset.anchor = entry.id;
             heading.textContent = labelText;
             heading.className = className || (entry.tag ? entry.tag.toLowerCase() : 'h3');
+            recordHeadingDom(entry.id, heading);
             return;
           }
         });
       });
       ensureGoalsExtraHeadings();
+      forEachHeading(function(entry){
+        if(!entry || !entry.id) return;
+        const existing = document.getElementById(entry.id);
+        if(existing){
+          recordHeadingDom(entry.id, existing);
+        }
+      });
       const audit = getUiAuditState();
       if(audit){
-        const entry = getHeadingEntry('h3-goals-prep-date');
+        const entry = getHeadingNode('h3-goals-prep-date');
         const domNode = document.getElementById('h3-goals-prep-date');
         const entryLabel = entry && entry.label ? entry.label.trim() : '';
         const domLabel = domNode && domNode.textContent ? domNode.textContent.trim() : '';
@@ -5670,8 +5763,8 @@
     }
 
     function ensureGoalsExtraHeadings(){
-      const entryRel = getHeadingEntry('h3-goals-extra-rel');
-      const entryName = getHeadingEntry('h3-goals-extra-name');
+      const entryRel = getHeadingNode('h3-goals-extra-rel');
+      const entryName = getHeadingNode('h3-goals-extra-name');
       const host = document.getElementById('extras');
       if(!host || !entryRel || !entryName) return;
       let wrap = document.getElementById('extrasHeading');
@@ -5681,22 +5774,26 @@
         wrap.className = 'extras-heading-grid';
         host.parentNode.insertBefore(wrap, host);
       }
-      if(!document.getElementById('h3-goals-extra-rel')){
-        const relHeading = document.createElement(entryRel.tag || 'h3');
+      let relHeading = document.getElementById('h3-goals-extra-rel');
+      if(!relHeading){
+        relHeading = document.createElement(entryRel.tag || 'h3');
         relHeading.id = entryRel.id;
         relHeading.dataset.anchor = entryRel.id;
         relHeading.className = 'h3';
         relHeading.textContent = entryRel.label || '';
         wrap.appendChild(relHeading);
       }
-      if(!document.getElementById('h3-goals-extra-name')){
-        const nameHeading = document.createElement(entryName.tag || 'h3');
+      recordHeadingDom(entryRel.id, relHeading);
+      let nameHeading = document.getElementById('h3-goals-extra-name');
+      if(!nameHeading){
+        nameHeading = document.createElement(entryName.tag || 'h3');
         nameHeading.id = entryName.id;
         nameHeading.dataset.anchor = entryName.id;
         nameHeading.className = 'h3';
         nameHeading.textContent = entryName.label || '';
         wrap.appendChild(nameHeading);
       }
+      recordHeadingDom(entryName.id, nameHeading);
     }
 
     function refreshExecutionHeadingRegistry(){
@@ -5720,24 +5817,78 @@
       scheduleSummaryJumpRefresh();
     }
 
-    function collectHeadingSchemaStatus(){
-      const missing = [];
+    function validateHeadingSchema(){
+      const doc = typeof document === 'undefined' ? null : document;
+      const issues = [];
+      if(!doc){
+        return { valid:true, issues:issues, invalidAnchors:[], missing:[] };
+      }
+      const seenIds = new Set();
       forEachHeading(function(entry){
         if(!entry || !entry.id) return;
-        if(!document.getElementById(entry.id)){
-          missing.push(entry.id);
+        const id = entry.id;
+        if(seenIds.has(id)){
+          issues.push({ type:'duplicate-id', id:id, message:'標題 ID 重複' });
+        }else{
+          seenIds.add(id);
+        }
+        const tag = (entry.tag || '').toLowerCase();
+        if(tag && VALID_HEADING_TAGS.indexOf(tag) === -1){
+          issues.push({ type:'invalid-tag', id:id, tag:entry.tag, message:'不支援的標題標籤' });
+        }
+        const page = entry.page;
+        if(page && !PAGE_LABELS[page]){
+          issues.push({ type:'invalid-page', id:id, page:page, message:'未定義的頁面代碼' });
+        }
+        const domConfig = entry.domConfig || entry.dom;
+        const configs = Array.isArray(domConfig) ? domConfig : (domConfig ? [domConfig] : []);
+        configs.forEach(function(config){
+          if(!config || !config.selector) return;
+          let nodes = [];
+          try{
+            nodes = Array.from(doc.querySelectorAll(config.selector));
+          }catch(err){
+            issues.push({ type:'invalid-selector', id:id, selector:config.selector, message:'無法解析的選擇器' });
+            return;
+          }
+          if(!nodes.length){
+            issues.push({ type:'dom-not-found', id:id, selector:config.selector, message:'找不到選擇器對應元素' });
+          }
+        });
+        let duplicates = [];
+        let selector = '#' + escapeCssId(id);
+        try{
+          duplicates = Array.from(doc.querySelectorAll(selector));
+        }catch(err){
+          try{ duplicates = Array.from(doc.querySelectorAll('#' + id)); }catch(err2){ duplicates = []; }
+        }
+        if(duplicates.length > 1){
+          issues.push({ type:'dom-duplicate', id:id, count:duplicates.length, message:'文件存在重複的標題 ID' });
         }
       });
-      return { missing };
+      const invalidAnchors = Array.from(new Set(issues.map(function(issue){ return issue.id; }).filter(Boolean)));
+      return {
+        valid: issues.length === 0,
+        issues: issues,
+        invalidAnchors: invalidAnchors,
+        missing: invalidAnchors
+      };
     }
 
     function logHeadingSchemaReport(){
-      const report = collectHeadingSchemaStatus();
+      const report = validateHeadingSchema();
       if(!window || !window.console) return report;
       if(console.groupCollapsed){ console.groupCollapsed('HEADING_SCHEMA 驗證報告'); }
       else if(console.group){ console.group('HEADING_SCHEMA 驗證報告'); }
-      if(report.missing.length){
-        console.warn('缺少定義的標題錨點', report.missing);
+      if(report.issues.length){
+        if(console.table){
+          console.table(report.issues);
+        }else{
+          console.warn('HEADING_SCHEMA 驗證錯誤', report.issues);
+        }
+        if(report.invalidAnchors.length){
+          console.warn('存在問題的標題錨點', report.invalidAnchors);
+        }
       }else{
         console.info('所有 HEADING_SCHEMA 定義的錨點皆已就緒。');
       }
@@ -5763,16 +5914,16 @@
     function formatHeadingNames(anchorIds){
       if(!Array.isArray(anchorIds)) return [];
       return anchorIds.map(id=>{
-        const entry = getHeadingEntry(id);
+        const entry = getHeadingNode(id);
         return entry && entry.label ? entry.label : id;
       });
     }
 
-    function showHeadingSchemaToast(missing){
+    function showHeadingSchemaToast(invalidAnchors){
       const state = getHeadingSchemaToastState();
       if(!state || !state.element || !state.message) return;
-      const names = formatHeadingNames(Array.isArray(missing) ? missing : []);
-      const text = names.length ? `缺少標題錨點：${names.join('、')}` : '缺少標題錨點';
+      const names = formatHeadingNames(Array.isArray(invalidAnchors) ? invalidAnchors : []);
+      const text = names.length ? `標題設定異常：${names.join('、')}` : '標題設定異常';
       state.message.textContent = text;
       state.element.dataset.show = '1';
     }
@@ -5784,9 +5935,11 @@
     }
 
     function handleHeadingSchemaValidation(report){
-      const missing = report && Array.isArray(report.missing) ? report.missing : [];
-      if(missing.length){
-        showHeadingSchemaToast(missing);
+      const invalidAnchors = report && Array.isArray(report.invalidAnchors)
+        ? report.invalidAnchors
+        : (report && Array.isArray(report.missing) ? report.missing : []);
+      if(invalidAnchors.length){
+        showHeadingSchemaToast(invalidAnchors);
         const audit = getUiAuditState();
         if(audit){
           audit.heading_show_toast_if_missing = 'shown';
@@ -5820,7 +5973,7 @@
         state.apply.dataset.boundToast = '1';
         state.apply.addEventListener('click', ()=>{
           hideHeadingSchemaToast();
-          applyHeadingSchemaToDom();
+          applyHeadingsToDOM();
           const report = logHeadingSchemaReport();
           handleHeadingSchemaValidation(report);
         });
@@ -14338,8 +14491,9 @@
         host.appendChild(section);
       });
       host.dataset.empty = totalEntries > 0 ? '0' : '1';
-      const headingMissing = applyHeadingSchemaToDom() || [];
-      handleHeadingSchemaValidation({ missing: headingMissing });
+      applyHeadingsToDOM();
+      const headingReport = validateHeadingSchema();
+      handleHeadingSchemaValidation(headingReport);
       if(sectionViewsReady){
         refreshExecutionHeadingRegistry();
       }
@@ -17396,14 +17550,14 @@
       if(typeof window !== 'undefined' && !window.__HEADING_SCHEMA_PATCHED__){
         window.__HEADING_SCHEMA_PATCHED__ = true;
         try{
-          applyHeadingSchemaToDom();
+          applyHeadingsToDOM();
           headingSchemaReport = logHeadingSchemaReport();
         }catch(err){
           console.error('套用標題結構時發生錯誤：', err);
         }
       }
       if(!headingSchemaReport){
-        applyHeadingSchemaToDom();
+        applyHeadingsToDOM();
         headingSchemaReport = logHeadingSchemaReport();
       }
       handleHeadingSchemaValidation(headingSchemaReport);
