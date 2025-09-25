@@ -5986,16 +5986,134 @@
     const PAGE_ORDER = ['basic','goals','execution','notes'];
     let summaryElements = null;
     let sideSummaryElements = null;
-    let summaryUpdateScheduled = false;
     let lastSavedTimestamp = null;
 
     const SIDE_NAV_STATE = {
       root:null,
       list:null,
-      items:[],
-      renderScheduled:false
+      items:[]
     };
-    const SUMMARY_PROGRESS_STATE = { root:null, scheduled:false };
+    const SUMMARY_PROGRESS_STATE = { root:null };
+    const Scheduler = (function(){
+      let rafId = 0;
+      const queues = {
+        measure:new Map(),
+        compute:new Map(),
+        render:new Map()
+      };
+      const observers = new Set();
+
+      function priorityValue(priority){
+        if(priority === 'high') return 0;
+        if(priority === 'low') return 2;
+        return 1;
+      }
+
+      function getNow(){
+        if(typeof window !== 'undefined' && window.performance && typeof window.performance.now === 'function'){
+          return window.performance.now();
+        }
+        return Date.now();
+      }
+
+      function enqueue(stage, key, fn, priority){
+        const map = queues[stage];
+        if(!map || !key || typeof fn !== 'function') return;
+        map.set(key, { fn: fn, priority: priority || 'normal' });
+      }
+
+      function drainStage(stage){
+        const map = queues[stage];
+        if(!map || map.size === 0){
+          return { stage: stage, count:0, duration:0 };
+        }
+        const jobs = Array.from(map.values()).sort(function(a, b){
+          return priorityValue(a.priority) - priorityValue(b.priority);
+        });
+        map.clear();
+        const stageStart = getNow();
+        for(let i=0; i<jobs.length; i+=1){
+          const job = jobs[i];
+          if(!job || typeof job.fn !== 'function') continue;
+          try{
+            job.fn();
+          }catch(err){
+            if(typeof window !== 'undefined' && window.console && typeof window.console.error === 'function'){
+              window.console.error('Scheduler job error:', stage, err);
+            }
+          }
+        }
+        return { stage: stage, count: jobs.length, duration: getNow() - stageStart };
+      }
+
+      function hasPendingJobs(){
+        return queues.measure.size > 0 || queues.compute.size > 0 || queues.render.size > 0;
+      }
+
+      function notifyObservers(report){
+        if(!observers.size) return;
+        observers.forEach(function(observer){
+          if(typeof observer !== 'function') return;
+          try{
+            observer(report);
+          }catch(err){
+            if(typeof window !== 'undefined' && window.console && typeof window.console.warn === 'function'){
+              window.console.warn('Scheduler observer error:', err);
+            }
+          }
+        });
+      }
+
+      function frame(timestamp){
+        rafId = 0;
+        const frameStart = getNow();
+        const reports = [];
+        reports.push(drainStage('measure'));
+        reports.push(drainStage('compute'));
+        reports.push(drainStage('render'));
+        if(hasPendingJobs()){
+          requestFrame();
+        }
+        notifyObservers({
+          timestamp: timestamp,
+          start: frameStart,
+          duration: getNow() - frameStart,
+          stages: reports.filter(function(entry){ return entry.count > 0; })
+        });
+      }
+
+      function requestFrame(){
+        if(rafId) return;
+        if(typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function'){
+          rafId = window.requestAnimationFrame(frame);
+        }else{
+          rafId = setTimeout(function(){ frame(getNow()); }, 16);
+        }
+      }
+
+      function addObserver(fn){
+        if(typeof fn === 'function'){ observers.add(fn); }
+        return function(){ removeObserver(fn); };
+      }
+
+      function removeObserver(fn){
+        if(observers.has(fn)) observers.delete(fn);
+      }
+
+      function flush(){
+        if(!rafId && hasPendingJobs()){
+          frame(getNow());
+        }
+      }
+
+      return {
+        enqueue: enqueue,
+        requestFrame: requestFrame,
+        addObserver: addObserver,
+        removeObserver: removeObserver,
+        flush: flush
+      };
+    })();
     const SUMMARY_JUMP_STATE = { select:null, scheduled:false };
 
     const UI_AUDIT_STATE = {
@@ -6050,12 +6168,12 @@
     let currentUiMode = UI_MODE_DEFAULT;
     let currentPageId = 'basic';
     let currentScrollOffset = 0;
-    let layoutMeasureScheduled = false;
     let currentStickyLayoutMode = '';
     let sectionViewsReady = false;
     let currentVerticalDensityMode = '';
-    let planStateSyncScheduled = false;
     let planStateSyncOptions = null;
+    let pendingStickyLayoutMetrics = null;
+    let pendingFloatingActionsMetrics = null;
     const wizardMoreMenuState = { outsideHandler:null, keydownHandler:null };
 
     function getSafeLocalStorage(){
@@ -6346,28 +6464,42 @@
     function schedulePlanStateSync(options){
       if(!planStateSyncOptions){ planStateSyncOptions = Object.assign({}, options); }
       else if(options){ planStateSyncOptions = Object.assign(planStateSyncOptions, options); }
-      if(planStateSyncScheduled) return;
-      planStateSyncScheduled = true;
-      window.requestAnimationFrame(()=>{
-        planStateSyncScheduled = false;
-        const opts = planStateSyncOptions || {};
-        planStateSyncOptions = null;
-        syncPlanStateWithSelections(Object.assign({ force:true }, opts));
-      });
+      Scheduler.enqueue('compute','planSync', runPlanStateSyncJob, 'high');
+      Scheduler.requestFrame();
     }
 
-    function updateFloatingActionsMetrics(){
+    function runPlanStateSyncJob(){
+      const opts = planStateSyncOptions || {};
+      planStateSyncOptions = null;
+      syncPlanStateWithSelections(Object.assign({ force:true }, opts));
+    }
+
+    function measureFloatingActionsMetrics(){
       const actions=document.getElementById('floatingActions');
       if(!actions){
-        document.documentElement.style.setProperty('--fab-h','0px');
+        pendingFloatingActionsMetrics = { total:0, gap:null };
         return;
       }
       const rect=actions.getBoundingClientRect();
       const visibleHeight=Math.max(0, rect.height || 0);
-      const gap=Math.max(16, Math.ceil(Math.max(0, window.innerHeight - rect.bottom)));
+      let viewportHeight = 0;
+      if(typeof window !== 'undefined' && typeof window.innerHeight === 'number'){
+        viewportHeight = window.innerHeight;
+      }
+      const gap=Math.max(16, Math.ceil(Math.max(0, viewportHeight - rect.bottom)));
       const total=Math.max(0, Math.ceil(visibleHeight + gap));
-      document.documentElement.style.setProperty('--fab-h', `${total}px`);
-      document.documentElement.style.setProperty('--fab-gap', `${gap}px`);
+      pendingFloatingActionsMetrics = { total: total, gap: gap };
+    }
+
+    function renderFloatingActionsMetrics(){
+      if(!pendingFloatingActionsMetrics) return;
+      const metrics = pendingFloatingActionsMetrics;
+      pendingFloatingActionsMetrics = null;
+      if(!document.documentElement) return;
+      document.documentElement.style.setProperty('--fab-h', `${metrics.total || 0}px`);
+      if(metrics.gap !== null && metrics.gap !== undefined){
+        document.documentElement.style.setProperty('--fab-gap', `${metrics.gap}px`);
+      }
     }
 
     function updateStickyLayoutMode(){
@@ -6405,17 +6537,29 @@
       }
     }
 
-    function measureStickyElements(){
+    function measureStickyLayout(){
       const sticky=document.getElementById('appSticky');
       let offset=0;
       if(sticky){
         const rect=sticky.getBoundingClientRect();
-        const style=window.getComputedStyle(sticky);
-        const marginBottom=parseFloat(style.marginBottom) || 0;
+        let marginBottom = 0;
+        if(typeof window !== 'undefined' && typeof window.getComputedStyle === 'function'){
+          const style=window.getComputedStyle(sticky);
+          marginBottom=parseFloat(style.marginBottom) || 0;
+        }
         offset=Math.max(0, Math.ceil(rect.height + marginBottom));
       }
-      currentScrollOffset = offset;
-      document.documentElement.style.setProperty('--app-top-offset', `${offset}px`);
+      pendingStickyLayoutMetrics = { offset: offset };
+    }
+
+    function renderStickyLayout(){
+      if(!pendingStickyLayoutMetrics) return;
+      const metrics = pendingStickyLayoutMetrics;
+      pendingStickyLayoutMetrics = null;
+      currentScrollOffset = metrics.offset || 0;
+      if(document.documentElement){
+        document.documentElement.style.setProperty('--app-top-offset', `${currentScrollOffset}px`);
+      }
     }
 
     function updateVerticalDensityMode(){
@@ -6441,13 +6585,11 @@
     function scheduleAllMeasurements(){
       updateStickyLayoutMode();
       updateVerticalDensityMode();
-      if(layoutMeasureScheduled) return;
-      layoutMeasureScheduled = true;
-      window.requestAnimationFrame(()=>{
-        layoutMeasureScheduled = false;
-        updateFloatingActionsMetrics();
-        measureStickyElements();
-      });
+      Scheduler.enqueue('measure','layout', measureStickyLayout, 'high');
+      Scheduler.enqueue('render','layout', renderStickyLayout, 'high');
+      Scheduler.enqueue('measure','fab', measureFloatingActionsMetrics);
+      Scheduler.enqueue('render','fab', renderFloatingActionsMetrics);
+      Scheduler.requestFrame();
     }
 
     function setStickyExpanded(expanded){
@@ -6616,12 +6758,8 @@
     }
 
     function scheduleSummaryUpdate(){
-      if(summaryUpdateScheduled) return;
-      summaryUpdateScheduled = true;
-      window.requestAnimationFrame(()=>{
-        summaryUpdateScheduled = false;
-        refreshStickySummary();
-      });
+      Scheduler.enqueue('render','summary', refreshStickySummary, 'high');
+      Scheduler.requestFrame();
     }
 
     function getSideNavElements(){
@@ -6910,12 +7048,8 @@
     }
 
     function scheduleSummaryProgressRender(){
-      if(SUMMARY_PROGRESS_STATE.scheduled) return;
-      SUMMARY_PROGRESS_STATE.scheduled = true;
-      window.requestAnimationFrame(()=>{
-        SUMMARY_PROGRESS_STATE.scheduled = false;
-        renderSummaryProgress();
-      });
+      Scheduler.enqueue('render','chips', renderSummaryProgress);
+      Scheduler.requestFrame();
     }
 
     function getSummaryJumpSelect(){
@@ -7036,12 +7170,8 @@
     }
 
     function scheduleSideNavRender(){
-      if(SIDE_NAV_STATE.renderScheduled) return;
-      SIDE_NAV_STATE.renderScheduled = true;
-      window.requestAnimationFrame(()=>{
-        SIDE_NAV_STATE.renderScheduled = false;
-        renderSideNav();
-      });
+      Scheduler.enqueue('render','sideNav', renderSideNav);
+      Scheduler.requestFrame();
     }
 
     function registerSideNavGroups(){
