@@ -224,12 +224,41 @@
       padding-inline:clamp(12px, 4vw, 24px);
       box-sizing:border-box;
     }
+    .app-shell{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:clamp(var(--space-lg), 4vw, calc(var(--space-lg) * 1.5));
+    }
+    .app-header{
+      position:relative;
+      z-index:20;
+    }
+    .app-body{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-sm);
+      position:relative;
+    }
+    .app-body-controls{
+      display:flex;
+      justify-content:flex-end;
+      padding-inline:clamp(12px, 4vw, 24px);
+    }
+    .app-main{
+      display:flex;
+      flex-direction:column;
+      gap:var(--group-spacing);
+      padding-inline:clamp(12px, 4vw, 24px);
+      box-sizing:border-box;
+    }
     @media (min-width:1280px){
       .app-container{ padding-right:calc(var(--side-nav-w) + 16px); }
       .page{ padding-right:calc(var(--side-nav-w) + clamp(12px, 4vw, 24px)); }
     }
     @media (max-width:1279px){
       .app-container{ padding-right:0; }
+      .app-body-controls{ justify-content:center; }
     }
 
     /* 卡片 */
@@ -504,34 +533,90 @@
       padding:var(--space-xs) var(--space-sm);
       display:flex;
       flex-direction:column;
-      gap:var(--space-xs);
+      gap:var(--space-sm);
       backdrop-filter:saturate(180%) blur(6px);
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
-    .sticky-row{
+    .sticky-header{
+      display:grid;
+      gap:var(--space-sm);
+    }
+    .sticky-header-main{ min-width:0; }
+    .sticky-header-main .wizard{ flex:1 1 auto; min-width:0; }
+    .sticky-actions{
       display:flex;
-      align-items:center;
-      gap:var(--wizard-gap);
-      flex-wrap:wrap;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:var(--space-xs);
     }
-    .sticky-row--wizard{
-      align-items:center;
-      gap:var(--wizard-gap);
-    }
-    .sticky-row--wizard .wizard{ flex:1 1 auto; min-width:0; }
-    .sticky-row--wizard .page-toolbar{
+    .sticky-actions > *{ width:100%; }
+    .sticky-actions .page-toolbar{
       display:flex;
       align-items:center;
       gap:var(--space-xxs);
       flex-wrap:wrap;
+      justify-content:flex-end;
     }
+    .sticky-actions .wizard-quickjump{
+      display:flex;
+      align-items:center;
+      gap:var(--space-xxs);
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .sticky-actions .sticky-overflow-toggle{ align-self:flex-end; }
     #stickyOverflowPanel{
       display:none;
+      margin-top:var(--space-sm);
+    }
+    #stickyOverflowPanel .sticky-overflow-grid{
+      display:grid;
+      gap:var(--space-sm);
+    }
+    .app-sticky[data-expanded="1"] #stickyOverflowPanel{ display:block; }
+    .sticky-card{
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:14px;
+      padding:var(--space-sm);
+      background:rgba(248,250,252,.95);
+      box-shadow:0 1px 2px rgba(15,23,42,.05);
+      display:flex;
       flex-direction:column;
       gap:var(--space-sm);
     }
-    .app-sticky[data-expanded="1"] #stickyOverflowPanel{
+    .sticky-card--summary{
+      background:linear-gradient(180deg, rgba(239,246,255,.95), rgba(226,239,255,.92));
+      border-color:rgba(59,130,246,.18);
+      box-shadow:0 14px 32px rgba(15,23,42,.12);
+    }
+    .sticky-card-header{
       display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .sticky-card-title{
+      font-weight:700;
+      color:var(--title);
+      font-size:1.05rem;
+      letter-spacing:.01em;
+    }
+    .sticky-card-subtitle{
+      font-size:0.85rem;
+      color:#475569;
+    }
+    .summary-progress-panel{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space-xs);
+    }
+    .summary-progress-panel-title{
+      font-weight:600;
+      color:#1f2937;
+      font-size:0.95rem;
+      order:-1;
+    }
+    .summary-progress-list[data-empty="1"] + .summary-progress-panel-title{
+      display:none;
     }
     .sticky-overflow-toggle{
       display:inline-flex;
@@ -561,22 +646,32 @@
       gap:var(--space-xs) var(--space-md);
       align-items:flex-start;
     }
+    @media (min-width:1024px){
+      .sticky-header{
+        grid-template-columns:minmax(0, 1fr) minmax(280px, 360px);
+        align-items:stretch;
+      }
+      #stickyOverflowPanel .sticky-overflow-grid{
+        grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr);
+        align-items:stretch;
+      }
+    }
+    @media (max-width:960px){
+      .sticky-actions{ align-items:stretch; }
+      .sticky-actions .page-toolbar,
+      .sticky-actions .wizard-quickjump{ justify-content:flex-start; }
+      .sticky-actions .sticky-overflow-toggle{ width:100%; }
+    }
     @media (min-width:1280px){
       .sticky-overflow-toggle{
         font-size:1rem;
         min-width:72px;
         padding-inline:16px;
       }
-      .app-sticky[data-expanded="0"] .sticky-row--tabs{ display:none; }
-      .app-sticky[data-expanded="1"] .sticky-row--tabs{ display:flex; }
-    }
-    @media (max-width:1279px){
-      .sticky-row--wizard{ align-items:center; }
     }
     @media (max-width:720px){
       .app-sticky{ padding:var(--space-xxs) clamp(8px, 4vw, 16px) var(--space-xs); }
       .app-sticky-inner{ padding:var(--space-xs) var(--space-sm); gap:var(--space-xs); border-radius:14px; }
-      .sticky-row{ gap:var(--space-xs); }
       .sticky-overflow-toggle{ min-width:40px; height:40px; font-size:1rem; }
       .page-toolbar{ gap:6px; }
       .font-scale-label{ display:none; }
@@ -2309,7 +2404,7 @@
       }
       .side-nav-trigger{
         display:inline-flex;
-        margin:var(--space-sm) auto var(--space-xs);
+        margin:var(--space-sm) 0 var(--space-xs);
       }
     }
     @media (min-width:1280px){
@@ -2755,124 +2850,144 @@
 <body data-fontscale="sm" data-uimode="custom" data-side-nav-open="0">
 
   <div class="app-container" id="appContainer">
-
-  <div class="app-sticky" id="appSticky" data-expanded="0">
-    <div class="app-sticky-inner">
-      <div class="sticky-row sticky-row--wizard">
-        <div class="wizard" id="wizardSteps" aria-label="填寫進度">
-          <button type="button" class="wizard-step" data-step="1" data-page="basic" data-anchor="#basicInfoGroup">
-            <span class="wizard-index">1</span>
-            <span class="wizard-label">基本資訊</span>
-          </button>
-          <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#contactVisitGroup">
-            <span class="wizard-index">2</span>
-            <span class="wizard-label">計畫目標</span>
-          </button>
-          <button type="button" class="wizard-step" data-step="3" data-page="execution" data-anchor="#planExecutionCard">
-            <span class="wizard-index">3</span>
-            <span class="wizard-label">計畫執行規劃</span>
-          </button>
-          <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planOtherGroup">
-            <span class="wizard-index">4</span>
-            <span class="wizard-label">其他備註</span>
-          </button>
-        </div>
-        <div class="page-toolbar" id="pageToolbar">
-          <span class="font-scale-label">字級</span>
-          <div class="font-scale-control" id="fontScaleControl" role="group" aria-label="字級設定">
-            <button type="button" data-scale="sm" title="標準字級（20px）">A</button>
-            <button type="button" data-scale="xl" title="大字（約 24px）">A+</button>
-            <button type="button" data-scale="xxl" title="特大字（約 26px）">A++</button>
-          </div>
-          <span class="mobile-mode-label">手機模式</span>
-          <div class="mobile-mode-control" id="mobileModeControl" role="group" aria-label="手機常用模式">
-            <button type="button" data-mode="clear">清晰</button>
-            <button type="button" data-mode="comfort">舒適加大</button>
-            <button type="button" data-mode="review">檢視模式</button>
-          </div>
-        </div>
-        <div class="wizard-quickjump" id="wizardQuickJump">
-          <label for="wizardJumpSelect">快速前往</label>
-          <select id="wizardJumpSelect" aria-label="快速跳轉階段">
-            <option value="">選擇階段</option>
-          </select>
-        </div>
-        <button type="button" class="sticky-overflow-toggle" id="stickyOverflowToggle" aria-controls="stickyOverflowPanel" aria-expanded="false" title="顯示更多導覽">⋯</button>
-      </div>
-      <div id="stickyOverflowPanel">
-        <div class="sticky-row sticky-row--tabs" id="stickyTabsRow">
-          <div class="page-tabs" id="pageTabs">
-            <button type="button" data-page="basic" class="active">基本資訊</button>
-            <button type="button" data-page="goals">計畫目標</button>
-            <button type="button" data-page="execution">計畫執行規劃</button>
-            <button type="button" data-page="notes">其他備註</button>
-          </div>
-        </div>
-        <div class="sticky-row sticky-row--chips" id="stickyChipsRow">
-          <div class="page-summary" id="stickySummary" aria-live="polite">
-            <div class="summary-item">
-              <span class="summary-label">個案</span>
-              <span class="summary-value" id="summaryCaseName">—</span>
-            </div>
-            <div class="summary-item">
-              <span class="summary-label">主要照顧者</span>
-              <span class="summary-value" id="summaryPrimaryCaregiver">—</span>
-            </div>
-            <div class="summary-item">
-              <span class="summary-label">CMS 等級</span>
-              <span class="summary-value" id="summaryCmsLevel">—</span>
-            </div>
-            <div class="summary-item">
-              <span class="summary-label">完成度</span>
-              <div class="summary-progress-bar" role="presentation">
-                <div class="summary-progress-fill" id="summaryProgressFill"></div>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="app-sticky" id="appSticky" data-expanded="0">
+          <div class="app-sticky-inner">
+            <div class="sticky-header">
+              <div class="sticky-header-main">
+                <div class="wizard" id="wizardSteps" aria-label="填寫進度">
+                  <button type="button" class="wizard-step" data-step="1" data-page="basic" data-anchor="#basicInfoGroup">
+                    <span class="wizard-index">1</span>
+                    <span class="wizard-label">基本資訊</span>
+                  </button>
+                  <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#contactVisitGroup">
+                    <span class="wizard-index">2</span>
+                    <span class="wizard-label">計畫目標</span>
+                  </button>
+                  <button type="button" class="wizard-step" data-step="3" data-page="execution" data-anchor="#planExecutionCard">
+                    <span class="wizard-index">3</span>
+                    <span class="wizard-label">計畫執行規劃</span>
+                  </button>
+                  <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planOtherGroup">
+                    <span class="wizard-index">4</span>
+                    <span class="wizard-label">其他備註</span>
+                  </button>
+                </div>
               </div>
-              <span class="summary-progress-text" id="summaryProgressText">—</span>
-              <span class="summary-remaining-text" id="summaryRemainingText">—</span>
+              <div class="sticky-actions">
+                <div class="page-toolbar" id="pageToolbar">
+                  <span class="font-scale-label">字級</span>
+                  <div class="font-scale-control" id="fontScaleControl" role="group" aria-label="字級設定">
+                    <button type="button" data-scale="sm" title="標準字級（20px）">A</button>
+                    <button type="button" data-scale="xl" title="大字（約 24px）">A+</button>
+                    <button type="button" data-scale="xxl" title="特大字（約 26px）">A++</button>
+                  </div>
+                  <span class="mobile-mode-label">手機模式</span>
+                  <div class="mobile-mode-control" id="mobileModeControl" role="group" aria-label="手機常用模式">
+                    <button type="button" data-mode="clear">清晰</button>
+                    <button type="button" data-mode="comfort">舒適加大</button>
+                    <button type="button" data-mode="review">檢視模式</button>
+                  </div>
+                </div>
+                <div class="wizard-quickjump" id="wizardQuickJump">
+                  <label for="wizardJumpSelect">快速前往</label>
+                  <select id="wizardJumpSelect" aria-label="快速跳轉階段">
+                    <option value="">選擇階段</option>
+                  </select>
+                </div>
+                <button type="button" class="sticky-overflow-toggle" id="stickyOverflowToggle" aria-controls="stickyOverflowPanel" aria-expanded="false" title="顯示更多導覽">⋯</button>
+              </div>
             </div>
-            <div class="summary-item">
-              <span class="summary-label">最近儲存</span>
-              <span class="summary-last-saved" id="summaryLastSaved">—</span>
-            </div>
-            <div class="summary-item summary-jump">
-              <label class="summary-label" for="summaryJumpSelect">快速跳轉</label>
-              <select id="summaryJumpSelect">
-                <option value="">選擇區塊</option>
-              </select>
+            <div id="stickyOverflowPanel" class="sticky-overflow">
+              <div class="sticky-overflow-grid">
+                <section class="sticky-card sticky-card--tabs" id="stickyTabsRow">
+                  <div class="sticky-card-header">
+                    <span class="sticky-card-title">主要章節</span>
+                    <span class="sticky-card-subtitle">快速切換表單頁面</span>
+                  </div>
+                  <div class="page-tabs" id="pageTabs">
+                    <button type="button" data-page="basic" class="active">基本資訊</button>
+                    <button type="button" data-page="goals">計畫目標</button>
+                    <button type="button" data-page="execution">計畫執行規劃</button>
+                    <button type="button" data-page="notes">其他備註</button>
+                  </div>
+                </section>
+                <section class="sticky-card sticky-card--summary" id="stickyChipsRow">
+                  <div class="sticky-card-header">
+                    <span class="sticky-card-title">填寫概況</span>
+                    <span class="sticky-card-subtitle">掌握個案資訊與完成度</span>
+                  </div>
+                  <div class="page-summary" id="stickySummary" aria-live="polite">
+                    <div class="summary-item">
+                      <span class="summary-label">個案</span>
+                      <span class="summary-value" id="summaryCaseName">—</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">主要照顧者</span>
+                      <span class="summary-value" id="summaryPrimaryCaregiver">—</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">CMS 等級</span>
+                      <span class="summary-value" id="summaryCmsLevel">—</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">完成度</span>
+                      <div class="summary-progress-bar" role="presentation">
+                        <div class="summary-progress-fill" id="summaryProgressFill"></div>
+                      </div>
+                      <span class="summary-progress-text" id="summaryProgressText">—</span>
+                      <span class="summary-remaining-text" id="summaryRemainingText">—</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">最近儲存</span>
+                      <span class="summary-last-saved" id="summaryLastSaved">—</span>
+                    </div>
+                    <div class="summary-item summary-jump">
+                      <label class="summary-label" for="summaryJumpSelect">快速跳轉</label>
+                      <select id="summaryJumpSelect">
+                        <option value="">選擇區塊</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="summary-progress-panel">
+                    <div class="summary-progress-list" id="summaryProgressList" data-empty="1" aria-label="章節進度"></div>
+                    <span class="summary-progress-panel-title">章節進度</span>
+                  </div>
+                </section>
+              </div>
             </div>
           </div>
-          <div class="summary-progress-list" id="summaryProgressList" data-empty="1" aria-label="章節進度"></div>
         </div>
-      </div>
-  </div>
-  </div>
-
-  <button type="button" class="side-nav-trigger" id="sideNavToggleButton" aria-controls="sideNav" aria-expanded="false">
-    <span class="side-nav-trigger-icon" aria-hidden="true"></span>
-    <span>群組導覽</span>
-  </button>
-  <div class="side-nav-backdrop" id="sideNavBackdrop" role="presentation" aria-hidden="true"></div>
-
-  <nav class="side-nav" id="sideNav" aria-label="群組導覽" data-empty="1" tabindex="-1">
-    <div class="side-nav-title">群組導覽</div>
-    <div class="side-nav-summary" id="sideNavSummary">
-      <div class="side-nav-summary-item">
-        <span class="side-nav-summary-label">剩餘必填</span>
-        <span class="side-nav-summary-value" id="sideSummaryRemaining">—</span>
-      </div>
-      <div class="side-nav-summary-item">
-        <span class="side-nav-summary-label">CMS 等級</span>
-        <span class="side-nav-summary-value" id="sideSummaryCms">—</span>
-      </div>
-      <div class="side-nav-summary-item">
-        <span class="side-nav-summary-label">主要照顧者</span>
-        <span class="side-nav-summary-value" id="sideSummaryPrimary">—</span>
-      </div>
-    </div>
-    <ul class="side-nav-list" id="sideNavList"></ul>
-  </nav>
-
-  <div class="page-section" data-page="basic" data-active="1" data-columns="1">
+      </header>
+      <div class="app-body">
+        <div class="app-body-controls">
+          <button type="button" class="side-nav-trigger" id="sideNavToggleButton" aria-controls="sideNav" aria-expanded="false">
+            <span class="side-nav-trigger-icon" aria-hidden="true"></span>
+            <span>群組導覽</span>
+          </button>
+        </div>
+        <div class="side-nav-backdrop" id="sideNavBackdrop" role="presentation" aria-hidden="true"></div>
+        <nav class="side-nav" id="sideNav" aria-label="群組導覽" data-empty="1" tabindex="-1">
+          <div class="side-nav-title">群組導覽</div>
+          <div class="side-nav-summary" id="sideNavSummary">
+            <div class="side-nav-summary-item">
+              <span class="side-nav-summary-label">剩餘必填</span>
+              <span class="side-nav-summary-value" id="sideSummaryRemaining">—</span>
+            </div>
+            <div class="side-nav-summary-item">
+              <span class="side-nav-summary-label">CMS 等級</span>
+              <span class="side-nav-summary-value" id="sideSummaryCms">—</span>
+            </div>
+            <div class="side-nav-summary-item">
+              <span class="side-nav-summary-label">主要照顧者</span>
+              <span class="side-nav-summary-value" id="sideSummaryPrimary">—</span>
+            </div>
+          </div>
+          <ul class="side-nav-list" id="sideNavList"></ul>
+        </nav>
+        <main class="app-main" id="appMain">
+          <div class="page-section" data-page="basic" data-active="1" data-columns="1">
     <div class="group" id="basicInfoGroup">
       <div class="group-header">
         <div class="titlebar">
@@ -4336,33 +4451,38 @@
       </div>
     </div>
   </div>
-
-  <div class="floating-actions" id="floatingActions" aria-label="頁面操作">
-    <button type="button" class="primary" id="wizardSaveBtn">存檔</button>
-    <div id="wizardMoreWrapper">
-      <button type="button" id="wizardMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="wizardMoreMenu" aria-label="更多操作" title="更多操作">⋯</button>
-      <div class="floating-more-menu" id="wizardMoreMenu" role="menu" data-open="0">
-        <button type="button" class="small" id="wizardPrevCompactBtn" role="menuitem">返回</button>
+        </main>
       </div>
-    </div>
-    <button type="button" id="wizardNextBtn">下一步</button>
-    <button type="button" data-variant="ghost" id="wizardPrevBtn">返回</button>
-  </div>
 
-  <div id="validationToast" data-show="0" role="alert" aria-live="assertive">
-    <div class="toast-title">提交前請先修正</div>
-    <div class="toast-message" id="validationToastText">表單有未完成的欄位，請補齊後再提交。</div>
-    <div class="toast-actions">
-      <button type="button" class="small primary" id="validationToastAction">前往修正</button>
-      <button type="button" class="small" id="validationToastClose">稍後再看</button>
-    </div>
-  </div>
+      <div class="floating-actions" id="floatingActions" aria-label="頁面操作">
+        <button type="button" class="primary" id="wizardSaveBtn">存檔</button>
+        <div id="wizardMoreWrapper">
+          <button type="button" id="wizardMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="wizardMoreMenu" aria-label="更多操作" title="更多操作">⋯</button>
+          <div class="floating-more-menu" id="wizardMoreMenu" role="menu" data-open="0">
+            <button type="button" class="small" id="wizardPrevCompactBtn" role="menuitem">返回</button>
+          </div>
+        </div>
+        <button type="button" id="wizardNextBtn">下一步</button>
+        <button type="button" data-variant="ghost" id="wizardPrevBtn">返回</button>
+      </div>
 
-  <div id="headingSpecToast" data-show="0" role="status" aria-live="polite">
-    <div class="toast-message" id="headingSpecToastMessage"></div>
-    <div class="toast-actions">
-      <button type="button" class="small primary" id="headingSpecToastApply">重新套用標題</button>
-      <button type="button" class="small" id="headingSpecToastDismiss">稍後處理</button>
+      <div id="validationToast" data-show="0" role="alert" aria-live="assertive">
+        <div class="toast-title">提交前請先修正</div>
+        <div class="toast-message" id="validationToastText">表單有未完成的欄位，請補齊後再提交。</div>
+        <div class="toast-actions">
+          <button type="button" class="small primary" id="validationToastAction">前往修正</button>
+          <button type="button" class="small" id="validationToastClose">稍後再看</button>
+        </div>
+      </div>
+
+      <div id="headingSpecToast" data-show="0" role="status" aria-live="polite">
+        <div class="toast-message" id="headingSpecToastMessage"></div>
+        <div class="toast-actions">
+          <button type="button" class="small primary" id="headingSpecToastApply">重新套用標題</button>
+          <button type="button" class="small" id="headingSpecToastDismiss">稍後處理</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
