@@ -2716,8 +2716,9 @@
                 <div id="callDateControls" class="datebox">
                   <input id="callDate" type="date">
                 </div>
-                <label class="inline-checkbox" style="display:block; margin-top:var(--space-xs);">
-                  <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 照顧專員約訪
+                <h3 id="h3-goals-call-consult" class="h3" data-anchor="h3-goals-call-consult" style="margin-top:var(--space-sm);">照顧專員約訪</h3>
+                <label class="inline-checkbox" style="display:block; margin-top:var(--space-xxs);">
+                  <input id="isConsultVisit" type="checkbox" onchange="toggleCallDateByConsultVisit()"> 勾選表示為照顧專員約訪
                 </label>
                 <div id="consultVisitText" class="subtle" style="display:none; margin-top:var(--space-xs);"></div>
               </div>
@@ -2766,24 +2767,6 @@
                   <div class="field-intro" data-field-size="medium">
                     <label class="h3" for="primaryName">主要照顧者姓名</label>
                     <input id="primaryName" type="text" placeholder="請輸入">
-                  </div>
-                  <div class="field-intro" data-field-size="medium">
-                    <label class="h3" for="primaryPhone">主要照顧者電話</label>
-                    <input id="primaryPhone" type="tel" inputmode="tel" placeholder="例如：0912-345678">
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="field-intro" data-field-size="short">
-                    <label class="h4" for="primaryPhone">行動電話</label>
-                    <input id="primaryPhone" type="tel" inputmode="tel" placeholder="例：0912-345-678">
-                  </div>
-                  <div class="field-intro" data-field-size="short">
-                    <label class="h4" for="primaryTel">市話</label>
-                    <input id="primaryTel" type="tel" inputmode="tel" placeholder="例：03-1234567">
-                  </div>
-                  <div class="field-intro" data-field-size="medium">
-                    <label class="h4" for="primaryContactPhone">其他聯絡電話</label>
-                    <input id="primaryContactPhone" type="tel" inputmode="tel" placeholder="可留備援電話，選填">
                   </div>
                 </div>
                 <input type="hidden" id="includePrimary" value="true">
@@ -4009,7 +3992,7 @@
             </div>
             <div class="plan-category-body">
               <div class="titlebar titlebar--mt-sm">
-                <span class="h2" id="execEmergencyHeadingTarget"></span>
+                <h2 class="h2" id="h2-exec-emergency-note" data-anchor="h2-exec-emergency-note">四、緊急救援服務說明</h2>
               </div>
               <label class="h4" for="plan_emergency_note">救援需求說明</label>
               <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
@@ -4023,7 +4006,7 @@
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
           <div class="titlebar titlebar--mt-sm">
-            <span class="h2" id="execStationHeadingTarget"></span>
+            <h2 class="h2" id="h2-exec-station" data-anchor="h2-exec-station">三、巷弄長照站資訊與意願</h2>
           </div>
           <div class="plan-meta-grid">
             <div>
@@ -4231,7 +4214,7 @@
               { id:'h3-goals-call-date', tag:'h3', label:'電聯日期',
                 dom:{ selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' } },
               { id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪',
-                dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox', mode:'labelHeading', className:'h3' } }
+                dom:{ selector:'#h3-goals-call-consult', mode:'replace', className:'h3' } }
             ]
           },
           {
@@ -4252,8 +4235,10 @@
                 dom:{ selector:'#visitPartnersCard label[for="primaryRel"]', mode:'labelHeading', className:'h3' } },
               { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名',
                 dom:{ selector:'#visitPartnersCard label[for="primaryName"]', mode:'labelHeading', className:'h3' } },
-              { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' },
-              { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' }
+              { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係',
+                dom:{ selector:'#extrasHeading #h3-goals-extra-rel', mode:'replace', className:'h3' } },
+              { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名',
+                dom:{ selector:'#extrasHeading #h3-goals-extra-name', mode:'replace', className:'h3' } }
             ]
           },
           {
@@ -4331,9 +4316,9 @@
           { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源',
             dom:{ selector:'#planReferralCard .titlebar label', mode:'replace', className:'h2' } },
           { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願',
-            dom:{ selector:'#execStationHeadingTarget', mode:'replace', className:'h2' } },
+            dom:{ selector:'#planReferralCard #h2-exec-station', mode:'replace', className:'h2' } },
           { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明',
-            dom:{ selector:'#execEmergencyHeadingTarget', mode:'replace', className:'h2' } },
+            dom:{ selector:'#planExecutionCard #h2-exec-emergency-note', mode:'replace', className:'h2' } },
           { id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽' },
           { id:'h2-exec-attachment1', tag:'h2', label:'附件一：計畫執行規劃預覽' }
         ]
@@ -14803,11 +14788,8 @@
       let name=nameInput ? nameInput.value.trim() : '';
       if(!rel){ rel='本人'; if(!name) name=caseName; }
       if(!name){ alert('三、偕同訪視者的主要照顧者尚未完整。'); return; }
-      const phoneField = document.getElementById('primaryPhone');
-      const sourcePhone = phoneField ? (phoneField.value || '').trim() : '';
       const deciderRel=document.getElementById('sp_deciderRel');
       const deciderName=document.getElementById('sp_deciderName');
-      const deciderPhone=document.getElementById('sp_deciderPhone');
       if(deciderRel){
         const optionExists=[...deciderRel.options].some(opt=>opt.value===rel);
         deciderRel.value = optionExists ? rel : '';
@@ -14816,10 +14798,6 @@
       if(deciderName){
         deciderName.value = name;
         deciderName.dispatchEvent(new Event('input', {bubbles:true}));
-      }
-      if(deciderPhone){
-        deciderPhone.value = sourcePhone;
-        deciderPhone.dispatchEvent(new Event('input', {bubbles:true}));
       }
       syncQuickWho();
       buildSection4();
@@ -15741,9 +15719,6 @@
         // 三、偕同訪視者
         primaryCaregiverRel: primaryCaregiverRel,
         primaryCaregiverName: primaryCaregiverName,
-        primaryPhone: (document.getElementById('primaryPhone')?.value || '').trim(),
-        primaryTel: (document.getElementById('primaryTel')?.value || '').trim(),
-        primaryContactPhone: (document.getElementById('primaryContactPhone')?.value || '').trim(),
         includePrimary: true,              // 固定預設輸出
         extras: collectExtras(),
         consentParties: consentParties,
