@@ -4477,14 +4477,14 @@
     }
 
     function openSideNav(){
-      if(!isSideNavOverlayMode()) return;
       setSideNavExpanded(true);
-      window.requestAnimationFrame(()=>focusFirstSideNavItem());
+      if(isSideNavOverlayMode()){
+        window.requestAnimationFrame(()=>focusFirstSideNavItem());
+      }
     }
 
     function closeSideNav(options){
       const opts = options || {};
-      if(!opts.force && !isSideNavOverlayMode()) return;
       const previouslyExpanded = getSideNavToggleElements().expanded;
       setSideNavExpanded(false);
       if(opts.restoreFocus && previouslyExpanded){
@@ -4519,7 +4519,7 @@
           const expanded=button.getAttribute('aria-expanded') === 'true';
           if(expanded){
             closeSideNav({ force:true, restoreFocus:true });
-          }else if(isSideNavOverlayMode()){
+          }else{
             openSideNav();
           }
         });
@@ -4786,6 +4786,8 @@
       resetHeadingGroupRegistry();
       prepareSectionContainers(sections);
       enhanceInitialCheckcols();
+      persistHeadingSchemaVersion(HEADING_SCHEMA_VERSION);
+      return sections;
     }
 
     function createCardFromTitlebar(titlebar, sectionKey){
@@ -5587,6 +5589,20 @@
       return changed;
     }
 
+    function registerDevDiagnostics(){
+      if(typeof window === 'undefined') return;
+      const tools = {
+        applyHeadingSchemaVersionUpgrade: applyHeadingSchemaVersionUpgrade,
+        ensureGoalsPageDefaults: ensureGoalsPageDefaults,
+        logHeadingSchemaReport: logHeadingSchemaReport
+      };
+      try{
+        window.AA01_DEVTOOLS = Object.freeze(tools);
+      }catch(err){
+        window.AA01_DEVTOOLS = tools;
+      }
+    }
+
     const PAGE_ORDER = ['basic','goals','execution','notes'];
     let summaryElements = null;
     let lastSavedTimestamp = null;
@@ -5622,6 +5638,7 @@
         const map = queues[stage];
         if(!map || !key || typeof fn !== 'function') return;
         map.set(key, { fn: fn, priority: priority || 'normal' });
+        requestFrame();
       }
 
       function drainStage(stage){
@@ -5714,6 +5731,81 @@
         addObserver: addObserver,
         removeObserver: removeObserver,
         flush: flush
+      };
+    })();
+
+    const UiFrameCoordinator = (function(){
+      let needsLayout = false;
+      let needsSummary = false;
+      let needsSummaryProgress = false;
+      let needsSideNav = false;
+      let measureJobScheduled = false;
+      let renderJobScheduled = false;
+
+      function ensureMeasureJob(){
+        if(measureJobScheduled) return;
+        measureJobScheduled = true;
+        Scheduler.enqueue('measure','ui:measure', runMeasure, 'high');
+      }
+
+      function ensureRenderJob(){
+        if(renderJobScheduled) return;
+        renderJobScheduled = true;
+        Scheduler.enqueue('render','ui:render', runRender, 'high');
+      }
+
+      function runMeasure(){
+        measureJobScheduled = false;
+        if(!needsLayout) return;
+        updateVerticalDensityMode();
+        measureStickyLayout();
+        measureFloatingActionsMetrics();
+      }
+
+      function runRender(){
+        renderJobScheduled = false;
+        if(needsLayout){
+          renderStickyLayout();
+          renderFloatingActionsMetrics();
+          needsLayout = false;
+        }
+        if(needsSummary || needsSummaryProgress){
+          refreshStickySummary();
+          needsSummary = false;
+          needsSummaryProgress = false;
+        }
+        if(needsSideNav){
+          renderSideNav();
+          needsSideNav = false;
+        }
+      }
+
+      function requestLayout(){
+        needsLayout = true;
+        ensureMeasureJob();
+        ensureRenderJob();
+      }
+
+      function requestSummary(){
+        needsSummary = true;
+        ensureRenderJob();
+      }
+
+      function requestSummaryProgress(){
+        needsSummaryProgress = true;
+        ensureRenderJob();
+      }
+
+      function requestSideNav(){
+        needsSideNav = true;
+        ensureRenderJob();
+      }
+
+      return {
+        requestLayout: requestLayout,
+        requestSummary: requestSummary,
+        requestSummaryProgress: requestSummaryProgress,
+        requestSideNav: requestSideNav
       };
     })();
 
@@ -6064,7 +6156,6 @@
       if(!planStateSyncOptions){ planStateSyncOptions = Object.assign({}, options); }
       else if(options){ planStateSyncOptions = Object.assign(planStateSyncOptions, options); }
       Scheduler.enqueue('compute','planSync', runPlanStateSyncJob, 'high');
-      Scheduler.requestFrame();
     }
 
     function runPlanStateSyncJob(){
@@ -6147,12 +6238,7 @@
     }
 
     function scheduleAllMeasurements(){
-      updateVerticalDensityMode();
-      Scheduler.enqueue('measure','layout', measureStickyLayout, 'high');
-      Scheduler.enqueue('render','layout', renderStickyLayout, 'high');
-      Scheduler.enqueue('measure','fab', measureFloatingActionsMetrics);
-      Scheduler.enqueue('render','fab', renderFloatingActionsMetrics);
-      Scheduler.requestFrame();
+      UiFrameCoordinator.requestLayout();
     }
 
     function getSummaryElements(){
@@ -6220,8 +6306,11 @@
     }
 
     function scheduleSummaryUpdate(){
-      Scheduler.enqueue('render','summary', refreshStickySummary, 'high');
-      Scheduler.requestFrame();
+      UiFrameCoordinator.requestSummary();
+    }
+
+    function scheduleSummaryProgressRender(){
+      UiFrameCoordinator.requestSummaryProgress();
     }
 
     function getSideNavElements(){
@@ -6462,8 +6551,7 @@
     }
 
     function scheduleSideNavRender(){
-      Scheduler.enqueue('render','sideNav', renderSideNav);
-      Scheduler.requestFrame();
+      UiFrameCoordinator.requestSideNav();
     }
 
     function registerSideNavGroups(){
@@ -7531,7 +7619,7 @@
       });
       updateAllGroupEmptyStates(section);
       updateSideNavForSection(section);
-      scheduleSummaryUpdate();
+      scheduleSummaryProgressRender();
     }
 
     function createSectionProgress(section){
@@ -16789,26 +16877,13 @@
         console.error('偵測到巢狀 page-section，請檢查頁面結構。');
       }
       renderServicePlanEditor();
-      let headingSchemaReport = null;
-      if(typeof window !== 'undefined' && !window.__HEADING_SCHEMA_PATCHED__){
-        window.__HEADING_SCHEMA_PATCHED__ = true;
-        try{
-          applyHeadingsToDOM();
-          headingSchemaReport = logHeadingSchemaReport();
-        }catch(err){
-          console.error('套用標題結構時發生錯誤：', err);
-        }
-      }
-      if(!headingSchemaReport){
-        applyHeadingsToDOM();
-        headingSchemaReport = logHeadingSchemaReport();
-      }
+      const headingSchemaReport = logHeadingSchemaReport();
       handleHeadingSchemaValidation(headingSchemaReport);
       initHeadingSchemaToast();
+      registerDevDiagnostics();
       initGroupCollapsibles();
       initSectionViews();
       refreshExecutionHeadingRegistry();
-      applyHeadingSchemaVersionUpgrade();
       ensureGoalsPageDefaults();
       scheduleSummaryUpdate();
       scheduleAllMeasurements();
