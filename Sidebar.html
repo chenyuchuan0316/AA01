@@ -68,7 +68,7 @@
       --group-spacing-base:var(--space-sm);
       --group-spacing:var(--group-spacing-base);
       --radius:10px;
-      --shadow:0 1px 2px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
+      --shadow:0 10px 30px rgba(15,23,42,.08);
 
       --fs-base:1rem;                               /* 由 html 根字級決定（19–22px） */
       --font-scale:1;
@@ -136,28 +136,14 @@
     
       .row > div{ flex:1 1 100%; min-width:100%; }
     
-      .sticky-actions{ align-items:stretch; }
-      .sticky-actions .page-toolbar,
-      .sticky-actions .wizard-quickjump{ justify-content:flex-start; }
-      .sticky-actions .sticky-overflow-toggle{ width:100%; }
-    
       .app-sticky{ padding:var(--space-xxs) clamp(8px, 4vw, 16px) var(--space-xs); }
       .app-sticky-inner{ padding:var(--space-xs) var(--space-sm); gap:var(--space-xs); border-radius:14px; }
-      .sticky-overflow-toggle{ min-width:40px; height:40px; font-size:1rem; }
-      .page-toolbar{ gap:6px; }
-      .font-scale-label{ display:none; }
-      .font-scale-control{ padding:2px; }
-      .page-summary{ gap:var(--space-xxs) var(--space-xs); }
-      .summary-progress-list{ margin-top:var(--space-xxs); }
+      .sticky-header-row{ flex-direction:column; align-items:flex-start; }
+      .sticky-controls{ width:100%; justify-content:flex-start; }
+      .sticky-summary{ flex-direction:column; align-items:flex-start; gap:var(--space-xs); }
+      .summary-item{ flex-direction:row; }
       .summary-value{ font-size:1.05rem; }
-    
-      .summary-progress-list{ overflow-x:auto; flex-wrap:nowrap; padding-bottom:var(--space-xxs); }
-      .summary-progress-list::-webkit-scrollbar{ height:6px; }
-      .summary-progress-chip{ flex:0 0 auto; }
-    
-      .mobile-mode-label{ display:inline-block; }
-      .mobile-mode-control{ display:inline-flex; flex-wrap:wrap; }
-    
+
       .wizard{
         overflow-x:auto;
         gap:var(--space-xs);
@@ -314,17 +300,6 @@
         grid-template-columns:minmax(0, 1fr) minmax(280px, 360px);
         align-items:stretch;
       }
-      #stickyOverflowPanel .sticky-overflow-grid{
-        grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr);
-        align-items:stretch;
-      }
-    
-      .sticky-overflow-toggle{
-        font-size:1rem;
-        min-width:72px;
-        padding-inline:16px;
-      }
-    
       #basicInfoGroup .basic-info-fields{
         display:grid;
         grid-template-columns:repeat(2, minmax(var(--intro-colw), 1fr));
@@ -787,206 +762,62 @@
       -webkit-backdrop-filter:saturate(180%) blur(6px);
     }
     .sticky-header{
-      display:grid;
-      gap:var(--space-sm);
-    }
-    .sticky-header-main{ min-width:0; }
-    .sticky-header-main .wizard{ flex:1 1 auto; min-width:0; }
-    .sticky-actions{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:var(--space-xs);
-    }
-    .sticky-actions > *{ width:100%; }
-    .sticky-actions .page-toolbar{
-      display:flex;
-      align-items:center;
-      gap:var(--space-xxs);
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .sticky-actions .wizard-quickjump{
-      display:flex;
-      align-items:center;
-      gap:var(--space-xxs);
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .sticky-actions .sticky-overflow-toggle{ align-self:flex-end; }
-    #stickyOverflowPanel{
-      display:none;
-      margin-top:var(--space-sm);
-    }
-    #stickyOverflowPanel .sticky-overflow-grid{
-      display:grid;
-      gap:var(--space-sm);
-    }
-    .app-sticky[data-expanded="1"] #stickyOverflowPanel{ display:block; }
-    .sticky-card{
-      border:1px solid rgba(15,23,42,.08);
-      border-radius:14px;
-      padding:var(--space-sm);
-      background:rgba(248,250,252,.95);
-      box-shadow:0 1px 2px rgba(15,23,42,.05);
       display:flex;
       flex-direction:column;
       gap:var(--space-sm);
     }
-    .sticky-card--summary{
-      background:linear-gradient(180deg, rgba(239,246,255,.95), rgba(226,239,255,.92));
-      border-color:rgba(59,130,246,.18);
-      box-shadow:0 14px 32px rgba(15,23,42,.12);
-    }
-    .sticky-card-header{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .sticky-card-title{
-      font-weight:700;
-      color:var(--title);
-      font-size:1.05rem;
-      letter-spacing:.01em;
-    }
-    .sticky-card-subtitle{
-      font-size:0.85rem;
-      color:#475569;
-    }
-    .summary-progress-panel{
-      display:flex;
-      flex-direction:column;
-      gap:var(--space-xs);
-    }
-    .summary-progress-panel-title{
-      font-weight:600;
-      color:#1f2937;
-      font-size:0.95rem;
-      order:-1;
-    }
-    .summary-progress-list[data-empty="1"] + .summary-progress-panel-title{
-      display:none;
-    }
-    .sticky-overflow-toggle{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:44px;
-      height:44px;
-      padding:0 12px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:#fff;
-      font-size:1.1rem;
-      line-height:1;
-      cursor:pointer;
-      transition:background .2s ease, border-color .2s ease, color .2s ease;
-    }
-    .sticky-overflow-toggle:hover,
-    .sticky-overflow-toggle:focus{
-      background:rgba(15,23,42,.08);
-      border-color:var(--accent);
-      color:var(--accent);
-      outline:none;
-    }
-    .page-summary{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
-      gap:var(--space-xs) var(--space-md);
-      align-items:flex-start;
-    }
-    
-    
-    
-    
-    .summary-item{ display:flex; flex-direction:column; gap:var(--space-xxs); min-width:0; }
-    .summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
-    .summary-value{ font-size:1.1rem; font-weight:700; color:var(--title); word-break:break-word; }
-    .summary-progress-bar{ position:relative; height:10px; border-radius:999px; background:#e2e8f0; overflow:hidden; }
-    .summary-progress-fill{ position:absolute; inset:0; width:0%; border-radius:999px; background:var(--accent); transition:width .3s ease; }
-    .summary-progress-text, .summary-last-saved{ font-weight:600; color:#475569; font-size:0.95rem; }
-    .summary-remaining-text{ font-weight:600; color:#64748b; font-size:0.9rem; }
-    .summary-jump{ gap:var(--space-xs); }
-    .summary-jump select{
-      min-height:var(--h-button-sm);
-      padding:var(--button-padding-block-sm) var(--button-small-padding-inline);
-      font-size:var(--fs-button);
-      border-radius:10px;
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--label);
-    }
-    .summary-progress-list{
+    .sticky-header-row{
       display:flex;
       flex-wrap:wrap;
-      gap:var(--space-xs);
       align-items:center;
-      margin-top:var(--space-xs);
-    }
-    .summary-progress-list[data-empty="1"]{ display:none; }
-    .summary-progress-chip{
-      display:inline-flex;
-      align-items:center;
-      gap:var(--space-xxs);
-      padding:var(--space-xs) var(--space-sm);
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:#fff;
-      color:#334155;
-      font-size:0.85rem;
-      font-weight:600;
-      cursor:pointer;
-      transition:background .2s ease, border-color .2s ease, color .2s ease;
-    }
-    .summary-progress-chip[data-level="3"]{ padding-left:calc(var(--space-sm) + 12px); }
-    .summary-progress-chip[data-level="4"]{ padding-left:calc(var(--space-sm) + 20px); }
-    .summary-progress-chip[data-level="5"]{ padding-left:calc(var(--space-sm) + 28px); }
-    .summary-progress-chip[data-level="6"]{ padding-left:calc(var(--space-sm) + 36px); }
-    .summary-progress-chip .chip-label{ white-space:nowrap; }
-    .summary-progress-chip .chip-count{ font-variant-numeric:tabular-nums; color:#1f2937; }
-    .summary-progress-chip[data-status="complete"]{ background:var(--status-complete-bg); border-color:var(--status-complete-border); color:var(--status-complete-text); }
-    .summary-progress-chip[data-status="complete"] .chip-count{ color:var(--status-complete-strong); }
-    .summary-progress-chip[data-status="partial"]{ background:var(--status-partial-bg); border-color:var(--status-partial-border); color:var(--status-partial-text); }
-    .summary-progress-chip[data-status="partial"] .chip-count{ color:var(--status-partial-strong); }
-    .summary-progress-chip[data-status="pending"]{ background:var(--status-pending-bg); border-color:var(--status-pending-border); color:var(--status-pending-text); }
-    .summary-progress-chip[data-status="pending"] .chip-count{ color:var(--status-pending-strong); }
-    .summary-progress-chip[data-status="optional"]{ background:var(--status-optional-bg); border-color:var(--status-optional-border); color:var(--status-optional-text); }
-    .summary-progress-chip[data-status="optional"] .chip-count{ color:var(--status-optional-strong); }
-    .summary-progress-chip:focus-visible,
-    .side-nav-link:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-    
-    .summary-jump select:focus{
-      outline:none;
-      border-color:var(--title);
-      box-shadow:0 0 0 3px var(--accent-weak);
-    }
-    .page-header-top{
-      display:flex;
-      align-items:flex-start;
       justify-content:space-between;
       gap:var(--space-sm);
-      flex-wrap:wrap;
     }
-    .page-toolbar{
+    .sticky-controls{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+      gap:var(--space-sm);
+    }
+    .wizard-quickjump{
       display:flex;
       align-items:center;
       gap:var(--space-xxs);
-      flex-wrap:wrap;
     }
-    .font-scale-label{
+    .wizard-quickjump label{
       font-weight:600;
       color:var(--label);
       font-size:0.95rem;
     }
+    .sticky-summary{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:var(--space-sm);
+    }
+    .summary-item{
+      display:flex;
+      align-items:center;
+      gap:var(--space-xxs);
+      min-width:0;
+    }
+    .summary-item.summary-progress{ flex-wrap:wrap; }
+    .summary-label{ font-size:0.85rem; color:#475569; font-weight:600; }
+    .summary-value{ font-size:1.05rem; font-weight:700; color:var(--title); word-break:break-word; }
+    .summary-progress-bar{ position:relative; height:10px; border-radius:999px; background:#e2e8f0; overflow:hidden; min-width:120px; }
+    .summary-progress-fill{ position:absolute; inset:0; width:0%; border-radius:999px; background:var(--accent); transition:width .3s ease; }
+    .summary-progress-text,
+    .summary-remaining-text{ font-weight:600; color:#475569; font-size:0.95rem; }
     .font-scale-control{
       display:inline-flex;
       align-items:center;
-      flex-wrap:wrap;
       gap:4px;
       padding:4px;
       border-radius:999px;
-      background:rgba(11,87,208,.08);
-      box-shadow:inset 0 0 0 1px rgba(11,87,208,.12);
+      border:1px solid var(--border);
+      background:#fff;
+      box-shadow:none;
     }
     .font-scale-control button{
       min-width:38px;
@@ -1008,49 +839,6 @@
     .font-scale-control button:focus-visible{
       outline:2px solid var(--accent);
       outline-offset:2px;
-    }
-    .mobile-mode-label{
-      display:none;
-      font-weight:600;
-      color:var(--label);
-      font-size:0.95rem;
-    }
-    .mobile-mode-control{
-      display:none;
-      align-items:center;
-      gap:var(--space-xxs);
-      padding:4px;
-      border-radius:14px;
-      background:rgba(11,87,208,.08);
-      box-shadow:inset 0 0 0 1px rgba(11,87,208,.12);
-    }
-    .mobile-mode-control button{
-      flex:1 1 100px;
-      min-width:92px;
-      min-height:calc(var(--h-button-sm) + 2px);
-      padding:var(--button-padding-block-sm) 12px;
-      border:none;
-      border-radius:999px;
-      background:transparent;
-      font-weight:600;
-      font-size:0.95rem;
-      color:var(--title);
-      cursor:pointer;
-      transition:background .2s ease, color .2s ease;
-    }
-    .mobile-mode-control button[data-active="1"]{
-      background:var(--accent);
-      color:#fff;
-    }
-    .mobile-mode-control button:focus-visible{
-      outline:2px solid var(--accent);
-      outline-offset:2px;
-    }
-    .wizard-quickjump{
-      display:flex;
-      align-items:center;
-      gap:var(--space-xxs);
-      flex-wrap:wrap;
     }
     .wizard-quickjump label{
       font-size:0.85rem;
@@ -2315,12 +2103,7 @@
       overscroll-behavior:contain;
     }
     .side-nav[data-empty="1"]{ display:none; }
-    .side-nav[data-empty="1"] .side-nav-summary{ display:none; }
     .side-nav-title{ font-weight:700; color:var(--title); font-size:1rem; }
-    .side-nav-summary{ display:flex; flex-direction:column; gap:var(--space-xs); padding:var(--space-xs) 0 var(--space-sm); border-bottom:1px solid rgba(15,23,42,.08); }
-    .side-nav-summary-item{ display:flex; flex-direction:column; gap:var(--space-xxs); }
-    .side-nav-summary-label{ font-size:0.8rem; color:var(--side-nav-muted); font-weight:600; }
-    .side-nav-summary-value{ font-size:1rem; font-weight:700; color:var(--side-nav-text); word-break:break-word; }
     .side-nav-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:var(--space-xs); }
     .side-nav-item{
       display:flex;
@@ -2807,7 +2590,7 @@
 
 
 
-<body data-fontscale="sm" data-uimode="custom" data-side-nav-open="0">
+<body data-fontscale="sm" data-side-nav-open="0">
 
   <div class="app-container" id="appContainer">
     <div class="app-shell">
@@ -2815,7 +2598,7 @@
         <div class="app-sticky" id="appSticky" data-expanded="0">
           <div class="app-sticky-inner">
             <div class="sticky-header">
-              <div class="sticky-header-main">
+              <div class="sticky-header-row">
                 <div class="wizard" id="wizardSteps" aria-label="填寫進度">
                   <button type="button" class="wizard-step" data-step="1" data-page="basic" data-anchor="#basicInfoGroup">
                     <span class="wizard-index">1</span>
@@ -2834,86 +2617,36 @@
                     <span class="wizard-label">其他備註</span>
                   </button>
                 </div>
-              </div>
-              <div class="sticky-actions">
-                <div class="page-toolbar" id="pageToolbar">
-                  <span class="font-scale-label">字級</span>
+                <div class="sticky-controls" id="pageToolbar">
                   <div class="font-scale-control" id="fontScaleControl" role="group" aria-label="字級設定">
                     <button type="button" data-scale="sm" title="標準字級（20px）">A</button>
                     <button type="button" data-scale="xl" title="大字（約 24px）">A+</button>
                   </div>
-                  <span class="mobile-mode-label">手機模式</span>
-                  <div class="mobile-mode-control" id="mobileModeControl" role="group" aria-label="手機常用模式">
-                    <button type="button" data-mode="clear">清晰</button>
-                    <button type="button" data-mode="comfort">舒適加大</button>
-                    <button type="button" data-mode="review">檢視模式</button>
+                  <div class="wizard-quickjump" id="wizardQuickJump">
+                    <label for="wizardJumpSelect">快速前往</label>
+                    <select id="wizardJumpSelect" aria-label="快速跳轉階段">
+                      <option value="">選擇階段</option>
+                    </select>
                   </div>
                 </div>
-                <div class="wizard-quickjump" id="wizardQuickJump">
-                  <label for="wizardJumpSelect">快速前往</label>
-                  <select id="wizardJumpSelect" aria-label="快速跳轉階段">
-                    <option value="">選擇階段</option>
-                  </select>
-                </div>
-                <button type="button" class="sticky-overflow-toggle" id="stickyOverflowToggle" aria-controls="stickyOverflowPanel" aria-expanded="false" title="顯示更多導覽">⋯</button>
               </div>
-            </div>
-            <div id="stickyOverflowPanel" class="sticky-overflow">
-              <div class="sticky-overflow-grid">
-                <section class="sticky-card sticky-card--tabs" id="stickyTabsRow">
-                  <div class="sticky-card-header">
-                    <span class="sticky-card-title">主要章節</span>
-                    <span class="sticky-card-subtitle">快速切換表單頁面</span>
+              <div class="sticky-summary" id="stickySummary" aria-live="polite">
+                <div class="summary-item">
+                  <span class="summary-label">個案</span>
+                  <span class="summary-value" id="summaryCaseName">—</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">CMS 等級</span>
+                  <span class="summary-value" id="summaryCmsLevel">—</span>
+                </div>
+                <div class="summary-item summary-progress">
+                  <span class="summary-label">完成度</span>
+                  <div class="summary-progress-bar" role="presentation">
+                    <div class="summary-progress-fill" id="summaryProgressFill"></div>
                   </div>
-                  <div class="page-tabs" id="pageTabs">
-                    <button type="button" data-page="basic" class="active">基本資訊</button>
-                    <button type="button" data-page="goals">計畫目標</button>
-                    <button type="button" data-page="execution">計畫執行規劃</button>
-                    <button type="button" data-page="notes">其他備註</button>
-                  </div>
-                </section>
-                <section class="sticky-card sticky-card--summary" id="stickyChipsRow">
-                  <div class="sticky-card-header">
-                    <span class="sticky-card-title">填寫概況</span>
-                    <span class="sticky-card-subtitle">掌握個案資訊與完成度</span>
-                  </div>
-                  <div class="page-summary" id="stickySummary" aria-live="polite">
-                    <div class="summary-item">
-                      <span class="summary-label">個案</span>
-                      <span class="summary-value" id="summaryCaseName">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="summary-label">主要照顧者</span>
-                      <span class="summary-value" id="summaryPrimaryCaregiver">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="summary-label">CMS 等級</span>
-                      <span class="summary-value" id="summaryCmsLevel">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="summary-label">完成度</span>
-                      <div class="summary-progress-bar" role="presentation">
-                        <div class="summary-progress-fill" id="summaryProgressFill"></div>
-                      </div>
-                      <span class="summary-progress-text" id="summaryProgressText">—</span>
-                      <span class="summary-remaining-text" id="summaryRemainingText">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="summary-label">最近儲存</span>
-                      <span class="summary-last-saved" id="summaryLastSaved">—</span>
-                    </div>
-                    <div class="summary-item summary-jump">
-                      <label class="summary-label" for="summaryJumpSelect">快速跳轉</label>
-                      <select id="summaryJumpSelect">
-                        <option value="">選擇區塊</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="summary-progress-panel">
-                    <div class="summary-progress-list" id="summaryProgressList" data-empty="1" aria-label="章節進度"></div>
-                    <span class="summary-progress-panel-title">章節進度</span>
-                  </div>
-                </section>
+                  <span class="summary-progress-text" id="summaryProgressText">—</span>
+                  <span class="summary-remaining-text" id="summaryRemainingText">—</span>
+                </div>
               </div>
             </div>
           </div>
@@ -2929,20 +2662,6 @@
         <div class="side-nav-backdrop" id="sideNavBackdrop" role="presentation" aria-hidden="true"></div>
         <nav class="side-nav" id="sideNav" aria-label="群組導覽" data-empty="1" tabindex="-1">
           <div class="side-nav-title">群組導覽</div>
-          <div class="side-nav-summary" id="sideNavSummary">
-            <div class="side-nav-summary-item">
-              <span class="side-nav-summary-label">剩餘必填</span>
-              <span class="side-nav-summary-value" id="sideSummaryRemaining">—</span>
-            </div>
-            <div class="side-nav-summary-item">
-              <span class="side-nav-summary-label">CMS 等級</span>
-              <span class="side-nav-summary-value" id="sideSummaryCms">—</span>
-            </div>
-            <div class="side-nav-summary-item">
-              <span class="side-nav-summary-label">主要照顧者</span>
-              <span class="side-nav-summary-value" id="sideSummaryPrimary">—</span>
-            </div>
-          </div>
           <ul class="side-nav-list" id="sideNavList"></ul>
         </nav>
         <main class="app-main" id="appMain">
@@ -4457,24 +4176,13 @@
       if(alias) return alias;
       return FONT_SCALE_OPTIONS.indexOf(scale) !== -1 ? scale : null;
     }
-    const UI_MODE_STORAGE_KEY = 'AA01.uiMode';
-    const UI_MODE_DEFAULT = 'custom';
-    const UI_MODE_OPTIONS = ['clear','comfort','review','custom'];
-
     const SUMMARY_ELEMENT_IDS = {
       root:'stickySummary',
       caseName:'summaryCaseName',
-      primary:'summaryPrimaryCaregiver',
       cmsLevel:'summaryCmsLevel',
       progressFill:'summaryProgressFill',
       progressText:'summaryProgressText',
-      remainingText:'summaryRemainingText',
-      lastSaved:'summaryLastSaved'
-    };
-    const SIDE_SUMMARY_IDS = {
-      remaining:'sideSummaryRemaining',
-      cms:'sideSummaryCms',
-      primary:'sideSummaryPrimary'
+      remainingText:'summaryRemainingText'
     };
     const PAGE_LABELS = {
       basic:'基本資訊',
@@ -5701,7 +5409,6 @@
         registerHeadingGroup(anchorId, meta.section, meta.group);
       });
       scheduleSideNavRender();
-      scheduleSummaryJumpRefresh();
     }
 
     function validateHeadingSchema(){
@@ -5934,8 +5641,7 @@
       });
       persistHeadingSchemaVersion(HEADING_SCHEMA_VERSION);
       if(changed){
-        scheduleSummaryProgressRender();
-        scheduleSummaryUpdate();
+          scheduleSummaryUpdate();
         scheduleSideNavRender();
         scheduleAllMeasurements();
       }
@@ -5944,7 +5650,6 @@
 
     const PAGE_ORDER = ['basic','goals','execution','notes'];
     let summaryElements = null;
-    let sideSummaryElements = null;
     let lastSavedTimestamp = null;
 
     const SIDE_NAV_STATE = {
@@ -5952,7 +5657,6 @@
       list:null,
       items:[]
     };
-    const SUMMARY_PROGRESS_STATE = { root:null };
     const Scheduler = (function(){
       let rafId = 0;
       const queues = {
@@ -6073,7 +5777,6 @@
         flush: flush
       };
     })();
-    const SUMMARY_JUMP_STATE = { select:null, scheduled:false };
 
     const UI_AUDIT_STATE = {
       discharge_label_ok:false,
@@ -6124,10 +5827,8 @@
 
     let executionPageInitialized = false;
 
-    let currentUiMode = UI_MODE_DEFAULT;
     let currentPageId = 'basic';
     let currentScrollOffset = 0;
-    let currentStickyLayoutMode = '';
     let sectionViewsReady = false;
     let currentVerticalDensityMode = '';
     let planStateSyncOptions = null;
@@ -6461,41 +6162,6 @@
       }
     }
 
-    function updateStickyLayoutMode(){
-      const host=document.getElementById('appSticky');
-      const toggle=document.getElementById('stickyOverflowToggle');
-      let width=0;
-      if(typeof window !== 'undefined' && typeof window.innerWidth === 'number'){
-        width = window.innerWidth;
-      }
-      const nextMode = width >= 1280 ? 'desktop' : 'mobile';
-      if(currentStickyLayoutMode === nextMode){
-        if(host && !host.dataset.layoutMode){
-          host.dataset.layoutMode = nextMode;
-        }
-        return;
-      }
-      currentStickyLayoutMode = nextMode;
-      if(host){
-        host.dataset.layoutMode = nextMode;
-        if(nextMode === 'mobile'){
-          host.dataset.expanded = '0';
-          if(toggle){ toggle.setAttribute('aria-expanded','false'); }
-        }
-      }
-      if(toggle){
-        if(nextMode === 'desktop'){
-          toggle.textContent = '切頁';
-          toggle.setAttribute('aria-label','切換頁籤');
-          toggle.setAttribute('title','切換頁籤');
-        }else{
-          toggle.textContent = '⋯';
-          toggle.setAttribute('aria-label','顯示更多導覽');
-          toggle.setAttribute('title','顯示更多導覽');
-        }
-      }
-    }
-
     function measureStickyLayout(){
       const sticky=document.getElementById('appSticky');
       let offset=0;
@@ -6542,7 +6208,6 @@
     }
 
     function scheduleAllMeasurements(){
-      updateStickyLayoutMode();
       updateVerticalDensityMode();
       Scheduler.enqueue('measure','layout', measureStickyLayout, 'high');
       Scheduler.enqueue('render','layout', renderStickyLayout, 'high');
@@ -6551,57 +6216,17 @@
       Scheduler.requestFrame();
     }
 
-    function setStickyExpanded(expanded){
-      const host=document.getElementById('appSticky');
-      const toggle=document.getElementById('stickyOverflowToggle');
-      if(!host || !toggle) return;
-      host.dataset.expanded = expanded ? '1' : '0';
-      toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      scheduleAllMeasurements();
-    }
-
-    function initStickyOverflowToggle(){
-      const host=document.getElementById('appSticky');
-      const toggle=document.getElementById('stickyOverflowToggle');
-      if(!host || !toggle) return;
-      const initial = host.dataset && host.dataset.expanded === '1';
-      toggle.setAttribute('aria-expanded', initial ? 'true' : 'false');
-      toggle.addEventListener('click', function(){
-        const expanded = host.dataset && host.dataset.expanded === '1';
-        setStickyExpanded(!expanded);
-      });
-      updateStickyLayoutMode();
-    }
-
     function getSummaryElements(){
       if(summaryElements) return summaryElements;
       summaryElements = {
         root:document.getElementById(SUMMARY_ELEMENT_IDS.root),
         caseName:document.getElementById(SUMMARY_ELEMENT_IDS.caseName),
-        primary:document.getElementById(SUMMARY_ELEMENT_IDS.primary),
         cmsLevel:document.getElementById(SUMMARY_ELEMENT_IDS.cmsLevel),
         progressFill:document.getElementById(SUMMARY_ELEMENT_IDS.progressFill),
         progressText:document.getElementById(SUMMARY_ELEMENT_IDS.progressText),
-        remainingText:document.getElementById(SUMMARY_ELEMENT_IDS.remainingText),
-        lastSaved:document.getElementById(SUMMARY_ELEMENT_IDS.lastSaved)
+        remainingText:document.getElementById(SUMMARY_ELEMENT_IDS.remainingText)
       };
       return summaryElements;
-    }
-
-    function getSummaryProgressRoot(){
-      if(SUMMARY_PROGRESS_STATE.root) return SUMMARY_PROGRESS_STATE.root;
-      SUMMARY_PROGRESS_STATE.root = document.getElementById('summaryProgressList');
-      return SUMMARY_PROGRESS_STATE.root;
-    }
-
-    function getSideSummaryElements(){
-      if(sideSummaryElements) return sideSummaryElements;
-      sideSummaryElements = {
-        remaining:document.getElementById(SIDE_SUMMARY_IDS.remaining),
-        cms:document.getElementById(SIDE_SUMMARY_IDS.cms),
-        primary:document.getElementById(SIDE_SUMMARY_IDS.primary)
-      };
-      return sideSummaryElements;
     }
 
     function getGlobalProgressState(){
@@ -6623,49 +6248,12 @@
       return String(num).padStart(2, '0');
     }
 
-    function formatLastSavedDisplay(timestamp){
-      if(!timestamp) return '尚未儲存';
-      const date = new Date(timestamp);
-      if(Number.isNaN(date.getTime())) return '已自動儲存';
-      const now = new Date();
-      const sameDay = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
-      const timeText = `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
-      if(sameDay){
-        return `已自動儲存於 ${timeText}`;
-      }
-      return `已自動儲存於 ${date.getFullYear()}/${pad2(date.getMonth()+1)}/${pad2(date.getDate())} ${timeText}`;
-    }
-
     function refreshStickySummary(){
       const els = getSummaryElements();
       if(!els.root) return;
       const nameInput=document.getElementById('caseName');
       const caseNameValue = nameInput ? (nameInput.value || '').trim() : '';
       if(els.caseName) els.caseName.textContent = caseNameValue || '—';
-      const primaryNameInput=document.getElementById('primaryName');
-      const primaryRelSelect=document.getElementById('primaryRel');
-      const primaryNameValue = primaryNameInput ? (primaryNameInput.value || '').trim() : '';
-      let primaryRelValue = '';
-      if(primaryRelSelect && primaryRelSelect.selectedIndex >= 0){
-        const opt = primaryRelSelect.options[primaryRelSelect.selectedIndex];
-        if(opt){
-          const rawValue = (opt.value || '').trim();
-          if(rawValue){
-            primaryRelValue = rawValue;
-          }else if(!opt.disabled){
-            primaryRelValue = (opt.text || '').trim();
-          }
-        }
-      }
-      let primaryDisplay = '';
-      if(primaryNameValue && primaryRelValue){
-        primaryDisplay = `${primaryRelValue} ${primaryNameValue}`;
-      }else if(primaryNameValue){
-        primaryDisplay = primaryNameValue;
-      }else if(primaryRelValue){
-        primaryDisplay = primaryRelValue;
-      }
-      if(els.primary) els.primary.textContent = primaryDisplay || '—';
       const cmsLevel = typeof getCmsLevel === 'function' ? (getCmsLevel() || '') : '';
       if(els.cmsLevel) els.cmsLevel.textContent = cmsLevel || '—';
       const progress = getGlobalProgressState();
@@ -6690,30 +6278,6 @@
           els.remainingText.textContent = '—';
         }
       }
-      if(els.lastSaved) els.lastSaved.textContent = formatLastSavedDisplay(lastSavedTimestamp);
-      refreshSideSummary({
-        primary: primaryDisplay,
-        cmsLevel: cmsLevel,
-        remainingCount: remainingCount,
-        required: hasRequired ? (progress.required || 0) : 0
-      });
-    }
-
-    function refreshSideSummary(metrics){
-      const els = getSideSummaryElements();
-      if(!els) return;
-      const hasMetrics = metrics && typeof metrics === 'object';
-      if(els.remaining){
-        if(hasMetrics && metrics.required){
-          els.remaining.textContent = metrics.remainingCount > 0 ? `${metrics.remainingCount} 項` : '全部完成';
-        }else if(sectionViewsReady){
-          els.remaining.textContent = '無必填';
-        }else{
-          els.remaining.textContent = '—';
-        }
-      }
-      if(els.cms) els.cms.textContent = (hasMetrics && metrics.cmsLevel) ? metrics.cmsLevel : '—';
-      if(els.primary) els.primary.textContent = (hasMetrics && metrics.primary) ? metrics.primary : '—';
     }
 
     function scheduleSummaryUpdate(){
@@ -6815,7 +6379,6 @@
         writeSectionState(section.dataset.section, section.__state);
       }
       updateSideNavForSection(section);
-      scheduleSummaryProgressRender();
     }
 
     function handleSideNavClick(event){
@@ -6877,7 +6440,6 @@
       syncSideNavToggleAvailability(visibleItems.length > 0);
       if(!visibleItems.length){
         state.root.dataset.empty = '1';
-        scheduleSummaryJumpRefresh();
         return;
       }
       state.root.dataset.empty = '0';
@@ -6908,52 +6470,6 @@
         item.element = li;
         item.button = btn;
         item.countEl = count;
-      });
-      scheduleAllMeasurements();
-      scheduleSummaryJumpRefresh();
-      scheduleSummaryProgressRender();
-    }
-
-    function renderSummaryProgress(){
-      const root = getSummaryProgressRoot();
-      if(!root) return;
-      const items = Array.isArray(SIDE_NAV_STATE.items) ? SIDE_NAV_STATE.items : [];
-      const activePage = currentPageId || '';
-      const visible = items.filter(item=>{
-        if(!item) return false;
-        if(!activePage || !item.pageId) return true;
-        return item.pageId === activePage;
-      });
-      root.innerHTML='';
-      if(!visible.length){
-        root.dataset.empty = '1';
-        return;
-      }
-      root.dataset.empty = '0';
-      visible.forEach(item=>{
-        const btn=document.createElement('button');
-        btn.type='button';
-        btn.className='summary-progress-chip';
-        const stats=item.stats || { filled:0, required:0 };
-        const status=item.status || determineProgressStatus(stats.filled || 0, stats.required || 0);
-        btn.dataset.target=item.anchorId || '';
-        btn.dataset.page=item.pageId || '';
-        btn.dataset.level = String(item.level || 2);
-        btn.dataset.status=status;
-        const label=document.createElement('span');
-        label.className='chip-label';
-        label.textContent=item.label || '未命名群組';
-        const count=document.createElement('span');
-        count.className='chip-count';
-        count.textContent=formatProgressDisplay(stats.filled || 0, stats.required || 0);
-        btn.appendChild(label);
-        btn.appendChild(count);
-        const ariaParts=[];
-        if(label.textContent) ariaParts.push(label.textContent);
-        if(count.textContent) ariaParts.push(`進度 ${count.textContent}`);
-        if(ariaParts.length){ btn.setAttribute('aria-label', ariaParts.join('，')); }
-        btn.addEventListener('click', handleSideNavClick);
-        root.appendChild(btn);
       });
       scheduleAllMeasurements();
     }
@@ -7006,128 +6522,6 @@
       if(typeof select.blur === 'function'){ select.blur(); }
     }
 
-    function scheduleSummaryProgressRender(){
-      Scheduler.enqueue('render','chips', renderSummaryProgress);
-      Scheduler.requestFrame();
-    }
-
-    function getSummaryJumpSelect(){
-      if(SUMMARY_JUMP_STATE.select) return SUMMARY_JUMP_STATE.select;
-      const select = document.getElementById('summaryJumpSelect');
-      if(select){
-        SUMMARY_JUMP_STATE.select = select;
-        select.addEventListener('change', handleSummaryJumpChange);
-      }
-      return SUMMARY_JUMP_STATE.select;
-    }
-
-    function scheduleSummaryJumpRefresh(){
-      if(SUMMARY_JUMP_STATE.scheduled) return;
-      SUMMARY_JUMP_STATE.scheduled = true;
-      window.requestAnimationFrame(()=>{
-        SUMMARY_JUMP_STATE.scheduled = false;
-        refreshSummaryJumpOptions();
-      });
-    }
-
-    function refreshSummaryJumpOptions(){
-      const select = getSummaryJumpSelect();
-      if(!select) return;
-      const items = Array.isArray(SIDE_NAV_STATE.items) ? SIDE_NAV_STATE.items : [];
-      const grouped = new Map();
-      items.forEach(item=>{
-        if(!item || !item.anchorId) return;
-        const pageId = item.pageId || '';
-        if(!grouped.has(pageId)) grouped.set(pageId, []);
-        grouped.get(pageId).push(item);
-      });
-      select.innerHTML = '';
-      const placeholder=document.createElement('option');
-      placeholder.value='';
-      placeholder.textContent='選擇區塊';
-      select.appendChild(placeholder);
-      const pages=[];
-      if(currentPageId && grouped.has(currentPageId)) pages.push(currentPageId);
-      PAGE_ORDER.forEach(pageId=>{
-        if(grouped.has(pageId) && pages.indexOf(pageId) === -1){
-          pages.push(pageId);
-        }
-      });
-      grouped.forEach((_, pageId)=>{
-        if(pages.indexOf(pageId) === -1){
-          pages.push(pageId);
-        }
-      });
-      pages.forEach(pageId=>{
-        const list = grouped.get(pageId);
-        if(!list || !list.length) return;
-        const optgroup=document.createElement('optgroup');
-        optgroup.label = getPageLabel(pageId);
-        list.forEach(item=>{
-          if(!item.anchorId) return;
-          const option=document.createElement('option');
-          option.value=item.anchorId;
-          option.textContent=item.label || '未命名群組';
-          option.dataset.page=item.pageId || '';
-          optgroup.appendChild(option);
-        });
-        select.appendChild(optgroup);
-      });
-      select.value='';
-    }
-
-    function handleSummaryJumpChange(event){
-      const select = event && event.target ? event.target : getSummaryJumpSelect();
-      if(!select) return;
-      const anchorId = select.value;
-      if(!anchorId){
-        return;
-      }
-      const option = select.selectedOptions && select.selectedOptions.length ? select.selectedOptions[0] : null;
-      const pageId = option ? option.dataset.page : '';
-      const anchorEl=document.getElementById(anchorId);
-      if(anchorEl){
-        if(blockIfPlanGroupLocked(anchorEl)){
-          select.value='';
-          select.blur();
-          return;
-        }
-        const step = resolveWizardStepForElement(anchorEl);
-        if(step && isWizardStepLocked(step)){
-          handleWizardStepLocked(step);
-          select.value='';
-          select.blur();
-          return;
-        }
-        const performScroll = ()=>{
-          focusSectionGroupByElement(anchorEl);
-          if(step) updateWizardVisual(step);
-          scrollToAnchorId(anchorId);
-        };
-        if(pageId && pageId !== currentPageId){
-          if(setActivePage(pageId, { step: step }) === false){
-            select.value='';
-            select.blur();
-            return;
-          }
-          window.requestAnimationFrame(performScroll);
-        }else{
-          performScroll();
-        }
-      }else if(pageId && pageId !== currentPageId){
-        if(setActivePage(pageId) === false){
-          select.value='';
-          select.blur();
-          return;
-        }
-        window.requestAnimationFrame(()=>scrollToAnchorId(anchorId));
-      }else if(!anchorEl){
-        scrollToAnchorId(anchorId);
-      }
-      select.value='';
-      select.blur();
-    }
-
     function scheduleSideNavRender(){
       Scheduler.enqueue('render','sideNav', renderSideNav);
       Scheduler.requestFrame();
@@ -7172,8 +6566,6 @@
       });
       state.items = items;
       scheduleSideNavRender();
-      scheduleSummaryJumpRefresh();
-      scheduleSummaryProgressRender();
     }
 
     function updateSideNavForSection(section){
@@ -7207,8 +6599,6 @@
           navItem.button.dataset.status = status;
         }
       });
-      scheduleSummaryJumpRefresh();
-      scheduleSummaryProgressRender();
     }
 
     const CHECKCOL_PRIORITY_MAP = {
@@ -7457,17 +6847,6 @@
       });
     }
 
-    function updateUiModeButtons(active){
-      const control=document.getElementById('mobileModeControl');
-      if(!control) return;
-      const target=active || '';
-      control.querySelectorAll('button[data-mode]').forEach(btn=>{
-        const isActive=btn.dataset.mode === target;
-        btn.dataset.active = isActive ? '1' : '0';
-        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      });
-    }
-
     function applyFontScale(scale, options){
       const normalized = normalizeFontScale(scale) || FONT_SCALE_DEFAULT;
       if(document.body){
@@ -7544,115 +6923,18 @@
       }
     }
 
-    function applySectionsPreset(config, options){
-      if(!sectionViewsReady) return;
-      const sections = document.querySelectorAll('[data-section]');
-      if(!sections.length) return;
-      const persist = !(options && options.persist === false);
-      const helperOptions = persist ? undefined : { persist:false };
-      sections.forEach(section=>{
-        if(config.hideFilled !== undefined){
-          setSectionHideFilled(section, !!config.hideFilled, helperOptions);
-        }
-        if(config.showAdvanced !== undefined){
-          setSectionShowAdvanced(section, !!config.showAdvanced, helperOptions);
-        }
-        if(config.collapse){
-          setSectionCollapseStrategy(section, config.collapse, helperOptions);
-        }
-      });
-    }
-
-    function applyUiMode(mode, options){
-      const opts = options || {};
-      const normalized = UI_MODE_OPTIONS.indexOf(mode) !== -1 ? mode : UI_MODE_DEFAULT;
-      const skipPersist = !!opts.skipPersist;
-      const skipFontSave = !!opts.skipFontSave;
-      const skipSections = opts.skipSections === true;
-      const forceSections = !!opts.applySections;
-      const shouldApplySections = !skipSections && (normalized !== 'custom' || forceSections);
-      const persistSections = !(opts.persistSections === false) && !skipPersist;
-      let scaleToApply = null;
-
-      if(normalized === 'clear'){
-        scaleToApply = 'xl';
-        if(shouldApplySections){
-          applySectionsPreset({ hideFilled:true, showAdvanced:false, collapse:'focus' }, { persist: persistSections });
-        }
-        setSection1DiffMode(false);
-      }else if(normalized === 'comfort'){
-        scaleToApply = 'xl';
-        if(shouldApplySections){
-          applySectionsPreset({ hideFilled:true, showAdvanced:false, collapse:'focus' }, { persist: persistSections });
-        }
-        setSection1DiffMode(false);
-      }else if(normalized === 'review'){
-        scaleToApply = 'sm';
-        if(shouldApplySections){
-          applySectionsPreset({ hideFilled:false, showAdvanced:true, collapse:'expand' }, { persist: persistSections });
-        }
-        setSection1DiffMode(true);
-      }else{
-        const requestedScale = normalizeFontScale(opts.targetScale);
-        const currentScale = document.body && document.body.dataset.fontscale ? normalizeFontScale(document.body.dataset.fontscale) : null;
-        scaleToApply = requestedScale || currentScale || FONT_SCALE_DEFAULT;
-        if(opts.applySections){
-          applySectionsPreset(opts.applySections, { persist: persistSections });
-        }
-        if(typeof opts.setDiff === 'boolean'){
-          setSection1DiffMode(opts.setDiff);
-        }
-      }
-
-      if(scaleToApply){
-        applyFontScale(scaleToApply, { skipSave: skipFontSave });
-      }
-
-      currentUiMode = normalized;
-      if(document.body){
-        document.body.dataset.uimode = normalized;
-      }
-      updateUiModeButtons(normalized);
-
-      if(!skipPersist && window.localStorage){
-        try{ window.localStorage.setItem(UI_MODE_STORAGE_KEY, normalized); }catch(err){}
-      }
-
-      scheduleAllMeasurements();
-    }
-
-    function initUiPresetControls(){
-      const control=document.getElementById('mobileModeControl');
-      if(!control) return;
-      control.querySelectorAll('button[data-mode]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{ applyUiMode(btn.dataset.mode); });
-      });
-      updateUiModeButtons(currentUiMode);
-    }
-
     function applyInitialUiPreferences(){
-      let storedMode = null;
       let storedScale = null;
       if(window.localStorage){
-        try{ storedMode = window.localStorage.getItem(UI_MODE_STORAGE_KEY); }catch(err){}
         try{ storedScale = window.localStorage.getItem(FONT_SCALE_STORAGE_KEY); }catch(err){}
       }
-      const hasStoredMode = storedMode && UI_MODE_OPTIONS.indexOf(storedMode) !== -1;
       const normalizedStoredScale = normalizeFontScale(storedScale);
-      const hasStoredScale = !!normalizedStoredScale;
-
-      if(hasStoredMode){
-        if(storedMode === 'custom' && hasStoredScale){
-          applyUiMode('custom', { targetScale: normalizedStoredScale, skipPersist:true, skipFontSave:true, skipSections:true });
-        }else{
-          applyUiMode(storedMode, { skipPersist:true, skipFontSave:true });
-        }
-      }else if(hasStoredScale){
-        applyUiMode('custom', { targetScale: normalizedStoredScale, skipFontSave:true, skipSections:true });
+      if(normalizedStoredScale){
+        applyFontScale(normalizedStoredScale, { skipSave:true });
       }else if(shouldUseMobileDefaults()){
-        applyUiMode('clear');
+        applyFontScale('xl', { skipSave:true });
       }else{
-        applyUiMode('custom', { targetScale: FONT_SCALE_DEFAULT, skipPersist:true, skipFontSave:true, skipSections:true });
+        applyFontScale(FONT_SCALE_DEFAULT, { skipSave:true });
       }
     }
 
@@ -7660,7 +6942,7 @@
       const control=document.getElementById('fontScaleControl');
       if(!control) return;
       control.querySelectorAll('button[data-scale]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{ applyUiMode('custom', { targetScale: btn.dataset.scale, skipSections:true }); });
+        btn.addEventListener('click', ()=>{ applyFontScale(btn.dataset.scale); });
       });
       const active = document.body && document.body.dataset.fontscale ? document.body.dataset.fontscale : FONT_SCALE_DEFAULT;
       updateFontScaleButtons(active);
@@ -8458,8 +7740,7 @@
         writeSectionState(section.dataset.section, state);
         updateToggleButtons(section);
         scheduleSideNavRender();
-        scheduleSummaryProgressRender();
-      });
+        });
       updateToggleButtons(section);
     }
 
@@ -8571,8 +7852,7 @@
               updateToggleButtons(section);
               updateAllGroupEmptyStates(section);
               scheduleSideNavRender();
-              scheduleSummaryProgressRender();
-            }
+                    }
           });
         }
         if(group.body){
@@ -16610,7 +15890,6 @@
       updatePageTabActiveState(finalPageId);
       scheduleSideNavRender();
       scheduleAllMeasurements();
-      scheduleSummaryProgressRender();
     }
 
     function determineWizardStepForPage(pageId, options){
@@ -16947,7 +16226,6 @@
         audit.goals_defaults_ok = defaultsApplied;
         audit.contactVisit_init_open = !!(planGroup && planGroup.dataset && planGroup.dataset.planLocked === '0' && planGroup.dataset.collapsed === '0');
       }
-      scheduleSummaryProgressRender();
       scheduleSummaryUpdate();
       scheduleSideNavRender();
       scheduleAllMeasurements();
@@ -17058,7 +16336,6 @@
       inspectPageSectionVisibility(activeSection);
       scheduleSideNavRender();
       scheduleAllMeasurements();
-      scheduleSummaryProgressRender();
       return true;
     }
 
@@ -17599,7 +16876,6 @@
       if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
       }
-      initUiPresetControls();
       initFontScaleControls();
       initWizardFlow();
       initFloatingActions();
@@ -17614,7 +16890,6 @@
       initCmsLevelButtons();
       loadServiceCatalog();
       initBasicInfoValidation();
-      initStickyOverflowToggle();
       initPageTabs();
 
       // S1
