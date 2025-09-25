@@ -1732,6 +1732,22 @@
     .plan-summary-totals-hint[data-show="1"]{
       display:block;
     }
+    .plan-summary-controls{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:var(--space-xs);
+      margin-bottom:var(--space-sm);
+    }
+    .plan-summary-foreign-toggle{
+      font-weight:600;
+      color:#0b1d4d;
+    }
+    .plan-summary-controls-hint{
+      margin:0;
+      color:#475569;
+      font-size:0.9rem;
+    }
     .plan-guideline{
       margin-bottom:var(--space-md);
       padding:var(--space-sm) var(--space-md);
@@ -2739,10 +2755,28 @@
                     <input id="primaryName" type="text" placeholder="請輸入">
                   </div>
                 </div>
+                <div class="row">
+                  <div class="field-intro" data-field-size="short">
+                    <label class="h4" for="primaryPhone">行動電話</label>
+                    <input id="primaryPhone" type="tel" inputmode="tel" placeholder="例：0912-345-678">
+                  </div>
+                  <div class="field-intro" data-field-size="short">
+                    <label class="h4" for="primaryTel">市話</label>
+                    <input id="primaryTel" type="tel" inputmode="tel" placeholder="例：03-1234567">
+                  </div>
+                  <div class="field-intro" data-field-size="medium">
+                    <label class="h4" for="primaryContactPhone">其他聯絡電話</label>
+                    <input id="primaryContactPhone" type="tel" inputmode="tel" placeholder="可留備援電話，選填">
+                  </div>
+                </div>
                 <input type="hidden" id="includePrimary" value="true">
                 <div class="titlebar titlebar--mt-xxs">
                   <label class="h3">其他參與者</label>
                   <button type="button" class="small button-add" data-ic="plus" onclick="addExtraRow()">新增參與者</button>
+                </div>
+                <div id="extrasHeading" class="extras-heading-grid">
+                  <h3 id="h3-goals-extra-rel" class="h3" data-anchor="h3-goals-extra-rel">其他參與者關係</h3>
+                  <h3 id="h3-goals-extra-name" class="h3" data-anchor="h3-goals-extra-name">其他參與者姓名</h3>
                 </div>
                 <div id="extras"></div>
                 <div id="extras_conflict" role="status" aria-live="polite"></div>
@@ -4020,6 +4054,12 @@
             </div>
           </div>
           <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
+          <div class="plan-summary-controls">
+            <label class="inline-checkbox plan-summary-foreign-toggle" for="hasForeignCare">
+              <input id="hasForeignCare" type="checkbox"> 案家聘有外籍看護（自動扣減 30% 額度）
+            </label>
+            <div class="hint plan-summary-controls-hint">若未扣減或無聘用，請取消勾選。</div>
+          </div>
           <span class="h3">預覽內容</span>
           <div id="planSummaryPreview" class="summary-table-wrapper">
             <div class="hint">尚未選擇服務項目。</div>
@@ -12275,6 +12315,22 @@
       return value === '是' || value === 'Y' || value === 'true';
     }
 
+    function handleForeignCareChange(){
+      applyAutomaticPlanning();
+      buildPlanSummaryPreview();
+      buildApprovalPlanPreview();
+      scheduleSummaryUpdate();
+      if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
+    }
+
+    function initForeignCareControl(){
+      const field = document.getElementById('hasForeignCare');
+      if(!field) return;
+      const handler = function(){ handleForeignCareChange(); };
+      field.addEventListener('change', handler);
+      field.addEventListener('input', handler);
+    }
+
     function getCmsMonthlyCap(level){
       if(!level) return 0;
       const catalogCaps = SERVICE_CATALOG && SERVICE_CATALOG.needLevelCaps ? SERVICE_CATALOG.needLevelCaps : {};
@@ -15623,6 +15679,9 @@
         // 三、偕同訪視者
         primaryCaregiverRel: primaryCaregiverRel,
         primaryCaregiverName: primaryCaregiverName,
+        primaryPhone: (document.getElementById('primaryPhone')?.value || '').trim(),
+        primaryTel: (document.getElementById('primaryTel')?.value || '').trim(),
+        primaryContactPhone: (document.getElementById('primaryContactPhone')?.value || '').trim(),
         includePrimary: true,              // 固定預設輸出
         extras: collectExtras(),
         consentParties: consentParties,
@@ -15651,6 +15710,7 @@
         long_goal: (document.getElementById('long_goal').value || '').trim(),
         servicePlan: serializeServicePlan(),
         planMeta: Object.assign({}, planMetaState),
+        hasForeignCare: hasForeignCareFlag(),
         planText: (document.getElementById('plan_text').value || '').trim(),
         planOther: (document.getElementById('plan_other')?.value || '').trim()
       };
@@ -16942,6 +17002,7 @@
       renderRespiteServices();
       renderMealServices();
       initPlanMetaFields();
+      initForeignCareControl();
       initMismatchReasonControls();
       planMetaState.referralExtra = document.getElementById('plan_referral_extra')?.value || '';
       planMetaState.stationInfo = document.getElementById('plan_station_info')?.value || '';
