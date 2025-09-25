@@ -4732,7 +4732,7 @@
       });
     }
 
-    function rebuildHeadingIndex(){
+    function rebuildHeadingIndex(schema){
       Object.keys(HEADING_INDEX).forEach(function(key){
         delete HEADING_INDEX[key];
       });
@@ -4741,11 +4741,12 @@
       });
       HEADING_NODE_LIST.length = 0;
       HEADING_INDEX_ORDER = 0;
-      assignHeadingEntries(HEADING_SCHEMA, null);
+      const source = Array.isArray(schema) ? schema : HEADING_SCHEMA;
+      assignHeadingEntries(source, null);
       return HEADING_INDEX;
     }
 
-    rebuildHeadingIndex();
+    rebuildHeadingIndex(HEADING_SCHEMA);
 
     function getHeadingNode(anchorId){
       return anchorId ? HEADING_INDEX[anchorId] || null : null;
@@ -5105,152 +5106,80 @@
       return id.replace(/([\\.#:\[\]\(\),>+~*^$|='"{}\s])/g, '\\$1');
     }
 
-    function dedupeElementsById(id, preferredRoot, options){
-      if(!id) return null;
-      let selector = '#' + escapeCssId(id);
-      let nodes = [];
-      try{
-        nodes = Array.from(document.querySelectorAll(selector));
-      }catch(err){
-        try{
-          nodes = Array.from(document.querySelectorAll('#' + id));
-        }catch(err2){
-          nodes = [];
+    const PAGE_SECTION_DEFAULTS = {
+      basic:{ columns:'1', active:'1' },
+      goals:{ columns:'2', active:'0' },
+      execution:{ columns:'2', active:'0' },
+      notes:{ columns:'1', active:'0' }
+    };
+
+    function ensurePageSectionSkeleton(){
+      const map = {};
+      const host = document.getElementById('appMain');
+      if(!host) return map;
+      const order = Array.isArray(PAGE_ORDER) ? PAGE_ORDER : Object.keys(PAGE_LABELS || {});
+      order.forEach(pageId=>{
+        if(!pageId) return;
+        let section = host.querySelector(`.page-section[data-page="${pageId}"]`);
+        if(!section){
+          section = document.createElement('div');
+          section.className = 'page-section';
+          section.dataset.page = pageId;
+          host.appendChild(section);
         }
-      }
-      if(nodes.length <= 1){
-        return nodes[0] || null;
-      }
-      const preferFn = options && typeof options.prefer === 'function' ? options.prefer : null;
-      let primary = null;
-      if(preferFn){
-        primary = nodes.find(node=>preferFn(node)) || null;
-      }
-      if(!primary && preferredRoot && typeof preferredRoot.contains === 'function'){
-        primary = nodes.find(node=>preferredRoot.contains(node)) || null;
-      }
-      if(!primary){
-        primary = nodes[0];
-      }
-      nodes.forEach(node=>{
-        if(node && node !== primary && node.parentNode){
-          node.parentNode.removeChild(node);
+        const defaults = PAGE_SECTION_DEFAULTS[pageId] || { columns:'1', active:'0' };
+        section.dataset.page = pageId;
+        section.dataset.columns = defaults.columns;
+        section.dataset.active = defaults.active;
+        map[pageId] = section;
+      });
+      order.forEach(pageId=>{
+        const section = map[pageId];
+        if(section && section.parentElement === host){
+          host.appendChild(section);
         }
       });
-      return primary;
+      return map;
     }
 
-    function sectionHasAnchors(section, anchors){
-      if(!section || !section.querySelector || !Array.isArray(anchors) || !anchors.length){
-        return true;
-      }
-      for(let i=0;i<anchors.length;i++){
-        const id=anchors[i];
-        if(!id) continue;
-        let selector = '#' + escapeCssId(id);
-        let found = false;
-        try{
-          found = !!section.querySelector(selector);
-        }catch(err){
-          try{
-            found = !!section.querySelector('#' + id);
-          }catch(err2){
-            found = false;
-          }
-        }
-        if(!found){
-          return false;
-        }
-      }
-      return true;
-    }
-
-    function dedupePageSection(pageId, options){
-      if(!pageId) return null;
-      const sections = Array.from(document.querySelectorAll(`.page-section[data-page="${pageId}"]`));
-      if(!sections.length) return null;
-      const anchors = (options && Array.isArray(options.anchorIds)) ? options.anchorIds : [];
-      const preferredRoot = options && options.preferredRoot ? options.preferredRoot : null;
-      let primary = null;
-      if(preferredRoot && typeof preferredRoot.contains === 'function'){
-        primary = sections.find(section=>preferredRoot.contains(section) && sectionHasAnchors(section, anchors))
-          || sections.find(section=>preferredRoot.contains(section))
-          || null;
-      }
-      if(!primary && anchors.length){
-        primary = sections.find(section=>sectionHasAnchors(section, anchors)) || null;
-      }
-      if(!primary){
-        primary = sections[0];
-      }
+    function cardizePageSections(){
+      const sections = Array.from(document.querySelectorAll('[data-section]'));
       sections.forEach(section=>{
-        if(section && section !== primary && section.parentNode){
-          section.parentNode.removeChild(section);
-        }
+        normalizeLayout(section);
+        cleanupEmptyContainers(section);
       });
-      const dedupeIds = (options && Array.isArray(options.dedupeIds) && options.dedupeIds.length) ? options.dedupeIds : anchors;
-      if(primary && dedupeIds && dedupeIds.length){
-        dedupeIds.forEach(id=>dedupeElementsById(id, primary));
-      }
-      return primary;
+      ensureAllGroupBodies(document);
+      return sections;
     }
 
-    function hoistNestedPageSections(){
-      const container=document.getElementById('appContainer');
-      if(!container) return;
-      let guard=0;
-      let nested=container.querySelector('.page-section .page-section');
-      while(nested && guard<500){
-        guard++;
-        const parentSection = nested.parentElement ? nested.parentElement.closest('.page-section') : null;
-        if(!parentSection || parentSection === nested || !container.contains(parentSection)){
-          nested = container.querySelector('.page-section .page-section');
-          continue;
-        }
-        const reference = parentSection.nextSibling;
-        container.insertBefore(nested, reference);
-        nested = container.querySelector('.page-section .page-section');
-      }
-      queuePostStructureRefresh();
+    function prepareSectionContainers(sections){
+      const prepared = [];
+      const list = Array.isArray(sections) ? sections : Array.from(document.querySelectorAll('[data-section]'));
+      list.forEach(section=>{
+        if(!section) return;
+        const groups = buildSectionGroups(section);
+        section.__groups = groups;
+        const containerInfo = prepareFieldContainers(section);
+        section.__fieldContainers = containerInfo.containers;
+        section.__dependencies = containerInfo.dependencies;
+        prepared.push({ section, groups, containers:containerInfo.containers, dependencies:containerInfo.dependencies });
+      });
+      return prepared;
     }
 
-    function dedupeGoalsSection(){
-      const documentRoot = document.body || document.documentElement || document;
-      const appContainer = dedupeElementsById('appContainer', documentRoot, {
-        prefer: node=>node && node.querySelector && node.querySelector('.page-section[data-page]')
-      }) || document.getElementById('appContainer');
-      const configs = [
-        { pageId:'basic', anchorIds:['basicInfoGroup'], preferredRoot:appContainer },
-        { pageId:'goals', anchorIds:['contactVisitGroup'], preferredRoot:appContainer, dedupeIds:['contactVisitGroup'] },
-        { pageId:'execution', anchorIds:['planExecutionCard','planSummaryCard','planExecutionPreviewCard'], preferredRoot:appContainer },
-        { pageId:'notes', anchorIds:['planOtherGroup'], preferredRoot:appContainer }
-      ];
-      configs.forEach(cfg=>dedupePageSection(cfg.pageId, cfg));
-      const globalConfigs = [
-        { id:'appSticky', prefer: node=>node && node.querySelector && node.querySelector('.wizard') },
-        { id:'sideNav', prefer: node=>node && node.querySelector && node.querySelector('.side-nav-list') },
-        { id:'sideNavToggleButton' },
-        { id:'sideNavBackdrop' },
-        { id:'summaryProgressList', prefer: node=>node && node.classList && node.classList.contains('summary-progress-list') },
-        { id:'wizardSteps', prefer: node=>node && node.querySelector && node.querySelector('.wizard-step') },
-        { id:'pageTabs', prefer: node=>node && node.querySelector && node.querySelector('[data-page]') },
-        { id:'floatingActions' },
-        { id:'validationToast' },
-        { id:'headingSpecToast' }
-      ];
-      const rootForGlobals = appContainer || documentRoot;
-      globalConfigs.forEach(cfg=>dedupeElementsById(cfg.id, rootForGlobals, cfg));
-      if(appContainer){
-        ensureUniqueIdsWithin(appContainer);
-      }
-      queuePostStructureRefresh();
+    function enhanceInitialCheckcols(){
+      refreshCheckcols(document);
     }
 
-    function queuePostStructureRefresh(){
-      scheduleAllMeasurements();
-      scheduleSummaryUpdate();
-      scheduleSideNavRender();
-      scheduleSummaryProgressRender();
+    function buildInitialDomStructure(){
+      ensurePageSectionSkeleton();
+      applyHeadingsToDOM(HEADING_SCHEMA);
+      applyGridUtilities(document);
+      const sections = cardizePageSections();
+      enforceSection1CardLayout();
+      resetHeadingGroupRegistry();
+      prepareSectionContainers(sections);
+      enhanceInitialCheckcols();
     }
 
     function createCardFromTitlebar(titlebar, sectionKey){
@@ -5658,14 +5587,13 @@
       scheduleAllMeasurements();
     }
 
-    function prepareCaseProfileLayout(){
-      document.querySelectorAll('[data-section]').forEach(section=>upgradeLegacyContainers(section));
-      enforceSection1CardLayout();
-      applyGridUtilities(document);
-      queuePostStructureRefresh();
-    }
-
-    function applyHeadingsToDOM(){
+    function applyHeadingsToDOM(schema){
+      const targetSchema = Array.isArray(schema) ? schema : HEADING_SCHEMA;
+      if(schema && targetSchema !== HEADING_SCHEMA){
+        rebuildHeadingIndex(targetSchema);
+      }else if(!HEADING_NODE_LIST.length){
+        rebuildHeadingIndex(targetSchema);
+      }
       resetHeadingDomRegistry();
       const missing = [];
       forEachHeading(function(entry){
@@ -8499,13 +8427,25 @@
     function setupSection(section){
       if(!section || section.dataset.sectionInit === '1') return;
       section.dataset.sectionInit = '1';
-      const groups = buildSectionGroups(section);
+      const hasPrebuiltGroups = Array.isArray(section.__groups) && section.__groups.length > 0;
+      const groups = hasPrebuiltGroups ? section.__groups : buildSectionGroups(section);
       section.__groups = groups;
+      if(Array.isArray(groups)){
+        groups.forEach(group=>{
+          const anchorId = group && group.element && group.element.dataset ? group.element.dataset.headingId : '';
+          if(anchorId){
+            registerHeadingGroup(anchorId, section, group);
+          }
+        });
+      }
       createSectionProgress(section);
       createSectionControls(section);
-      const prepared = prepareFieldContainers(section);
+      const hasPrebuiltContainers = Array.isArray(section.__fieldContainers) && section.__fieldContainers.length > 0;
+      const prepared = hasPrebuiltContainers
+        ? { containers: section.__fieldContainers, dependencies: section.__dependencies instanceof Map ? section.__dependencies : new Map() }
+        : prepareFieldContainers(section);
       section.__fieldContainers = prepared.containers;
-      section.__dependencies = prepared.dependencies;
+      section.__dependencies = prepared.dependencies instanceof Map ? prepared.dependencies : new Map();
       const state = readSectionState(section.dataset.section);
       section.__state = state;
       applyMobileSectionDefaults(section, state);
@@ -17539,12 +17479,10 @@
     }
 
     function initializeSidebarOnLoad(){
-      hoistNestedPageSections();
-      dedupeGoalsSection();
+      buildInitialDomStructure();
       if(document.querySelector('.page-section .page-section')){
-        console.error('偵測到巢狀 page-section，請檢查去重程序。');
+        console.error('偵測到巢狀 page-section，請檢查頁面結構。');
       }
-      prepareCaseProfileLayout();
       renderServicePlanEditor();
       let headingSchemaReport = null;
       if(typeof window !== 'undefined' && !window.__HEADING_SCHEMA_PATCHED__){
@@ -17562,7 +17500,6 @@
       }
       handleHeadingSchemaValidation(headingSchemaReport);
       initHeadingSchemaToast();
-      ensureAllGroupBodies(document);
       initGroupCollapsibles();
       initSectionViews();
       refreshExecutionHeadingRegistry();
