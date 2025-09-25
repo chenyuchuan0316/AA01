@@ -2719,7 +2719,6 @@
                 <h3 id="h3-goals-call-consult" class="h3" data-anchor="h3-goals-call-consult" style="margin-top:var(--space-sm);">照顧專員約訪</h3>
                 <label class="inline-checkbox" style="display:block; margin-top:var(--space-xxs);">
                   <input id="isConsultVisit" type="checkbox"> 勾選表示為照顧專員約訪
-
                 </label>
                 <div id="consultVisitText" class="subtle" style="display:none; margin-top:var(--space-xs);"></div>
               </div>
@@ -5119,12 +5118,6 @@
         el.classList.add('checkgrid');
         el.querySelectorAll('label').forEach(label=>label.classList.add('check-item'));
       });
-    }
-
-    function upgradeLegacyContainers(section){
-      if(!section) return;
-      normalizeLayout(section);
-      applyGridUtilities(section);
     }
 
     function enforceSection1CardLayout(){
