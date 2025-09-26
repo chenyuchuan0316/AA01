@@ -1597,10 +1597,6 @@
       flex-direction:column;
       gap:var(--space-sm);
     }
-    .plan-category-meta{
-      border-style:dashed;
-      background:rgb(11 87 208 / 0.05);
-    }
     .plan-empty-hint{
       font-size:0.95rem;
       color:rgb(17 17 17 / 0.75);
@@ -3986,12 +3982,6 @@
             <p>若同一服務由不同單位提供，或同時含自費段，請個別建立明細並清楚標註說明。</p>
           </div>
           <div id="planEditor" class="plan-editor"></div>
-          <div class="plan-category plan-category-meta" data-plan-category="EMERGENCY">
-            <div class="plan-category-heading">
-              <h3 class="h3" id="h3-exec-emergency" data-anchor="h3-exec-emergency">緊急救援服務</h3>
-            </div>
-            <div class="plan-category-body"></div>
-          </div>
         </section>
 
         <section class="section-card" id="planReferralCard">
@@ -4123,7 +4113,7 @@
       </div>
 
       <div class="floating-actions" id="floatingActions" aria-label="頁面操作">
-        <button type="button" class="primary" id="wizardSaveBtn">存檔</button>
+        <button type="button" class="primary" id="wizardSaveBtn" data-action="apply-and-save">存檔</button>
         <div id="wizardMoreWrapper">
           <button type="button" id="wizardMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="wizardMoreMenu" aria-label="更多操作" title="更多操作">⋯</button>
           <div class="floating-more-menu" id="wizardMoreMenu" role="menu" data-open="0">
@@ -5516,7 +5506,9 @@
           if(group && group.anchor){ anchors.push(group.anchor); }
         });
       }
-      anchors.push('h3-exec-emergency');
+      if(anchors.indexOf('h3-exec-emergency') === -1){
+        anchors.push('h3-exec-emergency');
+      }
       anchors.forEach(function(anchorId){
         if(!anchorId) return;
         const heading = document.getElementById(anchorId);
@@ -7168,22 +7160,32 @@
       if(Number.isNaN(date.getTime())) return null;
       return date;
     }
-    function setDateBox(id,d){
+    function emitDateInputEvents(input){
+      if(!input) return;
+      try{ input.dispatchEvent(new Event('input', { bubbles:true })); }catch(err){}
+      try{ input.dispatchEvent(new Event('change', { bubbles:true })); }catch(err){}
+    }
+    function setDateBox(id,d,options){
       if(!(d instanceof Date) || Number.isNaN(d.getTime())) return;
       const text=toYMD(d);
       const input=document.getElementById(id);
-      if(input) input.value=text;
+      if(input){
+        input.value=text;
+        if(options && options.emitEvents){ emitDateInputEvents(input); }
+      }
     }
     function getDateBox(id){
       const input=document.getElementById(id);
       return input && input.value ? input.value : '';
     }
     function shiftDate(id,delta){
-      const cur=getDateBox(id);
+      const input=document.getElementById(id);
+      if(!input) return;
+      const cur=input.value;
       const base=cur?parseDateInput(cur):new Date();
       if(!base) return;
       base.setDate(base.getDate()+delta);
-      setDateBox(id,base);
+      setDateBox(id,base,{ emitEvents:true });
     }
     function attachDateInputEvents(id){
       const input=document.getElementById(id);
@@ -8121,88 +8123,175 @@
     }
 
     /* ===== 個管師名單 ===== */
-    function loadManagers(){
-      const unit=document.getElementById('unitCode').value;
-      google.script.run.withSuccessHandler(list=>{
-        const select=document.getElementById('caseManagerName');
-        if(!select) return;
-        const previousValue=(select.value || '').trim();
-        const hasData=Array.isArray(list) && list.length > 0;
-        select.innerHTML='';
-        const placeholder=document.createElement('option');
-        placeholder.value='';
-        placeholder.textContent=hasData ? '請選擇' : '（無資料）';
-        placeholder.className='placeholder-option';
-        placeholder.disabled=true;
-        placeholder.selected=true;
-        select.appendChild(placeholder);
-        let matched=false;
-        if(hasData){
-          list.forEach(name=>{
-            const option=document.createElement('option');
-            option.value=name;
-            option.textContent=name;
-            if(name === previousValue){
-              option.selected=true;
-              matched=true;
-            }
-            select.appendChild(option);
-          });
-          select.disabled=false;
-          if(!matched){
-            select.selectedIndex=0;
+    function getGoogleRunner(){
+      if(typeof google === 'undefined' || !google || !google.script || !google.script.run){
+        return null;
+      }
+      return google.script.run;
+    }
+
+    function applyCaseManagerOptions(list, options){
+      const select=document.getElementById('caseManagerName');
+      if(!select) return;
+      const previousValue=options && typeof options.previousValue === 'string'
+        ? options.previousValue.trim()
+        : (select.value || '').trim();
+      const hasData=Array.isArray(list) && list.length > 0;
+      const placeholderText=(options && options.placeholder)
+        ? options.placeholder
+        : (hasData ? '請選擇' : '（無資料）');
+      select.innerHTML='';
+      const placeholder=document.createElement('option');
+      placeholder.value='';
+      placeholder.textContent=placeholderText;
+      placeholder.className='placeholder-option';
+      placeholder.disabled=!(options && options.allowPlaceholderSelection);
+      placeholder.selected=true;
+      select.appendChild(placeholder);
+      let matched=false;
+      if(hasData){
+        list.forEach(name=>{
+          const text=String(name || '').trim();
+          if(!text) return;
+          const option=document.createElement('option');
+          option.value=text;
+          option.textContent=text;
+          if(text === previousValue){
+            option.selected=true;
+            matched=true;
           }
-        }else{
-          select.disabled=true;
-          select.selectedIndex=0;
+          select.appendChild(option);
+        });
+        select.disabled=false;
+      }else if(options && options.fallbackValue){
+        const preserved=String(options.fallbackValue).trim();
+        if(preserved){
+          const option=document.createElement('option');
+          option.value=preserved;
+          option.textContent=preserved;
+          option.selected=true;
+          select.appendChild(option);
+          matched=true;
+          select.disabled=false;
         }
-        buildApprovalPlanPreview();
-        scheduleSummaryUpdate();
-        updateBasicInfoCompletion({ silent:true });
-      }).getCaseManagersByUnit(unit);
+      }else{
+        select.disabled=!(options && options.keepEnabled);
+      }
+      if(!matched){
+        select.selectedIndex=0;
+      }
+      buildApprovalPlanPreview();
+      scheduleSummaryUpdate();
+      updateBasicInfoCompletion({ silent:true });
+    }
+
+    function loadManagers(){
+      const select=document.getElementById('caseManagerName');
+      if(!select) return;
+      const unit=document.getElementById('unitCode').value;
+      const previousValue=(select.value || '').trim();
+      const handleFailure=()=>{
+        applyCaseManagerOptions([], {
+          previousValue,
+          fallbackValue: previousValue,
+          placeholder:'（載入失敗）'
+        });
+      };
+      const runner=getGoogleRunner();
+      if(!runner){
+        handleFailure();
+        return;
+      }
+      try{
+        runner.withSuccessHandler(list=>{
+          applyCaseManagerOptions(Array.isArray(list) ? list : [], { previousValue });
+        }).withFailureHandler(()=>{ handleFailure(); }).getCaseManagersByUnit(unit);
+      }catch(err){
+        handleFailure();
+      }
     }
 
     /* ===== 照專名單 ===== */
-    function loadConsultants(){
-      const unit = document.getElementById('unitCode').value;
-      google.script.run.withSuccessHandler(list=>{
-        const select=document.getElementById('consultName');
-        if(!select) return;
-        const previousValue=(select.value || '').trim();
-        const hasData=Array.isArray(list) && list.length > 0;
-        select.innerHTML='';
-        const placeholder=document.createElement('option');
-        placeholder.value='';
-        placeholder.textContent=hasData ? '請選擇' : '（無資料）';
-        placeholder.className='placeholder-option';
-        placeholder.disabled=true;
-        placeholder.selected=true;
-        select.appendChild(placeholder);
-        let matched=false;
-        if(hasData){
-          list.forEach(name=>{
-            const option=document.createElement('option');
-            option.value=name;
-            option.textContent=name;
-            if(name === previousValue){
-              option.selected=true;
-              matched=true;
-            }
-            select.appendChild(option);
-          });
-          select.disabled=false;
-          if(!matched){
-            select.selectedIndex=0;
+    function applyConsultantOptions(list, options){
+      const select=document.getElementById('consultName');
+      if(!select) return;
+      const previousValue=options && typeof options.previousValue === 'string'
+        ? options.previousValue.trim()
+        : (select.value || '').trim();
+      const hasData=Array.isArray(list) && list.length > 0;
+      const placeholderText=(options && options.placeholder)
+        ? options.placeholder
+        : (hasData ? '請選擇' : '（無資料）');
+      select.innerHTML='';
+      const placeholder=document.createElement('option');
+      placeholder.value='';
+      placeholder.textContent=placeholderText;
+      placeholder.className='placeholder-option';
+      placeholder.disabled=!(options && options.allowPlaceholderSelection);
+      placeholder.selected=true;
+      select.appendChild(placeholder);
+      let matched=false;
+      if(hasData){
+        list.forEach(name=>{
+          const text=String(name || '').trim();
+          if(!text) return;
+          const option=document.createElement('option');
+          option.value=text;
+          option.textContent=text;
+          if(text === previousValue){
+            option.selected=true;
+            matched=true;
           }
-        }else{
-          select.disabled=true;
-          select.selectedIndex=0;
+          select.appendChild(option);
+        });
+        select.disabled=false;
+      }else if(options && options.fallbackValue){
+        const preserved=String(options.fallbackValue).trim();
+        if(preserved){
+          const option=document.createElement('option');
+          option.value=preserved;
+          option.textContent=preserved;
+          option.selected=true;
+          select.appendChild(option);
+          matched=true;
+          select.disabled=false;
         }
-        updateConsultVisitText();
-        toggleCallDateByConsultVisit();
-        scheduleSummaryUpdate();
-        updateBasicInfoCompletion({ silent:true });
-      }).getConsultantsByUnit(unit);
+      }else{
+        select.disabled=!(options && options.keepEnabled);
+      }
+      if(!matched){
+        select.selectedIndex=0;
+      }
+      updateConsultVisitText();
+      toggleCallDateByConsultVisit();
+      scheduleSummaryUpdate();
+      updateBasicInfoCompletion({ silent:true });
+    }
+
+    function loadConsultants(){
+      const select=document.getElementById('consultName');
+      if(!select) return;
+      const unit=document.getElementById('unitCode').value;
+      const previousValue=(select.value || '').trim();
+      const handleFailure=()=>{
+        applyConsultantOptions([], {
+          previousValue,
+          fallbackValue: previousValue,
+          placeholder:'（載入失敗）'
+        });
+      };
+      const runner=getGoogleRunner();
+      if(!runner){
+        handleFailure();
+        return;
+      }
+      try{
+        runner.withSuccessHandler(list=>{
+          applyConsultantOptions(Array.isArray(list) ? list : [], { previousValue });
+        }).withFailureHandler(()=>{ handleFailure(); }).getConsultantsByUnit(unit);
+      }catch(err){
+        handleFailure();
+      }
     }
 
     /* ===== 三、偕同訪視者（下拉＋多筆） ===== */
@@ -8687,8 +8776,14 @@
       updateVisionAutoHint();
     }
     function toggleVisionOther(){
+      const otherInput=document.getElementById('s1_vision_other');
+      if(!otherInput) return;
       const hasOther = document.querySelector('#s1_vision_note_box input[value="其他"]')?.checked;
-      document.getElementById('s1_vision_other').style.display = hasOther?'':'none';
+      otherInput.style.display = hasOther ? '' : 'none';
+      if(!hasOther){
+        otherInput.value='';
+        otherInput.classList.remove('input-invalid');
+      }
     }
     function toggleGlassesAdherence(){
       const wrap=document.getElementById('s1_glasses_adherence_wrap');
@@ -9023,15 +9118,35 @@
         setLesionSymptomMode('none');
         const lenInput=document.getElementById('s1_lesion_length');
         const widInput=document.getElementById('s1_lesion_width');
-        if(lenInput) lenInput.value='';
-        if(widInput) widInput.value='';
+        if(lenInput){
+          lenInput.value='';
+          lenInput.classList.remove('input-invalid');
+        }
+        if(widInput){
+          widInput.value='';
+          widInput.classList.remove('input-invalid');
+        }
+        const layerSel=document.getElementById('s1_lesion_layer');
+        if(layerSel){
+          layerSel.value='無';
+          layerSel.classList.remove('input-invalid');
+        }
+        const evalSel=document.getElementById('s1_lesion_eval');
+        if(evalSel){
+          evalSel.value='未評估';
+          evalSel.classList.remove('input-invalid');
+        }
       }
-      document.getElementById('s1_lesion_layer_wrap').style.display = on?'':'none';
-      document.getElementById('s1_lesion_size_wrap').style.display = on?'':'none';
-      document.getElementById('s1_lesion_more').style.display = on?'':'none';
+      const layerWrap=document.getElementById('s1_lesion_layer_wrap');
+      const sizeWrap=document.getElementById('s1_lesion_size_wrap');
+      const moreWrap=document.getElementById('s1_lesion_more');
+      if(layerWrap) layerWrap.style.display = on ? '' : 'none';
+      if(sizeWrap) sizeWrap.style.display = on ? '' : 'none';
+      if(moreWrap) moreWrap.style.display = on ? '' : 'none';
       updateLesionAreaDisplay();
       updateLocationVisibility();
       toggleLesionHospital();
+      if(!on) toggleLesionLayerOther();
     }
     function toggleLesionLayerOther(){
       const v=document.getElementById('s1_lesion_layer').value;
@@ -9039,7 +9154,10 @@
       if(!other) return;
       const show=(v==='其他');
       other.style.display = show?'':'none';
-      if(!show) other.value='';
+      if(!show){
+        other.value='';
+        other.classList.remove('input-invalid');
+      }
     }
 
     function toggleLesionHospital(){
@@ -9049,7 +9167,10 @@
       if(!input) return;
       const show = (has==='有' && evalv!=='未評估');
       input.style.display = show ? '' : 'none';
-      if(!show) input.value='';
+      if(!show){
+        input.value='';
+        input.classList.remove('input-invalid');
+      }
     }
 
     function toggleSwallow(){
@@ -9076,6 +9197,7 @@
       refreshCheckcol('s1_swallow_sx_box');
       refreshCheckcol('s1_diet_texture_box');
       refreshCheckcol('s1_feeding_tube_box');
+      scheduleSection1Rebuild();
     }
 
     function toggleFallDetail(){
@@ -9085,7 +9207,10 @@
       const value=sel.value;
       const show = value==='過去1年1次' || value==='過去1年≧2次';
       input.style.display = show ? '' : 'none';
-      if(!show) input.value='';
+      if(!show){
+        input.value='';
+        input.classList.remove('input-invalid');
+      }
     }
 
     function toggleSittingSupports(){
@@ -9118,7 +9243,10 @@
       if(!other) return;
       const on=document.querySelector('#s1_phone_note_box input[value="其他"]')?.checked;
       other.style.display = on ? '' : 'none';
-      if(!on) other.value='';
+      if(!on){
+        other.value='';
+        other.classList.remove('input-invalid');
+      }
     }
 
     function hasNightCatheterSelection(){
@@ -9132,24 +9260,37 @@
       const input=document.getElementById('s1_nocturia_count');
       if(hasNightCatheterSelection()){
         if(wrap) wrap.style.display='none';
-        if(input) input.value='';
+        if(input){
+          input.value='';
+          input.classList.remove('input-invalid');
+        }
+        scheduleSection1Rebuild();
         return;
       }
       const sel=document.getElementById('s1_urine_night');
       if(!wrap || !sel){
         if(wrap) wrap.style.display='none';
-        if(input) input.value='';
+        if(input){
+          input.value='';
+          input.classList.remove('input-invalid');
+        }
+        scheduleSection1Rebuild();
         return;
       }
       const value=sel.value;
       const show=value && value !== '夜間未起夜';
       wrap.style.display = show ? '' : 'none';
-      if(!show && input) input.value='';
+      if(!show && input){
+        input.value='';
+        input.classList.remove('input-invalid');
+      }
+      scheduleSection1Rebuild();
     }
 
     function handleExcretionAidChange(){
       updateExcretionAidEffects();
       updateNocturiaCountVisibility();
+      scheduleSection1Rebuild();
     }
 
     function updateExcretionAidEffects(){
@@ -9161,14 +9302,22 @@
       if(hasCatheter){
         if(nightWrap) nightWrap.style.display='none';
         if(note) note.style.display='';
-        if(sel) sel.value='';
-        if(other){ other.style.display='none'; other.value=''; }
+        if(sel){
+          sel.value='';
+          sel.classList.remove('input-invalid');
+        }
+        if(other){
+          other.style.display='none';
+          other.value='';
+          other.classList.remove('input-invalid');
+        }
       }else{
         if(nightWrap) nightWrap.style.display='';
         if(note) note.style.display='none';
         toggleUrineOther('night');
       }
       updateNocturiaCountVisibility();
+      scheduleSection1Rebuild();
     }
 
     function toggleAdlHow(id){
@@ -9413,8 +9562,15 @@
     }
 
     function toggleTransportOther(){
-      const v=document.getElementById('s1_visit_transport').value;
-      document.getElementById('s1_visit_transport_other').style.display = (v==='其他')?'':'none';
+      const select=document.getElementById('s1_visit_transport');
+      const input=document.getElementById('s1_visit_transport_other');
+      if(!select || !input) return;
+      const show = select.value === '其他';
+      input.style.display = show ? '' : 'none';
+      if(!show){
+        input.value='';
+        input.classList.remove('input-invalid');
+      }
     }
     function toggleUrineOther(type){
       const selId = type === 'night' ? 's1_urine_night' : 's1_urine_day';
@@ -9424,16 +9580,32 @@
       if(!sel||!input) return;
       const show = sel.value==='其他';
       input.style.display = show?'':'none';
-      if(!show) input.value='';
+      if(!show){
+        input.value='';
+        input.classList.remove('input-invalid');
+      }
       if(type==='night') updateNocturiaCountVisibility();
+      scheduleSection1Rebuild();
     }
     function toggleDhxOther(){
+      const input=document.getElementById('s1_dhx_other');
+      if(!input) return;
       const on = document.querySelector('#s1_dhx_box input[value="其他"]')?.checked;
-      document.getElementById('s1_dhx_other').style.display = on?'':'none';
+      input.style.display = on ? '' : 'none';
+      if(!on){
+        input.value='';
+        input.classList.remove('input-invalid');
+      }
     }
     function toggleMedOther(){
+      const input=document.getElementById('s1_med_classes_other');
+      if(!input) return;
       const on = document.querySelector('#s1_med_classes_box input[value="其他"]')?.checked;
-      document.getElementById('s1_med_classes_other').style.display = on?'':'none';
+      input.style.display = on ? '' : 'none';
+      if(!on){
+        input.value='';
+        input.classList.remove('input-invalid');
+      }
     }
     function toggleShoppingHow(){
       const sel=document.getElementById('s1_shopping');
@@ -9443,12 +9615,19 @@
       const show = sel.value==='需陪同' || sel.value==='不外出';
       how.style.display = show ? '' : 'none';
       if(!show){
-        how.value=''; other.style.display='none'; other.value='';
+        how.value='';
+        how.classList.remove('input-invalid');
+        other.style.display='none';
+        other.value='';
+        other.classList.remove('input-invalid');
         return;
       }
       const showOther = how.value==='其他';
       other.style.display = showOther ? '' : 'none';
-      if(!showOther) other.value='';
+      if(!showOther){
+        other.value='';
+        other.classList.remove('input-invalid');
+      }
     }
     function toggleDishwashHow(){
       const sel=document.getElementById('s1_dishwash');
@@ -9458,12 +9637,19 @@
       const show = sel.value==='無法自行清洗';
       how.style.display = show ? '' : 'none';
       if(!show){
-        how.value='由他人代辦'; other.style.display='none'; other.value='';
+        how.value='由他人代辦';
+        how.classList.remove('input-invalid');
+        other.style.display='none';
+        other.value='';
+        other.classList.remove('input-invalid');
         return;
       }
       const showOther = how.value==='其他';
       other.style.display = showOther ? '' : 'none';
-      if(!showOther) other.value='';
+      if(!showOther){
+        other.value='';
+        other.classList.remove('input-invalid');
+      }
     }
     function toggleSleepReason(){
       const sleep=document.getElementById('s1_sleep').value;
@@ -9473,7 +9659,14 @@
       const show = sleep !== '良好';
       reason.style.display = show ? '' : 'none';
       if(!show){
-        reason.value=''; detail.style.display='none'; detail.innerHTML=''; other.style.display='none'; other.value='';
+        reason.value='';
+        reason.classList.remove('input-invalid');
+        detail.style.display='none';
+        detail.innerHTML='';
+        detail.classList.remove('input-invalid');
+        other.style.display='none';
+        other.value='';
+        other.classList.remove('input-invalid');
         return;
       }
       toggleSleepReasonDetail();
@@ -9487,10 +9680,16 @@
         detail.style.display=''; detail.innerHTML='<option value="" class="placeholder-option" disabled selected>請選擇</option>';
         list.forEach(name=>{ const o=document.createElement('option'); o.textContent=name; detail.appendChild(o); });
         other.style.display='none'; other.value='';
+        other.classList.remove('input-invalid');
       }else{
         detail.style.display='none'; detail.innerHTML='';
+        detail.classList.remove('input-invalid');
         if(reason==='其他'){ other.style.display=''; }
-        else { other.style.display='none'; other.value=''; }
+        else {
+          other.style.display='none';
+          other.value='';
+          other.classList.remove('input-invalid');
+        }
       }
     }
     function syncDisab(){
@@ -11068,9 +11267,33 @@
       return { fullText: fullText, segments: previewSegments };
     }
 
+    let section1RebuildScheduled = false;
+
+    function scheduleSection1Rebuild(){
+      if(section1RebuildScheduled) return;
+      section1RebuildScheduled = true;
+      const runRebuild = ()=>{
+        section1RebuildScheduled = false;
+        buildSection1();
+      };
+      if(typeof window !== 'undefined' && window.requestAnimationFrame){
+        window.requestAnimationFrame(runRebuild);
+      }else{
+        setTimeout(runRebuild, 0);
+      }
+    }
+
     function buildSection1(presetValidation){
+      let validationOverride = null;
+      if(presetValidation && typeof presetValidation === 'object'){
+        const maybeEvent = presetValidation;
+        const isEventObject = typeof maybeEvent.preventDefault === 'function' || 'target' in maybeEvent || 'currentTarget' in maybeEvent;
+        if(!isEventObject){
+          validationOverride = presetValidation;
+        }
+      }
       let state = runSection1Rules();
-      const validation = presetValidation || validateSection1();
+      const validation = validationOverride || validateSection1();
       if(!validation.ok){
         document.getElementById('section1_out').value = '';
         section1PreviewState.segments = [];
@@ -11132,7 +11355,7 @@
       const cat = showCat && catEl ? (catEl.value || '').trim() : '';
 
       const levelText=document.getElementById('s1_dis_level_text');
-      if(levelText) levelText.textContent = showCat ? level : '—';
+      if(levelText) levelText.textContent = level ? level : '—';
       const box1=document.getElementById('s1_dis_cat_box');
       if(box1) box1.style.display = showCat ? '' : 'none';
       const catText=document.getElementById('s1_dis_cat_text');
@@ -11988,7 +12211,8 @@
       { id:'EF', label:'E.F碼', includes:['EF'], anchor:'h3-exec-ef' },
       { id:'G', label:'G碼', includes:['G'], anchor:'h3-exec-g' },
       { id:'SC', label:'SC碼', includes:['SC'], anchor:'h3-exec-sc' },
-      { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' }
+      { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' },
+      { id:'EMERGENCY', label:'緊急救援服務', includes:['EMERGENCY'], anchor:'h3-exec-emergency' }
     ];
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
@@ -12002,6 +12226,7 @@
       if(code.startsWith('SC')) return 'SC';
       if(code.startsWith('OT')) return 'MEAL';
       if(code.startsWith('DA')) return 'D';
+      if(code.startsWith('EM')) return 'EMERGENCY';
       const first = code.charAt(0);
       if(first === 'B') return 'B';
       if(first === 'C') return 'C';
@@ -12521,20 +12746,13 @@
     }
 
     function handleForeignCareChange(){
+      planMetaState.foreignCare = hasForeignCareFlag();
       applyAutomaticPlanning();
+      updatePlanSummaryTotals();
       buildPlanSummaryPreview();
       buildApprovalPlanPreview();
       scheduleSummaryUpdate();
       if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
-    }
-
-    function initForeignCareControl(){
-      const field = document.getElementById('hasForeignCare');
-      if(!field) return;
-      const handler = function(){ handleForeignCareChange(); };
-      field.addEventListener('change', handler);
-      field.addEventListener('input', handler);
-      handler();
     }
 
     function getCmsMonthlyCap(level){
@@ -13449,8 +13667,18 @@
       if(capBox){
         if(totals.level){
           const levelText=`第${totals.level}級`;
-          if(isFiniteNumber(totals.cap)){
-            capBox.textContent=`${levelText}｜${formatAutoInteger(totals.cap)} 元`;
+          const hasDeduct=isFiniteNumber(totals.foreignDeduct) && totals.foreignDeduct > 0;
+          const effectiveText=formatPointValue(totals.effectiveCap);
+          if(hasDeduct && effectiveText !== '—'){
+            const originalText=formatPointValue(totals.cap);
+            const deductText=formatPointValue(totals.foreignDeduct);
+            const details=[];
+            if(deductText && deductText !== '—') details.push(`扣減 ${deductText}`);
+            if(originalText && originalText !== '—') details.push(`原額度 ${originalText}`);
+            const detailSuffix=details.length ? `（${details.join('，')}）` : '';
+            capBox.textContent=`${levelText}｜${effectiveText}${detailSuffix}`;
+          }else if(isFiniteNumber(totals.cap)){
+            capBox.textContent=`${levelText}｜${formatPointValue(totals.cap)}`;
           }else{
             capBox.textContent=`${levelText}｜—`;
           }
@@ -14522,16 +14750,8 @@
       if(stationWill){ stationWill.addEventListener('change', evt=>{ planMetaState.stationWillingness = evt.target.value; buildApprovalPlanPreview(); }); }
       const emergency=document.getElementById('plan_emergency_note');
       if(emergency){ emergency.addEventListener('input', evt=>{ planMetaState.emergencyNote = evt.target.value; buildApprovalPlanPreview(); }); }
-      const foreignCareField=document.getElementById('hasForeignCare');
-      if(foreignCareField){
-        const syncForeignCare = ()=>{
-          planMetaState.foreignCare = hasForeignCareFlag();
-          buildPlanSummaryPreview();
-          scheduleSummaryUpdate();
-          if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
-        };
-        foreignCareField.addEventListener('change', syncForeignCare);
-        syncForeignCare();
+      if(document.getElementById('hasForeignCare')){
+        handleForeignCareChange();
       }
     }
 
@@ -14565,7 +14785,7 @@
     }
 
     function loadServiceCatalog(){
-      google.script.run.withSuccessHandler(data=>{
+      const applyCatalog=data=>{
         const nextCatalog = JSON.parse(JSON.stringify(DEFAULT_SERVICE_CATALOG));
         if(data && typeof data === 'object'){
           if(data.needLevelCaps) nextCatalog.needLevelCaps = data.needLevelCaps;
@@ -14580,7 +14800,17 @@
         SERVICE_CATALOG = nextCatalog;
         refreshDayCareAvailability();
         syncPlanStateWithSelections();
-      }).getServiceCatalog();
+      };
+      const runner=getGoogleRunner();
+      if(!runner){
+        applyCatalog(null);
+        return;
+      }
+      try{
+        runner.withSuccessHandler(applyCatalog).withFailureHandler(()=>{ applyCatalog(null); }).getServiceCatalog();
+      }catch(err){
+        applyCatalog(null);
+      }
     }
 
     function onHomeCareToggle(card, selected){
@@ -15962,21 +16192,34 @@
         planOther: (document.getElementById('plan_other')?.value || '').trim()
       };
 
-      google.script.run
-        .withSuccessHandler(res=>{
-          renderOutputMessage(res);
-          persistSection1Previous();
-          clearStyleCheckerMarks();
-          renderSection1Preview(section1PreviewState.segments);
-          clearAutoSaveDraft();
-          lastSavedTimestamp = Date.now();
-          scheduleSummaryUpdate();
-          if (res && res.file && res.file.url) openProducedFile(res.file.url);
-        })
-        .withFailureHandler(err=>{
-          msg.innerHTML = '<span class="danger">錯誤：</span>' + (err && err.message ? err.message : err);
-        })
-        .applyAndSave(form);
+      const handleSuccess=res=>{
+        renderOutputMessage(res);
+        persistSection1Previous();
+        clearStyleCheckerMarks();
+        renderSection1Preview(section1PreviewState.segments);
+        clearAutoSaveDraft();
+        lastSavedTimestamp = Date.now();
+        scheduleSummaryUpdate();
+        if(res && res.file && res.file.url) openProducedFile(res.file.url);
+      };
+      const handleFailure=err=>{
+        const detail = err && err.message ? err.message : (err || '操作失敗，請稍後再試。');
+        if(msg){
+          msg.innerHTML = '<span class="danger">錯誤：</span>' + detail;
+        }
+      };
+      const runner=getGoogleRunner();
+      if(!runner){
+        handleFailure('無法連線至 Apps Script，請確認已在 Google 文件側欄中開啟此工具。');
+        return;
+      }
+      try{
+        runner.withSuccessHandler(handleSuccess)
+          .withFailureHandler(handleFailure)
+          .applyAndSave(form);
+      }catch(err){
+        handleFailure(err);
+      }
     }
 
 
@@ -16418,9 +16661,6 @@
           closeWizardMoreMenu();
           goWizardRelative(1);
         });
-      }
-      if(saveBtn){
-        saveBtn.addEventListener('click', function(){ applyAndSave(); });
       }
       if(prevCompact){
         prevCompact.addEventListener('click', function(){
@@ -17142,8 +17382,9 @@
 
       const s1block = document.getElementById('section1_block');
       if(s1block){
-        s1block.addEventListener('input', buildSection1);
-        s1block.addEventListener('change', buildSection1);
+        const scheduleS1 = ()=>scheduleSection1Rebuild();
+        s1block.addEventListener('input', scheduleS1);
+        s1block.addEventListener('change', scheduleS1);
       }
 
       initActionEntries();
@@ -17210,8 +17451,15 @@
     function initEventBindings(){
       bindElement('#unitCode','change', ()=>{ loadManagers(); loadConsultants(); });
       bindElement('#isConsultVisit','change', toggleCallDateByConsultVisit);
+      bindElement('#consultName','change', ()=>{
+        updateConsultVisitText();
+        scheduleSummaryUpdate();
+        updateBasicInfoCompletion();
+      });
       bindElement('#isDischarge','change', toggleDischarge);
       bindElement('#primaryRel','change', enforcePrimaryExclusionOnExtras);
+      bindElement('#hasForeignCare','change', handleForeignCareChange);
+      bindElement('#hasForeignCare','input', handleForeignCareChange);
       bindElement('#s1_vision','change', toggleVisionNotes);
       bindElement('#s1_hearing_level','change', renderHearingDetails);
       bindElement('#s1_swallow','change', toggleSwallow);
@@ -17302,7 +17550,7 @@
       ensureGoalsPageDefaults();
       scheduleSummaryUpdate();
       scheduleAllMeasurements();
-      if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
+      if(typeof google !== 'undefined' && google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
       }
       initFontScaleControls();
@@ -17357,7 +17605,6 @@
       renderRespiteServices();
       renderMealServices();
       initPlanMetaFields();
-      initForeignCareControl();
       initMismatchReasonControls();
       planMetaState.referralExtra = document.getElementById('plan_referral_extra')?.value || '';
       planMetaState.stationInfo = document.getElementById('plan_station_info')?.value || '';
@@ -17409,9 +17656,7 @@
       }
       const consultSelect=document.getElementById('consultName');
       if(consultSelect){
-        consultSelect.addEventListener('change', updateConsultVisitText);
-        consultSelect.addEventListener('change', scheduleSummaryUpdate);
-        consultSelect.addEventListener('change', ()=>{ updateBasicInfoCompletion(); });
+        updateConsultVisitText();
       }
       document.getElementById('s1_gender')?.addEventListener('change', buildApprovalPlanPreview);
       const caseManagerSelect=document.getElementById('caseManagerName');
