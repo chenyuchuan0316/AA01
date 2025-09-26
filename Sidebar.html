@@ -5516,7 +5516,9 @@
           if(group && group.anchor){ anchors.push(group.anchor); }
         });
       }
-      anchors.push('h3-exec-emergency');
+      if(anchors.indexOf('h3-exec-emergency') === -1){
+        anchors.push('h3-exec-emergency');
+      }
       anchors.forEach(function(anchorId){
         if(!anchorId) return;
         const heading = document.getElementById(anchorId);
@@ -11132,7 +11134,7 @@
       const cat = showCat && catEl ? (catEl.value || '').trim() : '';
 
       const levelText=document.getElementById('s1_dis_level_text');
-      if(levelText) levelText.textContent = showCat ? level : '—';
+      if(levelText) levelText.textContent = level ? level : '—';
       const box1=document.getElementById('s1_dis_cat_box');
       if(box1) box1.style.display = showCat ? '' : 'none';
       const catText=document.getElementById('s1_dis_cat_text');
@@ -11988,7 +11990,8 @@
       { id:'EF', label:'E.F碼', includes:['EF'], anchor:'h3-exec-ef' },
       { id:'G', label:'G碼', includes:['G'], anchor:'h3-exec-g' },
       { id:'SC', label:'SC碼', includes:['SC'], anchor:'h3-exec-sc' },
-      { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' }
+      { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' },
+      { id:'EMERGENCY', label:'緊急救援服務', includes:['EMERGENCY'], anchor:'h3-exec-emergency', meta:true }
     ];
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
@@ -12002,6 +12005,7 @@
       if(code.startsWith('SC')) return 'SC';
       if(code.startsWith('OT')) return 'MEAL';
       if(code.startsWith('DA')) return 'D';
+      if(code.startsWith('EM')) return 'EMERGENCY';
       const first = code.charAt(0);
       if(first === 'B') return 'B';
       if(first === 'C') return 'C';
@@ -12521,20 +12525,13 @@
     }
 
     function handleForeignCareChange(){
+      planMetaState.foreignCare = hasForeignCareFlag();
       applyAutomaticPlanning();
+      updatePlanSummaryTotals();
       buildPlanSummaryPreview();
       buildApprovalPlanPreview();
       scheduleSummaryUpdate();
       if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
-    }
-
-    function initForeignCareControl(){
-      const field = document.getElementById('hasForeignCare');
-      if(!field) return;
-      const handler = function(){ handleForeignCareChange(); };
-      field.addEventListener('change', handler);
-      field.addEventListener('input', handler);
-      handler();
     }
 
     function getCmsMonthlyCap(level){
@@ -13449,8 +13446,18 @@
       if(capBox){
         if(totals.level){
           const levelText=`第${totals.level}級`;
-          if(isFiniteNumber(totals.cap)){
-            capBox.textContent=`${levelText}｜${formatAutoInteger(totals.cap)} 元`;
+          const hasDeduct=isFiniteNumber(totals.foreignDeduct) && totals.foreignDeduct > 0;
+          const effectiveText=formatPointValue(totals.effectiveCap);
+          if(hasDeduct && effectiveText !== '—'){
+            const originalText=formatPointValue(totals.cap);
+            const deductText=formatPointValue(totals.foreignDeduct);
+            const details=[];
+            if(deductText && deductText !== '—') details.push(`扣減 ${deductText}`);
+            if(originalText && originalText !== '—') details.push(`原額度 ${originalText}`);
+            const detailSuffix=details.length ? `（${details.join('，')}）` : '';
+            capBox.textContent=`${levelText}｜${effectiveText}${detailSuffix}`;
+          }else if(isFiniteNumber(totals.cap)){
+            capBox.textContent=`${levelText}｜${formatPointValue(totals.cap)}`;
           }else{
             capBox.textContent=`${levelText}｜—`;
           }
@@ -13913,6 +13920,9 @@
       });
       let totalEntries=0;
       PLAN_CATEGORY_GROUPS.forEach(group=>{
+        if(group && group.meta){
+          return;
+        }
         const section=document.createElement('section');
         section.className='plan-category';
         section.dataset.planCategory = group.id;
@@ -14522,16 +14532,8 @@
       if(stationWill){ stationWill.addEventListener('change', evt=>{ planMetaState.stationWillingness = evt.target.value; buildApprovalPlanPreview(); }); }
       const emergency=document.getElementById('plan_emergency_note');
       if(emergency){ emergency.addEventListener('input', evt=>{ planMetaState.emergencyNote = evt.target.value; buildApprovalPlanPreview(); }); }
-      const foreignCareField=document.getElementById('hasForeignCare');
-      if(foreignCareField){
-        const syncForeignCare = ()=>{
-          planMetaState.foreignCare = hasForeignCareFlag();
-          buildPlanSummaryPreview();
-          scheduleSummaryUpdate();
-          if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
-        };
-        foreignCareField.addEventListener('change', syncForeignCare);
-        syncForeignCare();
+      if(document.getElementById('hasForeignCare')){
+        handleForeignCareChange();
       }
     }
 
@@ -17210,8 +17212,15 @@
     function initEventBindings(){
       bindElement('#unitCode','change', ()=>{ loadManagers(); loadConsultants(); });
       bindElement('#isConsultVisit','change', toggleCallDateByConsultVisit);
+      bindElement('#consultName','change', ()=>{
+        updateConsultVisitText();
+        scheduleSummaryUpdate();
+        updateBasicInfoCompletion();
+      });
       bindElement('#isDischarge','change', toggleDischarge);
       bindElement('#primaryRel','change', enforcePrimaryExclusionOnExtras);
+      bindElement('#hasForeignCare','change', handleForeignCareChange);
+      bindElement('#hasForeignCare','input', handleForeignCareChange);
       bindElement('#s1_vision','change', toggleVisionNotes);
       bindElement('#s1_hearing_level','change', renderHearingDetails);
       bindElement('#s1_swallow','change', toggleSwallow);
@@ -17357,7 +17366,6 @@
       renderRespiteServices();
       renderMealServices();
       initPlanMetaFields();
-      initForeignCareControl();
       initMismatchReasonControls();
       planMetaState.referralExtra = document.getElementById('plan_referral_extra')?.value || '';
       planMetaState.stationInfo = document.getElementById('plan_station_info')?.value || '';
@@ -17409,9 +17417,7 @@
       }
       const consultSelect=document.getElementById('consultName');
       if(consultSelect){
-        consultSelect.addEventListener('change', updateConsultVisitText);
-        consultSelect.addEventListener('change', scheduleSummaryUpdate);
-        consultSelect.addEventListener('change', ()=>{ updateBasicInfoCompletion(); });
+        updateConsultVisitText();
       }
       document.getElementById('s1_gender')?.addEventListener('change', buildApprovalPlanPreview);
       const caseManagerSelect=document.getElementById('caseManagerName');
