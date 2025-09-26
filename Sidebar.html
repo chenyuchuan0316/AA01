@@ -17212,6 +17212,11 @@
     function initEventBindings(){
       bindElement('#unitCode','change', ()=>{ loadManagers(); loadConsultants(); });
       bindElement('#isConsultVisit','change', toggleCallDateByConsultVisit);
+      bindElement('#consultName','change', ()=>{
+        updateConsultVisitText();
+        scheduleSummaryUpdate();
+        updateBasicInfoCompletion();
+      });
       bindElement('#isDischarge','change', toggleDischarge);
       bindElement('#primaryRel','change', enforcePrimaryExclusionOnExtras);
       bindElement('#hasForeignCare','change', handleForeignCareChange);
@@ -17412,9 +17417,7 @@
       }
       const consultSelect=document.getElementById('consultName');
       if(consultSelect){
-        consultSelect.addEventListener('change', updateConsultVisitText);
-        consultSelect.addEventListener('change', scheduleSummaryUpdate);
-        consultSelect.addEventListener('change', ()=>{ updateBasicInfoCompletion(); });
+        updateConsultVisitText();
       }
       document.getElementById('s1_gender')?.addEventListener('change', buildApprovalPlanPreview);
       const caseManagerSelect=document.getElementById('caseManagerName');
