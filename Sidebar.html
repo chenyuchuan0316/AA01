@@ -7200,12 +7200,23 @@
     function initDateInputs(){
       ['callDate','visitDate','dischargeDate'].forEach(attachDateInputEvents);
     }
-    function toggleDischarge(){const on=document.getElementById('isDischarge').checked; document.getElementById('dischargeBox').style.display=on?'':'none'; if(on&&!getDateBox('dischargeDate')) setDateBox('dischargeDate', new Date());}
+    function toggleDischarge(){
+      const toggle=document.getElementById('isDischarge');
+      const box=document.getElementById('dischargeBox');
+      if(!toggle || !box) return;
+      const on=!!toggle.checked;
+      box.style.display=on?'':'none';
+      if(on && !getDateBox('dischargeDate')){
+        setDateBox('dischargeDate', new Date());
+      }
+    }
     function updateConsultVisitText(){
       const box=document.getElementById('consultVisitText');
       if(!box) return;
-      const caseName=(document.getElementById('caseName').value||'').trim();
-      const consultName=(document.getElementById('consultName').value||'').trim();
+      const caseField=document.getElementById('caseName');
+      const consultField=document.getElementById('consultName');
+      const caseName=(caseField && caseField.value ? caseField.value : '').trim();
+      const consultName=(consultField && consultField.value ? consultField.value : '').trim();
       const caseDisplay=caseName||'未填個案姓名';
       const consultDisplay=consultName||'未選擇照專';
       box.textContent=`本案(${caseDisplay}) 由照顧專員(${consultDisplay})進行約訪`;
@@ -8569,7 +8580,7 @@
       if(excretionBox){
         excretionBox.innerHTML='';
         S1_EXCRETION_AID_OPTIONS.forEach((name,i)=>{
-          appendCheckbox(excretionBox, { id:`exaid_${i}`, value:name, text:name, onChange:updateExcretionAidEffects });
+          appendCheckbox(excretionBox, { id:`exaid_${i}`, value:name, text:name, onChange:handleExcretionAidChange });
         });
       }
 
@@ -9134,6 +9145,11 @@
       const show=value && value !== '夜間未起夜';
       wrap.style.display = show ? '' : 'none';
       if(!show && input) input.value='';
+    }
+
+    function handleExcretionAidChange(){
+      updateExcretionAidEffects();
+      updateNocturiaCountVisibility();
     }
 
     function updateExcretionAidEffects(){
@@ -11106,14 +11122,17 @@
       const levelEl=document.getElementById('s2_dis_level');
       if(!levelEl) return;
       const catEl=document.getElementById('s2_dis_cat');
-      const level = levelEl ? levelEl.value : '';
-      const cat = catEl ? catEl.value : '';
+      const level = (levelEl.value || '').trim();
       const showCat = level && level !== '無';
       const box2=document.getElementById('disCatBox');
       if(box2) box2.style.display = showCat ? '' : 'none';
+      if(!showCat && catEl){
+        catEl.value='';
+      }
+      const cat = showCat && catEl ? (catEl.value || '').trim() : '';
 
       const levelText=document.getElementById('s1_dis_level_text');
-      if(levelText) levelText.textContent = level || '—';
+      if(levelText) levelText.textContent = showCat ? level : '—';
       const box1=document.getElementById('s1_dis_cat_box');
       if(box1) box1.style.display = showCat ? '' : 'none';
       const catText=document.getElementById('s1_dis_cat_text');
@@ -12515,6 +12534,7 @@
       const handler = function(){ handleForeignCareChange(); };
       field.addEventListener('change', handler);
       field.addEventListener('input', handler);
+      handler();
     }
 
     function getCmsMonthlyCap(level){
@@ -17156,13 +17176,35 @@
       });
     }
 
+    const actionHandlers = Object.create(null);
+    let actionDelegationContainer = null;
+    let actionDelegationInitialized = false;
+
+    function handleDelegatedActionClick(event){
+      const container = actionDelegationContainer || document;
+      const actionTarget = event.target.closest('[data-action]');
+      if(!actionTarget) return;
+      if(container !== document && !container.contains(actionTarget)) return;
+      const action = actionTarget.getAttribute('data-action');
+      if(!action) return;
+      const handler = actionHandlers[action];
+      if(typeof handler !== 'function') return;
+      event.preventDefault();
+      handler.call(actionTarget, event, actionTarget);
+    }
+
+    function initActionDelegation(){
+      if(actionDelegationInitialized) return;
+      const container = document.getElementById('appContainer') || document;
+      if(!container) return;
+      actionDelegationContainer = container;
+      container.addEventListener('click', handleDelegatedActionClick);
+      actionDelegationInitialized = true;
+    }
+
     function bindAction(action, handler){
-      document.querySelectorAll(`[data-action="${action}"]`).forEach(element=>{
-        element.addEventListener('click', event=>{
-          event.preventDefault();
-          handler(event);
-        });
-      });
+      if(!action || typeof handler !== 'function') return;
+      actionHandlers[action] = handler;
     }
 
     function initEventBindings(){
@@ -17207,13 +17249,13 @@
       });
       bindAction('add-extra-row', ()=>{ addExtraRow(); });
       bindAction('reset-vision-suggestions', resetVisionSuggestions);
-      bindAction('switch-location-context', event=>{
-        const context=event.currentTarget.dataset.context;
+      bindAction('switch-location-context', (event, target)=>{
+        const context = target && target.dataset ? target.dataset.context : '';
         if(context){ switchLocationContext(context); }
       });
       bindAction('copy-location-from-other', ()=>{ copyLocationFromOther(); });
-      bindAction('set-lesion-symptom-mode', event=>{
-        const mode=event.currentTarget.dataset.mode;
+      bindAction('set-lesion-symptom-mode', (event, target)=>{
+        const mode = target && target.dataset ? target.dataset.mode : '';
         if(mode){ setLesionSymptomMode(mode); }
       });
       bindAction('add-action-entry', ()=>{ addActionEntry(); });
@@ -17253,6 +17295,7 @@
       initHeadingSchemaToast();
       registerDevDiagnostics();
       initGroupCollapsibles();
+      initActionDelegation();
       initEventBindings();
       initSectionViews();
       refreshExecutionHeadingRegistry();
