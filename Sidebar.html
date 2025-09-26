@@ -4113,7 +4113,7 @@
       </div>
 
       <div class="floating-actions" id="floatingActions" aria-label="頁面操作">
-        <button type="button" class="primary" id="wizardSaveBtn">存檔</button>
+        <button type="button" class="primary" id="wizardSaveBtn" data-action="apply-and-save">存檔</button>
         <div id="wizardMoreWrapper">
           <button type="button" id="wizardMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="wizardMoreMenu" aria-label="更多操作" title="更多操作">⋯</button>
           <div class="floating-more-menu" id="wizardMoreMenu" role="menu" data-open="0">
@@ -8123,88 +8123,175 @@
     }
 
     /* ===== 個管師名單 ===== */
-    function loadManagers(){
-      const unit=document.getElementById('unitCode').value;
-      google.script.run.withSuccessHandler(list=>{
-        const select=document.getElementById('caseManagerName');
-        if(!select) return;
-        const previousValue=(select.value || '').trim();
-        const hasData=Array.isArray(list) && list.length > 0;
-        select.innerHTML='';
-        const placeholder=document.createElement('option');
-        placeholder.value='';
-        placeholder.textContent=hasData ? '請選擇' : '（無資料）';
-        placeholder.className='placeholder-option';
-        placeholder.disabled=true;
-        placeholder.selected=true;
-        select.appendChild(placeholder);
-        let matched=false;
-        if(hasData){
-          list.forEach(name=>{
-            const option=document.createElement('option');
-            option.value=name;
-            option.textContent=name;
-            if(name === previousValue){
-              option.selected=true;
-              matched=true;
-            }
-            select.appendChild(option);
-          });
-          select.disabled=false;
-          if(!matched){
-            select.selectedIndex=0;
+    function getGoogleRunner(){
+      if(typeof google === 'undefined' || !google || !google.script || !google.script.run){
+        return null;
+      }
+      return google.script.run;
+    }
+
+    function applyCaseManagerOptions(list, options){
+      const select=document.getElementById('caseManagerName');
+      if(!select) return;
+      const previousValue=options && typeof options.previousValue === 'string'
+        ? options.previousValue.trim()
+        : (select.value || '').trim();
+      const hasData=Array.isArray(list) && list.length > 0;
+      const placeholderText=(options && options.placeholder)
+        ? options.placeholder
+        : (hasData ? '請選擇' : '（無資料）');
+      select.innerHTML='';
+      const placeholder=document.createElement('option');
+      placeholder.value='';
+      placeholder.textContent=placeholderText;
+      placeholder.className='placeholder-option';
+      placeholder.disabled=!(options && options.allowPlaceholderSelection);
+      placeholder.selected=true;
+      select.appendChild(placeholder);
+      let matched=false;
+      if(hasData){
+        list.forEach(name=>{
+          const text=String(name || '').trim();
+          if(!text) return;
+          const option=document.createElement('option');
+          option.value=text;
+          option.textContent=text;
+          if(text === previousValue){
+            option.selected=true;
+            matched=true;
           }
-        }else{
-          select.disabled=true;
-          select.selectedIndex=0;
+          select.appendChild(option);
+        });
+        select.disabled=false;
+      }else if(options && options.fallbackValue){
+        const preserved=String(options.fallbackValue).trim();
+        if(preserved){
+          const option=document.createElement('option');
+          option.value=preserved;
+          option.textContent=preserved;
+          option.selected=true;
+          select.appendChild(option);
+          matched=true;
+          select.disabled=false;
         }
-        buildApprovalPlanPreview();
-        scheduleSummaryUpdate();
-        updateBasicInfoCompletion({ silent:true });
-      }).getCaseManagersByUnit(unit);
+      }else{
+        select.disabled=!(options && options.keepEnabled);
+      }
+      if(!matched){
+        select.selectedIndex=0;
+      }
+      buildApprovalPlanPreview();
+      scheduleSummaryUpdate();
+      updateBasicInfoCompletion({ silent:true });
+    }
+
+    function loadManagers(){
+      const select=document.getElementById('caseManagerName');
+      if(!select) return;
+      const unit=document.getElementById('unitCode').value;
+      const previousValue=(select.value || '').trim();
+      const handleFailure=()=>{
+        applyCaseManagerOptions([], {
+          previousValue,
+          fallbackValue: previousValue,
+          placeholder:'（載入失敗）'
+        });
+      };
+      const runner=getGoogleRunner();
+      if(!runner){
+        handleFailure();
+        return;
+      }
+      try{
+        runner.withSuccessHandler(list=>{
+          applyCaseManagerOptions(Array.isArray(list) ? list : [], { previousValue });
+        }).withFailureHandler(()=>{ handleFailure(); }).getCaseManagersByUnit(unit);
+      }catch(err){
+        handleFailure();
+      }
     }
 
     /* ===== 照專名單 ===== */
-    function loadConsultants(){
-      const unit = document.getElementById('unitCode').value;
-      google.script.run.withSuccessHandler(list=>{
-        const select=document.getElementById('consultName');
-        if(!select) return;
-        const previousValue=(select.value || '').trim();
-        const hasData=Array.isArray(list) && list.length > 0;
-        select.innerHTML='';
-        const placeholder=document.createElement('option');
-        placeholder.value='';
-        placeholder.textContent=hasData ? '請選擇' : '（無資料）';
-        placeholder.className='placeholder-option';
-        placeholder.disabled=true;
-        placeholder.selected=true;
-        select.appendChild(placeholder);
-        let matched=false;
-        if(hasData){
-          list.forEach(name=>{
-            const option=document.createElement('option');
-            option.value=name;
-            option.textContent=name;
-            if(name === previousValue){
-              option.selected=true;
-              matched=true;
-            }
-            select.appendChild(option);
-          });
-          select.disabled=false;
-          if(!matched){
-            select.selectedIndex=0;
+    function applyConsultantOptions(list, options){
+      const select=document.getElementById('consultName');
+      if(!select) return;
+      const previousValue=options && typeof options.previousValue === 'string'
+        ? options.previousValue.trim()
+        : (select.value || '').trim();
+      const hasData=Array.isArray(list) && list.length > 0;
+      const placeholderText=(options && options.placeholder)
+        ? options.placeholder
+        : (hasData ? '請選擇' : '（無資料）');
+      select.innerHTML='';
+      const placeholder=document.createElement('option');
+      placeholder.value='';
+      placeholder.textContent=placeholderText;
+      placeholder.className='placeholder-option';
+      placeholder.disabled=!(options && options.allowPlaceholderSelection);
+      placeholder.selected=true;
+      select.appendChild(placeholder);
+      let matched=false;
+      if(hasData){
+        list.forEach(name=>{
+          const text=String(name || '').trim();
+          if(!text) return;
+          const option=document.createElement('option');
+          option.value=text;
+          option.textContent=text;
+          if(text === previousValue){
+            option.selected=true;
+            matched=true;
           }
-        }else{
-          select.disabled=true;
-          select.selectedIndex=0;
+          select.appendChild(option);
+        });
+        select.disabled=false;
+      }else if(options && options.fallbackValue){
+        const preserved=String(options.fallbackValue).trim();
+        if(preserved){
+          const option=document.createElement('option');
+          option.value=preserved;
+          option.textContent=preserved;
+          option.selected=true;
+          select.appendChild(option);
+          matched=true;
+          select.disabled=false;
         }
-        updateConsultVisitText();
-        toggleCallDateByConsultVisit();
-        scheduleSummaryUpdate();
-        updateBasicInfoCompletion({ silent:true });
-      }).getConsultantsByUnit(unit);
+      }else{
+        select.disabled=!(options && options.keepEnabled);
+      }
+      if(!matched){
+        select.selectedIndex=0;
+      }
+      updateConsultVisitText();
+      toggleCallDateByConsultVisit();
+      scheduleSummaryUpdate();
+      updateBasicInfoCompletion({ silent:true });
+    }
+
+    function loadConsultants(){
+      const select=document.getElementById('consultName');
+      if(!select) return;
+      const unit=document.getElementById('unitCode').value;
+      const previousValue=(select.value || '').trim();
+      const handleFailure=()=>{
+        applyConsultantOptions([], {
+          previousValue,
+          fallbackValue: previousValue,
+          placeholder:'（載入失敗）'
+        });
+      };
+      const runner=getGoogleRunner();
+      if(!runner){
+        handleFailure();
+        return;
+      }
+      try{
+        runner.withSuccessHandler(list=>{
+          applyConsultantOptions(Array.isArray(list) ? list : [], { previousValue });
+        }).withFailureHandler(()=>{ handleFailure(); }).getConsultantsByUnit(unit);
+      }catch(err){
+        handleFailure();
+      }
     }
 
     /* ===== 三、偕同訪視者（下拉＋多筆） ===== */
@@ -14705,7 +14792,7 @@
     }
 
     function loadServiceCatalog(){
-      google.script.run.withSuccessHandler(data=>{
+      const applyCatalog=data=>{
         const nextCatalog = JSON.parse(JSON.stringify(DEFAULT_SERVICE_CATALOG));
         if(data && typeof data === 'object'){
           if(data.needLevelCaps) nextCatalog.needLevelCaps = data.needLevelCaps;
@@ -14720,7 +14807,17 @@
         SERVICE_CATALOG = nextCatalog;
         refreshDayCareAvailability();
         syncPlanStateWithSelections();
-      }).getServiceCatalog();
+      };
+      const runner=getGoogleRunner();
+      if(!runner){
+        applyCatalog(null);
+        return;
+      }
+      try{
+        runner.withSuccessHandler(applyCatalog).withFailureHandler(()=>{ applyCatalog(null); }).getServiceCatalog();
+      }catch(err){
+        applyCatalog(null);
+      }
     }
 
     function onHomeCareToggle(card, selected){
@@ -16102,21 +16199,34 @@
         planOther: (document.getElementById('plan_other')?.value || '').trim()
       };
 
-      google.script.run
-        .withSuccessHandler(res=>{
-          renderOutputMessage(res);
-          persistSection1Previous();
-          clearStyleCheckerMarks();
-          renderSection1Preview(section1PreviewState.segments);
-          clearAutoSaveDraft();
-          lastSavedTimestamp = Date.now();
-          scheduleSummaryUpdate();
-          if (res && res.file && res.file.url) openProducedFile(res.file.url);
-        })
-        .withFailureHandler(err=>{
-          msg.innerHTML = '<span class="danger">錯誤：</span>' + (err && err.message ? err.message : err);
-        })
-        .applyAndSave(form);
+      const handleSuccess=res=>{
+        renderOutputMessage(res);
+        persistSection1Previous();
+        clearStyleCheckerMarks();
+        renderSection1Preview(section1PreviewState.segments);
+        clearAutoSaveDraft();
+        lastSavedTimestamp = Date.now();
+        scheduleSummaryUpdate();
+        if(res && res.file && res.file.url) openProducedFile(res.file.url);
+      };
+      const handleFailure=err=>{
+        const detail = err && err.message ? err.message : (err || '操作失敗，請稍後再試。');
+        if(msg){
+          msg.innerHTML = '<span class="danger">錯誤：</span>' + detail;
+        }
+      };
+      const runner=getGoogleRunner();
+      if(!runner){
+        handleFailure('無法連線至 Apps Script，請確認已在 Google 文件側欄中開啟此工具。');
+        return;
+      }
+      try{
+        runner.withSuccessHandler(handleSuccess)
+          .withFailureHandler(handleFailure)
+          .applyAndSave(form);
+      }catch(err){
+        handleFailure(err);
+      }
     }
 
 
@@ -16558,9 +16668,6 @@
           closeWizardMoreMenu();
           goWizardRelative(1);
         });
-      }
-      if(saveBtn){
-        saveBtn.addEventListener('click', function(){ applyAndSave(); });
       }
       if(prevCompact){
         prevCompact.addEventListener('click', function(){
@@ -17450,7 +17557,7 @@
       ensureGoalsPageDefaults();
       scheduleSummaryUpdate();
       scheduleAllMeasurements();
-      if(google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
+      if(typeof google !== 'undefined' && google && google.script && google.script.host && typeof google.script.host.setWidth === 'function'){
         try{ google.script.host.setWidth(900); }catch(err){}
       }
       initFontScaleControls();
