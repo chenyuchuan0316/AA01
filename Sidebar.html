@@ -9265,6 +9265,7 @@
           input.classList.remove('input-invalid');
         }
         scheduleSection1Rebuild();
+
         return;
       }
       const sel=document.getElementById('s1_urine_night');
@@ -9275,6 +9276,7 @@
           input.classList.remove('input-invalid');
         }
         scheduleSection1Rebuild();
+
         return;
       }
       const value=sel.value;
@@ -9285,6 +9287,7 @@
         input.classList.remove('input-invalid');
       }
       scheduleSection1Rebuild();
+
     }
 
     function handleExcretionAidChange(){
@@ -12214,6 +12217,7 @@
       { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' },
       { id:'EMERGENCY', label:'緊急救援服務', includes:['EMERGENCY'], anchor:'h3-exec-emergency' }
     ];
+
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
       (group.includes || []).forEach(cat=>{ PLAN_CATEGORY_LOOKUP[String(cat).toUpperCase()] = group.id; });
@@ -14141,6 +14145,9 @@
       });
       let totalEntries=0;
       PLAN_CATEGORY_GROUPS.forEach(group=>{
+        if(group && group.meta){
+          return;
+        }
         const section=document.createElement('section');
         section.className='plan-category';
         section.dataset.planCategory = group.id;
