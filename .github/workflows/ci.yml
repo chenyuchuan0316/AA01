@@ -1,14 +1,101 @@
 ﻿name: AA01 CI
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
-  noop:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm install
+      - run: npm test --if-present
 
+  deploy:
+    if: github.ref == "refs/heads/main"
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm
+@'
+name: AA01 CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm install
+      - run: npm test --if-present
+
+  deploy:
+    if: github.ref == "refs/heads/main"
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm install
+
+      - name: Prepare CLASP auth (Service Account)
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" > sa.json
+          cat > ~/.clasprc.json <<'RC'
+          {
+            "token": {
+              "serviceAccountCredentials": $(cat sa.json)
+            }
+          }
+          RC
+
+      - name: Write .clasp.json
+        run: |
+          cat > .clasp.json <<'CLASP'
+          {
+            "scriptId": "${{ secrets.SCRIPT_ID }}",
+            "rootDir": "src"
+          }
+          CLASP
+
+      - name: Push & Deploy
+        run: |
+          npx clasp push --force
+          npx clasp version "CI $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          npx clasp deploy -d "CI auto deploy $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
