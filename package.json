@@ -6,6 +6,6 @@
     "clasp": "^2.6.0"
   },
   "scripts": {
-    "test": "echo \"(no tests yet)\""
+    "test": "echo \"no tests yet\""
   }
 }
