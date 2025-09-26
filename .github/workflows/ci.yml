@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write
+  id-token: write   # 取得 GitHub OIDC，供 WIF 交換 ADC
 
 jobs:
   test:
@@ -29,11 +29,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1) 用 WIF 交換 ADC（無金鑰登入 Google Cloud）
       - id: auth
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_SA_EMAIL }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}   # 例：projects/744278752637/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: ${{ secrets.GCP_SA_EMAIL }}                  # 例：aa01-ci@aa01-ci.iam.gserviceaccount.com
           lifetime: 3600
 
       - uses: actions/setup-node@v4
@@ -42,6 +43,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
 
+      # 2) 寫入 .clasp.json（rootDir 指向專案根目錄）
       - name: Write .clasp.json
         run: |
           cat > .clasp.json <<'JSON'
@@ -49,8 +51,9 @@ jobs:
           JSON
           echo "[debug] .clasp.json:" && cat .clasp.json
 
+      # 3) 使用 Clasp 3.x alpha 的 --adc（直接讀取 ADC）
       - name: Push & Deploy via ADC
         run: |
-          npx -y @google/clasp@^3 push --adc --force
-          npx -y @google/clasp@^3 version --adc "CI $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          npx -y @google/clasp@^3 deploy --adc -d "CI auto deploy $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          npx -y @google/clasp@3.0.6-alpha push --adc --force
+          npx -y @google/clasp@3.0.6-alpha version --adc "CI $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          npx -y @google/clasp@3.0.6-alpha deploy --adc -d "CI auto deploy $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
