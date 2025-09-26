@@ -9110,6 +9110,7 @@
       refreshCheckcol('s1_swallow_sx_box');
       refreshCheckcol('s1_diet_texture_box');
       refreshCheckcol('s1_feeding_tube_box');
+      scheduleSection1Rebuild();
     }
 
     function toggleFallDetail(){
@@ -9176,6 +9177,8 @@
           input.value='';
           input.classList.remove('input-invalid');
         }
+        scheduleSection1Rebuild();
+
         return;
       }
       const sel=document.getElementById('s1_urine_night');
@@ -9185,6 +9188,8 @@
           input.value='';
           input.classList.remove('input-invalid');
         }
+        scheduleSection1Rebuild();
+
         return;
       }
       const value=sel.value;
@@ -9194,11 +9199,14 @@
         input.value='';
         input.classList.remove('input-invalid');
       }
+      scheduleSection1Rebuild();
+
     }
 
     function handleExcretionAidChange(){
       updateExcretionAidEffects();
       updateNocturiaCountVisibility();
+      scheduleSection1Rebuild();
     }
 
     function updateExcretionAidEffects(){
@@ -9225,6 +9233,7 @@
         toggleUrineOther('night');
       }
       updateNocturiaCountVisibility();
+      scheduleSection1Rebuild();
     }
 
     function toggleAdlHow(id){
@@ -9492,6 +9501,7 @@
         input.classList.remove('input-invalid');
       }
       if(type==='night') updateNocturiaCountVisibility();
+      scheduleSection1Rebuild();
     }
     function toggleDhxOther(){
       const input=document.getElementById('s1_dhx_other');
@@ -11173,9 +11183,33 @@
       return { fullText: fullText, segments: previewSegments };
     }
 
+    let section1RebuildScheduled = false;
+
+    function scheduleSection1Rebuild(){
+      if(section1RebuildScheduled) return;
+      section1RebuildScheduled = true;
+      const runRebuild = ()=>{
+        section1RebuildScheduled = false;
+        buildSection1();
+      };
+      if(typeof window !== 'undefined' && window.requestAnimationFrame){
+        window.requestAnimationFrame(runRebuild);
+      }else{
+        setTimeout(runRebuild, 0);
+      }
+    }
+
     function buildSection1(presetValidation){
+      let validationOverride = null;
+      if(presetValidation && typeof presetValidation === 'object'){
+        const maybeEvent = presetValidation;
+        const isEventObject = typeof maybeEvent.preventDefault === 'function' || 'target' in maybeEvent || 'currentTarget' in maybeEvent;
+        if(!isEventObject){
+          validationOverride = presetValidation;
+        }
+      }
       let state = runSection1Rules();
-      const validation = presetValidation || validateSection1();
+      const validation = validationOverride || validateSection1();
       if(!validation.ok){
         document.getElementById('section1_out').value = '';
         section1PreviewState.segments = [];
@@ -12095,6 +12129,7 @@
       { id:'SC', label:'SC碼', includes:['SC'], anchor:'h3-exec-sc' },
       { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' },
       { id:'EMERGENCY', label:'緊急救援服務', includes:['EMERGENCY'], anchor:'h3-exec-emergency' }
+    ];
 
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
@@ -17247,8 +17282,9 @@
 
       const s1block = document.getElementById('section1_block');
       if(s1block){
-        s1block.addEventListener('input', buildSection1);
-        s1block.addEventListener('change', buildSection1);
+        const scheduleS1 = ()=>scheduleSection1Rebuild();
+        s1block.addEventListener('input', scheduleS1);
+        s1block.addEventListener('change', scheduleS1);
       }
 
       initActionEntries();
