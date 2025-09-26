@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"     # 依 package-lock.json 啟用快取
+          cache: "npm"
       - run: npm ci
       - run: npm test --if-present
 
@@ -36,17 +36,21 @@ jobs:
           cache: "npm"
       - run: npm ci
 
-      - name: Prepare CLASP auth (Service Account)
-        run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > sa.json
-          cat > ~/.clasprc.json <<'RC'
-          {
-            "token": {
-              "serviceAccountCredentials": $(cat sa.json)
-            }
-          }
-          RC
+      # 1) 將 GCP_SA_KEY 寫到暫存檔
+      - name: Write raw SA JSON
+        run: echo '${{ secrets.GCP_SA_KEY }}' > sa.json
 
+      # 2) 產生 ~/.clasprc.json（clasp 讀取的位置與格式）
+      - name: Generate ~/.clasprc.json for clasp
+        run: |
+          node -e "const fs=require('fs');const os=require('os');const p=os.homedir()+'/.clasprc.json';const cred=JSON.parse(fs.readFileSync('sa.json','utf8'));const out={token:{serviceAccountCredentials:cred}};fs.writeFileSync(p,JSON.stringify(out));"
+
+      # 3) 健檢：只輸出欄位名稱（不含任何私密值）
+      - name: Sanity check credentials (keys only)
+        run: |
+          node -e "const fs=require('fs');const os=require('os');const p=os.homedir()+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));const k=Object.keys(j.token.serviceAccountCredentials||{});console.log('clasprc ok, keys:', k)"
+
+      # 4) 寫入 .clasp.json（指向 Script ID 與 rootDir）
       - name: Write .clasp.json
         run: |
           cat > .clasp.json <<'CLASP'
@@ -56,6 +60,7 @@ jobs:
           }
           CLASP
 
+      # 5) 推送並建立部署
       - name: Push & Deploy
         run: |
           npx clasp push --force
