@@ -5516,7 +5516,9 @@
           if(group && group.anchor){ anchors.push(group.anchor); }
         });
       }
-      anchors.push('h3-exec-emergency');
+      if(anchors.indexOf('h3-exec-emergency') === -1){
+        anchors.push('h3-exec-emergency');
+      }
       anchors.forEach(function(anchorId){
         if(!anchorId) return;
         const heading = document.getElementById(anchorId);
@@ -11988,7 +11990,8 @@
       { id:'EF', label:'E.F碼', includes:['EF'], anchor:'h3-exec-ef' },
       { id:'G', label:'G碼', includes:['G'], anchor:'h3-exec-g' },
       { id:'SC', label:'SC碼', includes:['SC'], anchor:'h3-exec-sc' },
-      { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' }
+      { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' },
+      { id:'EMERGENCY', label:'緊急救援服務', includes:['EMERGENCY'], anchor:'h3-exec-emergency', meta:true }
     ];
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
@@ -12002,6 +12005,7 @@
       if(code.startsWith('SC')) return 'SC';
       if(code.startsWith('OT')) return 'MEAL';
       if(code.startsWith('DA')) return 'D';
+      if(code.startsWith('EM')) return 'EMERGENCY';
       const first = code.charAt(0);
       if(first === 'B') return 'B';
       if(first === 'C') return 'C';
@@ -12521,20 +12525,13 @@
     }
 
     function handleForeignCareChange(){
+      planMetaState.foreignCare = hasForeignCareFlag();
       applyAutomaticPlanning();
+      updatePlanSummaryTotals();
       buildPlanSummaryPreview();
       buildApprovalPlanPreview();
       scheduleSummaryUpdate();
       if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
-    }
-
-    function initForeignCareControl(){
-      const field = document.getElementById('hasForeignCare');
-      if(!field) return;
-      const handler = function(){ handleForeignCareChange(); };
-      field.addEventListener('change', handler);
-      field.addEventListener('input', handler);
-      handler();
     }
 
     function getCmsMonthlyCap(level){
@@ -13913,6 +13910,9 @@
       });
       let totalEntries=0;
       PLAN_CATEGORY_GROUPS.forEach(group=>{
+        if(group && group.meta){
+          return;
+        }
         const section=document.createElement('section');
         section.className='plan-category';
         section.dataset.planCategory = group.id;
@@ -14524,14 +14524,13 @@
       if(emergency){ emergency.addEventListener('input', evt=>{ planMetaState.emergencyNote = evt.target.value; buildApprovalPlanPreview(); }); }
       const foreignCareField=document.getElementById('hasForeignCare');
       if(foreignCareField){
-        const syncForeignCare = ()=>{
-          planMetaState.foreignCare = hasForeignCareFlag();
-          buildPlanSummaryPreview();
-          scheduleSummaryUpdate();
-          if(!isRestoringDraft && draftLoadComplete) scheduleAutoSave();
-        };
-        foreignCareField.addEventListener('change', syncForeignCare);
-        syncForeignCare();
+        const bindForeignCare = ()=>{ handleForeignCareChange(); };
+        if(foreignCareField.dataset.foreignCareBound !== '1'){
+          foreignCareField.addEventListener('change', bindForeignCare);
+          foreignCareField.addEventListener('input', bindForeignCare);
+          foreignCareField.dataset.foreignCareBound = '1';
+        }
+        bindForeignCare();
       }
     }
 
@@ -17357,7 +17356,6 @@
       renderRespiteServices();
       renderMealServices();
       initPlanMetaFields();
-      initForeignCareControl();
       initMismatchReasonControls();
       planMetaState.referralExtra = document.getElementById('plan_referral_extra')?.value || '';
       planMetaState.stationInfo = document.getElementById('plan_station_info')?.value || '';
