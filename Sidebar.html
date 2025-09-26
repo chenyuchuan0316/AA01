@@ -1597,10 +1597,6 @@
       flex-direction:column;
       gap:var(--space-sm);
     }
-    .plan-category-meta{
-      border-style:dashed;
-      background:rgb(11 87 208 / 0.05);
-    }
     .plan-empty-hint{
       font-size:0.95rem;
       color:rgb(17 17 17 / 0.75);
@@ -3986,12 +3982,6 @@
             <p>若同一服務由不同單位提供，或同時含自費段，請個別建立明細並清楚標註說明。</p>
           </div>
           <div id="planEditor" class="plan-editor"></div>
-          <div class="plan-category plan-category-meta" data-plan-category="EMERGENCY">
-            <div class="plan-category-heading">
-              <h3 class="h3" id="h3-exec-emergency" data-anchor="h3-exec-emergency">緊急救援服務</h3>
-            </div>
-            <div class="plan-category-body"></div>
-          </div>
         </section>
 
         <section class="section-card" id="planReferralCard">
@@ -12104,8 +12094,8 @@
       { id:'G', label:'G碼', includes:['G'], anchor:'h3-exec-g' },
       { id:'SC', label:'SC碼', includes:['SC'], anchor:'h3-exec-sc' },
       { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' },
-      { id:'EMERGENCY', label:'緊急救援服務', includes:['EMERGENCY'], anchor:'h3-exec-emergency', meta:true }
-    ];
+      { id:'EMERGENCY', label:'緊急救援服務', includes:['EMERGENCY'], anchor:'h3-exec-emergency' }
+
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
       (group.includes || []).forEach(cat=>{ PLAN_CATEGORY_LOOKUP[String(cat).toUpperCase()] = group.id; });
