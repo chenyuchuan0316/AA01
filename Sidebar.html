@@ -11134,7 +11134,7 @@
       const cat = showCat && catEl ? (catEl.value || '').trim() : '';
 
       const levelText=document.getElementById('s1_dis_level_text');
-      if(levelText) levelText.textContent = showCat ? level : '—';
+      if(levelText) levelText.textContent = level ? level : '—';
       const box1=document.getElementById('s1_dis_cat_box');
       if(box1) box1.style.display = showCat ? '' : 'none';
       const catText=document.getElementById('s1_dis_cat_text');
