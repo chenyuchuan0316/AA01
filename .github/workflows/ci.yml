@@ -36,31 +36,31 @@ jobs:
           cache: "npm"
       - run: npm ci
 
-      # 1) 取出 SA 金鑰到檔案
+      # 1) 取出 SA 金鑰為檔案
       - name: Write raw SA JSON
         run: echo '${{ secrets.GCP_SA_KEY }}' > sa.json
 
-      # 2) 用官方方式登入（非互動）
+      # 2) 以官方方式登入（非互動）
       - name: Login clasp with Service Account
-        run: npx clasp login --creds sa.json
+        run: npx @google/clasp login --creds sa.json
 
-      # 3) 驗證目前登入身分（不會輸出私鑰）
+      # 3) 顯示目前身分（應為你的 Service Account）
       - name: Who am I
-        run: npx clasp whoami
+        run: npx @google/clasp whoami
 
-      # 4) 寫入 .clasp.json（指定 scriptId 與根目錄）
+      # 4) 寫入 .clasp.json（rootDir 設為專案根目錄）
       - name: Write .clasp.json
         run: |
           cat > .clasp.json <<'CLASP'
           {
             "scriptId": "${{ secrets.SCRIPT_ID }}",
-            "rootDir": "src"
+            "rootDir": "."
           }
           CLASP
 
       # 5) 推送與部署
       - name: Push & Deploy
         run: |
-          npx clasp push --force
-          npx clasp version "CI $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          npx clasp deploy -d "CI auto deploy $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          npx @google/clasp push --force
+          npx @google/clasp version "CI $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          npx @google/clasp deploy -d "CI auto deploy $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
