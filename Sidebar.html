@@ -7170,22 +7170,32 @@
       if(Number.isNaN(date.getTime())) return null;
       return date;
     }
-    function setDateBox(id,d){
+    function emitDateInputEvents(input){
+      if(!input) return;
+      try{ input.dispatchEvent(new Event('input', { bubbles:true })); }catch(err){}
+      try{ input.dispatchEvent(new Event('change', { bubbles:true })); }catch(err){}
+    }
+    function setDateBox(id,d,options){
       if(!(d instanceof Date) || Number.isNaN(d.getTime())) return;
       const text=toYMD(d);
       const input=document.getElementById(id);
-      if(input) input.value=text;
+      if(input){
+        input.value=text;
+        if(options && options.emitEvents){ emitDateInputEvents(input); }
+      }
     }
     function getDateBox(id){
       const input=document.getElementById(id);
       return input && input.value ? input.value : '';
     }
     function shiftDate(id,delta){
-      const cur=getDateBox(id);
+      const input=document.getElementById(id);
+      if(!input) return;
+      const cur=input.value;
       const base=cur?parseDateInput(cur):new Date();
       if(!base) return;
       base.setDate(base.getDate()+delta);
-      setDateBox(id,base);
+      setDateBox(id,base,{ emitEvents:true });
     }
     function attachDateInputEvents(id){
       const input=document.getElementById(id);
