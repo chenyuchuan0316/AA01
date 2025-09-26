@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "clasp": "^2.6.0"
+    "@google/clasp": "^2.4.2"
   },
   "scripts": {
     "test": "echo \"no tests yet\""
