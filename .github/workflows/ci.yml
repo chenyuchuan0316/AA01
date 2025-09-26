@@ -36,21 +36,19 @@ jobs:
           cache: "npm"
       - run: npm ci
 
-      # 1) 將 GCP_SA_KEY 寫到暫存檔
+      # 1) 取出 SA 金鑰到檔案
       - name: Write raw SA JSON
         run: echo '${{ secrets.GCP_SA_KEY }}' > sa.json
 
-      # 2) 產生 ~/.clasprc.json（clasp 讀取的位置與格式）
-      - name: Generate ~/.clasprc.json for clasp
-        run: |
-          node -e "const fs=require('fs');const os=require('os');const p=os.homedir()+'/.clasprc.json';const cred=JSON.parse(fs.readFileSync('sa.json','utf8'));const out={token:{serviceAccountCredentials:cred}};fs.writeFileSync(p,JSON.stringify(out));"
+      # 2) 用官方方式登入（非互動）
+      - name: Login clasp with Service Account
+        run: npx clasp login --creds sa.json
 
-      # 3) 健檢：只輸出欄位名稱（不含任何私密值）
-      - name: Sanity check credentials (keys only)
-        run: |
-          node -e "const fs=require('fs');const os=require('os');const p=os.homedir()+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));const k=Object.keys(j.token.serviceAccountCredentials||{});console.log('clasprc ok, keys:', k)"
+      # 3) 驗證目前登入身分（不會輸出私鑰）
+      - name: Who am I
+        run: npx clasp whoami
 
-      # 4) 寫入 .clasp.json（指向 Script ID 與 rootDir）
+      # 4) 寫入 .clasp.json（指定 scriptId 與根目錄）
       - name: Write .clasp.json
         run: |
           cat > .clasp.json <<'CLASP'
@@ -60,7 +58,7 @@ jobs:
           }
           CLASP
 
-      # 5) 推送並建立部署
+      # 5) 推送與部署
       - name: Push & Deploy
         run: |
           npx clasp push --force
