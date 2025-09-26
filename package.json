@@ -1,0 +1,11 @@
+﻿{
+  "name": "aa01",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "clasp": "^2.6.0"
+  },
+  "scripts": {
+    "test": "echo \"(no tests yet)\""
+  }
+}
