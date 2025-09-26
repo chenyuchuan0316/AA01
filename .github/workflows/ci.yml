@@ -1,1 +1,60 @@
 ﻿（這裡是整份 YAML 內容）
+name: AA01 CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test --if-present
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Write .clasp.json
+        run: |
+          cat > .clasp.json <<'CLASP'
+          {
+            "scriptId": "${{ secrets.SCRIPT_ID }}",
+            "rootDir": "."
+          }
+          CLASP
+
+      - name: Write raw SA JSON
+        run: echo '${{ secrets.GCP_SA_KEY }}' > sa.json
+
+      - name: Login clasp with Service Account
+        run: npx @google/clasp login --creds sa.json --no-localhost
+
+      - name: Who am I
+        run: npx @google/clasp whoami
+
+      - name: Push & Deploy
+        run: |
+          npx @google/clasp push --force
+          npx @google/clasp version "CI $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          npx @google/clasp deploy -d "CI auto deploy $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
