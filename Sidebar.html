@@ -13446,8 +13446,18 @@
       if(capBox){
         if(totals.level){
           const levelText=`第${totals.level}級`;
-          if(isFiniteNumber(totals.cap)){
-            capBox.textContent=`${levelText}｜${formatAutoInteger(totals.cap)} 元`;
+          const hasDeduct=isFiniteNumber(totals.foreignDeduct) && totals.foreignDeduct > 0;
+          const effectiveText=formatPointValue(totals.effectiveCap);
+          if(hasDeduct && effectiveText !== '—'){
+            const originalText=formatPointValue(totals.cap);
+            const deductText=formatPointValue(totals.foreignDeduct);
+            const details=[];
+            if(deductText && deductText !== '—') details.push(`扣減 ${deductText}`);
+            if(originalText && originalText !== '—') details.push(`原額度 ${originalText}`);
+            const detailSuffix=details.length ? `（${details.join('，')}）` : '';
+            capBox.textContent=`${levelText}｜${effectiveText}${detailSuffix}`;
+          }else if(isFiniteNumber(totals.cap)){
+            capBox.textContent=`${levelText}｜${formatPointValue(totals.cap)}`;
           }else{
             capBox.textContent=`${levelText}｜—`;
           }
@@ -14522,15 +14532,8 @@
       if(stationWill){ stationWill.addEventListener('change', evt=>{ planMetaState.stationWillingness = evt.target.value; buildApprovalPlanPreview(); }); }
       const emergency=document.getElementById('plan_emergency_note');
       if(emergency){ emergency.addEventListener('input', evt=>{ planMetaState.emergencyNote = evt.target.value; buildApprovalPlanPreview(); }); }
-      const foreignCareField=document.getElementById('hasForeignCare');
-      if(foreignCareField){
-        const bindForeignCare = ()=>{ handleForeignCareChange(); };
-        if(foreignCareField.dataset.foreignCareBound !== '1'){
-          foreignCareField.addEventListener('change', bindForeignCare);
-          foreignCareField.addEventListener('input', bindForeignCare);
-          foreignCareField.dataset.foreignCareBound = '1';
-        }
-        bindForeignCare();
+      if(document.getElementById('hasForeignCare')){
+        handleForeignCareChange();
       }
     }
 
@@ -17211,6 +17214,8 @@
       bindElement('#isConsultVisit','change', toggleCallDateByConsultVisit);
       bindElement('#isDischarge','change', toggleDischarge);
       bindElement('#primaryRel','change', enforcePrimaryExclusionOnExtras);
+      bindElement('#hasForeignCare','change', handleForeignCareChange);
+      bindElement('#hasForeignCare','input', handleForeignCareChange);
       bindElement('#s1_vision','change', toggleVisionNotes);
       bindElement('#s1_hearing_level','change', renderHearingDetails);
       bindElement('#s1_swallow','change', toggleSwallow);
