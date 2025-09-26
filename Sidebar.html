@@ -2709,7 +2709,7 @@
         <div class="section-card-grid">
             <section class="section-card contact-visit-card" data-card="call">
               <div class="titlebar contact-visit-card-header">
-                <span class="h2">一、電聯日期</span>
+                <span class="h2">電聯日期</span>
               </div>
               <div class="contact-visit-card-body">
                 <label class="h3" for="callDate">電聯日期</label>
@@ -2726,7 +2726,7 @@
 
             <section class="section-card contact-visit-card" data-card="visit">
               <div class="titlebar contact-visit-card-header">
-                <span class="h2">二、家訪日期</span>
+                <span class="h2">家訪日期</span>
               </div>
               <div class="contact-visit-card-body">
                 <label class="h3" for="visitDate">家訪日期</label>
@@ -2747,7 +2747,7 @@
 
             <section class="section-card contact-visit-card" id="visitPartnersCard" data-card="partners">
               <div class="titlebar contact-visit-card-header">
-                <span class="h2">三、偕同訪視者</span>
+                <span class="h2">偕同訪視者</span>
               </div>
               <div class="contact-visit-card-body">
                 <div class="row">
@@ -2790,7 +2790,7 @@
         <div class="group plan-card-case-overview" id="caseOverviewGroup" data-span="full" data-collapsed="0">
           <div class="group-header">
             <div class="titlebar">
-              <span class="h2 heading-tier heading-tier--primary">四、個案概況</span>
+              <span class="h2 heading-tier heading-tier--primary">個案概況</span>
               <span class="hint" style="margin:0;">系統已即時檢查必填欄位，缺漏將以紅框提示。</span>
             </div>
           </div>
@@ -2798,7 +2798,7 @@
           <div class="group-content">
             <div id="section1_block" data-section="s1">
               <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（一）身心概況</label>
+                <label class="h3 heading-tier heading-tier--primary">身心概況</label>
               </div>
               <!-- (一) 身心概況：已更新 + 連動 + 自動產文 -->
               <div id="section1_error_summary" class="error-summary" data-group-ignore="1" data-show="0" aria-live="polite"></div>
@@ -3580,9 +3580,9 @@
                 </div>
               </div>
 
-        <div id="section2_block" data-section="s2">
+            <div id="section2_block" data-section="s2">
               <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（二）經濟收入</label>
+                <label class="h3 heading-tier heading-tier--primary">經濟收入</label>
               </div>
                 <div class="autogrid autogrid--wide">
                   <div>
@@ -3612,9 +3612,9 @@
                 </div>
               <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
             </div>
-        <div id="section3_block" data-section="s3">
+            <div id="section3_block" data-section="s3">
               <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（三）居住環境</label>
+                <label class="h3 heading-tier heading-tier--primary">居住環境</label>
               </div>
                 <div class="autogrid autogrid--wide">
                   <div>
@@ -3663,9 +3663,9 @@
                 </div>
               <textarea id="section3_out" style="display:none;" data-progress-ignore="1"></textarea>
             </div>
-        <div id="section4_block" data-section="s4">
+            <div id="section4_block" data-section="s4">
               <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（四）社會支持</label>
+                <label class="h3 heading-tier heading-tier--primary">社會支持</label>
               </div>
 
                 <div class="autogrid autogrid--wide">
@@ -3843,13 +3843,13 @@
             </div>
         <div id="section5_block" data-section="s5">
               <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（五）其他</label>
+                <label class="h3 heading-tier heading-tier--primary">其他</label>
               </div>
               <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
             </div>
         <div id="section6_block" data-section="s6">
               <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（六）複評評值</label>
+                <label class="h3 heading-tier heading-tier--primary">複評評值</label>
               </div>
               <div class="autogrid autogrid--wide">
                 <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
@@ -3860,18 +3860,18 @@
     </div>
 
 
-        <!-- 五、照顧目標（原功能保留） -->
+        <!-- 照顧目標（原功能保留） -->
         <div class="group card-lg span-2 plan-card-care-goals" id="careGoalsGroup" data-span="full">
           <div class="group-header">
             <div class="titlebar">
-              <span class="h2">五、照顧目標</span>
+              <span class="h2">照顧目標</span>
             </div>
           </div>
 
           <div class="group-content">
             <div id="careGoals_block" data-section="cg">
-              <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（一）照顧問題（最多選 5 項）</label>
+              <div class="titlebar" id="careGoalsProblemsTitle">
+                <label class="h3 heading-tier heading-tier--primary">照顧問題（最多選 5 項）</label>
               </div>
               <div class="care-goal-block">
                 <div class="care-goal-heading">
@@ -3883,8 +3883,8 @@
                 <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
               </div>
 
-              <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（二）短期目標（0–3 個月）</label>
+              <div class="titlebar" id="careGoalsShortTitle">
+                <label class="h3 heading-tier heading-tier--primary">短期目標（0–3 個月）</label>
               </div>
               <div class="care-goal-block">
                 <div class="autogrid autogrid--wide">
@@ -3897,8 +3897,8 @@
                 </div>
               </div>
 
-              <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（三）中期目標（3–4 個月）</label>
+              <div class="titlebar" id="careGoalsMidTitle">
+                <label class="h3 heading-tier heading-tier--primary">中期目標（3–4 個月）</label>
               </div>
               <div class="care-goal-block">
                 <div class="autogrid autogrid--wide">
@@ -3911,8 +3911,8 @@
                 </div>
               </div>
 
-              <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">（四）長期目標（4–6 個月）</label>
+              <div class="titlebar" id="careGoalsLongTitle">
+                <label class="h3 heading-tier heading-tier--primary">長期目標（4–6 個月）</label>
               </div>
               <div class="care-goals-side-inner">
                 <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
@@ -3925,24 +3925,24 @@
     </div>
 
 
-        <!-- 六、與照專…（原功能保留） -->
+        <!-- 與照專…（原功能保留） -->
         <div class="group card-lg span-2 plan-card-mismatch" id="mismatchPlanGroup" data-span="full">
           <div class="group-header">
             <div class="titlebar">
-              <span class="h2">六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃</span>
+              <span class="h2">與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃</span>
             </div>
           </div>
           <div class="group-content">
             <div class="row"><div>
-              <label class="h3">（一）目標達成的狀況以及未達成的差距</label>
+              <label class="h3">目標達成的狀況以及未達成的差距</label>
               <textarea id="reason1" placeholder="填寫欄位"></textarea>
             </div></div>
             <div class="row"><div>
-              <label class="h3">（二）資源的變動情形</label>
+              <label class="h3">資源的變動情形</label>
               <textarea id="reason2" placeholder="填寫欄位"></textarea>
             </div></div>
             <div class="row"><div>
-              <label class="h3">（三）未使用的替代方案或是可能的影響</label>
+              <label class="h3">未使用的替代方案或是可能的影響</label>
               <textarea id="reason3" placeholder="填寫欄位"></textarea>
               <div class="hr"></div>
               <label class="h4">常用快捷（勾選即加入第 3 格）</label>
@@ -3979,7 +3979,7 @@
         <div class="section-card-grid">
         <section class="section-card" id="planExecutionCard">
           <div class="titlebar">
-            <label class="h2">一、長照服務核定項目、頻率</label>
+            <label class="h2">長照服務核定項目、頻率</label>
           </div>
           <div class="plan-guideline">
             <p>請依核定的正式資源填寫承接方式、指定單位、用量與使用方式，系統會同步整理附件二預覽與額度統計。</p>
@@ -3988,25 +3988,22 @@
           <div id="planEditor" class="plan-editor"></div>
           <div class="plan-category plan-category-meta" data-plan-category="EMERGENCY">
             <div class="plan-category-heading">
-              <h3 class="h3" id="h3-exec-emergency" data-anchor="h3-exec-emergency">（八）緊急救援服務</h3>
+              <h3 class="h3" id="h3-exec-emergency" data-anchor="h3-exec-emergency">緊急救援服務</h3>
             </div>
-            <div class="plan-category-body">
-              <div class="titlebar titlebar--mt-sm">
-                <h2 class="h2" id="h2-exec-emergency-note" data-anchor="h2-exec-emergency-note">四、緊急救援服務說明</h2>
-              </div>
-              <label class="h4" for="plan_emergency_note">救援需求說明</label>
-              <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
-            </div>
+            <div class="plan-category-body"></div>
           </div>
         </section>
 
         <section class="section-card" id="planReferralCard">
           <div class="titlebar">
-            <label class="h2">二、轉介其他服務資源</label>
+            <label class="h2">轉介其他服務資源</label>
           </div>
           <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
-          <div class="titlebar titlebar--mt-sm">
-            <h2 class="h2" id="h2-exec-station" data-anchor="h2-exec-station">三、巷弄長照站資訊與意願</h2>
+        </section>
+
+        <section class="section-card" id="planStationCard">
+          <div class="titlebar">
+            <label class="h2">巷弄長照站資訊與意願</label>
           </div>
           <div class="plan-meta-grid">
             <div>
@@ -4024,6 +4021,14 @@
           </div>
         </section>
 
+        <section class="section-card" id="planEmergencyNoteCard">
+          <div class="titlebar">
+            <label class="h2">緊急救援服務說明</label>
+          </div>
+          <label class="h4" for="plan_emergency_note">救援需求說明</label>
+          <textarea id="plan_emergency_note" placeholder="例：申請○○緊急救援系統，因跌倒風險與夜間頻繁起夜"></textarea>
+        </section>
+
         <section class="section-card" id="planSummaryCard">
           <div class="titlebar">
             <label class="h2">附件二（服務計畫明細）預覽</label>
@@ -4036,7 +4041,7 @@
             <label class="inline-checkbox" for="hasForeignCare">
               <input id="hasForeignCare" type="checkbox" /> 案家聘有外籍看護（扣減 30%）
             </label>
-            <div class="hint">勾選後將自動扣減 CMS 月額度 30%，計算餘額與自付額時一併套用。</div>
+            <div class="hint plan-summary-controls-hint">勾選後將自動扣減 CMS 月額度 30%，計算餘額與自付額時一併套用。</div>
           </div>
           <span class="h3">額度統計</span>
           <div id="planSummaryTotals" class="plan-summary-totals">
@@ -4066,12 +4071,6 @@
             </div>
           </div>
           <div id="planSummaryTotalsHint" class="plan-summary-totals-hint" data-show="0"></div>
-          <div class="plan-summary-controls">
-            <label class="inline-checkbox plan-summary-foreign-toggle">
-              案家聘有外籍看護（自動扣減 30% 額度）
-            </label>
-            <div class="hint plan-summary-controls-hint">若未扣減或無聘用，請取消勾選。</div>
-          </div>
           <span class="h3">預覽內容</span>
           <div id="planSummaryPreview" class="summary-table-wrapper">
             <div class="hint">尚未選擇服務項目。</div>
@@ -4182,7 +4181,7 @@
       notes:'其他備註'
     };
 
-    const HEADING_SCHEMA_VERSION = '2025-10-01';
+    const HEADING_SCHEMA_VERSION = '2025-10-15';
     const HEADING_SCHEMA_VERSION_STORAGE_KEY = 'AA01.headingSchema.version';
     const LEGACY_HEADING_VERSION_STORAGE_KEY = 'AA01.headingSpec.version';
 
@@ -4208,7 +4207,7 @@
         dom:{ selector:'#contactVisitGroup .titlebar .h1', mode:'replace', className:'h1' },
         children:[
           {
-            id:'h2-goals-call', tag:'h2', label:'一、電聯日期',
+            id:'h2-goals-call', tag:'h2', label:'電聯日期', numbering:{ scope:'h1', style:'cjk-comma' },
             dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2', mode:'replace', className:'h2' },
             children:[
               { id:'h3-goals-call-date', tag:'h3', label:'電聯日期',
@@ -4218,7 +4217,7 @@
             ]
           },
           {
-            id:'h2-goals-homevisit', tag:'h2', label:'二、家訪日期',
+            id:'h2-goals-homevisit', tag:'h2', label:'家訪日期', numbering:{ scope:'h1', style:'cjk-comma' },
             dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
             children:[
               { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期',
@@ -4228,7 +4227,7 @@
             ]
           },
           {
-            id:'h2-goals-companions', tag:'h2', label:'三、偕同訪視者',
+            id:'h2-goals-companions', tag:'h2', label:'偕同訪視者', numbering:{ scope:'h1', style:'cjk-comma' },
             dom:{ selector:'#visitPartnersCard .titlebar .h2', mode:'replace', className:'h2' },
             children:[
               { id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係',
@@ -4242,46 +4241,46 @@
             ]
           },
           {
-            id:'h2-goals-overview', tag:'h2', label:'四、個案概況',
+            id:'h2-goals-overview', tag:'h2', label:'個案概況', numbering:{ scope:'h1', style:'cjk-comma' },
             dom:{ selector:'#caseOverviewGroup .titlebar .h2', mode:'replace', className:'h2 heading-tier heading-tier--primary' },
             children:[
-              { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況',
+              { id:'h3-goals-s1', tag:'h3', label:'身心概況', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#section1_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
-              { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入',
+              { id:'h3-goals-s2', tag:'h3', label:'經濟收入', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#section2_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
-              { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境',
+              { id:'h3-goals-s3', tag:'h3', label:'居住環境', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#section3_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
-              { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持',
+              { id:'h3-goals-s4', tag:'h3', label:'社會支持', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#section4_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
-              { id:'h3-goals-s5', tag:'h3', label:'（五）其他',
+              { id:'h3-goals-s5', tag:'h3', label:'其他', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#section5_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
-              { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值',
+              { id:'h3-goals-s6', tag:'h3', label:'複評評值', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#section6_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
             ]
           },
           {
-            id:'h2-goals-targets', tag:'h2', label:'五、照顧目標',
+            id:'h2-goals-targets', tag:'h2', label:'照顧目標', numbering:{ scope:'h1', style:'cjk-comma' },
             dom:{ selector:'#careGoalsGroup .titlebar .h2', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題',
-                dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(1) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
-              { id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標（0–3 個月）',
-                dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(2) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
-              { id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標（3–4 個月）',
-                dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(3) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
-              { id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標（4–6 個月）',
-                dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(4) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
+              { id:'h3-goals-targets-problems', tag:'h3', label:'照顧問題', numbering:{ scope:'h2', style:'cjk-paren' },
+                dom:{ selector:'#careGoalsProblemsTitle > label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-targets-short', tag:'h3', label:'短期目標（0–3 個月）', numbering:{ scope:'h2', style:'cjk-paren' },
+                dom:{ selector:'#careGoalsShortTitle > label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-targets-mid', tag:'h3', label:'中期目標（3–4 個月）', numbering:{ scope:'h2', style:'cjk-paren' },
+                dom:{ selector:'#careGoalsMidTitle > label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+              { id:'h3-goals-targets-long', tag:'h3', label:'長期目標（4–6 個月）', numbering:{ scope:'h2', style:'cjk-paren' },
+                dom:{ selector:'#careGoalsLongTitle > label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
             ]
           },
           {
-            id:'h2-goals-mismatch', tag:'h2', label:'六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
+            id:'h2-goals-mismatch', tag:'h2', label:'與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃', numbering:{ scope:'h1', style:'cjk-comma' },
             dom:{ selector:'#mismatchPlanGroup .titlebar .h2', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距',
+              { id:'h3-goals-mismatch-1', tag:'h3', label:'目標達成的狀況以及未達成的差距', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#mismatchPlanGroup textarea#reason1', mode:'previousLabelHeading', className:'h3' } },
-              { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形',
+              { id:'h3-goals-mismatch-2', tag:'h3', label:'資源的變動情形', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#mismatchPlanGroup textarea#reason2', mode:'previousLabelHeading', className:'h3' } },
-              { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響',
+              { id:'h3-goals-mismatch-3', tag:'h3', label:'未使用的替代方案或是可能的影響', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#mismatchPlanGroup textarea#reason3', mode:'previousLabelHeading', className:'h3' } }
             ]
           }
@@ -4292,33 +4291,33 @@
         dom:{ selector:'.page-section[data-page="execution"] .group > .group-header .titlebar .h1', mode:'replace', className:'h1' },
         children:[
           {
-            id:'h2-exec-services', tag:'h2', label:'一、長照服務核定項目、頻率',
+            id:'h2-exec-services', tag:'h2', label:'長照服務核定項目、頻率', numbering:{ scope:'h1', style:'cjk-comma' },
             dom:{ selector:'#planExecutionCard .titlebar label', mode:'replace', className:'h2' },
             children:[
-              { id:'h3-exec-b', tag:'h3', label:'（一）B碼',
+              { id:'h3-exec-b', tag:'h3', label:'B碼', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#planEditor .plan-category[data-plan-category="B"] .plan-category-heading h3', mode:'replace', className:'h3' } },
-              { id:'h3-exec-c', tag:'h3', label:'（二）C碼',
+              { id:'h3-exec-c', tag:'h3', label:'C碼', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#planEditor .plan-category[data-plan-category="C"] .plan-category-heading h3', mode:'replace', className:'h3' } },
-              { id:'h3-exec-d', tag:'h3', label:'（三）D碼',
+              { id:'h3-exec-d', tag:'h3', label:'D碼', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#planEditor .plan-category[data-plan-category="D"] .plan-category-heading h3', mode:'replace', className:'h3' } },
-              { id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼',
+              { id:'h3-exec-ef', tag:'h3', label:'E.F碼', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#planEditor .plan-category[data-plan-category="EF"] .plan-category-heading h3', mode:'replace', className:'h3' } },
-              { id:'h3-exec-g', tag:'h3', label:'（五）G碼',
+              { id:'h3-exec-g', tag:'h3', label:'G碼', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#planEditor .plan-category[data-plan-category="G"] .plan-category-heading h3', mode:'replace', className:'h3' } },
-              { id:'h3-exec-sc', tag:'h3', label:'（六）SC碼',
+              { id:'h3-exec-sc', tag:'h3', label:'SC碼', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#planEditor .plan-category[data-plan-category="SC"] .plan-category-heading h3', mode:'replace', className:'h3' } },
-              { id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務',
+              { id:'h3-exec-nutrition', tag:'h3', label:'營養餐飲服務', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#planEditor .plan-category[data-plan-category="MEAL"] .plan-category-heading h3', mode:'replace', className:'h3' } },
-              { id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務',
+              { id:'h3-exec-emergency', tag:'h3', label:'緊急救援服務', numbering:{ scope:'h2', style:'cjk-paren' },
                 dom:{ selector:'#planExecutionCard .plan-category[data-plan-category="EMERGENCY"] .plan-category-heading h3', mode:'replace', className:'h3' } }
             ]
           },
-          { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源',
+          { id:'h2-exec-referral', tag:'h2', label:'轉介其他服務資源', numbering:{ scope:'h1', style:'cjk-comma' },
             dom:{ selector:'#planReferralCard .titlebar label', mode:'replace', className:'h2' } },
-          { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願',
-            dom:{ selector:'#planReferralCard #h2-exec-station', mode:'replace', className:'h2' } },
-          { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明',
-            dom:{ selector:'#planExecutionCard #h2-exec-emergency-note', mode:'replace', className:'h2' } },
+          { id:'h2-exec-station', tag:'h2', label:'巷弄長照站資訊與意願', numbering:{ scope:'h1', style:'cjk-comma' },
+            dom:{ selector:'#planStationCard .titlebar label', mode:'replace', className:'h2' } },
+          { id:'h2-exec-emergency-note', tag:'h2', label:'緊急救援服務說明', numbering:{ scope:'h1', style:'cjk-comma' },
+            dom:{ selector:'#planEmergencyNoteCard .titlebar label', mode:'replace', className:'h2' } },
           { id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽',
             dom:{ selector:'#planSummaryCard .titlebar label', mode:'replace', className:'h2' } },
           { id:'h2-exec-attachment1', tag:'h2', label:'附件一：計畫執行規劃預覽',
@@ -4372,9 +4371,12 @@
       entries.forEach(function(entry){
         if(!entry || !entry.id) return;
         const tag = normalizeHeadingTag(entry.tag, parent);
+        const baseLabel = entry.label || '';
         const node = {
           id:String(entry.id),
-          label:entry.label || '',
+          label:baseLabel,
+          baseLabel:baseLabel,
+          numbering:entry.numbering || null,
           tag:tag,
           level:inferHeadingLevel(tag, parent),
           page:entry.page || (parent ? parent.page : ''),
@@ -5247,6 +5249,106 @@
       scheduleAllMeasurements();
     }
 
+    function toChineseCountingNumber(value){
+      const num = Number(value);
+      if(!Number.isFinite(num) || num <= 0) return '';
+      if(num === 0) return '零';
+      if(num >= 10000) return String(num);
+      const digits=['零','一','二','三','四','五','六','七','八','九'];
+      const units=['','十','百','千'];
+      const chars=String(num).split('').map(function(ch){ return Number(ch); });
+      let result='';
+      let zeroPending=false;
+      const len=chars.length;
+      chars.forEach(function(digit,index){
+        const pos=len-index-1;
+        if(digit===0){
+          if(result && pos>0){
+            zeroPending=true;
+          }
+          return;
+        }
+        if(zeroPending){
+          result+='零';
+          zeroPending=false;
+        }
+        const omitOne=digit===1 && pos===1 && result==='';
+        if(!omitOne){
+          result+=digits[digit];
+        }
+        result+=units[pos] || '';
+      });
+      return result || '零';
+    }
+
+    function formatHeadingNumber(count, style){
+      const numeral = toChineseCountingNumber(count) || String(count);
+      const format = typeof style === 'string' ? style.toLowerCase() : 'cjk-paren';
+      if(format === 'cjk-comma'){
+        return `${numeral}、`;
+      }
+      if(format === 'cjk-circle'){
+        return `（${numeral}）`;
+      }
+      if(format === 'plain-prefix'){
+        return `${numeral}`;
+      }
+      return `（${numeral}）`;
+    }
+
+    function findHeadingAncestorByTag(entry, tagName){
+      if(!entry) return null;
+      const desired = typeof tagName === 'string' ? tagName.toLowerCase() : '';
+      if(!desired) return null;
+      let current = entry;
+      while(current && current.parentId){
+        const parent = getHeadingNode(current.parentId);
+        if(!parent) break;
+        const parentTag = parent.tag ? parent.tag.toLowerCase() : '';
+        if(parentTag === desired){
+          return parent;
+        }
+        current = parent;
+      }
+      return null;
+    }
+
+    function getNumberingScopeKey(entry, numbering){
+      if(!entry || !numbering) return 'global';
+      const scopeRaw = numbering.scope;
+      const scope = typeof scopeRaw === 'string' ? scopeRaw.toLowerCase() : 'global';
+      if(scope === 'parent'){
+        return `parent:${entry.parentId || 'root'}`;
+      }
+      if(/^h[1-6]$/.test(scope)){
+        const ancestor = findHeadingAncestorByTag(entry, scope);
+        if(ancestor && ancestor.id){
+          return `${scope}:${ancestor.id}`;
+        }
+        return `${scope}:root`;
+      }
+      return 'global';
+    }
+
+    function resolveHeadingLabel(entry, counters){
+      if(!entry) return '';
+      if(entry.__resolvedLabel){
+        return entry.__resolvedLabel;
+      }
+      const base = typeof entry.baseLabel === 'string' ? entry.baseLabel : (entry.label || '');
+      let label = base;
+      if(entry.numbering){
+        const key = getNumberingScopeKey(entry, entry.numbering);
+        const next = (counters[key] || 0) + 1;
+        counters[key] = next;
+        const prefix = formatHeadingNumber(next, entry.numbering.style || 'cjk-paren');
+        label = prefix ? `${prefix}${label}` : label;
+      }
+      entry.__resolvedLabel = label;
+      entry.label = label;
+      return label;
+    }
+
     function applyHeadingsToDOM(schema){
       const targetSchema = Array.isArray(schema) ? schema : HEADING_SCHEMA;
       if(schema && targetSchema !== HEADING_SCHEMA){
@@ -5255,17 +5357,24 @@
         rebuildHeadingIndex(targetSchema);
       }
       resetHeadingDomRegistry();
+      const numberingCounters = Object.create(null);
+      forEachHeading(function(entry){
+        if(!entry) return;
+        entry.__resolvedLabel = null;
+        entry.label = typeof entry.baseLabel === 'string' ? entry.baseLabel : (entry.label || '');
+      });
       const missing = [];
       forEachHeading(function(entry){
         if(!entry || !entry.id) return;
         const domConfig = entry.domConfig || entry.dom;
         if(!domConfig) return;
         const configs = Array.isArray(domConfig) ? domConfig : [domConfig];
+        const resolvedLabel = resolveHeadingLabel(entry, numberingCounters);
         configs.forEach(function(config){
           if(!config || !config.selector) return;
           const mode = (config.mode || 'replace').toLowerCase();
           const className = config.className || (entry.tag ? entry.tag.toLowerCase() : '');
-          const labelText = typeof config.label === 'string' ? config.label : (entry.label || '');
+          const labelText = typeof config.label === 'string' ? config.label : resolvedLabel;
           if(mode === 'replace'){
             let target = null;
             try{ target = document.querySelector(config.selector); }catch(err){ target = null; }
@@ -11854,13 +11963,13 @@
     };
 
     const PLAN_CATEGORY_GROUPS = [
-      { id:'B', label:'（一）B碼', includes:['B'], anchor:'h3-exec-b' },
-      { id:'C', label:'（二）C碼', includes:['C'], anchor:'h3-exec-c' },
-      { id:'D', label:'（三）D碼', includes:['D'], anchor:'h3-exec-d' },
-      { id:'EF', label:'（四）E.F碼', includes:['EF'], anchor:'h3-exec-ef' },
-      { id:'G', label:'（五）G碼', includes:['G'], anchor:'h3-exec-g' },
-      { id:'SC', label:'（六）SC碼', includes:['SC'], anchor:'h3-exec-sc' },
-      { id:'MEAL', label:'（七）營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' }
+      { id:'B', label:'B碼', includes:['B'], anchor:'h3-exec-b' },
+      { id:'C', label:'C碼', includes:['C'], anchor:'h3-exec-c' },
+      { id:'D', label:'D碼', includes:['D'], anchor:'h3-exec-d' },
+      { id:'EF', label:'E.F碼', includes:['EF'], anchor:'h3-exec-ef' },
+      { id:'G', label:'G碼', includes:['G'], anchor:'h3-exec-g' },
+      { id:'SC', label:'SC碼', includes:['SC'], anchor:'h3-exec-sc' },
+      { id:'MEAL', label:'營養餐飲服務', includes:['MEAL'], anchor:'h3-exec-nutrition' }
     ];
     const PLAN_CATEGORY_LOOKUP = {};
     PLAN_CATEGORY_GROUPS.forEach(group=>{
