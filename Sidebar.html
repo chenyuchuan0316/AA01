@@ -7200,12 +7200,23 @@
     function initDateInputs(){
       ['callDate','visitDate','dischargeDate'].forEach(attachDateInputEvents);
     }
-    function toggleDischarge(){const on=document.getElementById('isDischarge').checked; document.getElementById('dischargeBox').style.display=on?'':'none'; if(on&&!getDateBox('dischargeDate')) setDateBox('dischargeDate', new Date());}
+    function toggleDischarge(){
+      const toggle=document.getElementById('isDischarge');
+      const box=document.getElementById('dischargeBox');
+      if(!toggle || !box) return;
+      const on=!!toggle.checked;
+      box.style.display=on?'':'none';
+      if(on && !getDateBox('dischargeDate')){
+        setDateBox('dischargeDate', new Date());
+      }
+    }
     function updateConsultVisitText(){
       const box=document.getElementById('consultVisitText');
       if(!box) return;
-      const caseName=(document.getElementById('caseName').value||'').trim();
-      const consultName=(document.getElementById('consultName').value||'').trim();
+      const caseField=document.getElementById('caseName');
+      const consultField=document.getElementById('consultName');
+      const caseName=(caseField && caseField.value ? caseField.value : '').trim();
+      const consultName=(consultField && consultField.value ? consultField.value : '').trim();
       const caseDisplay=caseName||'未填個案姓名';
       const consultDisplay=consultName||'未選擇照專';
       box.textContent=`本案(${caseDisplay}) 由照顧專員(${consultDisplay})進行約訪`;
