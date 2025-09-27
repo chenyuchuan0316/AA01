@@ -34,3 +34,21 @@ jobs:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
         run: |
           npm run gas:deploy
+
+      - name: Push code to GAS
+        run: clasp push --force
+
+      - name: Create version & update existing deployment
+        env:
+          GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
+        run: |
+          DESC="ci build $GITHUB_SHA"
+          OUT="$(clasp version "$DESC")"
+          VER="$(echo "$OUT" | sed -n 's/.*version \([0-9]\+\).*/\1/p')"
+          if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
+          clasp deploy -i "$GAS_DEPLOY_ID" -V "$VER" -d "$DESC"
+
+      - name: Test deployed Web App
+        run: |
+          echo "Calling Web App URL..."
+          curl -L --fail "${{ vars.GAS_WEBAPP_URL }}"
