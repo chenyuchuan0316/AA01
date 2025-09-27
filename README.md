@@ -8,13 +8,46 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 
 本文說明整體架構、環境需求、運作流程以及每個檔案的角色，協助開發者或使用者快速了解系統。
 
-> 更新日期：2025-10-15
+> 更新日期：2025-10-21
 
 ## 快速開始（Quickstart）
 
 1. **複製專案檔案**：在目標 Google 文件中開啟 `Extensions → Apps Script`，將本儲存庫的 `.gs` 與 `Sidebar.html` 內容貼入新建專案。
 2. **設定資源識別碼**：於 `Constants.gs` 填入模板文件、輸出資料夾與名單試算表的 ID，並確認這些資源已與執行帳號共享。
 3. **授權並驗證**：從文件功能表執行「計畫助手 → 顯示側欄」，依畫面授權 Apps Script；以測試資料提交一次，確認新文件正確產出。
+
+## 部署 Web App（GAS Web App 發佈流程）
+
+以下步驟將協助你把同一套程式部署成 Google Apps Script Web App，並取得可重複使用的網址：
+
+1. **建立 OAuth 憑證與 Script ID**  
+   - 在 Apps Script 編輯器「專案設定」頁面複製 `Script ID`。  
+   - 於 [Google Cloud Console](https://console.cloud.google.com/apis/credentials) 為同一專案建立 *桌面應用程式* OAuth Client（Client ID / Client Secret）。  
+   - 於「OAuth 同意畫面」加入 `https://www.googleapis.com/auth/script.projects` 與 `https://www.googleapis.com/auth/script.deployments` 權限範圍。
+2. **取得 refresh_token（僅需一次）**  
+   - 設定環境變數：
+     ```bash
+     export GAS_CLIENT_ID="<你的 Client ID>"
+     export GAS_CLIENT_SECRET="<你的 Client Secret>"
+     ```
+   - 在本機執行 `npm run oauth:token`（或 `node get-refresh-token.mjs`），依指示於瀏覽器授權後回到終端機，複製輸出的 `refresh_token`。
+3. **設定部署環境變數**  
+   將下列變數填入 CI/CD 平台或本機終端機：
+   ```bash
+   export SCRIPT_ID="<Apps Script 的 Script ID>"
+   export GAS_CLIENT_ID="<桌面 OAuth Client ID>"
+   export GAS_CLIENT_SECRET="<桌面 OAuth Client Secret>"
+   export GAS_OAUTH_REFRESH_TOKEN="<剛取得的 refresh_token>"
+   ```
+4. **同步程式並建立 Web App Deployment**  
+   - 於專案根目錄執行 `npm install`（首次使用時）。  
+   - 以 `npm run deploy:web` 觸發 `gas-deploy.mjs`：此指令會依序呼叫 `projects.updateContent`、建立版本並更新（或建立）部署。成功後終端機會顯示最新的 Web App URL。  
+   - 若要指定部署說明，可額外設定 `VERSION_DESC`、`DEPLOY_DESC` 環境變數；如需覆寫既有 deployment，提供 `DEPLOYMENT_ID` 即可。
+5. **後續更新**  
+   - 程式碼變更後重複步驟 4 重新部署。Web App URL 不變，可直接分享給使用者作業。  
+   - 建議將以上指令整合進 GitHub Actions，讓主分支合併時自動部署。
+
+> 小提醒：`get-refresh-token.mjs` 預設使用 `http://localhost:53682/oauth2callback` 監聽授權回呼，如遇埠號被佔用可改以 `GAS_OAUTH_REDIRECT_PORT=XXXX node get-refresh-token.mjs` 指定其他埠號。
 
 ## Troubleshooting（常見問題排除）
 

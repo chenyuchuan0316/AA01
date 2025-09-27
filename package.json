@@ -6,6 +6,8 @@
     "@google/clasp": "^2.5.0"
   },
   "scripts": {
-    "test": "echo \"no tests yet\""
+    "test": "echo \"no tests yet\"",
+    "deploy:web": "node gas-deploy.mjs",
+    "oauth:token": "node get-refresh-token.mjs"
   }
 }
