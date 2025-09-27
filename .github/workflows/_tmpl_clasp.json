@@ -1,0 +1,4 @@
+﻿{
+  "scriptId": "${{ secrets.SCRIPT_ID }}",
+  "rootDir": "."
+}

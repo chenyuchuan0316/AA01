@@ -1,0 +1,12 @@
+﻿# 忽略 Git 與 workflow
+.git/
+.github/
+
+# Node 與其他雜檔
+node_modules/
+*.log
+*.csv
+*.xlsx
+*.md
+
+# 你不想被部署的任何檔案都可加在這

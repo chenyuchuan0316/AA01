@@ -1,9 +1,9 @@
-﻿{
+{
   "name": "aa01",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "@google/clasp": "^2.4.2"
+    "@google/clasp": "^2.5.0"
   },
   "scripts": {
     "test": "echo \"no tests yet\""
