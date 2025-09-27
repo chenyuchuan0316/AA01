@@ -2,3 +2,7 @@
 *.log
 sa.json
 gha-creds-*.json
+
+client_secret.json
+.client_secret.json
+
