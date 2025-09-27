@@ -2563,20 +2563,20 @@
           <div class="app-sticky-inner">
             <div class="sticky-header">
               <div class="sticky-header-row">
-                <div class="wizard" id="wizardSteps" aria-label="填寫進度">
-                  <button type="button" class="wizard-step" data-step="1" data-page="basic" data-anchor="#basicInfoGroup">
+                <div class="wizard" id="wizardSteps" aria-label="填寫進度" role="tablist" aria-orientation="horizontal">
+                  <button type="button" class="wizard-step" data-step="1" data-page="basic" data-anchor="#basicInfoGroup" role="tab" aria-selected="false" aria-current="false" tabindex="-1">
                     <span class="wizard-index">1</span>
                     <span class="wizard-label">基本資訊</span>
                   </button>
-                  <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#contactVisitGroup">
+                  <button type="button" class="wizard-step" data-step="2" data-page="goals" data-anchor="#contactVisitGroup" role="tab" aria-selected="false" aria-current="false" tabindex="-1">
                     <span class="wizard-index">2</span>
                     <span class="wizard-label">計畫目標</span>
                   </button>
-                  <button type="button" class="wizard-step" data-step="3" data-page="execution" data-anchor="#planExecutionCard">
+                  <button type="button" class="wizard-step" data-step="3" data-page="execution" data-anchor="#planExecutionCard" role="tab" aria-selected="false" aria-current="false" tabindex="-1">
                     <span class="wizard-index">3</span>
                     <span class="wizard-label">計畫執行規劃</span>
                   </button>
-                  <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planOtherGroup">
+                  <button type="button" class="wizard-step" data-step="4" data-page="notes" data-anchor="#planOtherGroup" role="tab" aria-selected="false" aria-current="false" tabindex="-1">
                     <span class="wizard-index">4</span>
                     <span class="wizard-label">其他備註</span>
                   </button>
@@ -2588,7 +2588,8 @@
                   </div>
                   <div class="wizard-quickjump" id="wizardQuickJump">
                     <label for="wizardJumpSelect">快速前往</label>
-                    <select id="wizardJumpSelect" aria-label="快速跳轉階段">
+                    <p id="wizardJumpHint" class="sr-only">更改後將跳至該步驟的第一個輸入欄位。</p>
+                    <select id="wizardJumpSelect" aria-label="快速跳轉階段" aria-describedby="wizardJumpHint">
                       <option value="">選擇階段</option>
                     </select>
                   </div>
@@ -16473,6 +16474,8 @@
         if(meta.step < targetStep){ status='done'; }
         else if(meta.step === targetStep){ status='active'; }
         meta.element.dataset.status = status;
+        meta.element.setAttribute('aria-selected', status === 'active' ? 'true' : 'false');
+        meta.element.setAttribute('tabindex', status === 'active' ? '0' : '-1');
         meta.element.setAttribute('aria-current', status === 'active' ? 'step' : 'false');
       });
       currentWizardStep = targetStep;
@@ -16585,6 +16588,54 @@
       }
     }
 
+    function findWizardStepByDelta(step, delta){
+      if(!wizardStepsMeta.length) return null;
+      const index = getWizardIndex(step);
+      if(index === -1) return null;
+      const nextIndex = index + delta;
+      if(nextIndex < 0 || nextIndex >= wizardStepsMeta.length){
+        return null;
+      }
+      const target = wizardStepsMeta[nextIndex];
+      return target ? target.step : null;
+    }
+
+    function handleWizardStepKeydown(evt){
+      if(!evt) return;
+      const key = evt.key;
+      if(key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'ArrowDown' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End'){
+        return;
+      }
+      evt.preventDefault();
+      evt.stopPropagation();
+      const button = evt.currentTarget;
+      const step = button && button.dataset ? Number(button.dataset.step) : NaN;
+      if(!step) return;
+      let targetStep = step;
+      if(key === 'Home'){
+        targetStep = wizardStepsMeta.length ? wizardStepsMeta[0].step : step;
+      }else if(key === 'End'){
+        targetStep = wizardStepsMeta.length ? wizardStepsMeta[wizardStepsMeta.length - 1].step : step;
+      }else if(key === 'ArrowRight' || key === 'ArrowDown'){
+        const adjacent = findWizardStepByDelta(step, 1);
+        if(adjacent !== null && adjacent !== undefined){
+          targetStep = adjacent;
+        }
+      }else if(key === 'ArrowLeft' || key === 'ArrowUp'){
+        const adjacent = findWizardStepByDelta(step, -1);
+        if(adjacent !== null && adjacent !== undefined){
+          targetStep = adjacent;
+        }
+      }
+      if(targetStep === step || targetStep === null || targetStep === undefined){
+        return;
+      }
+      const success = setCurrentWizardStep(targetStep, { focus:true });
+      if(!success && button && typeof button.focus === 'function'){
+        button.focus({ preventScroll:true });
+      }
+    }
+
     function resolveWizardStepForElement(el){
       if(!el) return null;
       for(let i=0;i<wizardStepsMeta.length;i++){
@@ -16646,6 +16697,11 @@
     function initWizardFlow(){
       wizardStepsMeta = [];
       wizardStepLookup = {};
+      const wizardContainer = document.getElementById('wizardSteps');
+      if(wizardContainer){
+        wizardContainer.setAttribute('role', 'tablist');
+        wizardContainer.setAttribute('aria-orientation', 'horizontal');
+      }
       const buttons = document.querySelectorAll('#wizardSteps .wizard-step');
       buttons.forEach(function(btn){
         const step = Number(btn.dataset.step);
@@ -16657,6 +16713,10 @@
           anchor: btn.dataset.anchor || '',
           anchorElement: null
         };
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', 'false');
+        btn.setAttribute('aria-current', 'false');
+        btn.setAttribute('tabindex', '-1');
         const labelText = (btn.querySelector('.wizard-label')?.textContent || '').trim();
         if(labelText){
           btn.setAttribute('title', `跳至${labelText}`);
@@ -16671,6 +16731,7 @@
           }
           setCurrentWizardStep(step, { focus:true });
         });
+        btn.addEventListener('keydown', handleWizardStepKeydown);
       });
       wizardStepsMeta.sort(function(a,b){ return a.step - b.step; });
       if(wizardStepsMeta.length){
