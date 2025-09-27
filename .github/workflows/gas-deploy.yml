@@ -1,0 +1,36 @@
+name: Deploy GAS Web App
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install clasp
+        run: npm i -g @google/clasp
+
+      - name: Restore ~/.clasprc.json from secret
+        run: |
+          echo "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
+          chmod 600 ~/.clasprc.json
+
+      # 若你的 GAS 原始碼在子資料夾，這裡可先 cd 再執行
+      - name: Push code to GAS
+        run: npm run gas:push
+
+      - name: Create version & update existing deployment
+        env:
+          GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
+        run: |
+          npm run gas:deploy
