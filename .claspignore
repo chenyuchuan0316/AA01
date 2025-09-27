@@ -1,11 +1,16 @@
-﻿# 忽略 Git 與 workflow
-.git/
-.github/
-
-# Node 與其他雜檔
-node_modules/
-*.log
-*.csv
-*.xlsx
+node_modules/**
+.git/**
+.github/**
+dist/**
+build/**
+coverage/**
+.vscode/**
+*.map
+README*
+LICENSE*
 *.md
-docs/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+scripts/**
+test/**
