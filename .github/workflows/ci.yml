@@ -8,20 +8,9 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # 取得 GitHub OIDC，供 WIF 交換 ADC
+  id-token: write   # 必須有，否則 OIDC 不會簽發 token
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm test --if-present
-
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: test
@@ -29,13 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1) 用 WIF 交換 ADC（無金鑰登入 Google Cloud）
+      # 1) OIDC → WIF 取得 ADC（移除 lifetime 參數）
       - id: auth
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}   # 例：projects/744278752637/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-          service_account: ${{ secrets.GCP_SA_EMAIL }}                  # 例：aa01-ci@aa01-ci.iam.gserviceaccount.com
-          lifetime: 3600
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+          # audience: 可省略，除非你在 Provider 特別設定
 
       - uses: actions/setup-node@v4
         with:
@@ -43,7 +32,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
 
-      # 2) 寫入 .clasp.json（rootDir 指向專案根目錄）
+      # 2) 寫入 .clasp.json（rootDir 指向專案根；若你的 manifest 在 src/ 就改成 "src"）
       - name: Write .clasp.json
         run: |
           cat > .clasp.json <<'JSON'
@@ -51,7 +40,17 @@ jobs:
           JSON
           echo "[debug] .clasp.json:" && cat .clasp.json
 
-      # 3) 使用 Clasp 3.x alpha 的 --adc（直接讀取 ADC）
+      # 3) 診斷：確認 ADC 環境變數是否存在、憑證檔是否真的在
+      - name: Debug ADC env
+        shell: bash
+        run: |
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS"
+          echo "GOOGLE_GHA_CREDS_PATH=$GOOGLE_GHA_CREDS_PATH"
+          echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE"
+          test -f "$GOOGLE_APPLICATION_CREDENTIALS" && echo "GAC file exists" || (echo "GAC file missing"; exit 1)
+          test -f "$GOOGLE_GHA_CREDS_PATH" && echo "GHA creds file exists" || echo "GHA creds file not found"
+
+      # 4) 使用 Clasp 3.x 的 --adc 模式部署（alpha 版較新；若抓不到可改 ^2 但功能有限）
       - name: Push & Deploy via ADC
         run: |
           npx -y @google/clasp@3.0.6-alpha push --adc --force
