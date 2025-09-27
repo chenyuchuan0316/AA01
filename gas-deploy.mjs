@@ -1,74 +1,145 @@
-<<<<<<< HEAD
+#!/usr/bin/env node
 // gas-deploy.mjs
-// 以 OAuth refresh token 呼叫 Apps Script API：updateContent → versions.create → deployments.create
+// 使用 End-User OAuth（Client ID/Secret + Refresh Token）呼叫 Apps Script API：
+// 1) projects.updateContent  2) projects.versions.create  3) projects.deployments.(update|create)
 
 import fs from 'node:fs';
 import path from 'node:path';
-import {google} from 'googleapis';
-import {OAuth2Client} from 'google-auth-library';
+import process from 'node:process';
+import { google } from 'googleapis';
 
+// -----------------------------
+// 讀取必要環境變數（由 GitHub Secrets 注入）
+// -----------------------------
 const {
-  SCRIPT_ID,                 // e.g. 11eWxWJyImruzOO_lTuU-VDq...
-  GAS_CLIENT_ID,
-  GAS_CLIENT_SECRET,
-  GAS_OAUTH_REFRESH_TOKEN,
+  SCRIPT_ID,                  // Apps Script 專案 Script ID
+  GAS_CLIENT_ID,              // OAuth 2.0 Client ID
+  GAS_CLIENT_SECRET,          // OAuth 2.0 Client Secret
+  GAS_OAUTH_REFRESH_TOKEN,    // 以 get-refresh-token.mjs 取得的 refresh_token
   VERSION_DESC = `CI ${new Date().toISOString()}`,
   DEPLOY_DESC  = `CI auto deploy ${new Date().toISOString()}`,
+  DEPLOYMENT_ID,              // （可選）若指定則直接更新該 deploymentId
 } = process.env;
 
-if (!SCRIPT_ID)              throw new Error('缺少環境變數 SCRIPT_ID');
-if (!GAS_CLIENT_ID)          throw new Error('缺少環境變數 GAS_CLIENT_ID');
-if (!GAS_CLIENT_SECRET)      throw new Error('缺少環境變數 GAS_CLIENT_SECRET');
-if (!GAS_OAUTH_REFRESH_TOKEN)throw new Error('缺少環境變數 GAS_OAUTH_REFRESH_TOKEN');
+function need(name) {
+  if (!process.env[name]) {
+    console.error(`❌ 缺少環境變數 ${name}。請在 GitHub Secrets 設定：${name}`);
+    process.exit(1);
+  }
+}
+need('SCRIPT_ID');
+need('GAS_CLIENT_ID');
+need('GAS_CLIENT_SECRET');
+need('GAS_OAUTH_REFRESH_TOKEN');
 
-const oauth2 = new OAuth2Client(GAS_CLIENT_ID, GAS_CLIENT_SECRET);
-oauth2.setCredentials({refresh_token: GAS_OAUTH_REFRESH_TOKEN});
+// -----------------------------
+// OAuth2 用戶端
+// -----------------------------
+const oauth2 = new google.auth.OAuth2(GAS_CLIENT_ID, GAS_CLIENT_SECRET);
+oauth2.setCredentials({ refresh_token: GAS_OAUTH_REFRESH_TOKEN });
 
-const script = google.script({version: 'v1', auth: oauth2});
+const script = google.script({ version: 'v1', auth: oauth2 });
 
-// 將 repo 根目錄下的 .gs / .html 與 appsscript.json 轉成 Apps Script API 的 files[]
-function readFilesFromRepoRoot() {
+// -----------------------------
+// 從 repo 根目錄收集檔案 → Apps Script API 的 files[]
+//   - 只掃描根目錄（避免把 node_modules、docs 等雜檔帶進去）
+//   - 允許：.gs / .js → SERVER_JS； .html → HTML； appsscript.json → JSON（名為 "appsscript"）
+//   - 檢查同名衝突（Apps Script 檔名需唯一）
+// -----------------------------
+function buildFilesFromRepoRoot() {
   const cwd = process.cwd();
-  const entries = fs.readdirSync(cwd, {withFileTypes: true});
+  const entries = fs.readdirSync(cwd, { withFileTypes: true });
+
   const files = [];
+  const usedNames = new Map(); // name → ext/type，檢查重名
 
   for (const ent of entries) {
     if (!ent.isFile()) continue;
+
     const full = path.join(cwd, ent.name);
     const ext = path.extname(ent.name).toLowerCase();
-    const base= path.basename(ent.name, ext);
+    const base = path.basename(ent.name, ext);
 
     if (ent.name === 'appsscript.json') {
-      const manifest = fs.readFileSync(full, 'utf8');
+      const manifestText = fs.readFileSync(full, 'utf8').trim();
+      let manifestObj;
+      try {
+        manifestObj = JSON.parse(manifestText);
+      } catch (e) {
+        throw new Error(`appsscript.json 不是有效 JSON：${e.message}`);
+      }
+      // manifest 在 API 中必須叫 "appsscript"、type=JSON，source 為 JSON 字串
       files.push({
         name: 'appsscript',
         type: 'JSON',
-        source: JSON.stringify(JSON.parse(manifest)), // API 要求 JSON 字串
+        source: JSON.stringify(manifestObj),
       });
-    } else if (ext === '.gs' || ext === '.js') {
+      continue;
+    }
+
+    if (ext === '.gs' || ext === '.js') {
+      if (usedNames.has(base)) {
+        throw new Error(`檔名衝突：${base}（Apps Script 同一專案內檔名必須唯一）`);
+      }
+      usedNames.set(base, 'SERVER_JS');
       files.push({
         name: base,
         type: 'SERVER_JS',
         source: fs.readFileSync(full, 'utf8'),
       });
-    } else if (ext === '.html' || ext === '.htm') {
+      continue;
+    }
+
+    if (ext === '.html' || ext === '.htm') {
+      if (usedNames.has(base)) {
+        throw new Error(`檔名衝突：${base}（Apps Script 同一專案內檔名必須唯一）`);
+      }
+      usedNames.set(base, 'HTML');
       files.push({
         name: base,
         type: 'HTML',
         source: fs.readFileSync(full, 'utf8'),
       });
+      continue;
     }
+
+    // 其他副檔名全部忽略（如 .csv / .xlsx / .md / .yml / lock 檔等）
   }
 
-  if (!files.find(f => f.name === 'appsscript' && f.type === 'JSON')) {
-    throw new Error('找不到 appsscript.json（請放在 repo 根目錄，且檔名正確）');
+  // 確認 manifest 存在
+  const hasManifest = files.some(f => f.type === 'JSON' && f.name === 'appsscript');
+  if (!hasManifest) {
+    throw new Error('找不到 appsscript.json（請放在 repo 根目錄，檔名須正確）');
   }
+
+  // 至少要有一個 SERVER_JS 或 HTML
+  const hasCode = files.some(f => f.type === 'SERVER_JS' || f.type === 'HTML');
+  if (!hasCode) {
+    console.warn('⚠️ 找不到任何 .gs/.js/.html；仍會只更新 manifest。');
+  }
+
   return files;
 }
 
+// -----------------------------
+// Utility：擷取 Web App URL（若有）
+// -----------------------------
+function tryGetWebAppUrl(deployment) {
+  const eps = deployment?.entryPoints || [];
+  for (const ep of eps) {
+    if (ep.entryPointType === 'WEB_APP' && ep.webApp?.url) {
+      return ep.webApp.url;
+    }
+  }
+  return null;
+}
+
+// -----------------------------
+// 主流程
+// -----------------------------
 (async () => {
-  // 1) push 內容
-  const files = readFilesFromRepoRoot();
+  // 1) 上傳原始碼
+  const files = buildFilesFromRepoRoot();
   await script.projects.updateContent({
     scriptId: SCRIPT_ID,
     requestBody: { files },
@@ -81,127 +152,88 @@ function readFilesFromRepoRoot() {
     requestBody: { description: VERSION_DESC },
   });
   const versionNumber = v.data.versionNumber;
+  if (!versionNumber) throw new Error('versions.create 失敗：未取得 versionNumber');
   console.log('✅ versions.create 完成：version =', versionNumber);
 
-  // 3) 建立部署
-  const d = await script.projects.deployments.create({
-    scriptId: SCRIPT_ID,
-    requestBody: {
-      deploymentConfig: {
-        versionNumber,
-        manifestFileName: 'appsscript',
-        description: DEPLOY_DESC,
-      },
-    },
-  });
-  console.log('✅ deployments.create 完成：deploymentId =', d.data.deploymentId);
-})().catch((err) => {
-  // 盡量把 API 回應 body 打出來便於排錯
-  const response = err?.response?.data || err;
-  console.error('DEPLOY ERR :\n', JSON.stringify(response, null, 2));
-  process.exit(1);
-});
-=======
-// gas-deploy.mjs
-// 以 OAuth refresh token 呼叫 Apps Script API：updateContent → versions.create → deployments.create
+  // 3) 判斷要 update 還是 create
+  let deploymentIdToUse = DEPLOYMENT_ID?.trim() || null;
 
-import fs from 'node:fs';
-import path from 'node:path';
-import {google} from 'googleapis';
-import {OAuth2Client} from 'google-auth-library';
+  if (!deploymentIdToUse) {
+    // 沒指定就查看既有部署，抓「最近更新」那筆
+    const list = await script.projects.deployments.list({ scriptId: SCRIPT_ID });
+    const deployments = list.data.deployments || [];
+    const head = deployments
+      .filter(d => d.deploymentId)
+      .sort((a, b) => new Date(b.updateTime || 0) - new Date(a.updateTime || 0))[0];
 
-const {
-  SCRIPT_ID,                 // e.g. 11eWxWJyImruzOO_lTuU-VDq...
-  GAS_CLIENT_ID,
-  GAS_CLIENT_SECRET,
-  GAS_OAUTH_REFRESH_TOKEN,
-  VERSION_DESC = `CI ${new Date().toISOString()}`,
-  DEPLOY_DESC  = `CI auto deploy ${new Date().toISOString()}`,
-} = process.env;
-
-if (!SCRIPT_ID)              throw new Error('缺少環境變數 SCRIPT_ID');
-if (!GAS_CLIENT_ID)          throw new Error('缺少環境變數 GAS_CLIENT_ID');
-if (!GAS_CLIENT_SECRET)      throw new Error('缺少環境變數 GAS_CLIENT_SECRET');
-if (!GAS_OAUTH_REFRESH_TOKEN)throw new Error('缺少環境變數 GAS_OAUTH_REFRESH_TOKEN');
-
-const oauth2 = new OAuth2Client(GAS_CLIENT_ID, GAS_CLIENT_SECRET);
-oauth2.setCredentials({refresh_token: GAS_OAUTH_REFRESH_TOKEN});
-
-const script = google.script({version: 'v1', auth: oauth2});
-
-// 將 repo 根目錄下的 .gs / .html 與 appsscript.json 轉成 Apps Script API 的 files[]
-function readFilesFromRepoRoot() {
-  const cwd = process.cwd();
-  const entries = fs.readdirSync(cwd, {withFileTypes: true});
-  const files = [];
-
-  for (const ent of entries) {
-    if (!ent.isFile()) continue;
-    const full = path.join(cwd, ent.name);
-    const ext = path.extname(ent.name).toLowerCase();
-    const base= path.basename(ent.name, ext);
-
-    if (ent.name === 'appsscript.json') {
-      const manifest = fs.readFileSync(full, 'utf8');
-      files.push({
-        name: 'appsscript',
-        type: 'JSON',
-        source: JSON.stringify(JSON.parse(manifest)), // API 要求 JSON 字串
-      });
-    } else if (ext === '.gs' || ext === '.js') {
-      files.push({
-        name: base,
-        type: 'SERVER_JS',
-        source: fs.readFileSync(full, 'utf8'),
-      });
-    } else if (ext === '.html' || ext === '.htm') {
-      files.push({
-        name: base,
-        type: 'HTML',
-        source: fs.readFileSync(full, 'utf8'),
-      });
+    if (head?.deploymentId) {
+      deploymentIdToUse = head.deploymentId;
+      console.log(`🔎 偵測到既有部署（將 update）：${deploymentIdToUse}`);
+    } else {
+      console.log('🔎 找不到既有部署（將 create，會產生新的 deploymentId 與可能的新 URL）');
     }
+  } else {
+    console.log(`🔧 你指定了 DEPLOYMENT_ID=${deploymentIdToUse}，將直接 update 該部署`);
   }
 
-  if (!files.find(f => f.name === 'appsscript' && f.type === 'JSON')) {
-    throw new Error('找不到 appsscript.json（請放在 repo 根目錄，且檔名正確）');
-  }
-  return files;
-}
+  // 4) 執行部署（update 優先；否則 create）
+  let finalDeploymentId = null;
+  let webAppUrl = null;
 
-(async () => {
-  // 1) push 內容
-  const files = readFilesFromRepoRoot();
-  await script.projects.updateContent({
-    scriptId: SCRIPT_ID,
-    requestBody: { files },
-  });
-  console.log('✅ updateContent 完成（已上傳原始碼）');
+  if (deploymentIdToUse) {
+    // update：body 放在 deploymentConfig
+    const upd = await script.projects.deployments.update({
+      scriptId: SCRIPT_ID,
+      deploymentId: deploymentIdToUse,
+      requestBody: {
+        deploymentConfig: {
+          versionNumber,
+          manifestFileName: 'appsscript', // 注意：這裡不是 appsscript.json
+          description: DEPLOY_DESC,
+        },
+      },
+    });
+    finalDeploymentId = upd.data.deploymentId || deploymentIdToUse;
 
-  // 2) 建立版本
-  const v = await script.projects.versions.create({
-    scriptId: SCRIPT_ID,
-    requestBody: { description: VERSION_DESC },
-  });
-  const versionNumber = v.data.versionNumber;
-  console.log('✅ versions.create 完成：version =', versionNumber);
+    // 取回 URL（若為 Web App）
+    const got = await script.projects.deployments.get({
+      scriptId: SCRIPT_ID,
+      deploymentId: finalDeploymentId,
+    });
+    webAppUrl = tryGetWebAppUrl(got.data);
 
-  // 3) 建立部署
-  const d = await script.projects.deployments.create({
-    scriptId: SCRIPT_ID,
-    requestBody: {
-      deploymentConfig: {
+    console.log('✅ deployments.update 完成（沿用原部署）');
+  } else {
+    // create：扁平欄位（不要放 deploymentConfig）
+    const crt = await script.projects.deployments.create({
+      scriptId: SCRIPT_ID,
+      requestBody: {
         versionNumber,
-        manifestFileName: 'appsscript',
+        manifestFileName: 'appsscript', // 注意：這裡不是 appsscript.json
         description: DEPLOY_DESC,
       },
-    },
-  });
-  console.log('✅ deployments.create 完成：deploymentId =', d.data.deploymentId);
-})().catch((err) => {
-  // 盡量把 API 回應 body 打出來便於排錯
-  const response = err?.response?.data || err;
-  console.error('DEPLOY ERR :\n', JSON.stringify(response, null, 2));
+    });
+    finalDeploymentId = crt.data.deploymentId;
+
+    // 取回 URL（若為 Web App）
+    const got = await script.projects.deployments.get({
+      scriptId: SCRIPT_ID,
+      deploymentId: finalDeploymentId,
+    });
+    webAppUrl = tryGetWebAppUrl(got.data);
+
+    console.log('✅ deployments.create 完成（新部署）');
+  }
+
+  console.log('📌 deploymentId =', finalDeploymentId || '(未知)');
+  if (webAppUrl) {
+    console.log('🌐 Web App URL =', webAppUrl);
+  } else {
+    console.log('ℹ️ 此部署沒有 Web App 進入點（Add-on / Library 等情境屬正常）');
+  }
+})().catch(err => {
+  // 盡量輸出 API 詳細錯誤
+  const data = err?.response?.data || err;
+  console.error('❌ DEPLOY ERROR\n', JSON.stringify(data, null, 2));
   process.exit(1);
 });
->>>>>>> cc2d3f1 (Add deployment script)
