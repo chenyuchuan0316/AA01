@@ -6,3 +6,8 @@ gha-creds-*.json
 client_secret.json
 .client_secret.json
 
+
+client_secret.json
+.client_secret.json
+sa.json
+

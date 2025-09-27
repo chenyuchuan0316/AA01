@@ -8,5 +8,4 @@ node_modules/
 *.csv
 *.xlsx
 *.md
-
-# 你不想被部署的任何檔案都可加在這
+docs/
