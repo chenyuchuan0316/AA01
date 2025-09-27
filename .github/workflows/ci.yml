@@ -8,15 +8,16 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # 必須，否則 OIDC 不會簽發 token
+  id-token: write     # 必須：讓 GitHub 簽發 OIDC token 給 auth@v2
 
 jobs:
-  deploy:                 # job 名稱
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - id: auth          # 這是 step，不是 job
+      # 1) 以 OIDC 透過 WIF 換取 ADC（不要填 lifetime）
+      - id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
@@ -28,18 +29,33 @@ jobs:
           cache: 'npm'
       - run: npm ci
 
+      # 2) 寫入 .clasp.json（若 manifest 在 src/ 就把 rootDir 改成 "src"）
       - name: Write .clasp.json
         run: |
-          echo '{ "scriptId": "${{ secrets.SCRIPT_ID }}", "rootDir": "." }' > .clasp.json
-          cat .clasp.json
+          cat > .clasp.json <<'JSON'
+          { "scriptId": "${{ secrets.SCRIPT_ID }}", "rootDir": "." }
+          JSON
+          echo "[debug] .clasp.json:" && cat .clasp.json
 
+      # 3) 診斷：auth@v2 是否把 ADC 憑證真的注入（應該會看到兩個檔路徑與存在）
       - name: Debug ADC env
+        shell: bash
         run: |
           echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS"
-          test -f "$GOOGLE_APPLICATION_CREDENTIALS" && echo "file exists"
+          echo "GOOGLE_GHA_CREDS_PATH=$GOOGLE_GHA_CREDS_PATH"
+          echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE"
+          ls -l "$GOOGLE_APPLICATION_CREDENTIALS" || (echo "GAC missing" && exit 1)
+          ls -l "$GOOGLE_GHA_CREDS_PATH" || echo "GHA creds file not found (非必要)"
 
+      # 4) 驗證：用 google-auth-library 走 ADC 拿 access token（確定 ADC 可用）
+      - name: Verify ADC by google-auth-library
+        run: |
+          node -e "const {GoogleAuth}=require('google-auth-library');(async()=>{try{const a=new GoogleAuth();const c=await a.getClient();const t=await c.getAccessToken();console.log('ADC token ok?',!!t);const p=await a.getProjectId();console.log('projectId=',p);}catch(e){console.error(e);process.exit(1)}})();"
+
+      # 5) 用 Clasp 3.x 的 --adc 部署（alpha），若抓不到可改成 ^2 測試 push
       - name: Push & Deploy via ADC
         run: |
+          npx -y @google/clasp@3.0.6-alpha status --adc || true
           npx -y @google/clasp@3.0.6-alpha push --adc --force
           npx -y @google/clasp@3.0.6-alpha version --adc "CI $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           npx -y @google/clasp@3.0.6-alpha deploy --adc -d "CI auto deploy $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
