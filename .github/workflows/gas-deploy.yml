@@ -1,23 +1,30 @@
 ﻿name: Push & Deploy GAS (fixed deployment)
+
 on:
   workflow_dispatch:
   push:
     paths:
       - 'src/**'
       - '.clasp.json'
+      - '.github/workflows/gas-deploy.yml'   # 要包含 workflow 本身變動才觸發
 
 jobs:
   gas:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug: workflow version
+        run: echo "Running workflow commit: $(git rev-parse HEAD)"
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - run: npm i -g @google/clasp
+      - name: Install clasp
+        run: npm i -g @google/clasp
 
+<<<<<<< HEAD
       # 把憑證從 base64 解碼寫入 ~/.clasprc.json，並驗證結構
       - name: Write ~/.clasprc.json (from base64) + validate + inspect
         shell: bash
@@ -35,15 +42,32 @@ jobs:
       
           # 4) 驗證 JSON 結構（兩個必要欄位）
           node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('✖ Missing required fields in .clasprc.json');process.exit(1)}else{console.log('✔ .clasprc.json JSON structure OK')}"
+=======
+      - name: Write ~/.clasprc.json (from base64) + validate
+        shell: bash
+        run: |
+          # 解碼寫憑證
+          printf '%s' "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
 
+          # 刪除專案根的殘留憑證檔（避免優先被讀到）
+          rm -f "./.clasprc.json"
 
-      - name: Ensure .clasp.json
+          # Debug：預覽前 30 bytes 的 base64（只印開頭部分）
+          echo "Preview first 30 bytes (base64):"
+          head -c 30 "$HOME/.clasprc.json" | base64
+
+          # 驗證結構：必須有 token & oauth2ClientSettings
+          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('✖ Missing required fields');process.exit(1)}else{console.log('✔ JSON structure OK')}"
+>>>>>>> 54c532a (ci: switch to base64 credential version with debug)
+
+      - name: Ensure .clasp.json exists
         run: |
           test -f .clasp.json || cat > .clasp.json <<'EOF'
           { "scriptId": "${{ vars.GAS_SCRIPT_ID }}", "rootDir": "src" }
           EOF
 
-      - name: Push code
+      - name: Push code to Apps Script
         run: clasp push -f
 
       - name: Create new version
