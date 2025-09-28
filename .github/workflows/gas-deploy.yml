@@ -18,153 +18,181 @@ jobs:
           node-version: 20
 
       - name: Install Google clasp
-        run: npm install -g @google/clasp
+        run: npm i -g @google/clasp
 
+      # 還原 ~/.clasprc.json（Base64 → 檔案）
       - name: Authenticate clasp via .clasprc.json
-        # 將 Base64 字串還原為憑證檔案
         run: |
           echo -n "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
-          echo "Restored ~/.clasprc.json"
+          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('OK ~/.clasprc.json')"
 
-      - name: 檢查部署 ID 與 URL 設置 (Preflight)
+      # 防呆：部署 ID 必須出現在 URL 內（避免你填到 Library 的 ID）
+      - name: Preflight: ID must match URL
         env:
           ID: ${{ vars.GAS_DEPLOY_ID }}
           URL: ${{ vars.GAS_WEBAPP_URL }}
         run: |
+          set -e
           echo "GAS_DEPLOY_ID=$ID"
           echo "GAS_WEBAPP_URL=$URL"
-          # 確認 Web App URL 中包含部署 ID，避免變數設錯
           if echo "$URL" | grep -Fq "$ID"; then
-            echo "✅ 部署 ID 與 Web App URL 匹配"
+            echo "OK: ID is contained in URL"
           else
-            echo "::error ::GAS_DEPLOY_ID 與 GAS_WEBAPP_URL 不匹配，請確認填入正確的 Web App 部署 ID。"
+            echo "::error ::GAS_DEPLOY_ID is not contained in GAS_WEBAPP_URL (likely a Library ID)."
             exit 1
           fi
 
-      - name: 建立 .clasp.json 配置
+      # 產生乾淨 .clasp.json（無 BOM）
+      - name: Create clean .clasp.json (no BOM)
         env:
           GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
         run: |
-          # 用 Node.js 建立 .clasp.json，寫入 Apps Script 專案 scriptId
-          node <<'EOF'
+          node <<'NODE'
           const fs = require('fs');
-          const id = process.env.GAS_SCRIPT_ID?.trim();
-          if (!id) {
-            console.error('❌ GAS_SCRIPT_ID 未設定或為空');
-            process.exit(1);
-          }
+          const id = (process.env.GAS_SCRIPT_ID || '').trim();
+          if (!id) { console.error('GAS_SCRIPT_ID not set'); process.exit(1); }
           fs.writeFileSync('.clasp.json', JSON.stringify({ scriptId: id }));
-          console.log('✅ 已寫入 .clasp.json (scriptId)');
-          EOF
+          console.log('OK .clasp.json written');
+          NODE
 
-      - name: 建立 .claspignore 檔案
+      # 避免把雜檔推上 GAS
+      - name: Ensure .claspignore
         run: |
           cat > .claspignore <<'EOF'
           node_modules/**
           .github/**
           .git/**
+          dist/**
+          build/**
+          coverage/**
+          .vscode/**
+          *.map
+          README*
+          LICENSE*
+          *.md
+          scripts/**
+          test/**
+          package.json
+          package-lock.json
+          pnpm-lock.yaml
+          yarn.lock
           EOF
-          echo '✅ 已建立 .claspignore，忽略無關檔案'
 
-      - name: Push code to GAS (clasp push)
+      - name: Push code to GAS
         run: clasp push --force
 
-      - name: Create new version
+      - name: Create version
         run: |
-          # 建立新版本，取得版本號
-          VERSION_DESC="CI auto version $GITHUB_SHA"
-          OUTPUT="$(clasp version "$VERSION_DESC")"
-          echo "$OUTPUT"
-          # 提取版本號數字
-          VER=$(echo "$OUTPUT" | sed -n 's/.*version \([0-9]\+\).*/\1/p')
-          if [ -z "$VER" ]; then
-            echo "::error ::無法解析 Apps Script 版本號"
-            exit 1
-          fi
-          echo "✅ 建立版本成功，version = $VER"
+          DESC="ci build $GITHUB_SHA"
+          OUT="$(clasp version "$DESC")"
+          echo "$OUT"
+          VER="$(echo "$OUT" | sed -n 's/.*version \([0-9]\+\).*/\1/p')"
+          if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
           echo "VERSION_NUMBER=$VER" >> $GITHUB_ENV
 
-      - name: Update Web App Deployment
+      - name: Update Web App Deployment (fixed ID)
         env:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
           VER: ${{ env.VERSION_NUMBER }}
         run: |
-          # 使用現有 deployment ID 部署新版本，保持 URL 不變
-          DEPLOY_DESC="CI deploy $GITHUB_SHA"
-          clasp deploy --deploymentId "$GAS_DEPLOY_ID" --versionNumber "$VER" --description "$DEPLOY_DESC"
-          echo "✅ 已更新部署（ID=$GAS_DEPLOY_ID，版本=$VER）"
+          clasp deploy --deploymentId "$GAS_DEPLOY_ID" --versionNumber "$VER" --description "ci $GITHUB_SHA"
 
-      - name: 匿名請求 Web App (Probe)
+      - name: Show deployments (debug)
+        run: clasp deployments || true
+
+      # 先匿名探測；公開 URL 會直接 200，網域型多半 404（正常）
+      - name: Probe Web App anonymously
         id: probe
         env:
-          WEBAPP_URL: ${{ vars.GAS_WEBAPP_URL }}
+          URL: ${{ vars.GAS_WEBAPP_URL }}
         run: |
-          # 嘗試匿名存取 Web App，檢查是否回應 2XX/3XX
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEBAPP_URL")
-          echo "HTTP Status=$STATUS"
-          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+          set +e
+          code=$(curl -s -o resp.txt -w "%{http_code}" -L "$URL")
+          echo "http_code=$code"
+          if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
             echo "PROBE_OK=true" >> $GITHUB_ENV
-            echo "匿名存取 Web App 成功 (HTTP $STATUS)"
+            head -c 1024 resp.txt || true
+            exit 0
           else
             echo "PROBE_OK=false" >> $GITHUB_ENV
-            echo "匿名存取 Web App 未成功，可能需要授權或權限不符 (HTTP $STATUS)"
+            exit 0
           fi
 
-      - name: OAuth 驗證後存取 Web App
+      # 匿名失敗（網域限制）→ 用 OAuth 取 token 再打
+      - name: Test Web App with OAuth
         if: ${{ env.PROBE_OK == 'false' }}
         env:
-          WEBAPP_URL: ${{ vars.GAS_WEBAPP_URL }}
+          URL: ${{ vars.GAS_WEBAPP_URL }}
           GAS_OAUTH_CLIENT_ID: ${{ secrets.GAS_OAUTH_CLIENT_ID }}
           GAS_OAUTH_CLIENT_SECRET: ${{ secrets.GAS_OAUTH_CLIENT_SECRET }}
         run: |
-          # 使用 OAuth Refresh Token 獲取 Access Token 並授權請求 Web App
-          node <<'EOF'
-          const fs = require('fs');
-          const https = require('https');
-          const cfg = JSON.parse(fs.readFileSync(process.env.HOME + '/.clasprc.json', 'utf8'));
-          const refreshToken = cfg.token?.refresh_token || cfg.token?.refreshToken;
-          if (!refreshToken) {
-            console.error('❌ 找不到 refresh_token，請確認 CLASPRC_JSON_B64');
-            process.exit(1);
-          }
-          const clientId = process.env.GAS_OAUTH_CLIENT_ID;
-          const clientSecret = process.env.GAS_OAUTH_CLIENT_SECRET;
-          const params = new URLSearchParams({
+          node <<'NODE'
+          const fs = require('fs'), https = require('https');
+          const p = process.env.HOME + '/.clasprc.json';
+          const cfg = JSON.parse(fs.readFileSync(p,'utf8'));
+
+          // 同時支援新舊版結構：token / tokens.default / tokens.local
+          const pickRT = c =>
+            c?.token?.refresh_token ||
+            c?.token?.refreshToken ||
+            c?.tokens?.default?.refresh_token ||
+            c?.tokens?.default?.refreshToken ||
+            c?.tokens?.local?.refresh_token ||
+            c?.refresh_token || null;
+
+          const rt = pickRT(cfg);
+          if (!rt) { console.error('❌ ~/.clasprc.json 沒有 refresh_token（新版在 tokens.default.refresh_token）'); process.exit(1); }
+
+          // 優先用 Secrets；沒填就用 .clasprc.json 內的 client
+          const pickClient = c =>
+            c?.oauth2ClientSettings?.clientId ||
+            c?.oauth2ClientSettings?.web?.client_id ||
+            c?.oauth2ClientSettings?.installed?.client_id || null;
+
+          const pickSecret = c =>
+            c?.oauth2ClientSettings?.clientSecret ||
+            c?.oauth2ClientSettings?.web?.client_secret ||
+            c?.oauth2ClientSettings?.installed?.client_secret || null;
+
+          const clientId = process.env.GAS_OAUTH_CLIENT_ID || pickClient(cfg);
+          const clientSecret = process.env.GAS_OAUTH_CLIENT_SECRET || pickSecret(cfg);
+          if (!clientId || !clientSecret) { console.error('❌ 找不到 OAuth clientId/clientSecret（可用 Secrets 覆蓋或從 .clasprc.json 讀）'); process.exit(1); }
+
+          const body = new URLSearchParams({
             client_id: clientId,
             client_secret: clientSecret,
-            refresh_token: refreshToken,
+            refresh_token: rt,
             grant_type: 'refresh_token'
-          });
-          const options = {
+          }).toString();
+
+          const opt = {
             hostname: 'oauth2.googleapis.com',
             path: '/token',
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded',
+                       'Content-Length': Buffer.byteLength(body) }
           };
-          const req = https.request(options, res => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-              const resObj = JSON.parse(data);
-              if (!resObj.access_token) {
-                console.error('❌ 無法取得 access_token', data);
+
+          const req = https.request(opt, res => {
+            let buf=''; res.on('data', d=>buf+=d); res.on('end', ()=>{
+              try{
+                const obj = JSON.parse(buf);
+                if (!obj.access_token) throw new Error(buf);
+                fs.writeFileSync('ACCESS_TOKEN', obj.access_token);
+                console.log('✅ 拿到 access_token');
+              }catch(e){
+                console.error('❌ OAuth 交換 access_token 失敗：', buf);
                 process.exit(1);
               }
-              fs.writeFileSync('ACCESS_TOKEN', resObj.access_token);
             });
           });
-          req.on('error', err => { console.error('❌ OAuth 連線錯誤', err); process.exit(1); });
-          req.write(params.toString());
-          req.end();
-          EOF
+          req.on('error', e=>{ console.error('❌ OAuth 連線錯誤', e); process.exit(1); });
+          req.write(body); req.end();
+          NODE
 
           ACCESS_TOKEN=$(cat ACCESS_TOKEN)
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $ACCESS_TOKEN" "$WEBAPP_URL")
-          echo "Authenticated HTTP Status=$STATUS"
-          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
-            echo "✅ OAuth 授權後存取 Web App 成功 (HTTP $STATUS)"
-          else
-            echo "::error ::即使使用 OAuth，Web App 回應碼仍非 2XX (HTTP $STATUS)。"
-            exit 1
-          fi
+          code=$(curl -s -o resp.txt -w "%{http_code}" -L -H "Authorization: Bearer $ACCESS_TOKEN" "$URL")
+          echo "Authenticated HTTP Status=$code"
+          head -c 1024 resp.txt || true
+          test "$code" -ge 200 -a "$code" -lt 400
