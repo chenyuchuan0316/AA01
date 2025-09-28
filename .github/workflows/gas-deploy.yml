@@ -12,16 +12,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with:
+          node-version: '20'
       - run: npm i -g @google/clasp
-      - name: Write ~/.clasprc.json
-        run: echo "${{ secrets.CLASPRC_JSON }}" > "$HOME/.clasprc.json"
+
+      # ✅ 改成用 base64 還原 ~/_clasprc.json 並驗證結構
+      - name: Write ~/.clasprc.json (from base64, exact bytes)
+        shell: bash
+        run: |
+          printf '%s' "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('~/.clasprc.json missing required fields');process.exit(1)}"
+
       - name: Ensure .clasp.json
         run: |
           test -f .clasp.json || cat > .clasp.json <<'EOF'
           { "scriptId": "${{ vars.GAS_SCRIPT_ID }}", "rootDir": "src" }
           EOF
+
       - run: clasp push -f
+
       - name: Create new version
         id: mkver
         run: |
@@ -29,6 +39,7 @@ jobs:
           echo "$OUT"
           VER=$(echo "$OUT" | grep -Eo '[0-9]+' | tail -n1)
           echo "ver=$VER" >> $GITHUB_OUTPUT
+
       - name: Deploy to fixed ID (URL stays the same)
         run: |
           clasp deploy --deploymentId "${{ vars.GAS_DEPLOY_ID }}" \
