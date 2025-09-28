@@ -20,54 +20,26 @@ jobs:
       - name: Install clasp
         run: npm i -g @google/clasp
 
-      # === ① 從 Secret 還原檔案（不解析，先落地即可） ===
-      - name: Restore raw ~/.clasprc.json
+      # ① 從 Base64 Secret 還原 ~/.clasprc.json，並驗證是有效 JSON
+      - name: Restore ~/.clasprc.json from Base64
         run: |
-          # 直接寫入，不輸出內容到 log（避免外洩）
-          printf '%s' "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
+          echo "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
-          # 顯示檔案大小幫助判斷是否成功寫入
+          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('✔ ~/.clasprc.json OK')"
           echo "Size of ~/.clasprc.json: $(wc -c < ~/.clasprc.json) bytes"
 
-      # === ② 除錯：檢測 Secret 內是否有 BOM / ``` 包裹；並做「正規化」 ===
-      - name: Normalize ~/.clasprc.json (remove BOM / code fences) & validate
-        env:
-          CLASPRC_JSON_RAW: ${{ secrets.CLASPRC_JSON }}
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          let s = process.env.CLASPRC_JSON_RAW || '';
-          let hadBOM   = s.charCodeAt(0) === 0xFEFF;
-          if (hadBOM) s = s.replace(/^\uFEFF/, '');
-
-          // 移除可能不小心一起貼進來的 ``` 或 ```json 區塊包裹
-          let hadFence = false;
-          s = s.replace(/^\s*```(?:json)?\s*/i, () => { hadFence = true; return ''; })
-               .replace(/\s*```\s*$/,      () => { hadFence = true; return ''; });
-
-          try {
-            const obj = JSON.parse(s);               // 驗證 JSON
-            // 重新序列化，保證是乾淨、無 BOM 的 JSON
-            fs.writeFileSync(process.env.HOME + '/.clasprc.json', JSON.stringify(obj));
-            console.log('✔ ~/.clasprc.json normalized & valid');
-            console.log('  BOM present: '   + (hadBOM   ? 'YES' : 'NO'));
-            console.log('  Code fence: '    + (hadFence ? 'YES' : 'NO'));
-          } catch (e) {
-            console.log('✖ CLASPRC_JSON 不是有效 JSON。請在本機重新登入 `clasp login`，用文字編輯器打開 `~/.clasprc.json`，以「純文字、無 ```、無註解、UTF-8」整份貼入 Secret。');
-            throw e;
-          }
-          NODE
-
-      # === ③ 產生 乾淨 的 .clasp.json（每次現場建立，避免 repo 內檔案有 BOM） ===
+      # ② 產生乾淨的 .clasp.json（從 repo 變數 GAS_SCRIPT_ID）
       - name: Create clean .clasp.json (no BOM)
         env:
           GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
         run: |
-          node -e "const fs=require('fs');const id=process.env.GAS_SCRIPT_ID;if(!id)throw new Error('Missing GAS_SCRIPT_ID');fs.writeFileSync('.clasp.json',JSON.stringify({scriptId:id}))"
+          node -e "const fs=require('fs'); const id=process.env.GAS_SCRIPT_ID; if(!id){console.error('❌ Missing repo variable GAS_SCRIPT_ID'); process.exit(1);} fs.writeFileSync('.clasp.json', JSON.stringify({scriptId:id}));"
+          # 除錯：檢查第一行是否為 {，也印出前 32 bytes（十六進位）
           head -n1 .clasp.json | cat -v
+          hexdump -C -n 32 .clasp.json || true
           node -e "JSON.parse(require('fs').readFileSync('.clasp.json','utf8')); console.log('✔ .clasp.json OK')"
 
-      # === ④ 建議：確保忽略雜檔，避免把 node_modules 等推上 GAS ===
+      # ③ 建議：忽略雜檔，避免把 node_modules 等推上 GAS
       - name: Ensure .claspignore
         run: |
           cat > .claspignore <<'EOF'
@@ -90,11 +62,11 @@ jobs:
           yarn.lock
           EOF
 
-      # === ⑤ push 原始碼到 GAS（此時會讀剛才生成的 .clasp.json）===
+      # ④ push 原始碼到 GAS
       - name: Push code to GAS
         run: clasp push --force
 
-      # === ⑥ 建版並更新既有部署（網址不變）===
+      # ⑤ 建版並更新既有部署（網址不變）
       - name: Create version & update existing deployment
         env:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
@@ -106,7 +78,7 @@ jobs:
           if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
           clasp deploy -i "$GAS_DEPLOY_ID" -V "$VER" -d "$DESC"
 
-      # === ⑦ 簡單 smoke test：直接呼叫 Web App URL ===
+      # ⑥ 簡單 smoke test：直接呼叫 Web App URL
       - name: Test deployed Web App
         run: |
           echo "Testing Web App..."
