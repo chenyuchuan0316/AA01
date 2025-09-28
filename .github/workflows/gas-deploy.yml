@@ -2,8 +2,8 @@ name: Deploy GAS Web App
 
 on:
   push:
-    branches: [ "main" ]          # 合併到 main 自動部署
-  workflow_dispatch: {}            # 也可在 Actions 手動觸發
+    branches: [ "main" ]         # 合併到 main 就自動部署
+  workflow_dispatch: {}           # 也可在 Actions 手動觸發
 
 jobs:
   deploy:
@@ -20,17 +20,50 @@ jobs:
       - name: Install clasp
         run: npm i -g @google/clasp
 
-      # 用 Secret 還原登入憑證到 ~/
+      # 1) 從 Secret 還原 ~/.clasprc.json，並驗證它是有效 JSON
       - name: Restore ~/.clasprc.json
         run: |
           printf '%s' "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
+          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('✔ ~/.clasprc.json OK')"
 
-      # 推送專案檔（會讀取 repo 根目錄的 .clasp.json）
+      # 2) 直接用變數建立「乾淨、無 BOM」的 .clasp.json（避免受到 repo 內檔案影響）
+      - name: Create clean .clasp.json (no BOM) & validate
+        env:
+          GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
+        run: |
+          node -e "const fs=require('fs'); const id=process.env.GAS_SCRIPT_ID; if(!id) {throw new Error('Missing GAS_SCRIPT_ID');} fs.writeFileSync('.clasp.json', JSON.stringify({scriptId:id}));"
+          head -n1 .clasp.json | cat -v        # 印第一行檢查是否有奇怪字元
+          node -e "JSON.parse(require('fs').readFileSync('.clasp.json','utf8')); console.log('✔ .clasp.json OK')"
+
+      # 3) 建議：忽略雜檔，避免把 node_modules 等推到 GAS
+      - name: Ensure .claspignore
+        run: |
+          cat > .claspignore <<'EOF'
+          node_modules/**
+          .github/**
+          .git/**
+          dist/**
+          build/**
+          coverage/**
+          .vscode/**
+          *.map
+          README*
+          LICENSE*
+          *.md
+          scripts/**
+          test/**
+          package.json
+          package-lock.json
+          pnpm-lock.yaml
+          yarn.lock
+          EOF
+
+      # 4) push 原始碼到 GAS（此時會讀剛才產生的 .clasp.json）
       - name: Push code to GAS
         run: clasp push --force
 
-      # 建新版本並更新到 "固定的部署 ID"
+      # 5) 建新版本並更新既有部署（網址不變）
       - name: Create version & update existing deployment
         env:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
@@ -42,7 +75,7 @@ jobs:
           if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
           clasp deploy -i "$GAS_DEPLOY_ID" -V "$VER" -d "$DESC"
 
-      # 直接呼叫 Web App URL 做 smoke test
+      # 6) 用固定 URL 做 smoke test（回應非 2xx 會讓工作失敗）
       - name: Test deployed Web App
         run: |
           echo "Testing Web App..."
