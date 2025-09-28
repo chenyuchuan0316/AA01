@@ -11,18 +11,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - run: npm i -g @google/clasp
 
-      # ✅ 改成用 base64 還原 ~/_clasprc.json 並驗證結構
-      - name: Write ~/.clasprc.json (from base64, exact bytes)
+      # 把憑證從 base64 解碼寫入 ~/.clasprc.json，並驗證結構
+      - name: Write ~/.clasprc.json (from base64, exact bytes) + validate
         shell: bash
         run: |
           printf '%s' "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > "$HOME/.clasprc.json"
           chmod 600 "$HOME/.clasprc.json"
-          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('~/.clasprc.json missing required fields');process.exit(1)}"
+          # 預覽前 30 bytes 的 base64（方便 debug，不洩密）
+          echo "Preview first 30 bytes (base64):"
+          head -c 30 "$HOME/.clasprc.json" | base64
+          # 驗證 JSON 結構：要有 token 和 oauth2ClientSettings
+          node -e "const fs=require('fs'); const p=process.env.HOME+'/.clasprc.json'; const j = JSON.parse(fs.readFileSync(p, 'utf8')); if (!j.token || !j.oauth2ClientSettings) { console.error('✖ Missing required fields in .clasprc.json'); process.exit(1) } else { console.log('✔ .clasprc.json JSON structure OK') }"
 
       - name: Ensure .clasp.json
         run: |
@@ -30,7 +36,8 @@ jobs:
           { "scriptId": "${{ vars.GAS_SCRIPT_ID }}", "rootDir": "src" }
           EOF
 
-      - run: clasp push -f
+      - name: Push code
+        run: clasp push -f
 
       - name: Create new version
         id: mkver
@@ -40,7 +47,7 @@ jobs:
           VER=$(echo "$OUT" | grep -Eo '[0-9]+' | tail -n1)
           echo "ver=$VER" >> $GITHUB_OUTPUT
 
-      - name: Deploy to fixed ID (URL stays the same)
+      - name: Deploy to fixed ID
         run: |
           clasp deploy --deploymentId "${{ vars.GAS_DEPLOY_ID }}" \
                        --versionNumber "${{ steps.mkver.outputs.ver }}" \
