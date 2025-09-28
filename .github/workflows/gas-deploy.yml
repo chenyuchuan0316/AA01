@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'src/**'
-      - '.clasp.json'
-      - '.github/workflows/gas-deploy.yml'
+      - "src/**"
+      - ".clasp.json"
+      - ".github/workflows/gas-deploy.yml"
 
 jobs:
   gas:
@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install clasp
         run: npm i -g @google/clasp
@@ -29,10 +29,11 @@ jobs:
         run: |
           printf '%s' "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > "$HOME/.clasprc.json"
           chmod 600 "$HOME/.clasprc.json"
+          # 防止專案根殘留的 .clasprc.json 搶到優先序
           rm -f "./.clasprc.json"
           echo "Preview first 30 bytes (base64):"
           head -c 30 "$HOME/.clasprc.json" | base64
-          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('✖ Missing required fields');process.exit(1)}else{console.log('✔ JSON structure OK')}"
+          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('✖ Missing token/oauth2ClientSettings');process.exit(1)}else{console.log('✔ JSON structure OK')}"
 
       - name: Ensure .clasp.json exists
         run: |
