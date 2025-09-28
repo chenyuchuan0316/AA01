@@ -1,7 +1,7 @@
-name: Push & Deploy GAS (fixed deployment)
+﻿name: Push & Deploy GAS (fixed deployment)
 on:
-  workflow_dispatch:    # 手動觸發
-  push:                 # 或當 src/ 有變更時自動觸發
+  workflow_dispatch:
+  push:
     paths:
       - 'src/**'
       - '.clasp.json'
@@ -11,24 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+        with: { node-version: '20' }
       - run: npm i -g @google/clasp
-
       - name: Write ~/.clasprc.json
         run: echo "${{ secrets.CLASPRC_JSON }}" > "$HOME/.clasprc.json"
-
       - name: Ensure .clasp.json
         run: |
           test -f .clasp.json || cat > .clasp.json <<'EOF'
           { "scriptId": "${{ vars.GAS_SCRIPT_ID }}", "rootDir": "src" }
           EOF
-
       - run: clasp push -f
-
       - name: Create new version
         id: mkver
         run: |
@@ -36,7 +29,6 @@ jobs:
           echo "$OUT"
           VER=$(echo "$OUT" | grep -Eo '[0-9]+' | tail -n1)
           echo "ver=$VER" >> $GITHUB_OUTPUT
-
       - name: Deploy to fixed ID (URL stays the same)
         run: |
           clasp deploy --deploymentId "${{ vars.GAS_DEPLOY_ID }}" \

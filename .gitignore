@@ -11,3 +11,8 @@ client_secret.json
 .client_secret.json
 sa.json
 
+
+# allow GitHub Actions
+!.github
+!.github/workflows
+!.github/workflows/*.yml
