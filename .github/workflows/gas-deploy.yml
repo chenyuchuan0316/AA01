@@ -37,7 +37,7 @@ jobs:
           if echo "$URL" | grep -Fq "$ID"; then
             echo "OK: ID is contained in URL"
           else
-            echo "ERROR: GAS_DEPLOY_ID is not contained in GAS_WEBAPP_URL (likely a Library ID or wrong URL)"
+            echo "ERROR: GAS_DEPLOY_ID not in GAS_WEBAPP_URL"
             exit 1
           fi
 
@@ -84,108 +84,4 @@ jobs:
           OUT="$(clasp version "$DESC")"
           echo "$OUT"
           VER="$(echo "$OUT" | sed -n 's/.*version \([0-9]\+\).*/\1/p')"
-          if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
-          echo "VERSION_NUMBER=$VER" >> $GITHUB_ENV
-
-      - name: Update Web App Deployment (fixed ID)
-        env:
-          GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
-          VER: ${{ env.VERSION_NUMBER }}
-        run: |
-          clasp deploy --deploymentId "$GAS_DEPLOY_ID" --versionNumber "$VER" --description "ci $GITHUB_SHA"
-
-      - name: Show deployments (debug)
-        run: clasp deployments || true
-
-      - name: Probe Web App anonymously
-        id: probe
-        env:
-          URL: ${{ vars.GAS_WEBAPP_URL }}
-        run: |
-          set +e
-          code=$(curl -s -o resp.txt -w "%{http_code}" -L "$URL")
-          echo "http_code=$code"
-          if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
-            echo "PROBE_OK=true" >> $GITHUB_ENV
-            head -c 1024 resp.txt || true
-            exit 0
-          else
-            echo "PROBE_OK=false" >> $GITHUB_ENV
-            exit 0
-          fi
-
-      - name: Test Web App with OAuth
-        if: ${{ env.PROBE_OK == 'false' }}
-        env:
-          URL: ${{ vars.GAS_WEBAPP_URL }}
-          GAS_OAUTH_CLIENT_ID: ${{ secrets.GAS_OAUTH_CLIENT_ID }}
-          GAS_OAUTH_CLIENT_SECRET: ${{ secrets.GAS_OAUTH_CLIENT_SECRET }}
-        run: |
-          node <<'NODE'
-          const fs = require('fs'), https = require('https');
-          const p = process.env.HOME + '/.clasprc.json';
-          const cfg = JSON.parse(fs.readFileSync(p,'utf8'));
-
-          // 支援新舊版結構：token / tokens.default / tokens.local
-          const pickRT = c =>
-            c?.token?.refresh_token ||
-            c?.token?.refreshToken ||
-            c?.tokens?.default?.refresh_token ||
-            c?.tokens?.default?.refreshToken ||
-            c?.tokens?.local?.refresh_token ||
-            c?.refresh_token || null;
-
-          const rt = pickRT(cfg);
-          if (!rt) { console.error('No refresh_token in ~/.clasprc.json (new path is tokens.default.refresh_token)'); process.exit(1); }
-
-          const pickClient = c =>
-            c?.oauth2ClientSettings?.clientId ||
-            c?.oauth2ClientSettings?.web?.client_id ||
-            c?.oauth2ClientSettings?.installed?.client_id || null;
-
-          const pickSecret = c =>
-            c?.oauth2ClientSettings?.clientSecret ||
-            c?.oauth2ClientSettings?.web?.client_secret ||
-            c?.oauth2ClientSettings?.installed?.client_secret || null;
-
-          const clientId = process.env.GAS_OAUTH_CLIENT_ID || pickClient(cfg);
-          const clientSecret = process.env.GAS_OAUTH_CLIENT_SECRET || pickSecret(cfg);
-          if (!clientId || !clientSecret) { console.error('Missing OAuth clientId/clientSecret'); process.exit(1); }
-
-          const body = new URLSearchParams({
-            client_id: clientId,
-            client_secret: clientSecret,
-            refresh_token: rt,
-            grant_type: 'refresh_token'
-          }).toString();
-
-          const opt = {
-            hostname: 'oauth2.googleapis.com',
-            path: '/token',
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded',
-                       'Content-Length': Buffer.byteLength(body) }
-          };
-
-          const req = https.request(opt, res => {
-            let buf=''; res.on('data', d=>buf+=d); res.on('end', ()=>{
-              try{
-                const obj = JSON.parse(buf);
-                if (!obj.access_token) throw new Error(buf);
-                fs.writeFileSync('ACCESS_TOKEN', obj.access_token);
-                console.log('OK access_token');
-              }catch(e){
-                console.error('OAuth token error:', buf);
-                process.exit(1);
-              }
-            });
-          });
-          req.on('error', e=>{ console.error('OAuth request error:', e); process.exit(1); });
-          req.write(body); req.end();
-          NODE
-
-          ACCESS_TOKEN=$(cat ACCESS_TOKEN)
-          code=$(curl -s -o resp.txt -w "%{http_code}" -L -H "Authorization: Bearer $ACCESS_TOKEN" "$URL")
-          echo "Authenticated HTTP Status=$code"
-          head -c 1024 resp.txt || true
-          test "$code" -ge 200 -a "$code" -lt 400
+          if [ -z "$VER" ]; then e
