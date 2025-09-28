@@ -20,15 +20,14 @@ jobs:
       - name: Install clasp
         run: npm i -g @google/clasp
 
-      # 1) Restore Google creds from Base64 secret
+      # 1) 還原 Google 憑證（Base64）
       - name: Restore ~/.clasprc.json from Base64
         run: |
           echo "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
           node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('✔ ~/.clasprc.json OK')"
-          echo "Size of ~/.clasprc.json: $(wc -c < ~/.clasprc.json) bytes"
 
-      # 2) Create clean .clasp.json (no BOM)
+      # 2) 產生乾淨 .clasp.json（無 BOM）
       - name: Create clean .clasp.json (no BOM)
         env:
           GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
@@ -36,14 +35,13 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const id = (process.env.GAS_SCRIPT_ID || '').trim();
-          if (!id) { console.error('GAS_SCRIPT_ID not set'); process.exit(1); }
+          if (!id) { console.error('❌ GAS_SCRIPT_ID not set in repo Actions → Variables'); process.exit(1); }
           fs.writeFileSync('.clasp.json', JSON.stringify({ scriptId: id }));
+          console.log('✔ .clasp.json written');
           NODE
-          head -n1 .clasp.json | cat -v
-          hexdump -C -n 32 .clasp.json || true
           node -e "JSON.parse(require('fs').readFileSync('.clasp.json','utf8')); console.log('✔ .clasp.json OK')"
 
-      # 3) Ignore junk files when pushing
+      # 3) 忽略雜檔
       - name: Ensure .claspignore
         run: |
           cat > .claspignore <<'EOF'
@@ -66,11 +64,11 @@ jobs:
           yarn.lock
           EOF
 
-      # 4) Push code
+      # 4) push 原始碼
       - name: Push code to GAS
         run: clasp push --force
 
-      # 5) Create version & update existing deployment
+      # 5) 建版 & 更新「指定 Web App 部署 ID」
       - name: Create version & update deployment
         env:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
@@ -82,7 +80,7 @@ jobs:
           if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
           clasp deploy -i "$GAS_DEPLOY_ID" -V "$VER" -d "$DESC"
 
-      # 6) Probe anonymously first; do NOT fail the job yet
+      # 6) 先匿名探測（不通才走 OAuth）
       - name: Probe Web App anonymously
         id: probe
         env:
@@ -93,15 +91,14 @@ jobs:
           echo "http_code=$code"
           if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
             echo "PROBE_OK=true" >> $GITHUB_ENV
-            echo "Anonymous response (first 1KB):"
-            head -c 1024 resp.txt || true
+            echo "Anonymous response (first 1KB):"; head -c 1024 resp.txt || true
             exit 0
           else
             echo "PROBE_OK=false" >> $GITHUB_ENV
             exit 0
           fi
 
-      # 7) If anonymous failed (likely domain-locked), try OAuth
+      # 7) 匿名失敗（網域限制），用 OAuth 測試
       - name: Test Web App with OAuth
         if: env.PROBE_OK == 'false'
         env:
@@ -112,20 +109,21 @@ jobs:
           node <<'NODE'
           const fs = require('fs'), https = require('https');
           const cfg = JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8'));
-          const o = cfg.oauth2ClientSettings || {};
-          // 支援多種結構，並允許用 Secrets 蓋過
+
+          // 讀 refresh_token
+          const refresh = cfg.token?.refresh_token || cfg.token?.refreshToken || '';
+          if (!refresh) { console.error('❌ No refresh_token in ~/.clasprc.json'); process.exit(1); }
+
+          // 讀 clientId/secret：支援多種位置；允許用 Secrets 蓋過；最後回退到 clasp 預設
+          const o = cfg.oauth2ClientSettings || cfg.oauth2 || {};
           const clientId =
             process.env.GAS_OAUTH_CLIENT_ID ||
-            o.clientId || o.web?.client_id || o.installed?.client_id;
+            o.clientId || o.web?.client_id || o.installed?.client_id ||
+            '1072944905499-vm2v2i5dvn0a0d2o4ca36i1vge8cvbn0.apps.googleusercontent.com';
           const clientSecret =
             process.env.GAS_OAUTH_CLIENT_SECRET ||
-            o.clientSecret || o.web?.client_secret || o.installed?.client_secret;
-          const refresh = cfg.token?.refresh_token;
-
-          if (!clientId || !clientSecret || !refresh) {
-            console.error('Missing OAuth fields (clientId/clientSecret/refresh_token).');
-            process.exit(1);
-          }
+            o.clientSecret || o.web?.client_secret || o.installed?.client_secret ||
+            'v6V3fKV_zWU7iw1DrpO1rknX';
 
           const body = new URLSearchParams({
             client_id: clientId,
@@ -145,7 +143,7 @@ jobs:
           };
 
           const req = https.request(opt, res => {
-            let buf=''; res.on('data', d => buf+=d);
+            let buf=''; res.on('data', d=>buf+=d);
             res.on('end', () => {
               try {
                 const tok = JSON.parse(buf).access_token;
@@ -158,7 +156,7 @@ jobs:
               }
             });
           });
-          req.on('error', e => { console.error(e); process.exit(1); });
+          req.on('error', e=>{ console.error(e); process.exit(1); });
           req.write(body); req.end();
           NODE
 
