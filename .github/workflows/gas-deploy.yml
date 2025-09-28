@@ -24,6 +24,25 @@ jobs:
       - name: Install clasp
         run: npm i -g @google/clasp
 
+<<<<<<< HEAD
+      # 把憑證從 base64 解碼寫入 ~/.clasprc.json，並驗證結構
+      - name: Write ~/.clasprc.json (from base64) + validate + inspect
+        shell: bash
+        run: |
+          # 1) 還原憑證
+          printf '%s' "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+      
+          # 2) 防呆：專案工作目錄若殘留 .clasprc.json（例如 --ownkey 產生的），刪掉以免覆蓋優先序
+          rm -f ".clasprc.json"
+      
+          # 3) Debug：預覽前 30 bytes（base64），確認確實是 JSON 起頭 "{"
+          echo "Preview first 30 bytes (base64):"
+          head -c 30 "$HOME/.clasprc.json" | base64
+      
+          # 4) 驗證 JSON 結構（兩個必要欄位）
+          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('✖ Missing required fields in .clasprc.json');process.exit(1)}else{console.log('✔ .clasprc.json JSON structure OK')}"
+=======
       - name: Write ~/.clasprc.json (from base64) + validate
         shell: bash
         run: |
@@ -40,6 +59,7 @@ jobs:
 
           # 驗證結構：必須有 token & oauth2ClientSettings
           node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('✖ Missing required fields');process.exit(1)}else{console.log('✔ JSON structure OK')}"
+>>>>>>> 54c532a (ci: switch to base64 credential version with debug)
 
       - name: Ensure .clasp.json exists
         run: |
