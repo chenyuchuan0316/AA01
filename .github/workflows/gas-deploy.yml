@@ -20,38 +20,39 @@ jobs:
       - name: Install clasp
         run: npm i -g @google/clasp
 
-      # 從 Base64 Secret 還原登入憑證
       - name: Restore ~/.clasprc.json from Base64
         run: |
           echo "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
-          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('✔ ~/.clasprc.json OK')"
+          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('OK ~/.clasprc.json')"
 
-      # 防呆：部署 ID 必須出現在 URL 內（避免填到 Library 的 ID）
       - name: Preflight: ID must match URL
         env:
           ID: ${{ vars.GAS_DEPLOY_ID }}
           URL: ${{ vars.GAS_WEBAPP_URL }}
         run: |
+          set -e
           echo "ID=$ID"
           echo "URL=$URL"
-          case "$URL" in *"$ID"*) echo "✔ ID found in URL";; *)
-            echo "::error title=Wrong variables::GAS_DEPLOY_ID is not contained in GAS_WEBAPP_URL. Are you using a Library ID?"; exit 1;;
-          esac
+          if echo "$URL" | grep -Fq "$ID"; then
+            echo "OK: ID is contained in URL"
+          else
+            echo "::error title=Wrong variables::GAS_DEPLOY_ID is not contained in GAS_WEBAPP_URL (likely a Library ID)."
+            exit 1
+          fi
 
-      # 產生乾淨 .clasp.json（無 BOM）
       - name: Create clean .clasp.json (no BOM)
         env:
           GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
         run: |
           node <<'NODE'
-          const fs=require('fs'); const id=(process.env.GAS_SCRIPT_ID||'').trim();
-          if(!id){ console.error('❌ GAS_SCRIPT_ID not set'); process.exit(1); }
-          fs.writeFileSync('.clasp.json', JSON.stringify({scriptId:id}));
-          console.log('✔ .clasp.json written');
+          const fs = require('fs');
+          const id = (process.env.GAS_SCRIPT_ID || '').trim();
+          if (!id) { console.error('GAS_SCRIPT_ID not set'); process.exit(1); }
+          fs.writeFileSync('.clasp.json', JSON.stringify({ scriptId: id }));
+          console.log('OK .clasp.json written');
           NODE
 
-      # 忽略雜檔，避免把 node_modules 推上去
       - name: Ensure .claspignore
         run: |
           cat > .claspignore <<'EOF'
@@ -74,11 +75,9 @@ jobs:
           yarn.lock
           EOF
 
-      # 上傳程式
       - name: Push code to GAS
         run: clasp push --force
 
-      # 用同一個部署 ID 更新（網址不變）
       - name: Create version & update deployment
         env:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
@@ -90,7 +89,6 @@ jobs:
           if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
           clasp deploy -i "$GAS_DEPLOY_ID" -V "$VER" -d "$DESC"
 
-      # 先匿名探測；若失敗（多半是網域限制）再走 OAuth
       - name: Probe Web App anonymously
         id: probe
         env:
@@ -119,7 +117,7 @@ jobs:
           const fs = require('fs'), https = require('https');
           const cfg = JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8'));
           const refresh = cfg.token?.refresh_token || cfg.token?.refreshToken || '';
-          if(!refresh){ console.error('❌ No refresh_token in ~/.clasprc.json'); process.exit(1); }
+          if (!refresh) { console.error('No refresh_token in ~/.clasprc.json'); process.exit(1); }
           const o = cfg.oauth2ClientSettings || cfg.oauth2 || {};
           const clientId =
             process.env.GAS_OAUTH_CLIENT_ID ||
@@ -129,23 +127,25 @@ jobs:
             process.env.GAS_OAUTH_CLIENT_SECRET ||
             o.clientSecret || o.web?.client_secret || o.installed?.client_secret ||
             'v6V3fKV_zWU7iw1DrpO1rknX';
-
           const body = new URLSearchParams({
             client_id: clientId, client_secret: clientSecret,
             refresh_token: refresh, grant_type: 'refresh_token'
           }).toString();
-
-          const opt = {hostname:'oauth2.googleapis.com', path:'/token', method:'POST',
-            headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}};
-          const req = https.request(opt, res => { let buf=''; res.on('data',d=>buf+=d); res.on('end',()=>{
-            try{ const tok = JSON.parse(buf).access_token; if(!tok) throw new Error(buf);
-              fs.writeFileSync('ACCESS_TOKEN', tok); console.log('✔ access_token acquired'); }
-            catch(e){ console.error('Token response:', buf); process.exit(1); }
-          })});
+          const opt = { hostname:'oauth2.googleapis.com', path:'/token', method:'POST',
+            headers:{ 'Content-Type':'application/x-www-form-urlencoded',
+                      'Content-Length': Buffer.byteLength(body) } };
+          const req = https.request(opt, res => {
+            let buf=''; res.on('data', d=>buf+=d); res.on('end', ()=>{
+              try { const tok = JSON.parse(buf).access_token;
+                if (!tok) throw new Error(buf);
+                fs.writeFileSync('ACCESS_TOKEN', tok);
+                console.log('OK access_token'); }
+              catch(e){ console.error('Token response:', buf); process.exit(1); }
+            });
+          });
           req.on('error', e=>{ console.error(e); process.exit(1); });
           req.write(body); req.end();
           NODE
-
           ACCESS_TOKEN=$(cat ACCESS_TOKEN)
           code=$(curl -s -o resp.txt -w "%{http_code}" -L -H "Authorization: Bearer $ACCESS_TOKEN" "$URL")
           echo "http_code=$code"
