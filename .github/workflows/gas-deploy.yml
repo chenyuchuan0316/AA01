@@ -2,8 +2,8 @@ name: Deploy GAS Web App
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch: {}
+    branches: [ "main" ]          # 合併到 main 自動部署
+  workflow_dispatch: {}            # 也可在 Actions 手動觸發
 
 jobs:
   deploy:
@@ -20,35 +20,30 @@ jobs:
       - name: Install clasp
         run: npm i -g @google/clasp
 
-      - name: Restore ~/.clasprc.json from secret
+      # 用 Secret 還原登入憑證到 ~/
+      - name: Restore ~/.clasprc.json
         run: |
-          echo "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
+          printf '%s' "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
 
-      # 若你的 GAS 原始碼在子資料夾，這裡可先 cd 再執行
-      - name: Push code to GAS
-        run: npm run gas:push
-
-      - name: Create version & update existing deployment
-        env:
-          GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
-        run: |
-          npm run gas:deploy
-
+      # 推送專案檔（會讀取 repo 根目錄的 .clasp.json）
       - name: Push code to GAS
         run: clasp push --force
 
+      # 建新版本並更新到 "固定的部署 ID"
       - name: Create version & update existing deployment
         env:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
         run: |
           DESC="ci build $GITHUB_SHA"
           OUT="$(clasp version "$DESC")"
+          echo "$OUT"
           VER="$(echo "$OUT" | sed -n 's/.*version \([0-9]\+\).*/\1/p')"
           if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
           clasp deploy -i "$GAS_DEPLOY_ID" -V "$VER" -d "$DESC"
 
+      # 直接呼叫 Web App URL 做 smoke test
       - name: Test deployed Web App
         run: |
-          echo "Calling Web App URL..."
+          echo "Testing Web App..."
           curl -L --fail "${{ vars.GAS_WEBAPP_URL }}"
