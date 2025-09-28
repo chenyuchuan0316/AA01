@@ -12,11 +12,7 @@ jobs:
   gas:
     runs-on: ubuntu-latest
     steps:
-      - name: Debug: workflow version
-        run: echo "Running workflow commit: $(git rev-parse HEAD)"
-
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -29,11 +25,10 @@ jobs:
         run: |
           printf '%s' "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > "$HOME/.clasprc.json"
           chmod 600 "$HOME/.clasprc.json"
-          # 防止專案根殘留的 .clasprc.json 搶到優先序
           rm -f "./.clasprc.json"
           echo "Preview first 30 bytes (base64):"
           head -c 30 "$HOME/.clasprc.json" | base64
-          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('✖ Missing token/oauth2ClientSettings');process.exit(1)}else{console.log('✔ JSON structure OK')}"
+          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8'));if(!j.token||!j.oauth2ClientSettings){process.exit(1)}"
 
       - name: Ensure .clasp.json exists
         run: |
@@ -41,19 +36,12 @@ jobs:
           { "scriptId": "${{ vars.GAS_SCRIPT_ID }}", "rootDir": "src" }
           EOF
 
-      - name: Push code to Apps Script
-        run: clasp push -f
-
-      - name: Create new version
-        id: mkver
-        run: |
+      - run: clasp push -f
+      - run: |
           OUT=$(clasp version "ci $GITHUB_SHA")
-          echo "$OUT"
-          VER=$(echo "$OUT" | grep -Eo '[0-9]+' | tail -n1)
-          echo "ver=$VER" >> $GITHUB_OUTPUT
-
-      - name: Deploy to fixed ID
-        run: |
+          echo "ver=$(echo "$OUT" | grep -Eo '[0-9]+' | tail -n1)" >> $GITHUB_OUTPUT
+        id: mkver
+      - run: |
           clasp deploy --deploymentId "${{ vars.GAS_DEPLOY_ID }}" \
-                        --versionNumber "${{ steps.mkver.outputs.ver }}" \
-                        --description "ci $GITHUB_SHA"
+                       --versionNumber "${{ steps.mkver.outputs.ver }}" \
+                       --description "ci $GITHUB_SHA"
