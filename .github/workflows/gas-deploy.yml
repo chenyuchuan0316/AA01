@@ -1,132 +1,44 @@
-name: Deploy GAS Web App
-
+name: Push & Deploy GAS (fixed deployment)
 on:
-  push:
-    branches: ["main"]
-  workflow_dispatch: {}
+  workflow_dispatch:    # 手動觸發
+  push:                 # 或當 src/ 有變更時自動觸發
+    paths:
+      - 'src/**'
+      - '.clasp.json'
 
 jobs:
-  deploy:
+  gas:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
 
-      - name: Install Google clasp
-        run: npm i -g @google/clasp
+      - run: npm i -g @google/clasp
 
-      - name: Authenticate clasp via .clasprc.json
+      - name: Write ~/.clasprc.json
+        run: echo "${{ secrets.CLASPRC_JSON }}" > "$HOME/.clasprc.json"
+
+      - name: Ensure .clasp.json
         run: |
-          echo -n "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
-          chmod 600 ~/.clasprc.json
-          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('OK ~/.clasprc.json')"
-
-      - name: Preflight (ID must be contained in URL)
-        env:
-          ID: ${{ vars.GAS_DEPLOY_ID }}
-          URL: ${{ vars.GAS_WEBAPP_URL }}
-        run: |
-          echo "ID=$ID"; echo "URL=$URL"
-          echo "$URL" | grep -Fq "$ID" && echo "OK: matched" || (echo "ERROR: GAS_DEPLOY_ID not found in GAS_WEBAPP_URL"; exit 1)
-
-      - name: Create clean .clasp.json (no BOM)
-        env:
-          GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const id = (process.env.GAS_SCRIPT_ID || '').trim();
-          if (!id) { console.error('GAS_SCRIPT_ID not set'); process.exit(1); }
-          fs.writeFileSync('.clasp.json', JSON.stringify({ scriptId: id }));
-          console.log('OK .clasp.json written');
-          NODE
-
-      - name: Ensure .claspignore
-        run: |
-          cat > .claspignore <<'EOF'
-          node_modules/**
-          .github/**
-          .git/**
-          dist/**
-          build/**
-          coverage/**
-          .vscode/**
-          *.map
-          README*
-          LICENSE*
-          *.md
-          scripts/**
-          test/**
-          package.json
-          package-lock.json
-          pnpm-lock.yaml
-          yarn.lock
+          test -f .clasp.json || cat > .clasp.json <<'EOF'
+          { "scriptId": "${{ vars.GAS_SCRIPT_ID }}", "rootDir": "src" }
           EOF
 
-      - name: Push code to GAS
-        run: clasp push --force
+      - run: clasp push -f
 
-      - name: Create version
+      - name: Create new version
+        id: mkver
         run: |
-          DESC="ci build $GITHUB_SHA"
-          OUT="$(clasp version "$DESC")"
+          OUT=$(clasp version "ci $GITHUB_SHA")
           echo "$OUT"
-          VER="$(echo "$OUT" | sed -n 's/.*version \([0-9]\+\).*/\1/p')"
-          if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
-          echo "VERSION_NUMBER=$VER" >> $GITHUB_ENV
+          VER=$(echo "$OUT" | grep -Eo '[0-9]+' | tail -n1)
+          echo "ver=$VER" >> $GITHUB_OUTPUT
 
-      - name: Update Web App Deployment (fixed ID)
-        env:
-          GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
-          VER: ${{ env.VERSION_NUMBER }}
+      - name: Deploy to fixed ID (URL stays the same)
         run: |
-          clasp deploy --deploymentId "$GAS_DEPLOY_ID" --versionNumber "$VER" --description "ci $GITHUB_SHA"
-
-      - name: Probe Web App anonymously
-        id: probe
-        env:
-          URL: ${{ vars.GAS_WEBAPP_URL }}
-        run: |
-          set +e
-          code=$(curl -s -o /dev/null -w "%{http_code}" -L "$URL")
-          echo "http_code=$code"
-          if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
-            echo "PROBE_OK=true" >> $GITHUB_ENV
-          else
-            echo "PROBE_OK=false" >> $GITHUB_ENV
-          fi
-          exit 0
-
-      - name: Test Web App with OAuth
-        if: ${{ env.PROBE_OK == 'false' }}
-        env:
-          URL: ${{ vars.GAS_WEBAPP_URL }}
-          GAS_OAUTH_CLIENT_ID: ${{ secrets.GAS_OAUTH_CLIENT_ID }}
-          GAS_OAUTH_CLIENT_SECRET: ${{ secrets.GAS_OAUTH_CLIENT_SECRET }}
-        run: |
-          node <<'NODE'
-          const fs = require('fs'), https = require('https');
-          const cfg = JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8'));
-          const pickRT = c => c?.token?.refresh_token || c?.token?.refreshToken || c?.tokens?.default?.refresh_token || c?.tokens?.default?.refreshToken || c?.tokens?.local?.refresh_token || c?.refresh_token || null;
-          const rt = pickRT(cfg);
-          if (!rt) { console.error('No refresh_token in ~/.clasprc.json'); process.exit(1); }
-          const pickClient = c => c?.oauth2ClientSettings?.clientId || c?.oauth2ClientSettings?.web?.client_id || c?.oauth2ClientSettings?.installed?.client_id || null;
-          const pickSecret = c => c?.oauth2ClientSettings?.clientSecret || c?.oauth2ClientSettings?.web?.client_secret || c?.oauth2ClientSettings?.installed?.client_secret || null;
-          const clientId = process.env.GAS_OAUTH_CLIENT_ID || pickClient(cfg);
-          const clientSecret = process.env.GAS_OAUTH_CLIENT_SECRET || pickSecret(cfg);
-          if (!clientId || !clientSecret) { console.error('Missing clientId/clientSecret'); process.exit(1); }
-          const body = new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: rt, grant_type: 'refresh_token' }).toString();
-          const opt = { hostname:'oauth2.googleapis.com', path:'/token', method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) } };
-          const req = https.request(opt, res => { let buf=''; res.on('data',d=>buf+=d); res.on('end',()=>{ try { const obj = JSON.parse(buf); if(!obj.access_token) throw new Error(buf); fs.writeFileSync('ACCESS_TOKEN', obj.access_token); console.log('OK access_token'); } catch(e){ console.error(buf); process.exit(1); } }); });
-          req.on('error', e=>{ console.error(e); process.exit(1); });
-          req.write(body); req.end();
-          NODE
-          ACCESS_TOKEN=$(cat ACCESS_TOKEN)
-          code=$(curl -s -o /dev/null -w "%{http_code}" -L -H "Authorization: Bearer $ACCESS_TOKEN" "$URL")
-          echo "Authenticated HTTP Status=$code"
-          test "$code" -ge 200 -a "$code" -lt 400
+          clasp deploy --deploymentId "${{ vars.GAS_DEPLOY_ID }}" \
+                       --versionNumber "${{ steps.mkver.outputs.ver }}" \
+                       --description "ci $GITHUB_SHA"
