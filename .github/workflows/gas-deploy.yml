@@ -1,47 +1,23 @@
-﻿name: Push & Deploy GAS (fixed deployment)
+name: Run npm tests on push
 
 on:
-  workflow_dispatch:
   push:
-    paths:
-      - "src/**"
-      - ".clasp.json"
-      - ".github/workflows/gas-deploy.yml"
 
 jobs:
-  gas:
+  test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 18
 
-      - name: Install clasp
-        run: npm i -g @google/clasp
+      - name: Install dependencies
+        run: npm install
 
-      - name: Write ~/.clasprc.json (from base64) + validate
-        shell: bash
-        run: |
-          printf '%s' "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > "$HOME/.clasprc.json"
-          chmod 600 "$HOME/.clasprc.json"
-          rm -f "./.clasprc.json"
-          echo "Preview first 30 bytes (base64):"
-          head -c 30 "$HOME/.clasprc.json" | base64
-          node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8'));if(!j.token||!j.oauth2ClientSettings){process.exit(1)}"
-
-      - name: Ensure .clasp.json exists
-        run: |
-          test -f .clasp.json || cat > .clasp.json <<'EOF'
-          { "scriptId": "${{ vars.GAS_SCRIPT_ID }}", "rootDir": "src" }
-          EOF
-
-      - run: clasp push -f
-      - run: |
-          OUT=$(clasp version "ci $GITHUB_SHA")
-          echo "ver=$(echo "$OUT" | grep -Eo '[0-9]+' | tail -n1)" >> $GITHUB_OUTPUT
-        id: mkver
-      - run: |
-          clasp deploy --deploymentId "${{ vars.GAS_DEPLOY_ID }}" \
-                       --versionNumber "${{ steps.mkver.outputs.ver }}" \
-                       --description "ci $GITHUB_SHA"
+      - name: Run tests
+        run: npm test
