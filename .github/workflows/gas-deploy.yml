@@ -20,14 +20,12 @@ jobs:
       - name: Install Google clasp
         run: npm i -g @google/clasp
 
-      # 還原 ~/.clasprc.json（Base64 → 檔案）
       - name: Authenticate clasp via .clasprc.json
         run: |
           echo -n "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
           node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('OK ~/.clasprc.json')"
 
-      # 防呆：部署 ID 必須出現在 URL 內（避免你填到 Library 的 ID）
       - name: Preflight: ID must match URL
         env:
           ID: ${{ vars.GAS_DEPLOY_ID }}
@@ -39,11 +37,10 @@ jobs:
           if echo "$URL" | grep -Fq "$ID"; then
             echo "OK: ID is contained in URL"
           else
-            echo "::error ::GAS_DEPLOY_ID is not contained in GAS_WEBAPP_URL (likely a Library ID)."
+            echo "ERROR: GAS_DEPLOY_ID is not contained in GAS_WEBAPP_URL (likely a Library ID or wrong URL)"
             exit 1
           fi
 
-      # 產生乾淨 .clasp.json（無 BOM）
       - name: Create clean .clasp.json (no BOM)
         env:
           GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
@@ -56,7 +53,6 @@ jobs:
           console.log('OK .clasp.json written');
           NODE
 
-      # 避免把雜檔推上 GAS
       - name: Ensure .claspignore
         run: |
           cat > .claspignore <<'EOF'
@@ -101,7 +97,6 @@ jobs:
       - name: Show deployments (debug)
         run: clasp deployments || true
 
-      # 先匿名探測；公開 URL 會直接 200，網域型多半 404（正常）
       - name: Probe Web App anonymously
         id: probe
         env:
@@ -119,7 +114,6 @@ jobs:
             exit 0
           fi
 
-      # 匿名失敗（網域限制）→ 用 OAuth 取 token 再打
       - name: Test Web App with OAuth
         if: ${{ env.PROBE_OK == 'false' }}
         env:
@@ -132,7 +126,7 @@ jobs:
           const p = process.env.HOME + '/.clasprc.json';
           const cfg = JSON.parse(fs.readFileSync(p,'utf8'));
 
-          // 同時支援新舊版結構：token / tokens.default / tokens.local
+          // 支援新舊版結構：token / tokens.default / tokens.local
           const pickRT = c =>
             c?.token?.refresh_token ||
             c?.token?.refreshToken ||
@@ -142,9 +136,8 @@ jobs:
             c?.refresh_token || null;
 
           const rt = pickRT(cfg);
-          if (!rt) { console.error('❌ ~/.clasprc.json 沒有 refresh_token（新版在 tokens.default.refresh_token）'); process.exit(1); }
+          if (!rt) { console.error('No refresh_token in ~/.clasprc.json (new path is tokens.default.refresh_token)'); process.exit(1); }
 
-          // 優先用 Secrets；沒填就用 .clasprc.json 內的 client
           const pickClient = c =>
             c?.oauth2ClientSettings?.clientId ||
             c?.oauth2ClientSettings?.web?.client_id ||
@@ -157,7 +150,7 @@ jobs:
 
           const clientId = process.env.GAS_OAUTH_CLIENT_ID || pickClient(cfg);
           const clientSecret = process.env.GAS_OAUTH_CLIENT_SECRET || pickSecret(cfg);
-          if (!clientId || !clientSecret) { console.error('❌ 找不到 OAuth clientId/clientSecret（可用 Secrets 覆蓋或從 .clasprc.json 讀）'); process.exit(1); }
+          if (!clientId || !clientSecret) { console.error('Missing OAuth clientId/clientSecret'); process.exit(1); }
 
           const body = new URLSearchParams({
             client_id: clientId,
@@ -180,14 +173,14 @@ jobs:
                 const obj = JSON.parse(buf);
                 if (!obj.access_token) throw new Error(buf);
                 fs.writeFileSync('ACCESS_TOKEN', obj.access_token);
-                console.log('✅ 拿到 access_token');
+                console.log('OK access_token');
               }catch(e){
-                console.error('❌ OAuth 交換 access_token 失敗：', buf);
+                console.error('OAuth token error:', buf);
                 process.exit(1);
               }
             });
           });
-          req.on('error', e=>{ console.error('❌ OAuth 連線錯誤', e); process.exit(1); });
+          req.on('error', e=>{ console.error('OAuth request error:', e); process.exit(1); });
           req.write(body); req.end();
           NODE
 
