@@ -106,16 +106,34 @@ jobs:
         if: env.PROBE_OK == 'false'
         env:
           URL: ${{ vars.GAS_WEBAPP_URL }}
+          GAS_OAUTH_CLIENT_ID: ${{ secrets.GAS_OAUTH_CLIENT_ID }}
+          GAS_OAUTH_CLIENT_SECRET: ${{ secrets.GAS_OAUTH_CLIENT_SECRET }}
         run: |
           node <<'NODE'
           const fs = require('fs'), https = require('https');
           const cfg = JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8'));
+          const o = cfg.oauth2ClientSettings || {};
+          // 支援多種結構，並允許用 Secrets 蓋過
+          const clientId =
+            process.env.GAS_OAUTH_CLIENT_ID ||
+            o.clientId || o.web?.client_id || o.installed?.client_id;
+          const clientSecret =
+            process.env.GAS_OAUTH_CLIENT_SECRET ||
+            o.clientSecret || o.web?.client_secret || o.installed?.client_secret;
+          const refresh = cfg.token?.refresh_token;
+
+          if (!clientId || !clientSecret || !refresh) {
+            console.error('Missing OAuth fields (clientId/clientSecret/refresh_token).');
+            process.exit(1);
+          }
+
           const body = new URLSearchParams({
-            client_id: cfg.oauth2ClientSettings.clientId,
-            client_secret: cfg.oauth2ClientSettings.clientSecret,
-            refresh_token: cfg.token.refresh_token,
+            client_id: clientId,
+            client_secret: clientSecret,
+            refresh_token: refresh,
             grant_type: 'refresh_token'
           }).toString();
+
           const opt = {
             hostname: 'oauth2.googleapis.com',
             path: '/token',
@@ -125,8 +143,9 @@ jobs:
               'Content-Length': Buffer.byteLength(body)
             }
           };
+
           const req = https.request(opt, res => {
-            let buf=''; res.on('data', d => buf += d);
+            let buf=''; res.on('data', d => buf+=d);
             res.on('end', () => {
               try {
                 const tok = JSON.parse(buf).access_token;
