@@ -23,7 +23,7 @@ jobs:
       - name: Authenticate clasp via .clasprc.json
         # 將 Base64 字串還原為憑證檔案
         run: |
-          echo "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
+          echo -n "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
           echo "Restored ~/.clasprc.json"
 
@@ -100,7 +100,7 @@ jobs:
         env:
           WEBAPP_URL: ${{ vars.GAS_WEBAPP_URL }}
         run: |
-          # 嘗試匿名存取 Web App，檢查是否回應 200 OK
+          # 嘗試匿名存取 Web App，檢查是否回應 2XX/3XX
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEBAPP_URL")
           echo "HTTP Status=$STATUS"
           if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
@@ -112,7 +112,7 @@ jobs:
           fi
 
       - name: OAuth 驗證後存取 Web App
-        if: env.PROBE_OK == 'false'
+        if: ${{ env.PROBE_OK == 'false' }}
         env:
           WEBAPP_URL: ${{ vars.GAS_WEBAPP_URL }}
           GAS_OAUTH_CLIENT_ID: ${{ secrets.GAS_OAUTH_CLIENT_ID }}
