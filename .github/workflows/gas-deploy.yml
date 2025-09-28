@@ -2,18 +2,25 @@ name: Deploy GAS Web App
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch: {}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm i -g @google/clasp
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install clasp
+        run: npm i -g @google/clasp
+
+      # 1) Restore Google creds from Base64 secret
       - name: Restore ~/.clasprc.json from Base64
         run: |
           echo "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
@@ -21,25 +28,22 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('✔ ~/.clasprc.json OK')"
           echo "Size of ~/.clasprc.json: $(wc -c < ~/.clasprc.json) bytes"
 
-      - name: Debug GAS_SCRIPT_ID presence
-        env:
-          GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
-        run: |
-          if [ -z "$GAS_SCRIPT_ID" ]; then
-            echo "::error title=Missing variable::GAS_SCRIPT_ID not set in repo Actions → Variables"
-            exit 1
-          fi
-          echo "::notice title=GAS_SCRIPT_ID::${GAS_SCRIPT_ID:0:6}...${GAS_SCRIPT_ID: -6}"
-
+      # 2) Create clean .clasp.json (no BOM)
       - name: Create clean .clasp.json (no BOM)
         env:
           GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
         run: |
-          node -e "const fs=require('fs');const id=process.env.GAS_SCRIPT_ID;fs.writeFileSync('.clasp.json',JSON.stringify({scriptId:id}))"
+          node <<'NODE'
+          const fs = require('fs');
+          const id = (process.env.GAS_SCRIPT_ID || '').trim();
+          if (!id) { console.error('GAS_SCRIPT_ID not set'); process.exit(1); }
+          fs.writeFileSync('.clasp.json', JSON.stringify({ scriptId: id }));
+          NODE
           head -n1 .clasp.json | cat -v
           hexdump -C -n 32 .clasp.json || true
           node -e "JSON.parse(require('fs').readFileSync('.clasp.json','utf8')); console.log('✔ .clasp.json OK')"
 
+      # 3) Ignore junk files when pushing
       - name: Ensure .claspignore
         run: |
           cat > .claspignore <<'EOF'
@@ -62,10 +66,12 @@ jobs:
           yarn.lock
           EOF
 
+      # 4) Push code
       - name: Push code to GAS
         run: clasp push --force
 
-      - name: Create version & update existing deployment
+      # 5) Create version & update existing deployment
+      - name: Create version & update deployment
         env:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
         run: |
@@ -76,18 +82,32 @@ jobs:
           if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
           clasp deploy -i "$GAS_DEPLOY_ID" -V "$VER" -d "$DESC"
 
-      - name: Test deployed Web App (auto: anonymous → OAuth)
+      # 6) Probe anonymously first; do NOT fail the job yet
+      - name: Probe Web App anonymously
+        id: probe
         env:
           URL: ${{ vars.GAS_WEBAPP_URL }}
         run: |
-          set -e
-          echo "1) 試匿名請求..."
-          if curl -s -L --fail "$URL" -o resp.txt ; then
-            echo "✅ 匿名可存取"; head -c 1000 resp.txt || true; exit 0
+          set +e
+          code=$(curl -s -o resp.txt -w "%{http_code}" -L "$URL")
+          echo "http_code=$code"
+          if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+            echo "PROBE_OK=true" >> $GITHUB_ENV
+            echo "Anonymous response (first 1KB):"
+            head -c 1024 resp.txt || true
+            exit 0
+          else
+            echo "PROBE_OK=false" >> $GITHUB_ENV
+            exit 0
           fi
-          echo "2) 匿名失敗，改用 OAuth 權杖..."
-          # 從 ~/.clasprc.json 取 refresh_token / clientId / clientSecret 並換 access_token
-          node - <<'NODE'
+
+      # 7) If anonymous failed (likely domain-locked), try OAuth
+      - name: Test Web App with OAuth
+        if: env.PROBE_OK == 'false'
+        env:
+          URL: ${{ vars.GAS_WEBAPP_URL }}
+        run: |
+          node <<'NODE'
           const fs = require('fs'), https = require('https');
           const cfg = JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8'));
           const body = new URLSearchParams({
@@ -96,21 +116,35 @@ jobs:
             refresh_token: cfg.token.refresh_token,
             grant_type: 'refresh_token'
           }).toString();
-          const opt = {hostname:'oauth2.googleapis.com', path:'/token', method:'POST',
-                       headers:{'Content-Type':'application/x-www-form-urlencoded',
-                                'Content-Length': Buffer.byteLength(body)}};
+          const opt = {
+            hostname: 'oauth2.googleapis.com',
+            path: '/token',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Content-Length': Buffer.byteLength(body)
+            }
+          };
           const req = https.request(opt, res => {
-            let buf=''; res.on('data',d=>buf+=d); res.on('end', ()=>{
-              try { const t = JSON.parse(buf).access_token;
-                if(!t) throw new Error(buf); fs.writeFileSync('ACCESS_TOKEN', t); console.log('✔ 取得 access_token'); }
-              catch(e){ console.error('Token response:', buf); process.exit(1); }
+            let buf=''; res.on('data', d => buf += d);
+            res.on('end', () => {
+              try {
+                const tok = JSON.parse(buf).access_token;
+                if (!tok) throw new Error(buf);
+                fs.writeFileSync('ACCESS_TOKEN', tok);
+                console.log('✔ access_token acquired');
+              } catch (e) {
+                console.error('Token response:', buf);
+                process.exit(1);
+              }
             });
           });
-          req.on('error', e=>{ console.error(e); process.exit(1); });
+          req.on('error', e => { console.error(e); process.exit(1); });
           req.write(body); req.end();
           NODE
+
           ACCESS_TOKEN=$(cat ACCESS_TOKEN)
           code=$(curl -s -o resp.txt -w "%{http_code}" -L -H "Authorization: Bearer $ACCESS_TOKEN" "$URL")
-          echo "HTTP $code"
-          head -c 1000 resp.txt || true
+          echo "http_code=$code"
+          head -c 1024 resp.txt || true
           test "$code" -ge 200 -a "$code" -lt 400
