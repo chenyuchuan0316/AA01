@@ -9,18 +9,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i -g @google/clasp
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install clasp
-        run: npm i -g @google/clasp
-
-      # ① 從 Base64 Secret 還原 ~/.clasprc.json，並驗證是有效 JSON
       - name: Restore ~/.clasprc.json from Base64
         run: |
           echo "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > ~/.clasprc.json
@@ -28,18 +21,25 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8')); console.log('✔ ~/.clasprc.json OK')"
           echo "Size of ~/.clasprc.json: $(wc -c < ~/.clasprc.json) bytes"
 
-      # ② 產生乾淨的 .clasp.json（從 repo 變數 GAS_SCRIPT_ID）
+      - name: Debug GAS_SCRIPT_ID presence
+        env:
+          GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
+        run: |
+          if [ -z "$GAS_SCRIPT_ID" ]; then
+            echo "::error title=Missing variable::GAS_SCRIPT_ID not set in repo Actions → Variables"
+            exit 1
+          fi
+          echo "::notice title=GAS_SCRIPT_ID::${GAS_SCRIPT_ID:0:6}...${GAS_SCRIPT_ID: -6}"
+
       - name: Create clean .clasp.json (no BOM)
         env:
           GAS_SCRIPT_ID: ${{ vars.GAS_SCRIPT_ID }}
         run: |
-          node -e "const fs=require('fs'); const id=process.env.GAS_SCRIPT_ID; if(!id){console.error('❌ Missing repo variable GAS_SCRIPT_ID'); process.exit(1);} fs.writeFileSync('.clasp.json', JSON.stringify({scriptId:id}));"
-          # 除錯：檢查第一行是否為 {，也印出前 32 bytes（十六進位）
+          node -e "const fs=require('fs');const id=process.env.GAS_SCRIPT_ID;fs.writeFileSync('.clasp.json',JSON.stringify({scriptId:id}))"
           head -n1 .clasp.json | cat -v
           hexdump -C -n 32 .clasp.json || true
           node -e "JSON.parse(require('fs').readFileSync('.clasp.json','utf8')); console.log('✔ .clasp.json OK')"
 
-      # ③ 建議：忽略雜檔，避免把 node_modules 等推上 GAS
       - name: Ensure .claspignore
         run: |
           cat > .claspignore <<'EOF'
@@ -62,11 +62,9 @@ jobs:
           yarn.lock
           EOF
 
-      # ④ push 原始碼到 GAS
       - name: Push code to GAS
         run: clasp push --force
 
-      # ⑤ 建版並更新既有部署（網址不變）
       - name: Create version & update existing deployment
         env:
           GAS_DEPLOY_ID: ${{ vars.GAS_DEPLOY_ID }}
@@ -78,7 +76,6 @@ jobs:
           if [ -z "$VER" ]; then echo "Cannot parse version"; exit 1; fi
           clasp deploy -i "$GAS_DEPLOY_ID" -V "$VER" -d "$DESC"
 
-      # ⑥ 簡單 smoke test：直接呼叫 Web App URL
       - name: Test deployed Web App
         run: |
           echo "Testing Web App..."
