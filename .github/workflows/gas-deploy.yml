@@ -19,16 +19,20 @@ jobs:
       - run: npm i -g @google/clasp
 
       # 把憑證從 base64 解碼寫入 ~/.clasprc.json，並驗證結構
-      - name: Write ~/.clasprc.json (from base64, exact bytes) + validate
+      - name: Write ~/.clasprc.json (from base64) + validate
         shell: bash
         run: |
+          # 1) 用 base64 解回原始 JSON（避免被遮罩、避免換行破壞）
           printf '%s' "${{ secrets.CLASPRC_JSON_B64 }}" | base64 -d > "$HOME/.clasprc.json"
           chmod 600 "$HOME/.clasprc.json"
-          # 預覽前 30 bytes 的 base64（方便 debug，不洩密）
+
+          # 2) Debug：印出前 30 bytes 的 base64（只為確認開頭是 '{'，不洩密）
           echo "Preview first 30 bytes (base64):"
           head -c 30 "$HOME/.clasprc.json" | base64
-          # 驗證 JSON 結構：要有 token 和 oauth2ClientSettings
-          node -e "const fs=require('fs'); const p=process.env.HOME+'/.clasprc.json'; const j = JSON.parse(fs.readFileSync(p, 'utf8')); if (!j.token || !j.oauth2ClientSettings) { console.error('✖ Missing required fields in .clasprc.json'); process.exit(1) } else { console.log('✔ .clasprc.json JSON structure OK') }"
+
+          # 3) 驗證 JSON 結構（必須同時有 token 與 oauth2ClientSettings）
+          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(!j.token||!j.oauth2ClientSettings){console.error('✖ Missing required fields in .clasprc.json');process.exit(1)}else{console.log('✔ .clasprc.json JSON structure OK')}"
+
 
       - name: Ensure .clasp.json
         run: |
