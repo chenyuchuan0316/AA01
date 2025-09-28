@@ -1,6 +1,6 @@
 node_modules/**
-.git/**
 .github/**
+.git/**
 dist/**
 build/**
 coverage/**
@@ -9,8 +9,9 @@ coverage/**
 README*
 LICENSE*
 *.md
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
 scripts/**
 test/**
+package.json
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
