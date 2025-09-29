@@ -77,19 +77,18 @@ jobs:
           fi
           node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.exit(2)}"
 
-      # Sanity：在 log 顯示長度與雜湊，方便你確認 CI 拿到正確 ID
+      # Sanity：在 log 顯示長度與雜湊（改用 Node，避免 Here-Doc 造成 YAML 雷）
       - name: Sanity check DEPLOY_ID (length & hash)
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          python3 - << 'PY'
-import os, hashlib
-sid = os.environ.get('DEPLOY_ID', '')
-print('DEPLOY_ID.length =', len(sid))
-print('DEPLOY_ID.sha256 =', hashlib.sha256(sid.encode()).hexdigest())
-if not sid or len(sid) < 20:
-    raise SystemExit('DEPLOY_ID looks empty/too short; abort.')
-PY
+          node -e "
+            const crypto=require('crypto');
+            const id=process.env.DEPLOY_ID||'';
+            console.log('DEPLOY_ID.length =', id.length);
+            console.log('DEPLOY_ID.sha256 =', crypto.createHash('sha256').update(id).digest('hex'));
+            if(!id || id.length<20){ console.error('DEPLOY_ID looks empty/too short; abort.'); process.exit(1); }
+          "
 
       # BEFORE：取部署清單（JSON 優先；失敗則解析文字輸出）
       - name: Snapshot deployments (BEFORE)
