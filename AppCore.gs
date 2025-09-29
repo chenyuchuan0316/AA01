@@ -31,21 +31,30 @@ function showSidebar(){
 }
 
 /** Web App 入口：回傳完整頁面（無寬度限制） */
-function doGet(e){
-  var route = e && e.parameter && e.parameter.route ? String(e.parameter.route) : '';
+function doGet(e) {
+  try {
+    const route = e && e.parameter && e.parameter.route ? e.parameter.route : 'home';
+    if (route === 'health') {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          ok: true,
+          version: 71, // 你可用 CI 注入或在此維護
+          time: new Date().toISOString()
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
 
-  if (route === 'health') {
+    // 你原本的首頁或其他路由，請用 try/catch 包起來，出錯時回 200 + JSON 描述，不要讓整支爆掉
+    // return HtmlService.createHtmlOutput(...);
+
+  } catch (err) {
+    // 讓錯誤也以 200 JSON 呈現，避免前端看到 Drive 的白板錯誤頁
     return ContentService
-      .createTextOutput(JSON.stringify({
-        ok: true,
-        time: new Date().toISOString(),
-        commit: (typeof CI_COMMIT_SHORT_SHA !== 'undefined' ? CI_COMMIT_SHORT_SHA : 'local')
-      }))
+      .createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
       .setMimeType(ContentService.MimeType.JSON);
   }
-
-  return buildAppHtmlOutput();
 }
+
 
 /**
  * 依序處理文件寫入的函式。
