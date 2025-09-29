@@ -1,11 +1,13 @@
-name: Run npm tests on push
+name: Push & Deploy GAS (fixed deployment)
 
 on:
   push:
+    branches: [ "main" ]   # 依你的分支策略調整
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Check out repository
@@ -16,8 +18,63 @@ jobs:
         with:
           node-version: 18
 
+      # --- 測試（如有 package.json 才會執行） ---
       - name: Install dependencies
-        run: npm install
+        if: hashFiles('package.json') != ''
+        run: npm ci
 
-      - name: Run tests
+      - name: Run unit tests
+        if: hashFiles('package.json') != ''
         run: npm test
+
+      # --- 安裝 clasp + 寫入憑證 ---
+      - name: Install clasp
+        run: npm i -g @google/clasp
+
+      - name: Write ~/.clasprc.json (from base64) + validate
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          if [ -z "$CLASPRC_JSON" ]; then
+            echo "CLASPRC_JSON is empty"; exit 1
+          fi
+          printf '%s' "$CLASPRC_JSON" | base64 -d > "$HOME/.clasprc.json"
+          test -s "$HOME/.clasprc.json"
+          node -e "const fs=require('fs');JSON.parse(fs.readFileSync(process.env.HOME+'/.clasprc.json','utf8'));"
+
+      # --- 確保 .clasp.json 存在（若未版控，改用 Secrets 傳入 GAS_SCRIPT_ID） ---
+      - name: Ensure .clasp.json exists
+        env:
+          GAS_SCRIPT_ID: ${{ secrets.GAS_SCRIPT_ID }}
+        run: |
+          if [ ! -f ".clasp.json" ]; then
+            if [ -z "$GAS_SCRIPT_ID" ]; then
+              echo ".clasp.json not found and GAS_SCRIPT_ID secret not provided."
+              exit 1
+            fi
+            cat > .clasp.json <<EOF
+            {
+              "scriptId": "$GAS_SCRIPT_ID",
+              "rootDir": "."
+            }
+            EOF
+          fi
+          cat .clasp.json
+
+      # --- 推上 Apps Script（更新 HEAD） ---
+      - name: clasp push (force)
+        run: clasp push -f
+
+      # --- 更新固定的 Production Deployment（URL 不變） ---
+      - name: Deploy to fixed deployment ID (from secret)
+        if: ${{ secrets.GAS_DEPLOYMENT_ID != '' }}
+        env:
+          GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
+        run: |
+          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" -d "CI deploy $GITHUB_SHA"
+
+      # --- 或者：直接使用你提供的 ID（若沒有放到 Secrets） ---
+      - name: Deploy to fixed deployment ID (inline)
+        if: ${{ secrets.GAS_DEPLOYMENT_ID == '' }}
+        run: |
+          clasp deploy --deploymentId "AKfycbyEPm9QNzdv5JLKYCIxX1kGOdkxOttYWsk-cruaKzH9Cc7oY-PuQcTeNCPRMAN5YE37" -d "CI deploy $GITHUB_SHA"
