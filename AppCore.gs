@@ -31,7 +31,19 @@ function showSidebar(){
 }
 
 /** Web App 入口：回傳完整頁面（無寬度限制） */
-function doGet(){
+function doGet(e){
+  var route = e && e.parameter && e.parameter.route ? String(e.parameter.route) : '';
+
+  if (route === 'health') {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        ok: true,
+        time: new Date().toISOString(),
+        commit: (typeof CI_COMMIT_SHORT_SHA !== 'undefined' ? CI_COMMIT_SHORT_SHA : 'local')
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   return buildAppHtmlOutput();
 }
 
