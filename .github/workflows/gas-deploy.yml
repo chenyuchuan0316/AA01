@@ -19,9 +19,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # 你的專案如果需要 npm 腳本/測試，就保留這三步；不需要可刪。
-      - name: Set up Node.js for project (18.x)
-        if: ${{ hashFiles('package.json') != '' }}
+      - name: Set up Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -38,15 +36,11 @@ jobs:
         if: ${{ hashFiles('package.json') != '' }}
         run: npm test --if-present
 
-      # --- 切換成 Node 22 以使用 clasp v3 ---
-      - name: Set up Node.js 22 for clasp
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+      # 改 1：安裝 clasp v2（穩定版）
+      - name: Install clasp v2
+        run: npm i -g @google/clasp@2
 
-      - name: Install clasp v3
-        run: npm i -g @google/clasp@^3
-
+      # 這段同時支援「原始 JSON」或「base64」的 CLASPRC_JSON
       - name: Write ~/.clasprc.json (decode/normalize/validate)
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
@@ -56,7 +50,7 @@ jobs:
             echo "::error::Missing secret CLASPRC_JSON"; exit 1
           fi
 
-          # 1) 支援「原始 JSON」或「base64」
+          # 1) 先嘗試當「原始 JSON」寫入；失敗才當 base64 解碼
           node -e "const fs=require('fs');
             const p=process.env.HOME+'/.clasprc.json';
             let s=process.env.CLASPRC_JSON||'';
@@ -82,14 +76,15 @@ jobs:
           fi
           node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.exit(2)}"
 
-      # (若是 TypeScript，請在這裡加 build，產出 JS 到 .clasp.json 的 rootDir)
+      # (若有 TS，請在這裡 npm run build，把 JS 輸出到 .clasp.json 的 rootDir)
       # - name: Build
       #   run: npm run build
 
       - name: Push to Apps Script
         run: clasp push -f
 
-      - name: Update fixed deployment (v3)
+      # 改 2：clasp v2 的部署語法
+      - name: Deploy with fixed Deployment ID (v2)
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
@@ -97,9 +92,10 @@ jobs:
           if [ -z "${DEPLOY_ID:-}" ]; then
             echo "::error::GAS_DEPLOYMENT_ID not set"; exit 1
           fi
-          # 以固定 Deployment ID 做更新（網址不變）
-          clasp update-deployment "$DEPLOY_ID" -d "CI ${GITHUB_SHA}"
+          clasp deploy --deploymentId "$DEPLOY_ID" -d "CI ${GITHUB_SHA}"
 
-          # 供稽核用（不含敏感資訊）
-          clasp list-versions
-          clasp list-deployments
+          # 供稽核
+          clasp list
+          clasp versions
+          clasp deploy --deploymentId "$DEPLOY_ID" -d "CI ${GITHUB_SHA}"
+
