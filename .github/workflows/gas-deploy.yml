@@ -3,7 +3,6 @@
 on:
   push:
     branches: [ "main" ]
-  # 手動觸發，避免 Re-run 舊 run 用到舊 YAML
   workflow_dispatch:
 
 concurrency:
@@ -29,17 +28,16 @@ jobs:
       - name: Install dependencies (lockfile)
         if: ${{ hashFiles('package-lock.json') != '' }}
         run: npm ci
-
       - name: Install dependencies (no lockfile)
         if: ${{ hashFiles('package-lock.json') == '' && hashFiles('package.json') != '' }}
         run: npm install
-
       - name: Run unit tests (if any)
         if: ${{ hashFiles('package.json') != '' }}
         run: npm test --if-present
 
-      - name: Install clasp v2
-        run: npm i -g @google/clasp@2
+      # ✅ 安裝最新版 clasp（照你的要求）
+      - name: Install latest clasp
+        run: npm i -g @google/clasp
 
       - name: Write ~/.clasprc.json (decode/normalize/validate)
         env:
@@ -69,29 +67,52 @@ jobs:
           fi
           node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.exit(2)}"
 
-      # ---- 防呆 1：部署前快照 + 確認欲保護的部署在清單中（若有設定） ----
-      - name: Snapshot deployments (before)
-        run: |
-          clasp list-deployments --json > before.json || echo "[]" > before.json
-
-      - name: Ensure preserved deployments exist (before)  # 不存在也先放行，只警告
+      # --- Sanity：在 log 顯示長度與雜湊，方便你確認 CI 拿到正確 ID ---
+      - name: Sanity check DEPLOY_ID (length & hash)
         env:
-          PRESERVE_IDS: ${{ vars.PRESERVE_DEPLOYMENT_IDS }}
+          DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          node -e "const fs=require('fs');
-          const ids=(process.env.PRESERVE_IDS||'').split(/[,\s]+/).filter(Boolean);
-          if(!ids.length){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0); }
-          const b=JSON.parse(fs.readFileSync('before.json','utf8'));
-          const has=id=>Array.isArray(b)&&b.some(x=>(x.deploymentId||x.deployment_id)===id);
-          let miss=ids.filter(id=>!has(id));
-          if(miss.length){ console.warn('WARN: preserved IDs not found BEFORE deploy:', miss.join(',')); } else { console.log('All preserved IDs exist BEFORE deploy'); }"
+          python3 - << 'PY'
+import os,hashlib
+sid=os.environ.get('DEPLOY_ID','')
+print('DEPLOY_ID.length =', len(sid))
+print('DEPLOY_ID.sha256 =', hashlib.sha256(sid.encode()).hexdigest())
+if not sid or len(sid)<20:
+    raise SystemExit('DEPLOY_ID looks empty/too short; abort.')
+PY
 
-      # ---- 正式 push 原始碼 ----
+      # --- BEFORE：取部署清單（優先用 --json；失敗再解析文字） ---
+      - name: Snapshot deployments (BEFORE)
+        run: |
+          set -e
+          if clasp list-deployments --json > before.json 2>/dev/null; then
+            echo "before: got JSON"
+          else
+            echo "before: fallback to text parse"
+            clasp list-deployments > before.txt || clasp deployments > before.txt || true
+            node -e "const fs=require('fs');
+              const t=fs.readFileSync('before.txt','utf8');
+              const ids=[...t.matchAll(/AK[a-zA-Z0-9_-]{20,}/g)].map(m=>m[0]);
+              fs.writeFileSync('before.json', JSON.stringify([...new Set(ids)]));
+              console.log('BEFORE IDs:', ids.join(',')||'(none)');"
+          fi
+
+      - name: Ensure target deployment exists (BEFORE)
+        env:
+          DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
+        run: |
+          node -e "const fs=require('fs'),id=process.env.DEPLOY_ID;
+            const arr=JSON.parse(fs.readFileSync('before.json','utf8'));
+            if(!Array.isArray(arr) || !arr.includes(id)){
+              console.error('Target deployment ID NOT found in THIS script BEFORE deploy. IDs=',arr); process.exit(1)
+            }
+            console.log('Target deployment exists BEFORE deploy.');"
+
       - name: Push to Apps Script
         run: clasp push -f
 
-      # ---- 僅覆蓋：固定 Deployment ID ----
-      - name: Deploy with fixed Deployment ID (v2)
+      # ✅ 只覆蓋固定 ID（新版 clasp 仍支援此參數）
+      - name: Deploy with fixed Deployment ID
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
@@ -99,36 +120,48 @@ jobs:
           if [ -z "${DEPLOY_ID:-}" ]; then
             echo "::error::GAS_DEPLOYMENT_ID not set"; exit 1
           fi
-          # 只更新你指定的這筆，不新建
           clasp deploy --deploymentId "$DEPLOY_ID" -d "CI ${GITHUB_SHA}"
 
-      # ---- 防呆 2：部署後檢查沒有多一筆、而且保護的部署仍存在 ----
+      # --- AFTER：再取清單（同樣 JSON 優先、文字備援） ---
+      - name: Snapshot deployments (AFTER)
+        run: |
+          set -e
+          if clasp list-deployments --json > after.json 2>/dev/null; then
+            echo "after: got JSON"
+          else
+            echo "after: fallback to text parse"
+            clasp list-deployments > after.txt || clasp deployments > after.txt || true
+            node -e "const fs=require('fs');
+              const t=fs.readFileSync('after.txt','utf8');
+              const ids=[...t.matchAll(/AK[a-zA-Z0-9_-]{20,}/g)].map(m=>m[0]);
+              fs.writeFileSync('after.json', JSON.stringify([...new Set(ids)]));
+              console.log('AFTER IDs:', ids.join(',')||'(none)');"
+          fi
+
       - name: Verify no new deployment was created
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          set -e
-          clasp list-deployments --json > after.json || echo "[]" > after.json
-          node -e "const fs=require('fs');
-          const b=JSON.parse(fs.readFileSync('before.json','utf8'));
-          const a=JSON.parse(fs.readFileSync('after.json','utf8'));
-          const id=process.env.DEPLOY_ID;
-          const cntB=Array.isArray(b)?b.length:0;
-          const cntA=Array.isArray(a)?a.length:0;
-          const has=a.some(x=>(x.deploymentId||x.deployment_id)===id);
-          console.log('before=',cntB,'after=',cntA,'hasTarget=',has);
-          if (!has) { console.error('Target deployment ID not found AFTER deploy'); process.exit(1); }
-          if (cntA > cntB) { console.error('New deployment appears to have been created!'); process.exit(1); }"
+          node -e "const fs=require('fs'),id=process.env.DEPLOY_ID;
+            const b=JSON.parse(fs.readFileSync('before.json','utf8'));
+            const a=JSON.parse(fs.readFileSync('after.json','utf8'));
+            const cntB=Array.isArray(b)?b.length:0;
+            const cntA=Array.isArray(a)?a.length:0;
+            const has=Array.isArray(a)&&a.includes(id);
+            console.log('before =',cntB,', after =',cntA,', hasTarget =',has);
+            if(!has){console.error('Target deployment ID not found AFTER deploy');process.exit(1)}
+            if(cntA>cntB){console.error('New deployment seems created!');process.exit(1)}"
 
-      - name: Verify preserved deployments still exist (after)
+      - name: Verify preserved deployments still exist (AFTER)
         env:
           PRESERVE_IDS: ${{ vars.PRESERVE_DEPLOYMENT_IDS }}
+          PRESERVE_ID: ${{ vars.PRESERVE_DEPLOYMENT_ID }}   # 相容舊命名
         run: |
           node -e "const fs=require('fs');
-          const ids=(process.env.PRESERVE_IDS||'').split(/[,\s]+/).filter(Boolean);
-          if(!ids.length){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0); }
-          const a=JSON.parse(fs.readFileSync('after.json','utf8'));
-          const has=id=>Array.isArray(a)&&a.some(x=>(x.deploymentId||x.deployment_id)===id);
-          let miss=ids.filter(id=>!has(id));
-          if(miss.length){ console.error('Preserved deployments disappeared AFTER deploy:', miss.join(',')); process.exit(1); }
-          console.log('All preserved IDs exist AFTER deploy');"
+            const a=JSON.parse(fs.readFileSync('after.json','utf8'));
+            const env=(process.env.PRESERVE_IDS||process.env.PRESERVE_ID||'').trim();
+            if(!env){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0); }
+            const ids=env.split(/[,\s]+/).filter(Boolean);
+            const miss=ids.filter(id=>!a.includes(id));
+            if(miss.length){ console.error('Preserved deployments disappeared:', miss.join(',')); process.exit(1); }
+            console.log('All preserved IDs exist AFTER deploy');"
