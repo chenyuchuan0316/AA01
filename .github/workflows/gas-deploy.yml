@@ -4,75 +4,102 @@ on:
   push:
     branches: [ "main" ]
 
+concurrency:
+  group: gas-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   gas:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 18
+      # 你的專案如果需要 npm 腳本/測試，就保留這三步；不需要可刪。
+      - name: Set up Node.js for project (18.x)
+        if: ${{ hashFiles('package.json') != '' }}
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Install dependencies
-        if: hashFiles('package.json') != ''
+      - name: Install dependencies (lockfile)
+        if: ${{ hashFiles('package-lock.json') != '' }}
         run: npm ci
 
-      - name: Run unit tests
-        if: hashFiles('package.json') != ''
-        run: npm test
+      - name: Install dependencies (no lockfile)
+        if: ${{ hashFiles('package-lock.json') == '' && hashFiles('package.json') != '' }}
+        run: npm install
 
-      - name: Install clasp
-        run: npm i -g @google/clasp
+      - name: Run unit tests (if any)
+        if: ${{ hashFiles('package.json') != '' }}
+        run: npm test --if-present
 
-      - name: Debug secret shape (length only)
+      # --- 切換成 Node 22 以使用 clasp v3 ---
+      - name: Set up Node.js 22 for clasp
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install clasp v3
+        run: npm i -g @google/clasp@^3
+
+      - name: Write ~/.clasprc.json (decode/normalize/validate)
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
-          node -e "const s=process.env.CLASPRC_JSON||''; console.log('len=',s.length,'mod4=',(s.replace(/\s+/g,'').length%4));"
+          set -euo pipefail
+          if [ -z "${CLASPRC_JSON:-}" ]; then
+            echo "::error::Missing secret CLASPRC_JSON"; exit 1
+          fi
 
-      - name: Write ~/.clasprc.json (decode via Node) + validate
-        env:
-          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
-        run: |
-          if [ -z "$CLASPRC_JSON" ]; then echo "CLASPRC_JSON is empty"; exit 1; fi
-          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';let s=process.env.CLASPRC_JSON||'';s=s.replace(/\s+/g,'');fs.writeFileSync(p, Buffer.from(s,'base64'));"
+          # 1) 支援「原始 JSON」或「base64」
+          node -e "const fs=require('fs');
+            const p=process.env.HOME+'/.clasprc.json';
+            let s=process.env.CLASPRC_JSON||'';
+            try { const j=JSON.parse(s); fs.writeFileSync(p, JSON.stringify(j,null,2)); }
+            catch(e){ s=s.replace(/\s+/g,''); fs.writeFileSync(p, Buffer.from(s,'base64')); }"
+
+          # 2) 舊格式正規化（tokens.default -> token）
+          node -e "const fs=require('fs');
+            const p=process.env.HOME+'/.clasprc.json';
+            const j=JSON.parse(fs.readFileSync(p,'utf8'));
+            if (!j.token && j.tokens && j.tokens.default) { j.token = j.tokens.default; }
+            fs.writeFileSync(p, JSON.stringify(j, null, 2));"
+
+          # 3) 驗證 + 複製到工作目錄
           test -s "$HOME/.clasprc.json"
           node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8'))"
+          cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
-      - name: Ensure .clasp.json exists (safe)
-        env:
-          GAS_SCRIPT_ID: ${{ secrets.GAS_SCRIPT_ID }}
+      - name: Ensure .clasp.json exists (do not print it)
         run: |
-          if [ -f ".clasp.json" ]; then
-            echo "Found existing .clasp.json:"
-            cat .clasp.json
-            exit 0
+          if [ ! -f ".clasp.json" ]; then
+            echo "::error::.clasp.json missing. Commit one with your scriptId."; exit 1
           fi
-          if [ -z "$GAS_SCRIPT_ID" ]; then
-            echo ".clasp.json missing and GAS_SCRIPT_ID not set"; exit 1
-          fi
-          # 用 printf 一行一行寫，避免 heredoc 的縮排/行首問題
-          printf '%s\n' '{' \
-            "  \"scriptId\": \"$GAS_SCRIPT_ID\"," \
-            '  "rootDir": "."' \
-            '}' > .clasp.json
-          cat .clasp.json
+          node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.exit(2)}"
 
+      # (若是 TypeScript，請在這裡加 build，產出 JS 到 .clasp.json 的 rootDir)
+      # - name: Build
+      #   run: npm run build
 
       - name: Push to Apps Script
         run: clasp push -f
 
-      - name: Deploy with fixed Deployment ID
+      - name: Update fixed deployment (v3)
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          if [ -n "$DEPLOY_ID" ]; then
-            clasp deploy --deploymentId "$DEPLOY_ID" -d "CI deploy ${GITHUB_SHA}"
-          else
-            clasp deploy --deploymentId "AKfycbyEPm9QNzdv5JLKYCIxX1kGOdkxOttYWsk-cruaKzH9Cc7oY-PuQcTeNCPRMAN5YE37" -d "CI deploy ${GITHUB_SHA}"
+          set -euo pipefail
+          if [ -z "${DEPLOY_ID:-}" ]; then
+            echo "::error::GAS_DEPLOYMENT_ID not set"; exit 1
           fi
+          # 以固定 Deployment ID 做更新（網址不變）
+          clasp update-deployment "$DEPLOY_ID" -d "CI ${GITHUB_SHA}"
+
+          # 供稽核用（不含敏感資訊）
+          clasp list-versions
+          clasp list-deployments
