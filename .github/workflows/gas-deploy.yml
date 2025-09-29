@@ -18,7 +18,6 @@ jobs:
         with:
           node-version: 18
 
-      #（有 package.json 才會裝與跑測試）
       - name: Install dependencies
         if: hashFiles('package.json') != ''
         run: npm ci
@@ -45,20 +44,25 @@ jobs:
           test -s "$HOME/.clasprc.json"
           node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8'))"
 
-      - name: Ensure .clasp.json exists
+      - name: Ensure .clasp.json exists (safe)
         env:
           GAS_SCRIPT_ID: ${{ secrets.GAS_SCRIPT_ID }}
         run: |
-          if [ ! -f ".clasp.json" ]; then
-            if [ -z "$GAS_SCRIPT_ID" ]; then echo ".clasp.json missing and GAS_SCRIPT_ID not set"; exit 1; fi
-            cat > .clasp.json <<EOF
-            {
-              "scriptId": "$GAS_SCRIPT_ID",
-              "rootDir": "."
-            }
-            EOF
+          if [ -f ".clasp.json" ]; then
+            echo "Found existing .clasp.json:"
+            cat .clasp.json
+            exit 0
           fi
+          if [ -z "$GAS_SCRIPT_ID" ]; then
+            echo ".clasp.json missing and GAS_SCRIPT_ID not set"; exit 1
+          fi
+          # 用 printf 一行一行寫，避免 heredoc 的縮排/行首問題
+          printf '%s\n' '{' \
+            "  \"scriptId\": \"$GAS_SCRIPT_ID\"," \
+            '  "rootDir": "."' \
+            '}' > .clasp.json
           cat .clasp.json
+
 
       - name: Push to Apps Script
         run: clasp push -f
