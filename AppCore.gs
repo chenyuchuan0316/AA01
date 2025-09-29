@@ -34,26 +34,24 @@ function showSidebar(){
 function doGet(e) {
   try {
     const route = e && e.parameter && e.parameter.route ? e.parameter.route : 'home';
+
     if (route === 'health') {
       return ContentService
-        .createTextOutput(JSON.stringify({
-          ok: true,
-          version: 71, // 你可用 CI 注入或在此維護
-          time: new Date().toISOString()
-        }))
+        .createTextOutput(JSON.stringify({ ok: true, ts: new Date().toISOString() }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // 你原本的首頁或其他路由，請用 try/catch 包起來，出錯時回 200 + JSON 描述，不要讓整支爆掉
-    // return HtmlService.createHtmlOutput(...);
+    // 你的主畫面或其他邏輯（建議也包 try/catch）
+    // return HtmlService.createHtmlOutputFromFile('Sidebar');
 
   } catch (err) {
-    // 讓錯誤也以 200 JSON 呈現，避免前端看到 Drive 的白板錯誤頁
+    // 就算出錯也回 200 JSON，避免使用者只看到「無法開啟」
     return ContentService
       .createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
+
 
 
 /**
