@@ -1,4 +1,4 @@
-name: Push & Deploy GAS (fixed deployment)
+﻿name: Push & Deploy GAS (fixed deployment)
 
 on:
   push:
@@ -18,6 +18,7 @@ jobs:
         with:
           node-version: 18
 
+      #（有 package.json 才會裝與跑測試）
       - name: Install dependencies
         if: hashFiles('package.json') != ''
         run: npm ci
@@ -27,37 +28,29 @@ jobs:
         run: npm test
 
       - name: Install clasp
-        run: npm install -g @google/clasp
+        run: npm i -g @google/clasp
 
-      - name: Debug CLASPRC_JSON shape (no content)
+      - name: Debug secret shape (length only)
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
-          node -e "const s=process.env.CLASPRC_JSON||''; const ok=/^[A-Za-z0-9+/=\\r\\n]+$/.test(s); console.log('len=',s.length,'isBase64Chars=',ok,'mod4=',s.replace(/\\s+/g,'').length%4);"
-
+          node -e "const s=process.env.CLASPRC_JSON||''; console.log('len=',s.length,'mod4=',(s.replace(/\s+/g,'').length%4));"
 
       - name: Write ~/.clasprc.json (decode via Node) + validate
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
-          if [ -z "$CLASPRC_JSON" ]; then
-            echo "CLASPRC_JSON is empty"; exit 1
-          fi
-          # 用 Node 解碼，先去除所有換行與空白，再以 base64 轉回檔案
-          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';let s=process.env.CLASPRC_JSON||'';s=s.replace(/\\s+/g,'');fs.writeFileSync(p, Buffer.from(s,'base64'));"
-          # 簡單驗證檔案非空、且為合法 JSON
-          test -s \"$HOME/.clasprc.json\"
-          node -e \"JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8'));\"
-
+          if [ -z "$CLASPRC_JSON" ]; then echo "CLASPRC_JSON is empty"; exit 1; fi
+          node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';let s=process.env.CLASPRC_JSON||'';s=s.replace(/\s+/g,'');fs.writeFileSync(p, Buffer.from(s,'base64'));"
+          test -s "$HOME/.clasprc.json"
+          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8'))"
 
       - name: Ensure .clasp.json exists
         env:
           GAS_SCRIPT_ID: ${{ secrets.GAS_SCRIPT_ID }}
         run: |
           if [ ! -f ".clasp.json" ]; then
-            if [ -z "$GAS_SCRIPT_ID" ]; then
-              echo ".clasp.json missing and GAS_SCRIPT_ID not set"; exit 1
-            fi
+            if [ -z "$GAS_SCRIPT_ID" ]; then echo ".clasp.json missing and GAS_SCRIPT_ID not set"; exit 1; fi
             cat > .clasp.json <<EOF
             {
               "scriptId": "$GAS_SCRIPT_ID",
@@ -75,7 +68,7 @@ jobs:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
           if [ -n "$DEPLOY_ID" ]; then
-            clasp deploy --deploymentId "$DEPLOY_ID" -d "CI deploy $GITHUB_SHA"
+            clasp deploy --deploymentId "$DEPLOY_ID" -d "CI deploy ${GITHUB_SHA}"
           else
-            clasp deploy --deploymentId "AKfycbyEPm9QNzdv5JLKYCIxX1kGOdkxOttYWsk-cruaKzH9Cc7oY-PuQcTeNCPRMAN5YE37" -d "CI deploy $GITHUB_SHA"
+            clasp deploy --deploymentId "AKfycbyEPm9QNzdv5JLKYCIxX1kGOdkxOttYWsk-cruaKzH9Cc7oY-PuQcTeNCPRMAN5YE37" -d "CI deploy ${GITHUB_SHA}"
           fi
