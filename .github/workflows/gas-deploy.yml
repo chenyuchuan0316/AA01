@@ -9,6 +9,10 @@ concurrency:
   group: gas-deploy-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   gas:
     runs-on: ubuntu-latest
@@ -37,7 +41,7 @@ jobs:
         if: ${{ hashFiles('package.json') != '' }}
         run: npm test --if-present
 
-      # 使用最新版 clasp
+      # 使用最新版 clasp（依你的要求）
       - name: Install latest clasp
         run: npm i -g @google/clasp
 
@@ -45,13 +49,11 @@ jobs:
       - name: Write ~/.clasprc.json (decode/normalize/validate)
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
-        shell: bash
         run: |
           set -euo pipefail
           if [ -z "${CLASPRC_JSON:-}" ]; then
             echo "::error::Missing secret CLASPRC_JSON"; exit 1
           fi
-
           node -e "
             const fs=require('fs');
             const p=process.env.HOME+'/.clasprc.json';
@@ -65,13 +67,10 @@ jobs:
             if(!j.token && j.tokens && j.tokens.default){ j.token=j.tokens.default; }
             fs.writeFileSync(p, JSON.stringify(j,null,2));
           "
-
-          # 驗證並複製到工作目錄
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
       - name: Ensure .clasp.json exists (do not print it)
-        shell: bash
         run: |
           if [ ! -f ".clasp.json" ]; then
             echo "::error::.clasp.json missing. Commit one with your scriptId."; exit 1
@@ -82,21 +81,18 @@ jobs:
       - name: Sanity check DEPLOY_ID (length & hash)
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
-        shell: bash
         run: |
           python3 - << 'PY'
-import os,hashlib
-sid=os.environ.get('DEPLOY_ID','')   # 先定義 sid
+import os, hashlib
+sid = os.environ.get('DEPLOY_ID', '')
 print('DEPLOY_ID.length =', len(sid))
 print('DEPLOY_ID.sha256 =', hashlib.sha256(sid.encode()).hexdigest())
-if not sid or len(sid)<20:
+if not sid or len(sid) < 20:
     raise SystemExit('DEPLOY_ID looks empty/too short; abort.')
-PY   # <--- 注意：這裡一定要頂格，前面不能有空白
-
+PY
 
       # BEFORE：取部署清單（JSON 優先；失敗則解析文字輸出）
       - name: Snapshot deployments (BEFORE)
-        shell: bash
         run: |
           set -e
           if clasp list-deployments --json > before.json 2>/dev/null; then
@@ -111,7 +107,6 @@ PY   # <--- 注意：這裡一定要頂格，前面不能有空白
       - name: Ensure target deployment exists (BEFORE)
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
-        shell: bash
         run: |
           node -e "const fs=require('fs'),id=process.env.DEPLOY_ID; const arr=JSON.parse(fs.readFileSync('before.json','utf8')); if(!Array.isArray(arr) || !arr.includes(id)){console.error('Target deployment ID NOT found in THIS script BEFORE deploy. IDs=',arr); process.exit(1)} console.log('Target deployment exists BEFORE deploy.');"
 
@@ -122,7 +117,6 @@ PY   # <--- 注意：這裡一定要頂格，前面不能有空白
       - name: Deploy with fixed Deployment ID
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
-        shell: bash
         run: |
           set -euo pipefail
           if [ -z "${DEPLOY_ID:-}" ]; then
@@ -132,7 +126,6 @@ PY   # <--- 注意：這裡一定要頂格，前面不能有空白
 
       # AFTER：再取清單（JSON 優先、文字備援）
       - name: Snapshot deployments (AFTER)
-        shell: bash
         run: |
           set -e
           if clasp list-deployments --json > after.json 2>/dev/null; then
@@ -147,7 +140,6 @@ PY   # <--- 注意：這裡一定要頂格，前面不能有空白
       - name: Verify no new deployment was created
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
-        shell: bash
         run: |
           node -e "const fs=require('fs'),id=process.env.DEPLOY_ID; const b=JSON.parse(fs.readFileSync('before.json','utf8')); const a=JSON.parse(fs.readFileSync('after.json','utf8')); const cntB=Array.isArray(b)?b.length:0; const cntA=Array.isArray(a)?a.length:0; const has=Array.isArray(a)&&a.includes(id); console.log('before =',cntB,', after =',cntA,', hasTarget =',has); if(!has){console.error('Target deployment ID not found AFTER deploy');process.exit(1)} if(cntA>cntB){console.error('New deployment seems created!');process.exit(1)}"
 
@@ -155,7 +147,6 @@ PY   # <--- 注意：這裡一定要頂格，前面不能有空白
       - name: Verify preserved deployments still exist (AFTER)
         env:
           PRESERVE_IDS: ${{ vars.PRESERVE_DEPLOYMENT_IDS }}
-          PRESERVE_ID: ${{ vars.PRESERVE_DEPLOYMENT_ID }}   # 向下相容舊命名
-        shell: bash
+          PRESERVE_ID: ${{ vars.PRESERVE_DEPLOYMENT_ID }}
         run: |
           node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('after.json','utf8')); const env=(process.env.PRESERVE_IDS||process.env.PRESERVE_ID||'').trim(); if(!env){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0); } const ids=env.split(/[,\s]+/).filter(Boolean); const miss=ids.filter(id=>!a.includes(id)); if(miss.length){ console.error('Preserved deployments disappeared:', miss.join(',')); process.exit(1); } console.log('All preserved IDs exist AFTER deploy');"
