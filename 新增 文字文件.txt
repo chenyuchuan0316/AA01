@@ -1,247 +1,248 @@
-Windows PowerShell
-著作權（C） Microsoft Corporation。保留擁有權利。
+PS C:\Users\CYC\Downloads\AA01_repo> git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   .github/workflows/gas-deploy.yml
 
-安裝最新的 PowerShell 以取得新功能和改進功能！https://aka.ms/PSWindows
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        "\346\226\260\345\242\236 \346\226\207\345\255\227\346\226\207\344\273\266.txt"
 
-PS C:\Users\CYC\Downloads\AA01_repo> # 互動式選 run 觀察到結束（成功會回 0；失敗回 1）
-PS C:\Users\CYC\Downloads\AA01_repo> gh run watch --exit-status
-found no in progress runs to watch
+no changes added to commit (use "git add" and/or "git commit -a")
+PS C:\Users\CYC\Downloads\AA01_repo> git add -A
+warning: in the working copy of '.github/workflows/gas-deploy.yml', LF will be replaced by CRLF the next time Git touches it
+PS C:\Users\CYC\Downloads\AA01_repo> git commit -m "chore: trigger GAS deploy"
+[main 979cb47] chore: trigger GAS deploy
+ 2 files changed, 311 insertions(+), 37 deletions(-)
+ create mode 100644 "\346\226\260\345\242\236 \346\226\207\345\255\227\346\226\207\344\273\266.txt"
+PS C:\Users\CYC\Downloads\AA01_repo> git push origin main
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Delta compression using up to 24 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 7.01 KiB | 7.01 MiB/s, done.
+Total 6 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To github.com:chenyuchuan0316/AA01.git
+   fff32f5..979cb47  main -> main
+PS C:\Users\CYC\Downloads\AA01_repo> # 看最近 5 筆，確認 workflow 名稱、ID
+PS C:\Users\CYC\Downloads\AA01_repo> gh run list --workflow "Push & Deploy GAS (fixed deployment)" --branch main --limit 5
+STATUS  TITLE                       WORKFLOW                 BRANCH  EVENT  ID           ELAPSED  AGE
+*       chore: trigger GAS deploy   Push & Deploy GAS (f...  main    push   18090671301  3s       less than a minute ago
+X       ci: fix .clasp.json ste...  Push & Deploy GAS (f...  main    push   18089015859  31s      about 10 minutes ago
+X       chore: add .clasp.json      Push & Deploy GAS (f...  main    push   18088908369  22s      about 1 hour ago
+X       ci: add GAS deploy work...  Push & Deploy GAS (f...  main    push   18087485482  36s      about 1 hour ago
+X       fix: avoid secrets in i...  Push & Deploy GAS (f...  main    push   18086488021  31s      about 3 hours ago
+PS C:\Users\CYC\Downloads\AA01_repo> gh run view 18089015859 --log
+gas     Set up job      ﻿2025-09-29T08:15:29.1662773Z Current runner version: '2.328.0'
+gas     Set up job      2025-09-29T08:15:29.1691034Z ##[group]Runner Image Provisioner
+gas     Set up job      2025-09-29T08:15:29.1692145Z Hosted Compute Agent
+gas     Set up job      2025-09-29T08:15:29.1692919Z Version: 20250912.392
+gas     Set up job      2025-09-29T08:15:29.1693717Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
+gas     Set up job      2025-09-29T08:15:29.1694610Z Build Date: 2025-09-12T15:23:14Z
+gas     Set up job      2025-09-29T08:15:29.1695745Z ##[endgroup]
+gas     Set up job      2025-09-29T08:15:29.1696570Z ##[group]Operating System
+gas     Set up job      2025-09-29T08:15:29.1697297Z Ubuntu
+gas     Set up job      2025-09-29T08:15:29.1697964Z 24.04.3
+gas     Set up job      2025-09-29T08:15:29.1698822Z LTS
+gas     Set up job      2025-09-29T08:15:29.1699484Z ##[endgroup]
+gas     Set up job      2025-09-29T08:15:29.1700170Z ##[group]Runner Image
+gas     Set up job      2025-09-29T08:15:29.1700975Z Image: ubuntu-24.04
+gas     Set up job      2025-09-29T08:15:29.1701641Z Version: 20250922.53.1
+gas     Set up job      2025-09-29T08:15:29.1702965Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250922.53/images/ubuntu/Ubuntu2404-Readme.md
+gas     Set up job      2025-09-29T08:15:29.1704620Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250922.53
+gas     Set up job      2025-09-29T08:15:29.1706140Z ##[endgroup]
+gas     Set up job      2025-09-29T08:15:29.1707885Z ##[group]GITHUB_TOKEN Permissions
+gas     Set up job      2025-09-29T08:15:29.1710296Z Contents: read
+gas     Set up job      2025-09-29T08:15:29.1711528Z Metadata: read
+gas     Set up job      2025-09-29T08:15:29.1712707Z Packages: read
+gas     Set up job      2025-09-29T08:15:29.1713667Z ##[endgroup]
+gas     Set up job      2025-09-29T08:15:29.1716590Z Secret source: Actions
+gas     Set up job      2025-09-29T08:15:29.1717504Z Prepare workflow directory
+gas     Set up job      2025-09-29T08:15:29.2096214Z Prepare all required actions
+gas     Set up job      2025-09-29T08:15:29.2142486Z Getting action download info
+gas     Set up job      2025-09-29T08:15:29.5587990Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+gas     Set up job      2025-09-29T08:15:29.7065588Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+gas     Set up job      2025-09-29T08:15:29.9351306Z Complete job name: gas
+gas     Check out repository    ﻿2025-09-29T08:15:30.0144298Z ##[group]Run actions/checkout@v4
+gas     Check out repository    2025-09-29T08:15:30.0145303Z with:
+gas     Check out repository    2025-09-29T08:15:30.0145835Z   repository: chenyuchuan0316/AA01
+gas     Check out repository    2025-09-29T08:15:30.0146637Z   token: ***
+gas     Check out repository    2025-09-29T08:15:30.0147136Z   ssh-strict: true
+gas     Check out repository    2025-09-29T08:15:30.0147675Z   ssh-user: git
+gas     Check out repository    2025-09-29T08:15:30.0148372Z   persist-credentials: true
+gas     Check out repository    2025-09-29T08:15:30.0148946Z   clean: true
+gas     Check out repository    2025-09-29T08:15:30.0149469Z   sparse-checkout-cone-mode: true
+gas     Check out repository    2025-09-29T08:15:30.0150058Z   fetch-depth: 1
+gas     Check out repository    2025-09-29T08:15:30.0150564Z   fetch-tags: false
+gas     Check out repository    2025-09-29T08:15:30.0151127Z   show-progress: true
+gas     Check out repository    2025-09-29T08:15:30.0151647Z   lfs: false
+gas     Check out repository    2025-09-29T08:15:30.0152131Z   submodules: false
+gas     Check out repository    2025-09-29T08:15:30.0152659Z   set-safe-directory: true
+gas     Check out repository    2025-09-29T08:15:30.0153505Z ##[endgroup]
+gas     Check out repository    2025-09-29T08:15:30.1429196Z Syncing repository: chenyuchuan0316/AA01
+gas     Check out repository    2025-09-29T08:15:30.1432282Z ##[group]Getting Git version info
+gas     Check out repository    2025-09-29T08:15:30.1433721Z Working directory is '/home/runner/work/AA01/AA01'
+gas     Check out repository    2025-09-29T08:15:30.1435733Z [command]/usr/bin/git version
+gas     Check out repository    2025-09-29T08:15:30.1507790Z git version 2.51.0
+gas     Check out repository    2025-09-29T08:15:30.1537443Z ##[endgroup]
+gas     Check out repository    2025-09-29T08:15:30.1555153Z Temporarily overriding HOME='/home/runner/work/_temp/fe29f969-ee82-4c05-a544-8354cfa47025' before making global git config changes
+gas     Check out repository    2025-09-29T08:15:30.1557907Z Adding repository directory to the temporary git global config as a safe directory
+gas     Check out repository    2025-09-29T08:15:30.1570600Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/AA01/AA01
+gas     Check out repository    2025-09-29T08:15:30.1614849Z Deleting the contents of '/home/runner/work/AA01/AA01'
+gas     Check out repository    2025-09-29T08:15:30.1619279Z ##[group]Initializing the repository
+gas     Check out repository    2025-09-29T08:15:30.1623887Z [command]/usr/bin/git init /home/runner/work/AA01/AA01
+gas     Check out repository    2025-09-29T08:15:30.1731703Z hint: Using 'master' as the name for the initial branch. This default branch name
+gas     Check out repository    2025-09-29T08:15:30.1733639Z hint: is subject to change. To configure the initial branch name to use in all
+gas     Check out repository    2025-09-29T08:15:30.1735445Z hint: of your new repositories, which will suppress this warning, call:
+gas     Check out repository    2025-09-29T08:15:30.1736931Z hint:
+gas     Check out repository    2025-09-29T08:15:30.1737846Z hint:      git config --global init.defaultBranch <name>
+gas     Check out repository    2025-09-29T08:15:30.1739199Z hint:
+gas     Check out repository    2025-09-29T08:15:30.1739909Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+gas     Check out repository    2025-09-29T08:15:30.1741288Z hint: 'development'. The just-created branch can be renamed via this command:
+gas     Check out repository    2025-09-29T08:15:30.1742081Z hint:
+gas     Check out repository    2025-09-29T08:15:30.1742564Z hint:      git branch -m <name>
+gas     Check out repository    2025-09-29T08:15:30.1743102Z hint:
+gas     Check out repository    2025-09-29T08:15:30.1743789Z hint: Disable this message with "git config set advice.defaultBranchName false"
+gas     Check out repository    2025-09-29T08:15:30.1744885Z Initialized empty Git repository in /home/runner/work/AA01/AA01/.git/
+gas     Check out repository    2025-09-29T08:15:30.1756511Z [command]/usr/bin/git remote add origin https://github.com/chenyuchuan0316/AA01
+gas     Check out repository    2025-09-29T08:15:30.1803964Z ##[endgroup]
+gas     Check out repository    2025-09-29T08:15:30.1804895Z ##[group]Disabling automatic garbage collection
+gas     Check out repository    2025-09-29T08:15:30.1811449Z [command]/usr/bin/git config --local gc.auto 0
+gas     Check out repository    2025-09-29T08:15:30.1849675Z ##[endgroup]
+gas     Check out repository    2025-09-29T08:15:30.1850538Z ##[group]Setting up auth
+gas     Check out repository    2025-09-29T08:15:30.1861177Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gas     Check out repository    2025-09-29T08:15:30.1901127Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gas     Check out repository    2025-09-29T08:15:30.2302099Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gas     Check out repository    2025-09-29T08:15:30.2344467Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gas     Check out repository    2025-09-29T08:15:30.2627401Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+gas     Check out repository    2025-09-29T08:15:30.2671229Z ##[endgroup]
+gas     Check out repository    2025-09-29T08:15:30.2673081Z ##[group]Fetching the repository
+gas     Check out repository    2025-09-29T08:15:30.2692836Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +fff32f553dbed943fd596597273a24ff94ccd3b4:refs/remotes/origin/main
+gas     Check out repository    2025-09-29T08:15:30.9857297Z From https://github.com/chenyuchuan0316/AA01
+gas     Check out repository    2025-09-29T08:15:30.9859714Z  * [new ref]         fff32f553dbed943fd596597273a24ff94ccd3b4 -> origin/main
+gas     Check out repository    2025-09-29T08:15:30.9892589Z ##[endgroup]
+gas     Check out repository    2025-09-29T08:15:30.9894140Z ##[group]Determining the checkout info
+gas     Check out repository    2025-09-29T08:15:30.9896185Z ##[endgroup]
+gas     Check out repository    2025-09-29T08:15:30.9897829Z [command]/usr/bin/git sparse-checkout disable
+gas     Check out repository    2025-09-29T08:15:30.9944644Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+gas     Check out repository    2025-09-29T08:15:30.9975695Z ##[group]Checking out the ref
+gas     Check out repository    2025-09-29T08:15:30.9980643Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+gas     Check out repository    2025-09-29T08:15:31.0085333Z Switched to a new branch 'main'
+gas     Check out repository    2025-09-29T08:15:31.0088965Z branch 'main' set up to track 'origin/main'.
+gas     Check out repository    2025-09-29T08:15:31.0093973Z ##[endgroup]
+gas     Check out repository    2025-09-29T08:15:31.0130539Z [command]/usr/bin/git log -1 --format=%H
+gas     Check out repository    2025-09-29T08:15:31.0153245Z fff32f553dbed943fd596597273a24ff94ccd3b4
+gas     Set up Node.js 18       ﻿2025-09-29T08:15:31.0493383Z ##[group]Run actions/setup-node@v4
+gas     Set up Node.js 18       2025-09-29T08:15:31.0494795Z with:
+gas     Set up Node.js 18       2025-09-29T08:15:31.0495751Z   node-version: 18
+gas     Set up Node.js 18       2025-09-29T08:15:31.0496805Z   always-auth: false
+gas     Set up Node.js 18       2025-09-29T08:15:31.0497869Z   check-latest: false
+gas     Set up Node.js 18       2025-09-29T08:15:31.0499441Z   token: ***
+gas     Set up Node.js 18       2025-09-29T08:15:31.0500422Z ##[endgroup]
+gas     Set up Node.js 18       2025-09-29T08:15:31.2357786Z Found in cache @ /opt/hostedtoolcache/node/18.20.8/x64
+gas     Set up Node.js 18       2025-09-29T08:15:31.2361874Z ##[group]Environment details
+gas     Set up Node.js 18       2025-09-29T08:15:33.9363967Z node: v18.20.8
+gas     Set up Node.js 18       2025-09-29T08:15:33.9365717Z npm: 10.8.2
+gas     Set up Node.js 18       2025-09-29T08:15:33.9366353Z yarn: 1.22.22
+gas     Set up Node.js 18       2025-09-29T08:15:33.9367701Z ##[endgroup]
+gas     Install dependencies    ﻿2025-09-29T08:15:34.0040787Z ##[group]Run npm ci
+gas     Install dependencies    2025-09-29T08:15:34.0041258Z npm ci
+gas     Install dependencies    2025-09-29T08:15:34.0414581Z shell: /usr/bin/bash -e ***0***
+gas     Install dependencies    2025-09-29T08:15:34.0415047Z ##[endgroup]
+gas     Install dependencies    2025-09-29T08:15:40.4520004Z npm warn deprecated google-p12-pem@3.1.4: Package is no longer maintained
+gas     Install dependencies    2025-09-29T08:15:42.9576694Z
+gas     Install dependencies    2025-09-29T08:15:42.9577586Z added 269 packages, and audited 270 packages in 9s
+gas     Install dependencies    2025-09-29T08:15:42.9578859Z
+gas     Install dependencies    2025-09-29T08:15:42.9581820Z 87 packages are looking for funding
+gas     Install dependencies    2025-09-29T08:15:42.9582478Z   run `npm fund` for details
+gas     Install dependencies    2025-09-29T08:15:42.9589313Z
+gas     Install dependencies    2025-09-29T08:15:42.9589776Z found 0 vulnerabilities
+gas     Run unit tests  ﻿2025-09-29T08:15:43.0344430Z ##[group]Run npm test
+gas     Run unit tests  2025-09-29T08:15:43.0344785Z npm test
+gas     Run unit tests  2025-09-29T08:15:43.0379266Z shell: /usr/bin/bash -e ***0***
+gas     Run unit tests  2025-09-29T08:15:43.0379582Z ##[endgroup]
+gas     Run unit tests  2025-09-29T08:15:43.2160694Z
+gas     Run unit tests  2025-09-29T08:15:43.2161388Z > gas-webapp@0.1.0 test
+gas     Run unit tests  2025-09-29T08:15:43.2162091Z > echo "no tests yet"
+gas     Run unit tests  2025-09-29T08:15:43.2162407Z
+gas     Run unit tests  2025-09-29T08:15:43.2315923Z no tests yet
+gas     Install clasp   ﻿2025-09-29T08:15:43.2425403Z ##[group]Run npm i -g @google/clasp
+gas     Install clasp   2025-09-29T08:15:43.2425784Z npm i -g @google/clasp
+gas     Install clasp   2025-09-29T08:15:43.2459482Z shell: /usr/bin/bash -e ***0***
+gas     Install clasp   2025-09-29T08:15:43.2459805Z ##[endgroup]
+gas     Install clasp   2025-09-29T08:15:49.1953290Z npm warn deprecated google-p12-pem@3.1.4: Package is no longer maintained
+gas     Install clasp   2025-09-29T08:15:51.0734566Z
+gas     Install clasp   2025-09-29T08:15:51.0735315Z added 269 packages in 8s
+gas     Install clasp   2025-09-29T08:15:51.0736068Z
+gas     Install clasp   2025-09-29T08:15:51.0736494Z 87 packages are looking for funding
+gas     Install clasp   2025-09-29T08:15:51.0737290Z   run `npm fund` for details
+gas     Debug secret shape (length only)        ﻿2025-09-29T08:15:51.1073367Z ##[group]Run node -e "const s=process.env.CLASPRC_JSON||''; console.log('len=',s.length,'mod4=',(s.replace(/\s+/g,'').length%4));"
+gas     Debug secret shape (length only)        2025-09-29T08:15:51.1074266Z node -e "const s=process.env.CLASPRC_JSON||''; console.log('len=',s.length,'mod4=',(s.replace(/\s+/g,'').length%4));"
+gas     Debug secret shape (length only)        2025-09-29T08:15:51.1107595Z shell: /usr/bin/bash -e ***0***
+gas     Debug secret shape (length only)        2025-09-29T08:15:51.1107901Z env:
+gas     Debug secret shape (length only)        2025-09-29T08:15:51.1110651Z   CLASPRC_JSON: ***
+gas     Debug secret shape (length only)        2025-09-29T08:15:51.1110906Z ##[endgroup]
+gas     Debug secret shape (length only)        2025-09-29T08:15:51.1425752Z len= 632 mod4= 1
+gas     Write ~/.clasprc.json (decode via Node) + validate      ﻿2025-09-29T08:15:51.1497013Z ##[group]Run if [ -z "$CLASPRC_JSON" ]; then echo "CLASPRC_JSON is empty"; exit 1; fi
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.1497601Z if [ -z "$CLASPRC_JSON" ]; then echo "CLASPRC_JSON is empty"; exit 1; fi
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.1498649Z node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';let s=process.env.CLASPRC_JSON||'';s=s.replace(/\s+/g,'');fs.writeFileSync(p, Buffer.from(s,'base64'));"
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.1499411Z test -s "$HOME/.clasprc.json"
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.1499886Z node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8'))"
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.1534373Z shell: /usr/bin/bash -e ***0***
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.1534681Z env:
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.1537157Z   CLASPRC_JSON: ***
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.1537410Z ##[endgroup]
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2222760Z undefined:1
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2224762Z     ^***    bz***  t ox  9  ~ m  .] ***␦ ݨ Ʒ -o     j l     z ( ק  &rX    y ޶     5  ,5 Nֹ'^ܩy        ǫ   z    _   ̛     ( @
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2225654Z ^
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2225846Z
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2226349Z SyntaxError: Unexpected token   in JSON at position 0
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2226972Z     at JSON.parse (<anonymous>)
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2227425Z     at [eval]:1:6
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2227968Z     at runScriptInThisContext (node:internal/vm:143:10)
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2228843Z     at node:internal/process/execution:100:14
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2229343Z     at [eval]-wrapper:6:24
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2229939Z     at runScript (node:internal/process/execution:83:62)
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2230608Z     at evalScript (node:internal/process/execution:114:10)
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2231220Z     at node:internal/main/eval_string:30:3
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2231530Z
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2231719Z Node.js v18.20.8
+gas     Write ~/.clasprc.json (decode via Node) + validate      2025-09-29T08:15:51.2267177Z ##[error]Process completed with exit code 1.
+gas     Post Check out repository       ﻿2025-09-29T08:15:51.2383404Z Post job cleanup.
+gas     Post Check out repository       2025-09-29T08:15:51.3358029Z [command]/usr/bin/git version
+gas     Post Check out repository       2025-09-29T08:15:51.3395964Z git version 2.51.0
+gas     Post Check out repository       2025-09-29T08:15:51.3441747Z Temporarily overriding HOME='/home/runner/work/_temp/1407b142-4864-4a24-9da6-64ce14fc176d' before making global git config changes
+gas     Post Check out repository       2025-09-29T08:15:51.3443323Z Adding repository directory to the temporary git global config as a safe directory
+gas     Post Check out repository       2025-09-29T08:15:51.3448637Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/AA01/AA01
+gas     Post Check out repository       2025-09-29T08:15:51.3487294Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gas     Post Check out repository       2025-09-29T08:15:51.3522307Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gas     Post Check out repository       2025-09-29T08:15:51.3764076Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gas     Post Check out repository       2025-09-29T08:15:51.3786841Z http.https://github.com/.extraheader
+gas     Post Check out repository       2025-09-29T08:15:51.3800021Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+gas     Post Check out repository       2025-09-29T08:15:51.3832692Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gas     Complete job    ﻿2025-09-29T08:15:51.4176739Z Cleaning up orphan processes
+PS C:\Users\CYC\Downloads\AA01_repo> # 互動式選 Job 並看 log
+PS C:\Users\CYC\Downloads\AA01_repo> gh run view 18089015859 --job
+flag needs an argument: --job
+
+Usage:  gh run view [<run-id>] [flags]
+
+Flags:
+  -a, --attempt uint      The attempt number of the workflow run
+      --exit-status       Exit with non-zero status if run failed
+  -j, --job string        View a specific job ID from a run
+  -q, --jq expression     Filter JSON output using a jq expression
+      --json fields       Output JSON with the specified fields
+      --log               View full log for either a run or specific job
+      --log-failed        View the log for any failed steps in a run or specific job
+  -t, --template string   Format JSON output using a Go template; see "gh help formatting"
+  -v, --verbose           Show job steps
+  -w, --web               Open run in the browser
+
 PS C:\Users\CYC\Downloads\AA01_repo>
-PS C:\Users\CYC\Downloads\AA01_repo> # 若上面沒有自動跳出，你也可以手動看最新 1 筆
-PS C:\Users\CYC\Downloads\AA01_repo> gh run list --limit 1
-STATUS  TITLE                             WORKFLOW                 BRANCH  EVENT  ID           ELAPSED  AGE
-X       ci: add GAS deploy workflow (...  Push & Deploy GAS (f...  main    push   18087485482  29s      about 1 hour ago
-PS C:\Users\CYC\Downloads\AA01_repo> # 把 <RUN_ID> 換成上列顯示的 ID
-PS C:\Users\CYC\Downloads\AA01_repo> gh run view <RUN_ID> --log
-位於 線路:1 字元:13
-+ gh run view <RUN_ID> --log
-+             ~
-'<' 運算子保留供未來使用。
-    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
-    + FullyQualifiedErrorId : RedirectionNotSupported
-
-PS C:\Users\CYC\Downloads\AA01_repo> gh run view 18087485482 --log
-gas     UNKNOWN STEP    ﻿2025-09-29T06:07:16.3270004Z Current runner version: '2.328.0'
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3305412Z ##[group]Runner Image Provisioner
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3306929Z Hosted Compute Agent
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3307881Z Version: 20250912.392
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3308823Z Commit: d921fda672a98b64f4f82364647e2f10b2267d0b
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3310274Z Build Date: 2025-09-12T15:23:14Z
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3311300Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3312265Z ##[group]Operating System
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3313336Z Ubuntu
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3314236Z 24.04.3
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3315133Z LTS
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3316274Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3317186Z ##[group]Runner Image
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3318256Z Image: ubuntu-24.04
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3319205Z Version: 20250922.53.1
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3321041Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250922.53/images/ubuntu/Ubuntu2404-Readme.md
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3323997Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250922.53
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3326225Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3328200Z ##[group]GITHUB_TOKEN Permissions
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3331218Z Contents: read
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3332204Z Metadata: read
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3333087Z Packages: read
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3334693Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3337865Z Secret source: Actions
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3339622Z Prepare workflow directory
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3821452Z Prepare all required actions
-gas     UNKNOWN STEP    2025-09-29T06:07:16.3878641Z Getting action download info
-gas     UNKNOWN STEP    2025-09-29T06:07:16.6117050Z Download action repository 'actions/checkout@v4' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
-gas     UNKNOWN STEP    2025-09-29T06:07:16.6851199Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9184385Z Complete job name: gas
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9876786Z ##[group]Run actions/checkout@v4
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9877619Z with:
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9878054Z   repository: chenyuchuan0316/AA01
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9878724Z   token: ***
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9879119Z   ssh-strict: true
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9879545Z   ssh-user: git
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9879954Z   persist-credentials: true
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9880414Z   clean: true
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9880822Z   sparse-checkout-cone-mode: true
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9881311Z   fetch-depth: 1
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9881708Z   fetch-tags: false
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9882122Z   show-progress: true
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9882634Z   lfs: false
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9883018Z   submodules: false
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9883425Z   set-safe-directory: true
-gas     UNKNOWN STEP    2025-09-29T06:07:16.9884108Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.0939361Z Syncing repository: chenyuchuan0316/AA01
-gas     UNKNOWN STEP    2025-09-29T06:07:17.0941077Z ##[group]Getting Git version info
-gas     UNKNOWN STEP    2025-09-29T06:07:17.0941737Z Working directory is '/home/runner/work/AA01/AA01'
-gas     UNKNOWN STEP    2025-09-29T06:07:17.0942716Z [command]/usr/bin/git version
-gas     UNKNOWN STEP    2025-09-29T06:07:17.0999128Z git version 2.51.0
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1025404Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1041465Z Temporarily overriding HOME='/home/runner/work/_temp/f2c3bdb1-964e-461b-93b2-12da240eb32c' before making global git config changes
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1043906Z Adding repository directory to the temporary git global config as a safe directory
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1054820Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/AA01/AA01
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1088996Z Deleting the contents of '/home/runner/work/AA01/AA01'
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1092815Z ##[group]Initializing the repository
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1097603Z [command]/usr/bin/git init /home/runner/work/AA01/AA01
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1177960Z hint: Using 'master' as the name for the initial branch. This default branch name
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1179392Z hint: is subject to change. To configure the initial branch name to use in all
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1180346Z hint: of your new repositories, which will suppress this warning, call:
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1181570Z hint:
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1182119Z hint:      git config --global init.defaultBranch <name>
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1182863Z hint:
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1183859Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1186084Z hint: 'development'. The just-created branch can be renamed via this command:
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1187371Z hint:
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1188109Z hint:      git branch -m <name>
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1188947Z hint:
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1189964Z hint: Disable this message with "git config set advice.defaultBranchName false"
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1191574Z Initialized empty Git repository in /home/runner/work/AA01/AA01/.git/
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1195834Z [command]/usr/bin/git remote add origin https://github.com/chenyuchuan0316/AA01
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1229763Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1231003Z ##[group]Disabling automatic garbage collection
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1234539Z [command]/usr/bin/git config --local gc.auto 0
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1262900Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1264143Z ##[group]Setting up auth
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1270551Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1300631Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1602272Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1633696Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1849061Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1882704Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1900072Z ##[group]Fetching the repository
-gas     UNKNOWN STEP    2025-09-29T06:07:17.1902328Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0afab017d916390e916a33f3573d17ff5e5f7c66:refs/remotes/origin/main
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4275968Z From https://github.com/chenyuchuan0316/AA01
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4277314Z  * [new ref]         0afab017d916390e916a33f3573d17ff5e5f7c66 -> origin/main
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4306684Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4307915Z ##[group]Determining the checkout info
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4309402Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4314722Z [command]/usr/bin/git sparse-checkout disable
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4353741Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4381710Z ##[group]Checking out the ref
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4386097Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4485636Z Switched to a new branch 'main'
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4488448Z branch 'main' set up to track 'origin/main'.
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4494372Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4529028Z [command]/usr/bin/git log -1 --format=%H
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4550312Z 0afab017d916390e916a33f3573d17ff5e5f7c66
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4786234Z ##[group]Run actions/setup-node@v4
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4786787Z with:
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4787154Z   node-version: 18
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4787545Z   always-auth: false
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4787957Z   check-latest: false
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4788515Z   token: ***
-gas     UNKNOWN STEP    2025-09-29T06:07:17.4788886Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:17.7449179Z Found in cache @ /opt/hostedtoolcache/node/18.20.8/x64
-gas     UNKNOWN STEP    2025-09-29T06:07:17.7456605Z ##[group]Environment details
-gas     UNKNOWN STEP    2025-09-29T06:07:21.2402432Z node: v18.20.8
-gas     UNKNOWN STEP    2025-09-29T06:07:21.2403085Z npm: 10.8.2
-gas     UNKNOWN STEP    2025-09-29T06:07:21.2403439Z yarn: 1.22.22
-gas     UNKNOWN STEP    2025-09-29T06:07:21.2404606Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:21.3028389Z ##[group]Run npm ci
-gas     UNKNOWN STEP    2025-09-29T06:07:21.3028764Z npm ci
-gas     UNKNOWN STEP    2025-09-29T06:07:21.3070269Z shell: /usr/bin/bash -e {0}
-gas     UNKNOWN STEP    2025-09-29T06:07:21.3070580Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:26.8171611Z npm warn deprecated google-p12-pem@3.1.4: Package is no longer maintained
-gas     UNKNOWN STEP    2025-09-29T06:07:29.0752214Z
-gas     UNKNOWN STEP    2025-09-29T06:07:29.0753124Z added 269 packages, and audited 270 packages in 8s
-gas     UNKNOWN STEP    2025-09-29T06:07:29.0754077Z
-gas     UNKNOWN STEP    2025-09-29T06:07:29.0754530Z 87 packages are looking for funding
-gas     UNKNOWN STEP    2025-09-29T06:07:29.0754950Z   run `npm fund` for details
-gas     UNKNOWN STEP    2025-09-29T06:07:29.0762484Z
-gas     UNKNOWN STEP    2025-09-29T06:07:29.0762734Z found 0 vulnerabilities
-gas     UNKNOWN STEP    2025-09-29T06:07:29.1479865Z ##[group]Run npm test
-gas     UNKNOWN STEP    2025-09-29T06:07:29.1480146Z npm test
-gas     UNKNOWN STEP    2025-09-29T06:07:29.1514678Z shell: /usr/bin/bash -e {0}
-gas     UNKNOWN STEP    2025-09-29T06:07:29.1514944Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3107532Z
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3107930Z > gas-webapp@0.1.0 test
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3108416Z > echo "no tests yet"
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3108666Z
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3226217Z no tests yet
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3321279Z ##[group]Run npm i -g @google/clasp
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3321597Z npm i -g @google/clasp
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3355677Z shell: /usr/bin/bash -e {0}
-gas     UNKNOWN STEP    2025-09-29T06:07:29.3356024Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:35.4669056Z npm warn deprecated google-p12-pem@3.1.4: Package is no longer maintained
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3338660Z
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3339252Z added 269 packages in 8s
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3339645Z
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3339906Z 87 packages are looking for funding
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3340385Z   run `npm fund` for details
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3669667Z ##[group]Run node -e "const s=process.env.CLASPRC_JSON||''; console.log('len=',s.length,'mod4=',(s.replace(/\s+/g,'').length%4));"
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3670479Z node -e "const s=process.env.CLASPRC_JSON||''; console.log('len=',s.length,'mod4=',(s.replace(/\s+/g,'').length%4));"
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3707484Z shell: /usr/bin/bash -e {0}
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3707730Z env:
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3717015Z   CLASPRC_JSON: ***
-gas     UNKNOWN STEP    2025-09-29T06:07:37.3717232Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4013241Z len= 844 mod4= 0
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4083757Z ##[group]Run if [ -z "$CLASPRC_JSON" ]; then echo "CLASPRC_JSON is empty"; exit 1; fi
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4084599Z if [ -z "$CLASPRC_JSON" ]; then echo "CLASPRC_JSON is empty"; exit 1; fi
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4086105Z node -e "const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';let s=process.env.CLASPRC_JSON||'';s=s.replace(/\s+/g,'');fs.writeFileSync(p, Buffer.from(s,'base64'));"
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4087253Z test -s "$HOME/.clasprc.json"
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4087966Z node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8'))"
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4129276Z shell: /usr/bin/bash -e {0}
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4129645Z env:
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4147446Z   CLASPRC_JSON: ***
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4147768Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4809669Z ##[group]Run if [ ! -f ".clasp.json" ]; then
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4810056Z if [ ! -f ".clasp.json" ]; then
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4810481Z   if [ -z "$GAS_SCRIPT_ID" ]; then echo ".clasp.json missing and GAS_SCRIPT_ID not set"; exit 1; fi
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4810890Z   cat > .clasp.json <<EOF
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4811117Z   {
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4811317Z     "scriptId": "$GAS_SCRIPT_ID",
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4811584Z     "rootDir": "."
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4811822Z   }
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4811987Z   EOF
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4812154Z fi
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4812327Z cat .clasp.json
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4844579Z shell: /usr/bin/bash -e {0}
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4844815Z env:
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4844987Z   GAS_SCRIPT_ID:
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4845413Z ##[endgroup]
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4897153Z /home/runner/work/_temp/288c7f40-a381-4406-bec6-076c4d19382f.sh: line 10: warning: here-document at line 3 delimited by end-of-file (wanted `EOF')
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4898938Z /home/runner/work/_temp/288c7f40-a381-4406-bec6-076c4d19382f.sh: line 11: syntax error: unexpected end of file
-gas     UNKNOWN STEP    2025-09-29T06:07:37.4908674Z ##[error]Process completed with exit code 2.
-gas     UNKNOWN STEP    2025-09-29T06:07:37.5000882Z Post job cleanup.
-gas     UNKNOWN STEP    2025-09-29T06:07:37.5943394Z [command]/usr/bin/git version
-gas     UNKNOWN STEP    2025-09-29T06:07:37.5983504Z git version 2.51.0
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6029222Z Temporarily overriding HOME='/home/runner/work/_temp/08e659e3-87b9-4852-9a17-92a1f70fcb95' before making global git config changes
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6031088Z Adding repository directory to the temporary git global config as a safe directory
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6036204Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/AA01/AA01
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6078430Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6112435Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6353832Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6376853Z http.https://github.com/.extraheader
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6389881Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6421115Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
-gas     UNKNOWN STEP    2025-09-29T06:07:37.6769926Z Cleaning up orphan processes
-PS C:\Users\CYC\Downloads\AA01_repo> gh run view 18087485482
-
-X main Push & Deploy GAS (fixed deployment) · 18087485482
-Triggered via push about 1 hour ago
-
-JOBS
-X gas in 23s (ID 51460963859)
-  ✓ Set up job
-  ✓ Check out repository
-  ✓ Set up Node.js 18
-  ✓ Install dependencies
-  ✓ Run unit tests
-  ✓ Install clasp
-  ✓ Debug secret shape (length only)
-  ✓ Write ~/.clasprc.json (decode via Node) + validate
-  X Ensure .clasp.json exists
-  - Push to Apps Script
-  - Deploy with fixed Deployment ID
-  - Post Set up Node.js 18
-  ✓ Post Check out repository
-  ✓ Complete job
-
-ANNOTATIONS
-X Process completed with exit code 2.
-gas: .github#18
-
-
-To see what failed, try: gh run view 18087485482 --log-failed
-View this run on GitHub: https://github.com/chenyuchuan0316/AA01/actions/runs/18087485482
-PS C:\Users\CYC\Downloads\AA01_repo> gh run rerun 18087485482
-✓ Requested rerun of run 18087485482
-PS C:\Users\CYC\Downloads\AA01_repo> gh run watch --exit-status
-? Select a workflow run # 在 repo 根目錄git commit --allow-empty -m "ci: trigger gas deploy again"git push origin main# 看最近 5 筆 rungh run list --limit 5# 看某個 run 的某個 job 的 log（若 workflow 有多 job）gh run view 18087485482 --job 1 --log   # job 編號在摘要裡會列出  [Use arrows to move, type to filter]
-                                                                             
+PS C:\Users\CYC\Downloads\AA01_repo> # 直接把整個 run 的輸出持續刷新，跑完自動回傳 exit code
+PS C:\Users\CYC\Downloads\AA01_repo> gh run watch 18089015859 --interval 3 --exit-status
+Run Push & Deploy GAS (fixed deployment) (18089015859) has already completed with 'failure'
+PS C:\Users\CYC\Downloads\AA01_repo>

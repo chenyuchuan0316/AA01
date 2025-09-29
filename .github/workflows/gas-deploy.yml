@@ -3,6 +3,8 @@
 on:
   push:
     branches: [ "main" ]
+  # 手動觸發，避免 Re-run 舊 run 用到舊 YAML
+  workflow_dispatch:
 
 concurrency:
   group: gas-deploy-${{ github.ref }}
@@ -36,11 +38,9 @@ jobs:
         if: ${{ hashFiles('package.json') != '' }}
         run: npm test --if-present
 
-      # 改 1：安裝 clasp v2（穩定版）
       - name: Install clasp v2
         run: npm i -g @google/clasp@2
 
-      # 這段同時支援「原始 JSON」或「base64」的 CLASPRC_JSON
       - name: Write ~/.clasprc.json (decode/normalize/validate)
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
@@ -49,24 +49,17 @@ jobs:
           if [ -z "${CLASPRC_JSON:-}" ]; then
             echo "::error::Missing secret CLASPRC_JSON"; exit 1
           fi
-
-          # 1) 先嘗試當「原始 JSON」寫入；失敗才當 base64 解碼
           node -e "const fs=require('fs');
             const p=process.env.HOME+'/.clasprc.json';
             let s=process.env.CLASPRC_JSON||'';
             try { const j=JSON.parse(s); fs.writeFileSync(p, JSON.stringify(j,null,2)); }
             catch(e){ s=s.replace(/\s+/g,''); fs.writeFileSync(p, Buffer.from(s,'base64')); }"
-
-          # 2) 舊格式正規化（tokens.default -> token）
           node -e "const fs=require('fs');
             const p=process.env.HOME+'/.clasprc.json';
             const j=JSON.parse(fs.readFileSync(p,'utf8'));
             if (!j.token && j.tokens && j.tokens.default) { j.token = j.tokens.default; }
             fs.writeFileSync(p, JSON.stringify(j, null, 2));"
-
-          # 3) 驗證 + 複製到工作目錄
           test -s "$HOME/.clasprc.json"
-          node -e "JSON.parse(require('fs').readFileSync(process.env.HOME+'/.clasprc.json','utf8'))"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
       - name: Ensure .clasp.json exists (do not print it)
@@ -76,14 +69,28 @@ jobs:
           fi
           node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.exit(2)}"
 
-      # (若有 TS，請在這裡 npm run build，把 JS 輸出到 .clasp.json 的 rootDir)
-      # - name: Build
-      #   run: npm run build
+      # ---- 防呆 1：部署前快照 + 確認欲保護的部署在清單中（若有設定） ----
+      - name: Snapshot deployments (before)
+        run: |
+          clasp list-deployments --json > before.json || echo "[]" > before.json
 
+      - name: Ensure preserved deployments exist (before)  # 不存在也先放行，只警告
+        env:
+          PRESERVE_IDS: ${{ vars.PRESERVE_DEPLOYMENT_IDS }}
+        run: |
+          node -e "const fs=require('fs');
+          const ids=(process.env.PRESERVE_IDS||'').split(/[,\s]+/).filter(Boolean);
+          if(!ids.length){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0); }
+          const b=JSON.parse(fs.readFileSync('before.json','utf8'));
+          const has=id=>Array.isArray(b)&&b.some(x=>(x.deploymentId||x.deployment_id)===id);
+          let miss=ids.filter(id=>!has(id));
+          if(miss.length){ console.warn('WARN: preserved IDs not found BEFORE deploy:', miss.join(',')); } else { console.log('All preserved IDs exist BEFORE deploy'); }"
+
+      # ---- 正式 push 原始碼 ----
       - name: Push to Apps Script
         run: clasp push -f
 
-      # 改 2：clasp v2 的部署語法
+      # ---- 僅覆蓋：固定 Deployment ID ----
       - name: Deploy with fixed Deployment ID (v2)
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
@@ -92,10 +99,36 @@ jobs:
           if [ -z "${DEPLOY_ID:-}" ]; then
             echo "::error::GAS_DEPLOYMENT_ID not set"; exit 1
           fi
+          # 只更新你指定的這筆，不新建
           clasp deploy --deploymentId "$DEPLOY_ID" -d "CI ${GITHUB_SHA}"
 
-          # 供稽核
-          clasp list
-          clasp versions
-          clasp deploy --deploymentId "$DEPLOY_ID" -d "CI ${GITHUB_SHA}"
+      # ---- 防呆 2：部署後檢查沒有多一筆、而且保護的部署仍存在 ----
+      - name: Verify no new deployment was created
+        env:
+          DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
+        run: |
+          set -e
+          clasp list-deployments --json > after.json || echo "[]" > after.json
+          node -e "const fs=require('fs');
+          const b=JSON.parse(fs.readFileSync('before.json','utf8'));
+          const a=JSON.parse(fs.readFileSync('after.json','utf8'));
+          const id=process.env.DEPLOY_ID;
+          const cntB=Array.isArray(b)?b.length:0;
+          const cntA=Array.isArray(a)?a.length:0;
+          const has=a.some(x=>(x.deploymentId||x.deployment_id)===id);
+          console.log('before=',cntB,'after=',cntA,'hasTarget=',has);
+          if (!has) { console.error('Target deployment ID not found AFTER deploy'); process.exit(1); }
+          if (cntA > cntB) { console.error('New deployment appears to have been created!'); process.exit(1); }"
 
+      - name: Verify preserved deployments still exist (after)
+        env:
+          PRESERVE_IDS: ${{ vars.PRESERVE_DEPLOYMENT_IDS }}
+        run: |
+          node -e "const fs=require('fs');
+          const ids=(process.env.PRESERVE_IDS||'').split(/[,\s]+/).filter(Boolean);
+          if(!ids.length){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0); }
+          const a=JSON.parse(fs.readFileSync('after.json','utf8'));
+          const has=id=>Array.isArray(a)&&a.some(x=>(x.deploymentId||x.deployment_id)===id);
+          let miss=ids.filter(id=>!has(id));
+          if(miss.length){ console.error('Preserved deployments disappeared AFTER deploy:', miss.join(',')); process.exit(1); }
+          console.log('All preserved IDs exist AFTER deploy');"
