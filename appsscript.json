@@ -1,7 +1,10 @@
 {
   "timeZone": "Asia/Taipei",
-  "dependencies": {
-  },
-  "exceptionLogging": "STACKDRIVER",
-  "runtimeVersion": "V8"
+  "dependencies": {},
+  "exceptionLogging": "CLOUD_LOGGING",
+  "runtimeVersion": "V8",
+  "webapp": {
+    "access": "DOMAIN",             // 也可用: "ANYONE" 或 "ANYONE_ANONYMOUS"
+    "executeAs": "USER_DEPLOYING"   // "USER_DEPLOYING"=我；"USER_ACCESSING"=存取者
+  }
 }

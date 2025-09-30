@@ -109,6 +109,15 @@ jobs:
         run: |
           node -e "const fs=require('fs'),id=process.env.DEPLOY_ID; const arr=JSON.parse(fs.readFileSync('before.json','utf8')); if(!Array.isArray(arr) || !arr.includes(id)){console.error('Target deployment ID NOT found in THIS script BEFORE deploy. IDs=',arr); process.exit(1)} console.log('Target deployment exists BEFORE deploy.');"
 
+      - name: Guard: manifest must include webapp block
+        run: |
+          node -e "const j=require('./appsscript.json');
+            if(!j.webapp || !j.webapp.access || !j.webapp.executeAs){
+              console.error('appsscript.json missing `webapp` config'); process.exit(1)
+            }
+            console.log('webapp OK:', j.webapp)"
+      
+          
       - name: Push to Apps Script
         run: clasp push -f
 
