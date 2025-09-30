@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { google } from 'googleapis';
+import { pathToFileURL } from 'node:url';
 
 // -----------------------------
 // 讀取必要環境變數（由 GitHub Secrets 注入）
@@ -188,7 +189,7 @@ function resolveClaspRootDir(cwd) {
   }
 }
 
-function buildFilesFromRepoRoot() {
+export function buildFilesFromRepoRoot() {
   const cwd = process.cwd();
   const files = [];
   const usedNames = new Map(); // name → { type, origin }
@@ -281,6 +282,15 @@ function buildFilesFromRepoRoot() {
     console.warn('⚠️ 找不到任何 .gs/.js/.html；仍會只更新 manifest。');
   }
 
+  const sidebarHtml = files.find(
+    f => f.type === 'HTML' && f.name === 'Sidebar'
+  );
+  if (!sidebarHtml) {
+    throw new Error(
+      '找不到 Sidebar.html（請確認檔案存在並位於 rootDir 可被部署的範圍內）'
+    );
+  }
+
   return files;
 }
 
@@ -300,7 +310,7 @@ function tryGetWebAppUrl(deployment) {
 // -----------------------------
 // 主流程
 // -----------------------------
-(async () => {
+async function main() {
   const script = await getScriptClient();
 
   // 1) 上傳原始碼
@@ -396,9 +406,23 @@ function tryGetWebAppUrl(deployment) {
   } else {
     console.log('ℹ️ 此部署沒有 Web App 進入點（Add-on / Library 等情境屬正常）');
   }
-})().catch(err => {
-  // 盡量輸出 API 詳細錯誤
-  const data = err?.response?.data || err;
-  console.error('❌ DEPLOY ERROR\n', JSON.stringify(data, null, 2));
-  process.exit(1);
-});
+}
+
+const isCliInvocation = (() => {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return import.meta.url === pathToFileURL(entry).href;
+  } catch (err) {
+    return false;
+  }
+})();
+
+if (isCliInvocation) {
+  main().catch(err => {
+    // 盡量輸出 API 詳細錯誤
+    const data = err?.response?.data || err;
+    console.error('❌ DEPLOY ERROR\n', JSON.stringify(data, null, 2));
+    process.exit(1);
+  });
+}
