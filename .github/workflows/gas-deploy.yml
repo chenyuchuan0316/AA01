@@ -60,7 +60,7 @@ jobs:
           node -e "console.log('scriptId in repo =', require('./.clasp.json').scriptId)"
 
 
-      - name: Debug: show who can see deployments (quick probe)
+      - name: "Debug: show who can see deployments (quick probe)"
         run: |
           set -e
           echo "clasp version ->"; clasp --version || true
