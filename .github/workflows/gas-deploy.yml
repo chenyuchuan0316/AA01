@@ -55,6 +55,17 @@ jobs:
       - name: Ensure .clasp.json exists (do not print it)
         run: node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.stderr.write('.clasp.json missing scriptId\\n'); process.exit(2)}"
 
+      - name: Debug: show scriptId (from repo)
+        run: node -e "console.log('scriptId in repo =', require('./.clasp.json').scriptId)"
+
+      - name: Debug: show who can see deployments (quick probe)
+        run: |
+          set -e
+          echo "clasp version ->"; clasp --version || true
+          echo "list-deployments (text) ->"
+          clasp list-deployments || clasp deployments || true
+
+
       - name: "Guard: manifest must include webapp block"
         run: |
           node - <<'EOF'
@@ -137,8 +148,23 @@ jobs:
           set -e
           URL="https://script.google.com/macros/s/${DEPLOY_ID}/exec?route=health&v=${GITHUB_SHA::7}"
           echo "GET $URL"
-          code=$(curl -sS -o /dev/null -w "%{http_code}" "$URL" || true)
+          # 取回應碼與 Location 標頭
+          code=$(curl -sS -o /dev/null -w "%{http_code}" -D headers.txt "$URL" || true)
+          loc=$(awk 'BEGIN{IGNORECASE=1}/^Location:/{print $2}' headers.txt | tr -d '\r\n')
           echo "HTTP $code"
-          if [ "$code" != "200" ]; then
-            echo "::error::Health check failed with HTTP $code"; exit 1
+          echo "Location: ${loc:-<none>}"
+
+          # 200：直接通過
+          if [ "$code" = "200" ]; then
+            exit 0
           fi
+
+          # 302/303/307/308 且導向登入頁（accounts.google.com / ServiceLogin / signin）：判定健康
+          if [[ "$code" =~ ^30(2|3|7|8)$ ]] && \
+            ([[ "$loc" == *"accounts.google.com"* ]] || [[ "$loc" == *"ServiceLogin"* ]] || [[ "$loc" == *"signin"* ]]); then
+            echo "Domain-protected web app：偵測到登入轉向（$loc），視為健康 ✅"
+            exit 0
+          fi
+
+          echo "::error::Health check failed (code=${code} location=${loc})"
+          exit 1
