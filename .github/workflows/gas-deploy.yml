@@ -160,6 +160,7 @@ jobs:
         with:
           node-version: 18
 
+
       - name: "Install latest clasp"
         run: npm i -g @google/clasp
 
@@ -204,6 +205,7 @@ jobs:
             fi
           fi
           rm -f "$log"
+
 
       - name: "Health check (PROD)"
         env:
