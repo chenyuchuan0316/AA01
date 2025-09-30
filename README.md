@@ -52,6 +52,28 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
    - 程式碼變更後重複步驟 4 重新部署。Web App URL 不變，可直接分享給使用者作業。  
    - 建議將以上指令整合進 GitHub Actions，讓主分支合併時自動部署。
 
+## 開發環境需求
+
+- Node.js ≥ 18.20.0（CI 目前使用 18.20.8）
+- npm ≥ 10.8.0（CI 目前使用 10.8.2）
+- 安裝依賴：`npm install`
+- 單元測試：`npm test -- --runInBand`（Jest 30 需要 Node 18）
+- 健康檢查：`npm run e2e`（需要 `TEST_DEPLOYMENT_ID`；未設定時腳本會輸出跳過訊息並以 0 結束）
+
+## npm 套件維護與自動升版
+
+- `npm-outdated` workflow：每週一 01:30 UTC 產出過時套件清單、Summary 與 `outdated.json`。可從 Actions 介面手動觸發以建立升版規劃。
+- `npm auto upgrade` workflow：支援 `safe`（預設）與 `major` 兩種策略。Safe 策略會執行 `npm update`，Major 策略則以 `npm-check-updates` 調整 range 後重新安裝。
+- 分支命名遵循 `chore/npm-upgrade/<YYYYMMDD>-safe` 或 `chore/npm-upgrade/<YYYYMMDD>-major`，PR 標題固定為 `chore(deps): npm <strategy> upgrade`，內文包含 Before / After 過時表格。
+- 若預設的 `GITHUB_TOKEN` 因組織權限受到限制，可在 Repo Secrets 建立 `NPM_UPGRADE_TOKEN`，內容為擁有 `contents:write`、`pull_requests:write` 權限的 Fine-grained PAT。工作流程會自動優先使用該 Token 以避免 `403` 推送錯誤。
+
+## 金鑰與憑證設定（Service Account / OIDC）
+
+- **首選 OIDC / Workload Identity Federation**：在 GitHub Actions 設定 `GAS_USE_ADC=true` 並配置 GCP 提供的 `GOOGLE_WORKLOAD_IDENTITY_PROVIDER`、`GOOGLE_SERVICE_ACCOUNT` Secrets，`google-auth-library` 會自動為 `gas-deploy.mjs` 取得短期憑證。
+- **Service Account JSON**：提供 `GAS_SERVICE_ACCOUNT_JSON`（支援 JSON 文字或 Base64 字串）或設定 `GOOGLE_APPLICATION_CREDENTIALS` 指向 JSON 檔案，腳本會自動套用 Script API 所需 scopes。
+- **End-User OAuth**：仍可維持舊流程，使用 `GAS_CLIENT_ID`、`GAS_CLIENT_SECRET` 與 `GAS_OAUTH_REFRESH_TOKEN`。建議僅在需要代表真人帳號部署時使用。
+- P12 憑證已淘汰：請改用 Service Account JSON 或 OIDC，並透過 Secrets 管理憑證。
+
 > 小提醒：`get-refresh-token.mjs` 預設使用 `http://localhost:53682/oauth2callback` 監聽授權回呼，如遇埠號被佔用可改以 `GAS_OAUTH_REDIRECT_PORT=XXXX node get-refresh-token.mjs` 指定其他埠號。
 
 ## Troubleshooting（常見問題排除）

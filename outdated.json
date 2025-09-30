@@ -1,0 +1,9 @@
+{
+  "@google/clasp": {
+    "current": "2.5.0",
+    "wanted": "2.5.0",
+    "latest": "3.0.6-alpha",
+    "dependent": "AA01",
+    "location": "/workspace/AA01/node_modules/@google/clasp"
+  }
+}

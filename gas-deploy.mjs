@@ -22,23 +22,73 @@ const {
 } = process.env;
 
 function need(name) {
-  if (!process.env[name]) {
+  const value = process.env[name];
+  if (!value) {
     console.error(`❌ 缺少環境變數 ${name}。請在 GitHub Secrets 設定：${name}`);
     process.exit(1);
   }
+  return value;
 }
-need('SCRIPT_ID');
-need('GAS_CLIENT_ID');
-need('GAS_CLIENT_SECRET');
-need('GAS_OAUTH_REFRESH_TOKEN');
+const scriptId = need('SCRIPT_ID');
 
-// -----------------------------
-// OAuth2 用戶端
-// -----------------------------
-const oauth2 = new google.auth.OAuth2(GAS_CLIENT_ID, GAS_CLIENT_SECRET);
-oauth2.setCredentials({ refresh_token: GAS_OAUTH_REFRESH_TOKEN });
+const SCOPES = Object.freeze([
+  'https://www.googleapis.com/auth/script.projects',
+  'https://www.googleapis.com/auth/script.deployments',
+]);
 
-const script = google.script({ version: 'v1', auth: oauth2 });
+function decodeServiceAccountJson(raw) {
+  const trimmed = raw.trim();
+  const text = trimmed.startsWith('{')
+    ? trimmed
+    : Buffer.from(trimmed, 'base64').toString('utf8');
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error(
+      `GAS_SERVICE_ACCOUNT_JSON 不是有效 JSON：${error.message}`
+    );
+  }
+}
+
+async function resolveAuthClient() {
+  if (process.env.GAS_SERVICE_ACCOUNT_JSON) {
+    const credentials = decodeServiceAccountJson(
+      process.env.GAS_SERVICE_ACCOUNT_JSON
+    );
+    const client = google.auth.fromJSON(credentials);
+    client.scopes = SCOPES;
+    console.log('🔑 使用 Service Account JSON（GAS_SERVICE_ACCOUNT_JSON）。');
+    return client;
+  }
+
+  const useAdc =
+    process.env.GAS_USE_ADC === 'true' ||
+    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+    process.env.GOOGLE_GHA_WORKLOAD_IDENTITY_PROVIDER;
+  if (useAdc) {
+    console.log('🔑 使用 Application Default Credentials (ADC)。');
+    return google.auth.getClient({ scopes: SCOPES });
+  }
+
+  const clientId = need('GAS_CLIENT_ID');
+  const clientSecret = need('GAS_CLIENT_SECRET');
+  const refreshToken = need('GAS_OAUTH_REFRESH_TOKEN');
+
+  const oauth2 = new google.auth.OAuth2(clientId, clientSecret);
+  oauth2.setCredentials({ refresh_token: refreshToken });
+  console.log('🔑 使用 OAuth2 Refresh Token（GAS_CLIENT_ID/GAS_CLIENT_SECRET）。');
+  return oauth2;
+}
+
+let scriptClientPromise;
+async function getScriptClient() {
+  if (!scriptClientPromise) {
+    scriptClientPromise = resolveAuthClient().then(auth =>
+      google.script({ version: 'v1', auth })
+    );
+  }
+  return scriptClientPromise;
+}
 
 // -----------------------------
 // 從 repo 根目錄收集檔案 → Apps Script API 的 files[]
@@ -138,17 +188,19 @@ function tryGetWebAppUrl(deployment) {
 // 主流程
 // -----------------------------
 (async () => {
+  const script = await getScriptClient();
+
   // 1) 上傳原始碼
   const files = buildFilesFromRepoRoot();
   await script.projects.updateContent({
-    scriptId: SCRIPT_ID,
+    scriptId,
     requestBody: { files },
   });
   console.log('✅ updateContent 完成（已上傳原始碼）');
 
   // 2) 建立版本
   const v = await script.projects.versions.create({
-    scriptId: SCRIPT_ID,
+    scriptId,
     requestBody: { description: VERSION_DESC },
   });
   const versionNumber = v.data.versionNumber;
@@ -160,7 +212,7 @@ function tryGetWebAppUrl(deployment) {
 
   if (!deploymentIdToUse) {
     // 沒指定就查看既有部署，抓「最近更新」那筆
-    const list = await script.projects.deployments.list({ scriptId: SCRIPT_ID });
+    const list = await script.projects.deployments.list({ scriptId });
     const deployments = list.data.deployments || [];
     const head = deployments
       .filter(d => d.deploymentId)
@@ -183,7 +235,7 @@ function tryGetWebAppUrl(deployment) {
   if (deploymentIdToUse) {
     // update：body 放在 deploymentConfig
     const upd = await script.projects.deployments.update({
-      scriptId: SCRIPT_ID,
+      scriptId,
       deploymentId: deploymentIdToUse,
       requestBody: {
         deploymentConfig: {
@@ -197,7 +249,7 @@ function tryGetWebAppUrl(deployment) {
 
     // 取回 URL（若為 Web App）
     const got = await script.projects.deployments.get({
-      scriptId: SCRIPT_ID,
+      scriptId,
       deploymentId: finalDeploymentId,
     });
     webAppUrl = tryGetWebAppUrl(got.data);
@@ -206,7 +258,7 @@ function tryGetWebAppUrl(deployment) {
   } else {
     // create：扁平欄位（不要放 deploymentConfig）
     const crt = await script.projects.deployments.create({
-      scriptId: SCRIPT_ID,
+      scriptId,
       requestBody: {
         versionNumber,
         manifestFileName: 'appsscript', // 注意：這裡不是 appsscript.json
@@ -217,7 +269,7 @@ function tryGetWebAppUrl(deployment) {
 
     // 取回 URL（若為 Web App）
     const got = await script.projects.deployments.get({
-      scriptId: SCRIPT_ID,
+      scriptId,
       deploymentId: finalDeploymentId,
     });
     webAppUrl = tryGetWebAppUrl(got.data);
