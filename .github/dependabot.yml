@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "02:00"
+      timezone: Asia/Taipei
+    open-pull-requests-limit: 10
+    groups:
+      glob:
+        patterns:
+          - "glob"
+      puppeteer:
+        patterns:
+          - "puppeteer"
+    reviewers: []

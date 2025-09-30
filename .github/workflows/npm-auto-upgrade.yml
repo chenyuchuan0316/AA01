@@ -1,0 +1,116 @@
+name: npm auto upgrade
+
+on:
+  schedule:
+    - cron: '30 1 * * 1'
+  workflow_dispatch:
+    inputs:
+      strategy:
+        description: Select upgrade strategy
+        type: choice
+        default: safe
+        options:
+          - safe
+          - major
+
+jobs:
+  upgrade:
+    name: Apply ${{ github.event.inputs.strategy || 'safe' }} updates
+    runs-on: ubuntu-latest
+    env:
+      STRATEGY: ${{ github.event.inputs.strategy || 'safe' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Capture outdated (before)
+        run: npm outdated --json > before.json || true
+
+      - name: Run safe updates
+        if: env.STRATEGY == 'safe'
+        run: npm update --no-audit --no-fund
+
+      - name: Run major updates with npm-check-updates
+        if: env.STRATEGY == 'major'
+        run: |
+          npx npm-check-updates@latest --target=latest -u
+          npm install --no-audit --no-fund
+
+      - name: Re-install dependencies to sync lockfile
+        if: env.STRATEGY == 'safe'
+        run: npm install --no-audit --no-fund
+
+      - name: Capture outdated (after)
+        run: npm outdated --json > after.json || true
+
+      - name: Run unit tests
+        run: npm test -- --runInBand
+
+      - name: Run E2E smoke tests (if configured)
+        run: npm run e2e
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+
+      - name: Build upgrade summary
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const load = path => {
+            if (!fs.existsSync(path)) return {};
+            const raw = fs.readFileSync(path, 'utf8').trim();
+            return raw ? JSON.parse(raw) : {};
+          };
+          const toTable = data => {
+            const entries = Object.entries(data).sort((a, b) => a[0].localeCompare(b[0]));
+            if (!entries.length) return '✅ No outdated packages.\n';
+            let table = '| Package | Current | Wanted | Latest |\n| --- | --- | --- | --- |\n';
+            for (const [name, info] of entries) {
+              table += `| ${name} | ${info.current ?? '-'} | ${info.wanted ?? '-'} | ${info.latest ?? '-'} |\n`;
+            }
+            return table;
+          };
+          const before = load('before.json');
+          const after = load('after.json');
+          const strategy = process.env.STRATEGY ?? 'safe';
+          let md = `# npm ${strategy} upgrade\n\n`;
+          md += '## Before\n';
+          md += `${toTable(before)}\n`;
+          md += '## After\n';
+          md += `${toTable(after)}\n`;
+          fs.writeFileSync('upgrade-summary.md', md);
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+          if (summaryPath) {
+            fs.writeFileSync(summaryPath, md);
+          }
+          NODE
+
+      - name: Upload outdated comparison
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-upgrade-${{ env.STRATEGY }}
+          path: |
+            before.json
+            after.json
+            upgrade-summary.md
+          if-no-files-found: warn
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(deps): npm ${{ env.STRATEGY }} upgrade"
+          branch: chore/npm-upgrade/${{ env.STRATEGY }}
+          title: "chore(deps): npm ${{ env.STRATEGY }} upgrade"
+          body-path: upgrade-summary.md
+          labels: dependencies, automated-pr
