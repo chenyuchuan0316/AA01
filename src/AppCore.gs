@@ -36,8 +36,10 @@ function doGet(e) {
   try {
     var p = (e && e.parameter) || {};
     if (p.route === 'health') {
+      var env = (typeof CI_ENV !== 'undefined') ? CI_ENV : 'UNKNOWN';
+      var sha = (typeof CI_SHA_SHORT !== 'undefined') ? CI_SHA_SHORT : 'local';
       return ContentService
-        .createTextOutput(JSON.stringify({ ok: true, ts: new Date().toISOString() }))
+        .createTextOutput(JSON.stringify({ ok: true, env: env, sha: sha, ts: new Date().toISOString() }))
         .setMimeType(ContentService.MimeType.JSON);
     }
     // 你原本的主畫面輸出
