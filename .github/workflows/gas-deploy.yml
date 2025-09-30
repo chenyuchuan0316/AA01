@@ -147,7 +147,7 @@ jobs:
           PRESERVE_ID: ${{ vars.PRESERVE_DEPLOYMENT_ID }}
         run: node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('after.json','utf8')); const env=(process.env.PRESERVE_IDS||process.env.PRESERVE_ID||'').trim(); if(!env){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0);} const ids=env.split(/[,\s]+/).filter(Boolean); const miss=ids.filter(id=>!a.includes(id)); if(miss.length){ console.error('Preserved deployments disappeared:', miss.join(',')); process.exit(1);} console.log('All preserved IDs exist AFTER deploy');"
 
-      - name: "Post-deploy health check (GET /exec?route=health)""
+      - name: "Post-deploy health check (GET /exec?route=health)"
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
