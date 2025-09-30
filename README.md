@@ -10,6 +10,11 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 
 > 更新日期：2025-10-21
 
+## Environments
+
+- **TEST**: `https://script.google.com/macros/s/AKfycbw1-3KBUwTLymBMK6pzNrvvaW9bxfNOGKPSNhsscssDwc9buXAJ3sUTbhljLiHcEDrh/exec?route=health`
+- **PROD**: `https://script.google.com/macros/s/AKfycbyDt6M-PYyU-ANWU2fQrLF4w_9T_f1ADZLFNNInG0_orf4LhmnLHt8peBen8v2mTY-c/exec?route=health`
+
 ## 快速開始（Quickstart）
 
 1. **複製專案檔案**：在目標 Google 文件中開啟 `Extensions → Apps Script`，將本儲存庫的 `.gs` 與 `Sidebar.html` 內容貼入新建專案。
