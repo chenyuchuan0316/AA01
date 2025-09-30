@@ -24,6 +24,7 @@ jobs:
     env:
       STRATEGY: ${{ github.event.inputs.strategy || 'safe' }}
       PR_TOKEN: ${{ secrets.NPM_UPGRADE_TOKEN != '' && secrets.NPM_UPGRADE_TOKEN || github.token }}
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

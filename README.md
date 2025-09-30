@@ -67,6 +67,7 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 - 分支命名遵循 `chore/npm-upgrade/<YYYYMMDD>-safe` 或 `chore/npm-upgrade/<YYYYMMDD>-major`，PR 標題固定為 `chore(deps): npm <strategy> upgrade`，內文包含 Before / After 過時表格。
 - 若預設的 `GITHUB_TOKEN` 因組織權限受到限制，可在 Repo Secrets 建立 `NPM_UPGRADE_TOKEN`，內容為擁有 `contents:write`、`pull_requests:write` 權限的 Fine-grained PAT。工作流程會自動優先使用該 Token 以避免 `403` 推送錯誤。
 
+
 ## 金鑰與憑證設定（Service Account / OIDC）
 
 - **首選 OIDC / Workload Identity Federation**：在 GitHub Actions 設定 `GAS_USE_ADC=true` 並配置 GCP 提供的 `GOOGLE_WORKLOAD_IDENTITY_PROVIDER`、`GOOGLE_SERVICE_ACCOUNT` Secrets，`google-auth-library` 會自動為 `gas-deploy.mjs` 取得短期憑證。
