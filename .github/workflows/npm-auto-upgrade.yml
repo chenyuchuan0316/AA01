@@ -13,6 +13,11 @@ on:
           - safe
           - major
 
+permissions:
+  contents: write
+  pull-requests: write
+
+
 jobs:
   upgrade:
     name: Apply ${{ github.event.inputs.strategy || 'safe' }} updates
