@@ -1,3 +1,7 @@
+permissions:
+  contents: write
+  pull-requests: write
+
 name: npm auto upgrade
 
 on:
@@ -12,10 +16,6 @@ on:
         options:
           - safe
           - major
-
-permissions:
-  contents: write
-  pull-requests: write
 
 jobs:
   upgrade:
@@ -145,7 +145,7 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ env.PR_TOKEN }}
+          token: ${{ github.token }}
           commit-message: ${{ steps.metadata.outputs.commit_message }}
           branch: ${{ steps.metadata.outputs.branch }}
           title: ${{ steps.metadata.outputs.title }}
