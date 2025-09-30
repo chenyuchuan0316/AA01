@@ -111,7 +111,7 @@ jobs:
 
       - name: Guard: manifest must include webapp block
         run: |
-          node -e "const j=require('./appsscript.json'); if(!j.webapp||!j.webapp.access||!j.webapp.executeAs){console.error('appsscript.json missing webapp config'); process.exit(1);} console.log('webapp OK:', j.webapp);"
+          node -e "const j=require('./appsscript.json'); if(!j.webapp||!j.webapp.access||!j.webapp.executeAs){console.error('appsscript.json missing webapp config');process.exit(1);} console.log('webapp OK:', j.webapp);"
 
       
           
