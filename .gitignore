@@ -16,3 +16,6 @@ sa.json
 !.github
 !.github/workflows
 !.github/workflows/*.yml
+
+# CI-injected metadata file (created during workflow before clasp push)
+00_ci_env.gs
