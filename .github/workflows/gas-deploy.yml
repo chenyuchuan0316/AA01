@@ -55,8 +55,19 @@ jobs:
       - name: Ensure .clasp.json exists (do not print it)
         run: node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.stderr.write('.clasp.json missing scriptId\\n'); process.exit(2)}"
 
-      - name: Guard: manifest must include webapp block
-        run: node -e "const j=require('./appsscript.json'); if(!j.webapp||!j.webapp.access||!j.webapp.executeAs){console.error('appsscript.json missing webapp config'); process.exit(1);} console.log('webapp OK:', j.webapp);"
+      - name: "Guard: manifest must include webapp block"
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const content = fs.readFileSync('appsscript.json', 'utf8');
+          const manifest = JSON.parse(content);
+          if (!manifest.webapp || !manifest.webapp.access || !manifest.webapp.executeAs) {
+            console.error('appsscript.json missing webapp config');
+            process.exit(1);
+          }
+          console.log('webapp OK:', manifest.webapp);
+          EOF
+
 
 
       # Sanity：顯示部署 ID 長度與 SHA256 指紋
