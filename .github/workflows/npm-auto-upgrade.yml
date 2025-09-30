@@ -17,13 +17,14 @@ permissions:
   contents: write
   pull-requests: write
 
-
 jobs:
   upgrade:
     name: Apply ${{ github.event.inputs.strategy || 'safe' }} updates
     runs-on: ubuntu-latest
     env:
       STRATEGY: ${{ github.event.inputs.strategy || 'safe' }}
+      PR_TOKEN: ${{ secrets.NPM_UPGRADE_TOKEN != '' && secrets.NPM_UPGRADE_TOKEN || github.token }}
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -58,6 +59,28 @@ jobs:
 
       - name: Capture outdated (after)
         run: npm outdated --json > after.json || true
+
+      - name: Derive branch metadata
+        id: metadata
+        run: |
+          set -euo pipefail
+          today="$(date -u +%Y%m%d)"
+          strategy="${STRATEGY:-safe}"
+          case "$strategy" in
+            safe)
+              branch="chore/npm-upgrade/${today}-safe"
+              ;;
+            major)
+              branch="chore/npm-upgrade/${today}-major"
+              ;;
+            *)
+              branch="chore/npm-upgrade/${today}-${strategy}"
+              ;;
+          esac
+          title="chore(deps): npm ${strategy} upgrade"
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
+          echo "title=${title}" >> "$GITHUB_OUTPUT"
+          echo "commit_message=${title}" >> "$GITHUB_OUTPUT"
 
       - name: Run unit tests
         run: npm test -- --runInBand
@@ -113,9 +136,9 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore(deps): npm ${{ env.STRATEGY }} upgrade"
-          branch: chore/npm-upgrade/${{ env.STRATEGY }}
-          title: "chore(deps): npm ${{ env.STRATEGY }} upgrade"
+          token: ${{ env.PR_TOKEN }}
+          commit-message: ${{ steps.metadata.outputs.commit_message }}
+          branch: ${{ steps.metadata.outputs.branch }}
+          title: ${{ steps.metadata.outputs.title }}
           body-path: upgrade-summary.md
           labels: dependencies, automated-pr

@@ -60,6 +60,14 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 - 單元測試：`npm test -- --runInBand`（Jest 30 需要 Node 18）
 - 健康檢查：`npm run e2e`（需要 `TEST_DEPLOYMENT_ID`；未設定時腳本會輸出跳過訊息並以 0 結束）
 
+## npm 套件維護與自動升版
+
+- `npm-outdated` workflow：每週一 01:30 UTC 產出過時套件清單、Summary 與 `outdated.json`。可從 Actions 介面手動觸發以建立升版規劃。
+- `npm auto upgrade` workflow：支援 `safe`（預設）與 `major` 兩種策略。Safe 策略會執行 `npm update`，Major 策略則以 `npm-check-updates` 調整 range 後重新安裝。
+- 分支命名遵循 `chore/npm-upgrade/<YYYYMMDD>-safe` 或 `chore/npm-upgrade/<YYYYMMDD>-major`，PR 標題固定為 `chore(deps): npm <strategy> upgrade`，內文包含 Before / After 過時表格。
+- 若預設的 `GITHUB_TOKEN` 因組織權限受到限制，可在 Repo Secrets 建立 `NPM_UPGRADE_TOKEN`，內容為擁有 `contents:write`、`pull_requests:write` 權限的 Fine-grained PAT。工作流程會自動優先使用該 Token 以避免 `403` 推送錯誤。
+
+
 ## 金鑰與憑證設定（Service Account / OIDC）
 
 - **首選 OIDC / Workload Identity Federation**：在 GitHub Actions 設定 `GAS_USE_ADC=true` 並配置 GCP 提供的 `GOOGLE_WORKLOAD_IDENTITY_PROVIDER`、`GOOGLE_SERVICE_ACCOUNT` Secrets，`google-auth-library` 會自動為 `gas-deploy.mjs` 取得短期憑證。
