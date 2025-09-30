@@ -117,32 +117,13 @@ jobs:
           set -e
           [ -n "${TEST_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing TEST_DEPLOYMENT_ID"; exit 1; }
           [ -n "${NEW_VER:-}" ] || { echo "::error::Missing NEW_VER"; exit 1; }
-          set -o pipefail
-          set +e
-          log=$(mktemp)
-          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[TEST] CI ${GITHUB_SHA::7}" 2>&1 | tee "$log"
-          status=$?
-          set -e
-          set +o pipefail
-          if [ "$status" -ne 0 ]; then
-            if grep -q "Read-only deployments may not be modified" "$log"; then
-              echo "::warning::TEST deployment ${TEST_DEPLOYMENT_ID} is read-only; skipping redeploy."
-              echo "TEST_DEPLOYMENT_READONLY=true" >> "$GITHUB_ENV"
-            else
-              exit "$status"
-            fi
-          fi
-          rm -f "$log"
-
+          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[TEST] CI ${GITHUB_SHA::7}"
       # AFTER snapshot (TEST)
       - name: "Verify deployment points to NEW_VER (TEST)"
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
           set -e
-          if [ "${TEST_DEPLOYMENT_READONLY:-}" = "true" ]; then
-            echo "Skipping verification because deployment is read-only"; exit 0;
-          fi
           clasp deployments > after.txt || true
           node -e "
             const fs=require('fs');
@@ -267,31 +248,14 @@ jobs:
           set -e
           [ -n "${GAS_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing GAS_DEPLOYMENT_ID"; exit 1; }
           [ -n "${NEW_VER:-}" ] || { echo "::error::Missing NEW_VER"; exit 1; }
-          set -o pipefail
-          set +e
-          log=$(mktemp)
-          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[PROD] CI ${GITHUB_SHA::7}" 2>&1 | tee "$log"
-          status=$?
-          set -e
-          set +o pipefail
-          if [ "$status" -ne 0 ]; then
-            if grep -q "Read-only deployments may not be modified" "$log"; then
-              echo "::warning::PROD deployment ${GAS_DEPLOYMENT_ID} is read-only; skipping redeploy."
-              echo "PROD_DEPLOYMENT_READONLY=true" >> "$GITHUB_ENV"
-            else
-              exit "$status"
-            fi
-          fi
-          rm -f "$log"
+          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[PROD] CI ${GITHUB_SHA::7}"
 
       - name: "Verify deployment points to NEW_VER (PROD)"
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
           set -e
-          if [ "${PROD_DEPLOYMENT_READONLY:-}" = "true" ]; then
-            echo "Skipping verification because deployment is read-only"; exit 0;
-          fi
+
           clasp deployments > after.txt || true
           node -e "
             const fs=require('fs');
