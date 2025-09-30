@@ -91,8 +91,24 @@ jobs:
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
+          set -e
           [ -n "${TEST_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing TEST_DEPLOYMENT_ID"; exit 1; }
-          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" -d "CI STAGE ${GITHUB_SHA}"
+          set -o pipefail
+          set +e
+          log=$(mktemp)
+          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" -d "CI STAGE ${GITHUB_SHA}" 2>&1 | tee "$log"
+          status=$?
+          set -e
+          set +o pipefail
+          if [ "$status" -ne 0 ]; then
+            if grep -q "Read-only deployments may not be modified" "$log"; then
+              echo "::warning::TEST deployment ${TEST_DEPLOYMENT_ID} is read-only; skipping redeploy."
+              echo "TEST_DEPLOYMENT_READONLY=true" >> "$GITHUB_ENV"
+            else
+              exit "$status"
+            fi
+          fi
+          rm -f "$log"
 
       # AFTER snapshot (TEST)
       - name: "Snapshot AFTER (TEST)"
@@ -144,6 +160,7 @@ jobs:
         with:
           node-version: 18
 
+
       - name: "Install latest clasp"
         run: npm i -g @google/clasp
 
@@ -170,8 +187,25 @@ jobs:
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
+          set -e
           [ -n "${GAS_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing GAS_DEPLOYMENT_ID"; exit 1; }
-          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" -d "CI PROD ${GITHUB_SHA}"
+          set -o pipefail
+          set +e
+          log=$(mktemp)
+          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" -d "CI PROD ${GITHUB_SHA}" 2>&1 | tee "$log"
+          status=$?
+          set -e
+          set +o pipefail
+          if [ "$status" -ne 0 ]; then
+            if grep -q "Read-only deployments may not be modified" "$log"; then
+              echo "::warning::PROD deployment ${GAS_DEPLOYMENT_ID} is read-only; skipping redeploy."
+              echo "PROD_DEPLOYMENT_READONLY=true" >> "$GITHUB_ENV"
+            else
+              exit "$status"
+            fi
+          fi
+          rm -f "$log"
+
 
       - name: "Health check (PROD)"
         env:
