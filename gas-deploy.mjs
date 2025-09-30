@@ -120,6 +120,25 @@ function collectAppsScriptFilesFromDir(dir, files, usedNames) {
     const ext = path.extname(ent.name).toLowerCase();
     const base = path.basename(ent.name, ext);
 
+    if (ent.name === 'appsscript.json') {
+      const manifestText = fs.readFileSync(full, 'utf8').trim();
+      let manifestObj;
+      try {
+        manifestObj = JSON.parse(manifestText);
+      } catch (e) {
+        throw new Error(`appsscript.json 不是有效 JSON：${e.message}`);
+      }
+      addAppsScriptFile(
+        files,
+        usedNames,
+        'appsscript',
+        'JSON',
+        JSON.stringify(manifestObj),
+        full
+      );
+      continue;
+    }
+
     if (ext === '.gs' || ext === '.js') {
       addAppsScriptFile(
         files,
@@ -146,10 +165,34 @@ function collectAppsScriptFilesFromDir(dir, files, usedNames) {
   }
 }
 
+function resolveClaspRootDir(cwd) {
+  const claspPath = path.join(cwd, '.clasp.json');
+  if (!fs.existsSync(claspPath)) {
+    return { absolute: null, setting: null };
+  }
+
+  try {
+    const claspText = fs.readFileSync(claspPath, 'utf8');
+    const claspJson = JSON.parse(claspText);
+    if (!claspJson.rootDir) {
+      return { absolute: null, setting: null };
+    }
+    const abs = path.resolve(cwd, claspJson.rootDir);
+    if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) {
+      return { absolute: abs, setting: claspJson.rootDir };
+    }
+    return { absolute: null, setting: claspJson.rootDir };
+  } catch (err) {
+    console.warn('⚠️ 無法解析 .clasp.json：', err.message);
+    return { absolute: null, setting: null };
+  }
+}
+
 function buildFilesFromRepoRoot() {
   const cwd = process.cwd();
   const files = [];
   const usedNames = new Map(); // name → { type, origin }
+  const searchHints = new Set(['repo 根目錄']);
 
   const rootEntries = fs.readdirSync(cwd, { withFileTypes: true });
   for (const ent of rootEntries) {
@@ -203,15 +246,33 @@ function buildFilesFromRepoRoot() {
     }
   }
 
+  const { absolute: claspRootDir, setting: claspRootSetting } = resolveClaspRootDir(cwd);
+  if (claspRootSetting) {
+    searchHints.add(claspRootSetting);
+  }
+
   const srcDir = path.join(cwd, 'src');
+  const dirsToScan = new Set();
+  if (claspRootDir) {
+    dirsToScan.add(claspRootDir);
+  }
   if (fs.existsSync(srcDir) && fs.statSync(srcDir).isDirectory()) {
-    collectAppsScriptFilesFromDir(srcDir, files, usedNames);
+    dirsToScan.add(srcDir);
+  }
+
+  for (const dir of dirsToScan) {
+    const rel = path.relative(cwd, dir) || '.';
+    if (rel && rel !== '.') {
+      searchHints.add(rel);
+    }
+    collectAppsScriptFilesFromDir(dir, files, usedNames);
   }
 
   // 確認 manifest 存在
   const hasManifest = files.some(f => f.type === 'JSON' && f.name === 'appsscript');
   if (!hasManifest) {
-    throw new Error('找不到 appsscript.json（請放在 repo 根目錄，檔名須正確）');
+    const hintText = Array.from(searchHints).join(' 或 ');
+    throw new Error(`找不到 appsscript.json（請放在 ${hintText}，檔名須正確）`);
   }
 
   // 至少要有一個 SERVER_JS 或 HTML

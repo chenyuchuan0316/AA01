@@ -61,17 +61,57 @@ jobs:
         run: |
           node - <<'EOF'
           const fs = require('fs');
-          const m = JSON.parse(fs.readFileSync('appsscript.json','utf8'));
-          if (!m.webapp || !m.webapp.access || !m.webapp.executeAs) {
+          const path = require('path');
+
+          const cwd = process.cwd();
+          const candidates = [];
+
+          try {
+            const clasp = JSON.parse(fs.readFileSync(path.join(cwd, '.clasp.json'), 'utf8'));
+            if (clasp.rootDir) {
+              candidates.push(path.join(cwd, clasp.rootDir, 'appsscript.json'));
+            }
+          } catch (err) {
+            if (err.code !== 'ENOENT') {
+              console.warn('⚠️ 無法解析 .clasp.json：', err.message);
+            }
+          }
+
+          candidates.push(path.join(cwd, 'appsscript.json'));
+
+          let manifestPath = null;
+          for (const candidate of candidates) {
+            if (!candidate) continue;
+            if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+              manifestPath = candidate;
+              break;
+            }
+          }
+
+          if (!manifestPath) {
+            console.error('找不到 appsscript.json（根目錄或 .clasp.json 的 rootDir 中都沒有）');
+            process.exit(1);
+          }
+
+          let manifest;
+          try {
+            manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          } catch (err) {
+            console.error('appsscript.json 不是有效 JSON：', err.message);
+            process.exit(1);
+          }
+
+          if (!manifest.webapp || !manifest.webapp.access || !manifest.webapp.executeAs) {
             console.error('appsscript.json missing webapp.access/executeAs');
             process.exit(1);
           }
-          const okLog = ['STACKDRIVER','CLOUD','NONE'].includes(m.exceptionLogging||'STACKDRIVER');
+          const okLog = ['STACKDRIVER','CLOUD','NONE'].includes(manifest.exceptionLogging || 'STACKDRIVER');
           if (!okLog) {
-            console.error('exceptionLogging must be STACKDRIVER|CLOUD|NONE, got:', m.exceptionLogging);
+            console.error('exceptionLogging must be STACKDRIVER|CLOUD|NONE, got:', manifest.exceptionLogging);
             process.exit(1);
           }
-          console.log('webapp OK:', m.webapp, 'exceptionLogging=', m.exceptionLogging);
+          const rel = path.relative(cwd, manifestPath) || 'appsscript.json';
+          console.log('webapp OK:', manifest.webapp, 'manifest=', rel, 'exceptionLogging=', manifest.exceptionLogging);
           EOF
 
       # BEFORE snapshot（文字解析 fallback）
