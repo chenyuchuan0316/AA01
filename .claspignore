@@ -7,16 +7,9 @@ dist/**
 build/**
 coverage/**
 .vscode/**
-*.map
-README*
-LICENSE*
-*.md
 scripts/**
 test/**
-jest.config.js
-gas-deploy.mjs
-get-refresh-token.mjs
-package.json
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
+
+# 保留核心 Apps Script 原始碼與 HTML 模板，避免被誤忽略
+!src/**/*.gs
+!src/**/*.html
