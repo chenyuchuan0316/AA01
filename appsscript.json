@@ -1,7 +1,7 @@
 {
   "timeZone": "Asia/Taipei",
   "dependencies": {},
-  "exceptionLogging": "CLOUD_LOGGING",
+  "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",
   "webapp": {
     "access": "DOMAIN",
