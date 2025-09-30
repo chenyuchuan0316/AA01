@@ -4,14 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "jest --passWithNoTests",
-    "test:e2e": "echo \"No e2e tests implemented yet\"",
-    "deploy:web": "node gas-deploy.mjs",
-    "oauth:token": "node get-refresh-token.mjs",
-    "gas:push": "clasp push --force",
-    "gas:version": "node ./scripts/gas-version.js",
-    "gas:deploy": "node ./scripts/gas-deploy.js",
-    "gas:release": "npm run gas:push && npm run gas:version && npm run gas:deploy"
+    "test": "jest",
+    "e2e": "node e2e/health.e2e.js"
   },
   "devDependencies": {
     "@google/clasp": "^2.5.0",
