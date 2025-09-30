@@ -55,8 +55,10 @@ jobs:
       - name: Ensure .clasp.json exists (do not print it)
         run: node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.stderr.write('.clasp.json missing scriptId\\n'); process.exit(2)}"
 
-      - name: Debug: show scriptId (from repo)
-        run: node -e "console.log('scriptId in repo =', require('./.clasp.json').scriptId)"
+      - name: "Debug: show scriptId (from repo)"
+        run: |
+          node -e "console.log('scriptId in repo =', require('./.clasp.json').scriptId)"
+
 
       - name: Debug: show who can see deployments (quick probe)
         run: |
@@ -66,20 +68,16 @@ jobs:
           clasp list-deployments || clasp deployments || true
 
 
+
       - name: "Guard: manifest must include webapp block"
         run: |
           node - <<'EOF'
           const fs = require('fs');
-          const s = fs.readFileSync('appsscript.json', 'utf8');
+          const s = fs.readFileSync('appsscript.json','utf8');
           let j;
-          try {
-            j = JSON.parse(s);
-          } catch (e) {
-            console.error('appsscript.json is not valid JSON:', e.message);
-            process.exit(1);
-          }
-          const okWeb = j.webapp && j.webapp.access && j.webapp.executeAs;
-          if (!okWeb) {
+          try { j = JSON.parse(s); }
+          catch(e){ console.error('appsscript.json invalid JSON:', e.message); process.exit(1); }
+          if (!j.webapp || !j.webapp.access || !j.webapp.executeAs) {
             console.error('appsscript.json missing webapp config (webapp.access / webapp.executeAs)');
             process.exit(1);
           }
@@ -90,7 +88,7 @@ jobs:
 
 
       # Sanity：顯示部署 ID 長度與 SHA256 指紋
-      - name: Sanity check DEPLOY_ID (length & hash)
+      - name: "Sanity check DEPLOY_ID (length & hash)"
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: node -e "const crypto=require('crypto'); const id=process.env.DEPLOY_ID||''; console.log('DEPLOY_ID.length =', id.length); console.log('DEPLOY_ID.sha256 =', crypto.createHash('sha256').update(id).digest('hex')); if(!id||id.length<20){process.exit(1)}"
@@ -149,7 +147,7 @@ jobs:
           PRESERVE_ID: ${{ vars.PRESERVE_DEPLOYMENT_ID }}
         run: node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('after.json','utf8')); const env=(process.env.PRESERVE_IDS||process.env.PRESERVE_ID||'').trim(); if(!env){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0);} const ids=env.split(/[,\s]+/).filter(Boolean); const miss=ids.filter(id=>!a.includes(id)); if(miss.length){ console.error('Preserved deployments disappeared:', miss.join(',')); process.exit(1);} console.log('All preserved IDs exist AFTER deploy');"
 
-      - name: Post-deploy health check (GET /exec?route=health)
+      - name: "Post-deploy health check (GET /exec?route=health)""
         env:
           DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
