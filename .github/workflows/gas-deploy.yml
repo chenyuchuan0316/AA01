@@ -84,6 +84,17 @@ jobs:
         run: node -e "const fs=require('fs'),id=process.env.TEST_DEPLOYMENT_ID;const arr=JSON.parse(fs.readFileSync('before.json','utf8'));if(!id||!arr.includes(id)){console.error('TEST_DEPLOYMENT_ID not found. IDs=',arr);process.exit(1)};console.log('Found test deployment ID BEFORE.')"
 
       # --- push & deploy to TEST ---
+      - name: "Inject CI env (TEST)"
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          set -e
+          SHORT_SHA="${SHA::7}"
+          cat > 00_ci_env.gs <<EOF
+          const CI_ENV = 'TEST';
+          const CI_SHA_SHORT = '${SHORT_SHA}';
+          EOF
+
       - name: "Push to Apps Script (TEST)"
         run: clasp push -f
 
@@ -96,7 +107,7 @@ jobs:
           set -o pipefail
           set +e
           log=$(mktemp)
-          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" -d "CI STAGE ${GITHUB_SHA}" 2>&1 | tee "$log"
+          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" -d "[TEST] CI ${GITHUB_SHA::7}" 2>&1 | tee "$log"
           status=$?
           set -e
           set +o pipefail
@@ -180,6 +191,17 @@ jobs:
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
+      - name: "Inject CI env (PROD)"
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          set -e
+          SHORT_SHA="${SHA::7}"
+          cat > 00_ci_env.gs <<EOF
+          const CI_ENV = 'PROD';
+          const CI_SHA_SHORT = '${SHORT_SHA}';
+          EOF
+
       - name: "Push to Apps Script (PROD)"
         run: clasp push -f
 
@@ -192,7 +214,7 @@ jobs:
           set -o pipefail
           set +e
           log=$(mktemp)
-          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" -d "CI PROD ${GITHUB_SHA}" 2>&1 | tee "$log"
+          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" -d "[PROD] CI ${GITHUB_SHA::7}" 2>&1 | tee "$log"
           status=$?
           set -e
           set +o pipefail
