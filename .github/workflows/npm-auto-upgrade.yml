@@ -109,8 +109,8 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: chore(deps): npm ${{ env.STRATEGY }} upgrade
+          commit-message: "chore(deps): npm ${{ env.STRATEGY }} upgrade"
           branch: chore/npm-upgrade/${{ env.STRATEGY }}
-          title: chore(deps): npm ${{ env.STRATEGY }} upgrade
+          title: "chore(deps): npm ${{ env.STRATEGY }} upgrade"
           body-path: upgrade-summary.md
           labels: dependencies, automated-pr
