@@ -118,7 +118,6 @@ jobs:
           [ -n "${TEST_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing TEST_DEPLOYMENT_ID"; exit 1; }
           [ -n "${NEW_VER:-}" ] || { echo "::error::Missing NEW_VER"; exit 1; }
           clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[TEST] CI ${GITHUB_SHA::7}"
-
       # AFTER snapshot (TEST)
       - name: "Verify deployment points to NEW_VER (TEST)"
         env:
@@ -256,6 +255,7 @@ jobs:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
           set -e
+
           clasp deployments > after.txt || true
           node -e "
             const fs=require('fs');
