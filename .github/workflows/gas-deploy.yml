@@ -1,6 +1,8 @@
 name: GAS staged test & deploy (single workflow)
 
 on:
+  pull_request:
+    branches: [ "main" ]
   push:
     branches: [ "main" ]
   workflow_dispatch:
@@ -15,6 +17,7 @@ defaults:
 
 jobs:
   test-stage:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -148,6 +151,16 @@ jobs:
       - name: "Run unit tests (Jest)"
         run: npm test --if-present
 
+      - name: "Debug TEST_DEPLOYMENT_ID length"
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+        run: |
+          if [ -n "${TEST_DEPLOYMENT_ID:-}" ]; then
+            echo "len=${#TEST_DEPLOYMENT_ID}"
+          else
+            echo "len=0 (empty)"
+          fi
+
       - name: "Run E2E tests (Puppeteer) against TEST"
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
@@ -171,6 +184,7 @@ jobs:
           echo "::error::TEST health check failed (code=${code} location=${loc})"; exit 1
 
   deploy-prod:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: [test-stage]
     timeout-minutes: 20
