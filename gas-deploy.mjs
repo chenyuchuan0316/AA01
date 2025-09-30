@@ -96,14 +96,63 @@ async function getScriptClient() {
 //   - 允許：.gs / .js → SERVER_JS； .html → HTML； appsscript.json → JSON（名為 "appsscript"）
 //   - 檢查同名衝突（Apps Script 檔名需唯一）
 // -----------------------------
+function addAppsScriptFile(files, usedNames, name, type, source, originPath) {
+  if (usedNames.has(name)) {
+    const existing = usedNames.get(name);
+    throw new Error(
+      `檔名衝突：${name}（${originPath} 與 ${existing.origin}）`
+    );
+  }
+  usedNames.set(name, { type, origin: originPath });
+  files.push({ name, type, source });
+}
+
+function collectAppsScriptFilesFromDir(dir, files, usedNames) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const ent of entries) {
+    const full = path.join(dir, ent.name);
+
+    if (ent.isDirectory()) {
+      collectAppsScriptFilesFromDir(full, files, usedNames);
+      continue;
+    }
+
+    const ext = path.extname(ent.name).toLowerCase();
+    const base = path.basename(ent.name, ext);
+
+    if (ext === '.gs' || ext === '.js') {
+      addAppsScriptFile(
+        files,
+        usedNames,
+        base,
+        'SERVER_JS',
+        fs.readFileSync(full, 'utf8'),
+        full
+      );
+      continue;
+    }
+
+    if (ext === '.html' || ext === '.htm') {
+      addAppsScriptFile(
+        files,
+        usedNames,
+        base,
+        'HTML',
+        fs.readFileSync(full, 'utf8'),
+        full
+      );
+      continue;
+    }
+  }
+}
+
 function buildFilesFromRepoRoot() {
   const cwd = process.cwd();
-  const entries = fs.readdirSync(cwd, { withFileTypes: true });
-
   const files = [];
-  const usedNames = new Map(); // name → ext/type，檢查重名
+  const usedNames = new Map(); // name → { type, origin }
 
-  for (const ent of entries) {
+  const rootEntries = fs.readdirSync(cwd, { withFileTypes: true });
+  for (const ent of rootEntries) {
     if (!ent.isFile()) continue;
 
     const full = path.join(cwd, ent.name);
@@ -118,42 +167,45 @@ function buildFilesFromRepoRoot() {
       } catch (e) {
         throw new Error(`appsscript.json 不是有效 JSON：${e.message}`);
       }
-      // manifest 在 API 中必須叫 "appsscript"、type=JSON，source 為 JSON 字串
-      files.push({
-        name: 'appsscript',
-        type: 'JSON',
-        source: JSON.stringify(manifestObj),
-      });
+      addAppsScriptFile(
+        files,
+        usedNames,
+        'appsscript',
+        'JSON',
+        JSON.stringify(manifestObj),
+        full
+      );
       continue;
     }
 
     if (ext === '.gs' || ext === '.js') {
-      if (usedNames.has(base)) {
-        throw new Error(`檔名衝突：${base}（Apps Script 同一專案內檔名必須唯一）`);
-      }
-      usedNames.set(base, 'SERVER_JS');
-      files.push({
-        name: base,
-        type: 'SERVER_JS',
-        source: fs.readFileSync(full, 'utf8'),
-      });
+      addAppsScriptFile(
+        files,
+        usedNames,
+        base,
+        'SERVER_JS',
+        fs.readFileSync(full, 'utf8'),
+        full
+      );
       continue;
     }
 
     if (ext === '.html' || ext === '.htm') {
-      if (usedNames.has(base)) {
-        throw new Error(`檔名衝突：${base}（Apps Script 同一專案內檔名必須唯一）`);
-      }
-      usedNames.set(base, 'HTML');
-      files.push({
-        name: base,
-        type: 'HTML',
-        source: fs.readFileSync(full, 'utf8'),
-      });
+      addAppsScriptFile(
+        files,
+        usedNames,
+        base,
+        'HTML',
+        fs.readFileSync(full, 'utf8'),
+        full
+      );
       continue;
     }
+  }
 
-    // 其他副檔名全部忽略（如 .csv / .xlsx / .md / .yml / lock 檔等）
+  const srcDir = path.join(cwd, 'src');
+  if (fs.existsSync(srcDir) && fs.statSync(srcDir).isDirectory()) {
+    collectAppsScriptFilesFromDir(srcDir, files, usedNames);
   }
 
   // 確認 manifest 存在
