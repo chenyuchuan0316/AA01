@@ -1,6 +1,8 @@
 node_modules/**
 .github/**
 .git/**
+__tests__/**
+e2e/**
 dist/**
 build/**
 coverage/**
@@ -11,6 +13,9 @@ LICENSE*
 *.md
 scripts/**
 test/**
+jest.config.js
+gas-deploy.mjs
+get-refresh-token.mjs
 package.json
 package-lock.json
 pnpm-lock.yaml

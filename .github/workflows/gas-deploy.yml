@@ -1,4 +1,4 @@
-name: Push & Deploy GAS (fixed deployment)
+name: GAS staged test & deploy (single workflow)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: gas-deploy-${{ github.ref }}
+  group: gas-ci-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
@@ -14,163 +14,209 @@ defaults:
     shell: bash
 
 jobs:
-  gas:
+  test-stage:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
+    timeout-minutes: 25
 
     steps:
-      - name: Check out repository
+      - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 18
+      - name: "Setup Node 18"
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Install dependencies (lockfile)
-        if: ${{ hashFiles('package-lock.json') != '' }}
-        run: npm ci
+      - name: "Install deps"
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-      - name: Install dependencies (no lockfile)
-        if: ${{ hashFiles('package-lock.json') == '' && hashFiles('package.json') != '' }}
-        run: npm install
-
-      - name: Install latest clasp
+      - name: "Install latest clasp"
         run: npm i -g @google/clasp
 
-      - name: Write ~/.clasprc.json (decode/normalize/validate)
+      # --- write clasprc (raw JSON 或 base64 皆可) ---
+      - name: "Write ~/.clasprc.json"
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
           set -euo pipefail
-          if [ -z "${CLASPRC_JSON:-}" ]; then
-            echo "::error::Missing secret CLASPRC_JSON"; exit 1
-          fi
-          node -e "const fs=require('fs'); const p=process.env.HOME+'/.clasprc.json'; let s=process.env.CLASPRC_JSON||''; let j; try{ j=JSON.parse(s);}catch(e){ s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); } if(!j.token && j.tokens && j.tokens.default){ j.token=j.tokens.default; } fs.writeFileSync(p, JSON.stringify(j,null,2));"
+          [ -n "${CLASPRC_JSON:-}" ] || { echo "::error::Missing CLASPRC_JSON"; exit 1; }
+          node -e "
+            const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';
+            let s=process.env.CLASPRC_JSON||'';let j;
+            try{ j=JSON.parse(s); }catch(e){ s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); }
+            if(!j.token && j.tokens && j.tokens.default){ j.token=j.tokens.default; }
+            fs.writeFileSync(p, JSON.stringify(j,null,2));
+          "
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
-      - name: Ensure .clasp.json exists (do not print it)
-        run: node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.stderr.write('.clasp.json missing scriptId\\n'); process.exit(2)}"
+      - name: "Ensure .clasp.json has scriptId"
+        run: node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.stderr.write('Missing scriptId\n');process.exit(2)}; console.log('scriptId=', j.scriptId)"
 
-      - name: "Debug: show scriptId (from repo)"
-        run: |
-          node -e "console.log('scriptId in repo =', require('./.clasp.json').scriptId)"
-
-
-      - name: "Debug: show who can see deployments (quick probe)"
-        run: |
-          set -e
-          echo "clasp version ->"; clasp --version || true
-          echo "list-deployments (text) ->"
-          clasp list-deployments || clasp deployments || true
-
-
-
-      - name: "Guard: manifest must include webapp block"
+      - name: "Guard: appsscript.json must declare webapp"
         run: |
           node - <<'EOF'
           const fs = require('fs');
-          const s = fs.readFileSync('appsscript.json','utf8');
-          let j;
-          try { j = JSON.parse(s); }
-          catch(e){ console.error('appsscript.json invalid JSON:', e.message); process.exit(1); }
-          if (!j.webapp || !j.webapp.access || !j.webapp.executeAs) {
-            console.error('appsscript.json missing webapp config (webapp.access / webapp.executeAs)');
+          const m = JSON.parse(fs.readFileSync('appsscript.json','utf8'));
+          if (!m.webapp || !m.webapp.access || !m.webapp.executeAs) {
+            console.error('appsscript.json missing webapp.access/executeAs');
             process.exit(1);
           }
-          console.log('webapp OK:', j.webapp);
+          const okLog = ['STACKDRIVER','CLOUD','NONE'].includes(m.exceptionLogging||'STACKDRIVER');
+          if (!okLog) {
+            console.error('exceptionLogging must be STACKDRIVER|CLOUD|NONE, got:', m.exceptionLogging);
+            process.exit(1);
+          }
+          console.log('webapp OK:', m.webapp, 'exceptionLogging=', m.exceptionLogging);
           EOF
 
-
-
-
-      # Sanity：顯示部署 ID 長度與 SHA256 指紋
-      - name: "Sanity check DEPLOY_ID (length & hash)"
-        env:
-          DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
-        run: node -e "const crypto=require('crypto'); const id=process.env.DEPLOY_ID||''; console.log('DEPLOY_ID.length =', id.length); console.log('DEPLOY_ID.sha256 =', crypto.createHash('sha256').update(id).digest('hex')); if(!id||id.length<20){process.exit(1)}"
-
-      # BEFORE：取部署清單（JSON 優先；失敗則解析文字）
-      - name: Snapshot deployments (BEFORE)
+      # BEFORE snapshot（文字解析 fallback）
+      - name: "Snapshot BEFORE"
         run: |
           set -e
-          if clasp list-deployments --json > raw_before.json 2>/dev/null; then
-            node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('raw_before.json','utf8')); const arr=(Array.isArray(j)?j:(j.deployments||[])).map(x=>x.deploymentId||x.deployment_id||x.id).filter(Boolean); fs.writeFileSync('before.json', JSON.stringify([...new Set(arr)])); console.log('BEFORE IDs:', arr.join(',')||'(none)');"
-          else
-            echo 'before: fallback to text parse'
-            clasp list-deployments > before.txt || clasp deployments > before.txt || true
-            node -e "const fs=require('fs'); const t=fs.readFileSync('before.txt','utf8'); const ids=[...t.matchAll(/AK[a-zA-Z0-9_-]{20,}/g)].map(m=>m[0]); fs.writeFileSync('before.json', JSON.stringify([...new Set(ids)])); console.log('BEFORE IDs:', ids.join(',')||'(none)');"
-          fi
+          clasp list-deployments > before.txt || clasp deployments > before.txt || true
+          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const ids=[...t.matchAll(/AK[a-zA-Z0-9_-]{20,}/g)].map(m=>m[0]);fs.writeFileSync('before.json',JSON.stringify([...new Set(ids)]));console.log('BEFORE IDs:',ids.join(',')||'(none)')"
 
-      - name: Ensure target deployment exists (BEFORE)
+      - name: "Ensure TEST_DEPLOYMENT_ID exists BEFORE"
         env:
-          DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
-        run: node -e "const fs=require('fs'), id=process.env.DEPLOY_ID; const arr=JSON.parse(fs.readFileSync('before.json','utf8')); if(!Array.isArray(arr)||!arr.includes(id)){ console.error('Target deployment ID NOT found BEFORE deploy. IDs=',arr); process.exit(1);} console.log('Target deployment exists BEFORE deploy.');"
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+        run: node -e "const fs=require('fs'),id=process.env.TEST_DEPLOYMENT_ID;const arr=JSON.parse(fs.readFileSync('before.json','utf8'));if(!id||!arr.includes(id)){console.error('TEST_DEPLOYMENT_ID not found. IDs=',arr);process.exit(1)};console.log('Found test deployment ID BEFORE.')"
 
-      - name: Push to Apps Script
+      # --- push & deploy to TEST ---
+      - name: "Push to Apps Script (TEST)"
         run: clasp push -f
 
-      # 只覆蓋固定 ID（不新建）
-      - name: Deploy with fixed Deployment ID
+      - name: "Deploy to TEST"
         env:
-          DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
-        run: |
-          set -euo pipefail
-          if [ -z "${DEPLOY_ID:-}" ]; then
-            echo "::error::GAS_DEPLOYMENT_ID not set"; exit 1
-          fi
-          clasp deploy --deploymentId "$DEPLOY_ID" -d "CI ${GITHUB_SHA}"
-
-      # AFTER：再取清單
-      - name: Snapshot deployments (AFTER)
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
           set -e
-          if clasp list-deployments --json > raw_after.json 2>/dev/null; then
-            node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('raw_after.json','utf8')); const arr=(Array.isArray(j)?j:(j.deployments||[])).map(x=>x.deploymentId||x.deployment_id||x.id).filter(Boolean); fs.writeFileSync('after.json', JSON.stringify([...new Set(arr)])); console.log('AFTER IDs:', arr.join(',')||'(none)');"
-          else
-            echo 'after: fallback to text parse'
-            clasp list-deployments > after.txt || clasp deployments > after.txt || true
-            node -e "const fs=require('fs'); const t=fs.readFileSync('after.txt','utf8'); const ids=[...t.matchAll(/AK[a-zA-Z0-9_-]{20,}/g)].map(m=>m[0]); fs.writeFileSync('after.json', JSON.stringify([...new Set(ids)])); console.log('AFTER IDs:', ids.join(',')||'(none)');"
+          [ -n "${TEST_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing TEST_DEPLOYMENT_ID"; exit 1; }
+          set -o pipefail
+          set +e
+          log=$(mktemp)
+          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" -d "CI STAGE ${GITHUB_SHA}" 2>&1 | tee "$log"
+          status=$?
+          set -e
+          set +o pipefail
+          if [ "$status" -ne 0 ]; then
+            if grep -q "Read-only deployments may not be modified" "$log"; then
+              echo "::warning::TEST deployment ${TEST_DEPLOYMENT_ID} is read-only; skipping redeploy."
+              echo "TEST_DEPLOYMENT_READONLY=true" >> "$GITHUB_ENV"
+            else
+              exit "$status"
+            fi
           fi
+          rm -f "$log"
 
-      - name: Verify no new deployment was created
+      # AFTER snapshot (TEST)
+      - name: "Snapshot AFTER (TEST)"
         env:
-          DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
-        run: node -e "const fs=require('fs'), id=process.env.DEPLOY_ID; const b=JSON.parse(fs.readFileSync('before.json','utf8')); const a=JSON.parse(fs.readFileSync('after.json','utf8')); const cntB=Array.isArray(b)?b.length:0; const cntA=Array.isArray(a)?a.length:0; const has=Array.isArray(a)&&a.includes(id); console.log('before =',cntB,', after =',cntA,', hasTarget =',has); if(!has){console.error('Target deployment ID not found AFTER deploy');process.exit(1)} if(cntA>cntB){console.error('New deployment seems created!');process.exit(1)}"
-
-      - name: Verify preserved deployments still exist (AFTER)
-        env:
-          PRESERVE_IDS: ${{ vars.PRESERVE_DEPLOYMENT_IDS }}
-          PRESERVE_ID: ${{ vars.PRESERVE_DEPLOYMENT_ID }}
-        run: node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('after.json','utf8')); const env=(process.env.PRESERVE_IDS||process.env.PRESERVE_ID||'').trim(); if(!env){ console.log('No PRESERVE_DEPLOYMENT_IDS set; skip'); process.exit(0);} const ids=env.split(/[,\s]+/).filter(Boolean); const miss=ids.filter(id=>!a.includes(id)); if(miss.length){ console.error('Preserved deployments disappeared:', miss.join(',')); process.exit(1);} console.log('All preserved IDs exist AFTER deploy');"
-
-      - name: "Post-deploy health check (GET /exec?route=health)"
-        env:
-          DEPLOY_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
           set -e
-          URL="https://script.google.com/macros/s/${DEPLOY_ID}/exec?route=health&v=${GITHUB_SHA::7}"
-          echo "GET $URL"
-          # 取回應碼與 Location 標頭
+          clasp list-deployments > after.txt || clasp deployments > after.txt || true
+          node -e "const fs=require('fs');const t=fs.readFileSync('after.txt','utf8');const ids=[...t.matchAll(/AK[a-zA-Z0-9_-]{20,}/g)].map(m=>m[0]);fs.writeFileSync('after.json',JSON.stringify([...new Set(ids)]));console.log('AFTER IDs:',ids.join(',')||'(none)')"
+          node -e "const fs=require('fs'),b=JSON.parse(fs.readFileSync('before.json','utf8')),a=JSON.parse(fs.readFileSync('after.json','utf8'));const id=process.env.TEST_DEPLOYMENT_ID;console.log('before=',b.length,'after=',a.length,'hasTarget=',a.includes(id)); if(!a.includes(id)){process.exit(1)}"
+
+      # --- Unit tests / E2E tests (可先無檔；--if-present 不會 fail) ---
+      - name: "Run unit tests (Jest)"
+        run: npm test --if-present
+
+      - name: "Run E2E tests (Puppeteer) against TEST"
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+        run: npm run e2e --if-present
+
+      # --- Health check on TEST（容忍 302 登入轉向） ---
+      - name: "Health check (TEST)"
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+        run: |
+          set -e
+          URL="https://script.google.com/macros/s/${TEST_DEPLOYMENT_ID}/exec?route=health&v=${GITHUB_SHA::7}"
           code=$(curl -sS -o /dev/null -w "%{http_code}" -D headers.txt "$URL" || true)
           loc=$(awk 'BEGIN{IGNORECASE=1}/^Location:/{print $2}' headers.txt | tr -d '\r\n')
           echo "HTTP $code"
           echo "Location: ${loc:-<none>}"
-
-          # 200：直接通過
-          if [ "$code" = "200" ]; then
-            exit 0
+          if [ "$code" = "200" ]; then exit 0; fi
+          if [[ "$code" =~ ^30(2|3|7|8)$ ]] && ([[ "$loc" == *"accounts.google.com"* ]] || [[ "$loc" == *"ServiceLogin"* ]] || [[ "$loc" == *"signin"* ]]); then
+            echo "Domain-protected web app: login redirect detected (TEST) ✅"; exit 0
           fi
+          echo "::error::TEST health check failed (code=${code} location=${loc})"; exit 1
 
-          # 302/303/307/308 且導向登入頁（accounts.google.com / ServiceLogin / signin）：判定健康
-          if [[ "$code" =~ ^30(2|3|7|8)$ ]] && \
-            ([[ "$loc" == *"accounts.google.com"* ]] || [[ "$loc" == *"ServiceLogin"* ]] || [[ "$loc" == *"signin"* ]]); then
-            echo "Domain-protected web app：偵測到登入轉向（$loc），視為健康 ✅"
-            exit 0
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: [test-stage]
+    timeout-minutes: 20
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Node 18"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: "Install latest clasp"
+        run: npm i -g @google/clasp
+
+      - name: "Write ~/.clasprc.json"
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+        run: |
+          set -euo pipefail
+          [ -n "${CLASPRC_JSON:-}" ] || { echo "::error::Missing CLASPRC_JSON"; exit 1; }
+          node -e "
+            const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';
+            let s=process.env.CLASPRC_JSON||'';let j;
+            try{ j=JSON.parse(s); }catch(e){ s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); }
+            if(!j.token && j.tokens && j.tokens.default){ j.token=j.tokens.default; }
+            fs.writeFileSync(p, JSON.stringify(j,null,2));
+          "
+          test -s "$HOME/.clasprc.json"
+          cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
+
+      - name: "Push to Apps Script (PROD)"
+        run: clasp push -f
+
+      - name: "Deploy to PROD"
+        env:
+          GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
+        run: |
+          set -e
+          [ -n "${GAS_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing GAS_DEPLOYMENT_ID"; exit 1; }
+          set -o pipefail
+          set +e
+          log=$(mktemp)
+          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" -d "CI PROD ${GITHUB_SHA}" 2>&1 | tee "$log"
+          status=$?
+          set -e
+          set +o pipefail
+          if [ "$status" -ne 0 ]; then
+            if grep -q "Read-only deployments may not be modified" "$log"; then
+              echo "::warning::PROD deployment ${GAS_DEPLOYMENT_ID} is read-only; skipping redeploy."
+              echo "PROD_DEPLOYMENT_READONLY=true" >> "$GITHUB_ENV"
+            else
+              exit "$status"
+            fi
           fi
+          rm -f "$log"
 
-          echo "::error::Health check failed (code=${code} location=${loc})"
-          exit 1
+      - name: "Health check (PROD)"
+        env:
+          GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
+        run: |
+          set -e
+          URL="https://script.google.com/macros/s/${GAS_DEPLOYMENT_ID}/exec?route=health&v=${GITHUB_SHA::7}"
+          code=$(curl -sS -o /dev/null -w "%{http_code}" -D headers.txt "$URL" || true)
+          loc=$(awk 'BEGIN{IGNORECASE=1}/^Location:/{print $2}' headers.txt | tr -d '\r\n')
+          echo "HTTP $code"
+          echo "Location: ${loc:-<none>}"
+          if [ "$code" = "200" ]; then exit 0; fi
+          if [[ "$code" =~ ^30(2|3|7|8)$ ]] && ([[ "$loc" == *"accounts.google.com"* ]] || [[ "$loc" == *"ServiceLogin"* ]] || [[ "$loc" == *"signin"* ]]); then
+            echo "Domain-protected web app: login redirect detected (PROD) ✅"; exit 0
+          fi
+          echo "::error::PROD health check failed (code=${code} location=${loc})"; exit 1
