@@ -40,16 +40,17 @@ function doGet(e) {
         .createTextOutput(JSON.stringify({ ok: true, ts: new Date().toISOString() }))
         .setMimeType(ContentService.MimeType.JSON);
     }
-    // 你的原本主畫面輸出
+    // 你原本的主畫面輸出
     return buildAppHtmlOutput();
 
   } catch (err) {
-    // 出錯時仍回 200，方便你用健康檢查快速看訊息
+    // 避免白板錯誤頁，回 200 + JSON 方便快速診斷
     return ContentService
       .createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
+
 
 
 
