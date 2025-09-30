@@ -75,13 +75,14 @@ jobs:
       - name: "Snapshot BEFORE"
         run: |
           set -e
-          clasp list-deployments > before.txt || clasp deployments > before.txt || true
-          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const ids=[...t.matchAll(/AK[a-zA-Z0-9_-]{20,}/g)].map(m=>m[0]);fs.writeFileSync('before.json',JSON.stringify([...new Set(ids)]));console.log('BEFORE IDs:',ids.join(',')||'(none)')"
+          clasp deployments > before.txt || true
+          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const lines=t.split(/\r?\n/);const map={};for(const L of lines){const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);if(m){map[m[1]]=m[2];}}fs.writeFileSync('before.map.json',JSON.stringify(map));console.log('BEFORE MAP:',map)"
 
       - name: "Ensure TEST_DEPLOYMENT_ID exists BEFORE"
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
-        run: node -e "const fs=require('fs'),id=process.env.TEST_DEPLOYMENT_ID;const arr=JSON.parse(fs.readFileSync('before.json','utf8'));if(!id||!arr.includes(id)){console.error('TEST_DEPLOYMENT_ID not found. IDs=',arr);process.exit(1)};console.log('Found test deployment ID BEFORE.')"
+        run: |
+          node -e "const fs=require('fs');const id=process.env.TEST_DEPLOYMENT_ID;const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));if(!id||!map[id]){console.error('TEST_DEPLOYMENT_ID not found.');process.exit(1);}console.log('Found test deployment BEFORE. Current version =',map[id]);"
 
       # --- push & deploy to TEST ---
       - name: "Inject CI env (TEST)"
@@ -98,16 +99,28 @@ jobs:
       - name: "Push to Apps Script (TEST)"
         run: clasp push -f
 
-      - name: "Deploy to TEST"
+      - name: "Create new version (TEST)"
+        id: mkver-test
+        run: |
+          set -e
+          out=$(clasp version -d "[TEST] CI ${GITHUB_SHA::7}" || true)
+          echo "$out"
+          ver=$(echo "$out" | sed -n "s/Created version \([0-9][0-9]*\).*/\1/p")
+          if [ -z "$ver" ]; then echo "::error::Failed to parse version"; exit 1; fi
+          echo "NEW_VER=$ver" >> "$GITHUB_ENV"
+          echo "new_ver=$ver" >> "$GITHUB_OUTPUT"
+
+      - name: "Update deployment to NEW_VER (TEST)"
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
           set -e
           [ -n "${TEST_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing TEST_DEPLOYMENT_ID"; exit 1; }
+          [ -n "${NEW_VER:-}" ] || { echo "::error::Missing NEW_VER"; exit 1; }
           set -o pipefail
           set +e
           log=$(mktemp)
-          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" -d "[TEST] CI ${GITHUB_SHA::7}" 2>&1 | tee "$log"
+          clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[TEST] CI ${GITHUB_SHA::7}" 2>&1 | tee "$log"
           status=$?
           set -e
           set +o pipefail
@@ -122,14 +135,33 @@ jobs:
           rm -f "$log"
 
       # AFTER snapshot (TEST)
-      - name: "Snapshot AFTER (TEST)"
+      - name: "Verify deployment points to NEW_VER (TEST)"
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
           set -e
-          clasp list-deployments > after.txt || clasp deployments > after.txt || true
-          node -e "const fs=require('fs');const t=fs.readFileSync('after.txt','utf8');const ids=[...t.matchAll(/AK[a-zA-Z0-9_-]{20,}/g)].map(m=>m[0]);fs.writeFileSync('after.json',JSON.stringify([...new Set(ids)]));console.log('AFTER IDs:',ids.join(',')||'(none)')"
-          node -e "const fs=require('fs'),b=JSON.parse(fs.readFileSync('before.json','utf8')),a=JSON.parse(fs.readFileSync('after.json','utf8'));const id=process.env.TEST_DEPLOYMENT_ID;console.log('before=',b.length,'after=',a.length,'hasTarget=',a.includes(id)); if(!a.includes(id)){process.exit(1)}"
+          if [ "${TEST_DEPLOYMENT_READONLY:-}" = "true" ]; then
+            echo "Skipping verification because deployment is read-only"; exit 0;
+          fi
+          clasp deployments > after.txt || true
+          node -e "
+            const fs=require('fs');
+            const id=process.env.TEST_DEPLOYMENT_ID;
+            const ver=process.env.NEW_VER;
+            const t=fs.readFileSync('after.txt','utf8');
+            const lines=t.split(/\r?\n/);
+            let cur=null;
+            for(const L of lines){
+              const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
+              if(m && m[1]===id){ cur=m[2]; break; }
+            }
+            if(!cur){ console.error('Dep ID not found AFTER'); process.exit(1); }
+            console.log('Deployment', id, 'now points to version', cur);
+            if(String(cur)!==String(ver)){
+              console.error('Version mismatch: expected', ver, 'got', cur);
+              process.exit(1);
+            }
+          "
 
       # --- Unit tests / E2E tests (可先無檔；--if-present 不會 fail) ---
       - name: "Run unit tests (Jest)"
@@ -191,6 +223,18 @@ jobs:
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
+      - name: "Snapshot BEFORE"
+        run: |
+          set -e
+          clasp deployments > before.txt || true
+          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const lines=t.split(/\r?\n/);const map={};for(const L of lines){const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);if(m){map[m[1]]=m[2];}}fs.writeFileSync('before.map.json',JSON.stringify(map));console.log('BEFORE MAP:',map)"
+
+      - name: "Ensure GAS_DEPLOYMENT_ID exists BEFORE"
+        env:
+          GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
+        run: |
+          node -e "const fs=require('fs');const id=process.env.GAS_DEPLOYMENT_ID;const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));if(!id||!map[id]){console.error('GAS_DEPLOYMENT_ID not found.');process.exit(1);}console.log('Found prod deployment BEFORE. Current version =',map[id]);"
+
       - name: "Inject CI env (PROD)"
         env:
           SHA: ${{ github.sha }}
@@ -205,16 +249,28 @@ jobs:
       - name: "Push to Apps Script (PROD)"
         run: clasp push -f
 
-      - name: "Deploy to PROD"
+      - name: "Create new version (PROD)"
+        id: mkver-prod
+        run: |
+          set -e
+          out=$(clasp version -d "[PROD] CI ${GITHUB_SHA::7}" || true)
+          echo "$out"
+          ver=$(echo "$out" | sed -n "s/Created version \([0-9][0-9]*\).*/\1/p")
+          if [ -z "$ver" ]; then echo "::error::Failed to parse version"; exit 1; fi
+          echo "NEW_VER=$ver" >> "$GITHUB_ENV"
+          echo "new_ver=$ver" >> "$GITHUB_OUTPUT"
+
+      - name: "Update deployment to NEW_VER (PROD)"
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
           set -e
           [ -n "${GAS_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing GAS_DEPLOYMENT_ID"; exit 1; }
+          [ -n "${NEW_VER:-}" ] || { echo "::error::Missing NEW_VER"; exit 1; }
           set -o pipefail
           set +e
           log=$(mktemp)
-          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" -d "[PROD] CI ${GITHUB_SHA::7}" 2>&1 | tee "$log"
+          clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[PROD] CI ${GITHUB_SHA::7}" 2>&1 | tee "$log"
           status=$?
           set -e
           set +o pipefail
@@ -228,6 +284,33 @@ jobs:
           fi
           rm -f "$log"
 
+      - name: "Verify deployment points to NEW_VER (PROD)"
+        env:
+          GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
+        run: |
+          set -e
+          if [ "${PROD_DEPLOYMENT_READONLY:-}" = "true" ]; then
+            echo "Skipping verification because deployment is read-only"; exit 0;
+          fi
+          clasp deployments > after.txt || true
+          node -e "
+            const fs=require('fs');
+            const id=process.env.GAS_DEPLOYMENT_ID;
+            const ver=process.env.NEW_VER;
+            const t=fs.readFileSync('after.txt','utf8');
+            const lines=t.split(/\r?\n/);
+            let cur=null;
+            for(const L of lines){
+              const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
+              if(m && m[1]===id){ cur=m[2]; break; }
+            }
+            if(!cur){ console.error('Dep ID not found AFTER'); process.exit(1); }
+            console.log('Deployment', id, 'now points to version', cur);
+            if(String(cur)!==String(ver)){
+              console.error('Version mismatch: expected', ver, 'got', cur);
+              process.exit(1);
+            }
+          "
 
       - name: "Health check (PROD)"
         env:
