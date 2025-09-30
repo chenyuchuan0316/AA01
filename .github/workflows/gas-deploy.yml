@@ -103,7 +103,7 @@ jobs:
         id: mkver-test
         run: |
           set -e
-          out=$(clasp version -d "[TEST] CI ${GITHUB_SHA::7}" || true)
+          out=$(clasp version "[TEST] CI ${GITHUB_SHA::7}" || true)
           echo "$out"
           ver=$(echo "$out" | sed -n "s/Created version \([0-9][0-9]*\).*/\1/p")
           if [ -z "$ver" ]; then echo "::error::Failed to parse version"; exit 1; fi
@@ -253,7 +253,7 @@ jobs:
         id: mkver-prod
         run: |
           set -e
-          out=$(clasp version -d "[PROD] CI ${GITHUB_SHA::7}" || true)
+          out=$(clasp version "[PROD] CI ${GITHUB_SHA::7}" || true)
           echo "$out"
           ver=$(echo "$out" | sed -n "s/Created version \([0-9][0-9]*\).*/\1/p")
           if [ -z "$ver" ]; then echo "::error::Failed to parse version"; exit 1; fi
