@@ -7281,6 +7281,49 @@
     let currentWizardStep = null;
     const TAB_STATUS_PRIORITY = { todo:0, done:1, active:2 };
     const WIZARD_JUMP_STATE = { select:null };
+    const WIZARD_FOCUSABLE_SELECTOR = 'input:not([type="hidden"]):not([disabled]):not([tabindex="-1"]):not([aria-hidden="true"])'
+      + ', select:not([disabled]):not([aria-hidden="true"])'
+      + ', textarea:not([disabled]):not([aria-hidden="true"])'
+      + ', button:not([disabled]):not([aria-hidden="true"])'
+      + ', [tabindex]:not([tabindex="-1"]):not([aria-hidden="true"])';
+
+    function isWizardFocusableElement(el){
+      if(!el) return false;
+      if(el.disabled) return false;
+      const nodeName = el.nodeName ? el.nodeName.toLowerCase() : '';
+      if(nodeName === 'input' && el.type === 'hidden') return false;
+      const tabIndexAttr = el.getAttribute ? el.getAttribute('tabindex') : null;
+      if(tabIndexAttr === '-1') return false;
+      if(el.getAttribute && el.getAttribute('aria-hidden') === 'true') return false;
+      if(typeof el.matches === 'function' && el.matches('[hidden]')) return false;
+      if(typeof window !== 'undefined'){
+        const style = window.getComputedStyle ? window.getComputedStyle(el) : null;
+        if(style){
+          if(style.visibility === 'hidden' || style.display === 'none'){
+            return false;
+          }
+        }else if(el.offsetParent === null && typeof el.getClientRects === 'function' && !el.getClientRects().length){
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function findFirstWizardFocusable(root){
+      if(!root) return null;
+      if(isWizardFocusableElement(root)){
+        return root;
+      }
+      if(!root.querySelectorAll) return null;
+      const focusables = root.querySelectorAll(WIZARD_FOCUSABLE_SELECTOR);
+      for(let i=0;i<focusables.length;i++){
+        const candidate = focusables[i];
+        if(isWizardFocusableElement(candidate)){
+          return candidate;
+        }
+      }
+      return null;
+    }
 
 
     /* ===== 段落視圖（分層/收合/進度） ===== */
@@ -16468,7 +16511,8 @@
       if(!wizardStepLookup[targetStep]){
         targetStep = wizardStepsMeta[0].step;
       }
-      wizardStepsMeta.forEach(function(meta){
+      const total = wizardStepsMeta.length;
+      wizardStepsMeta.forEach(function(meta, index){
         if(!meta || !meta.element) return;
         let status='todo';
         if(meta.step < targetStep){ status='done'; }
@@ -16477,6 +16521,8 @@
         meta.element.setAttribute('aria-selected', status === 'active' ? 'true' : 'false');
         meta.element.setAttribute('tabindex', status === 'active' ? '0' : '-1');
         meta.element.setAttribute('aria-current', status === 'active' ? 'step' : 'false');
+        meta.element.setAttribute('aria-setsize', String(total));
+        meta.element.setAttribute('aria-posinset', String(index + 1));
       });
       currentWizardStep = targetStep;
       closeWizardMoreMenu();
@@ -16566,7 +16612,16 @@
       }
       if(options && options.focus){
         const anchor = meta.anchorElement || (meta.anchor ? document.querySelector(meta.anchor) : null);
-        const focusTarget = anchor && anchor.querySelector ? anchor.querySelector('input,select,textarea,button,[tabindex]') : null;
+        let focusTarget = findFirstWizardFocusable(anchor);
+        if(!focusTarget){
+          const section = anchor && typeof anchor.closest === 'function'
+            ? anchor.closest('.page-section')
+            : document.querySelector(`.page-section[data-page="${meta.page}"]`);
+          focusTarget = findFirstWizardFocusable(section);
+        }
+        if(!focusTarget){
+          focusTarget = meta.element;
+        }
         if(focusTarget && typeof focusTarget.focus === 'function'){
           focusTarget.focus({ preventScroll:true });
         }
@@ -16717,6 +16772,10 @@
         btn.setAttribute('aria-selected', 'false');
         btn.setAttribute('aria-current', 'false');
         btn.setAttribute('tabindex', '-1');
+        const anchorId = meta.anchor ? String(meta.anchor).replace(/^#/, '') : '';
+        if(anchorId){
+          btn.setAttribute('aria-controls', anchorId);
+        }
         const labelText = (btn.querySelector('.wizard-label')?.textContent || '').trim();
         if(labelText){
           btn.setAttribute('title', `跳至${labelText}`);
