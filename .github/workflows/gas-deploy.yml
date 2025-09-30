@@ -70,14 +70,22 @@ jobs:
         run: |
           node - <<'EOF'
           const fs = require('fs');
-          const content = fs.readFileSync('appsscript.json', 'utf8');
-          const manifest = JSON.parse(content);
-          if (!manifest.webapp || !manifest.webapp.access || !manifest.webapp.executeAs) {
-            console.error('appsscript.json missing webapp config');
+          const s = fs.readFileSync('appsscript.json', 'utf8');
+          let j;
+          try {
+            j = JSON.parse(s);
+          } catch (e) {
+            console.error('appsscript.json is not valid JSON:', e.message);
             process.exit(1);
           }
-          console.log('webapp OK:', manifest.webapp);
+          const okWeb = j.webapp && j.webapp.access && j.webapp.executeAs;
+          if (!okWeb) {
+            console.error('appsscript.json missing webapp config (webapp.access / webapp.executeAs)');
+            process.exit(1);
+          }
+          console.log('webapp OK:', j.webapp);
           EOF
+
 
 
 
