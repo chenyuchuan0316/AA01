@@ -3,16 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "devDependencies": {
-    "@google/clasp": "^2.5.0"
-  },
   "scripts": {
-    "test": "echo \"no tests yet\"",
-    "deploy:web": "node gas-deploy.mjs",
-    "oauth:token": "node get-refresh-token.mjs",
-    "gas:push": "clasp push --force",
-    "gas:version": "node ./scripts/gas-version.js",
-    "gas:deploy": "node ./scripts/gas-deploy.js",
-    "gas:release": "npm run gas:push && npm run gas:version && npm run gas:deploy"
+    "test": "jest",
+    "e2e": "node e2e/health.e2e.js"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.5.0",
+    "jest": "^29.7.0",
+    "puppeteer": "^22.7.1"
   }
 }
