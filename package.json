@@ -9,7 +9,18 @@
   },
   "devDependencies": {
     "@google/clasp": "^2.5.0",
-    "jest": "^29.7.0",
-    "puppeteer": "^22.7.1"
+    "jest": "^30.2.0",
+    "puppeteer": "^24.22.3"
+  },
+  "overrides": {
+    "glob": "^10.4.5",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^148.0.0",
+    "googleapis-common": "^7.2.0",
+    "gtoken": "^7.0.1"
+  },
+  "engines": {
+    "node": ">=18.20.0",
+    "npm": ">=10.8.0"
   }
 }

@@ -1,0 +1,60 @@
+name: npm outdated report
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+jobs:
+  outdated:
+    name: Generate outdated inventory
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate outdated.json
+        run: |
+          npm outdated --json > outdated.json || true
+
+      - name: Publish summary
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+          const exists = fs.existsSync('outdated.json');
+          if (!exists) {
+            await fs.promises.appendFile(summaryPath, 'No outdated data produced.\n');
+            process.exit(0);
+          }
+          const raw = fs.readFileSync('outdated.json', 'utf8').trim();
+          const json = raw ? JSON.parse(raw) : {};
+          const entries = Object.entries(json).sort((a, b) => a[0].localeCompare(b[0]));
+          let output = '# npm outdated report\n\n';
+          if (!entries.length) {
+            output += '✅ All dependencies are up-to-date.\n';
+          } else {
+            output += '| Package | Current | Wanted | Latest |\n';
+            output += '| --- | --- | --- | --- |\n';
+            for (const [name, info] of entries) {
+              output += `| ${name} | ${info.current ?? '-'} | ${info.wanted ?? '-'} | ${info.latest ?? '-'} |\n`;
+            }
+          }
+          await fs.promises.appendFile(summaryPath, output);
+          NODE
+
+      - name: Upload outdated.json artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-outdated-report
+          path: outdated.json
+          if-no-files-found: warn
