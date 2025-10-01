@@ -38,7 +38,7 @@ const viewports = [
         console.warn(`Navigation warning for ${viewport.label}:`, error.message);
       }
 
-      await page.waitForTimeout(2000);
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const fileName = `responsive-${viewport.label}-${viewport.width}x${viewport.height}.png`;
       const filePath = path.join(screenshotDir, fileName);
