@@ -38,7 +38,7 @@ jobs:
         run: npm test --if-present
 
   test-stage:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: [unit-tests]
     timeout-minutes: 25
@@ -141,48 +141,43 @@ jobs:
         run: |
           set -e
           clasp deployments > before.txt || true
-          clasp deployments --json > before.json || true
           node -e "
             const fs=require('fs');
             const map={};
+            let text='';
+            try {
+              text=fs.readFileSync('before.txt','utf8');
+            } catch (err) {
+              console.warn('⚠️ 無法讀取 before.txt：', err.message);
+            }
 
-            const safeRead=(file)=>{
-              try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; }
-            };
-
-            const jsonText=safeRead('before.json').trim();
-            if(jsonText){
-              try {
-                const parsed=JSON.parse(jsonText);
-                const list=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.deployments)?parsed.deployments:[]);
-                for(const dep of list){
-                  const id=dep && dep.deploymentId;
-                  const ver=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
-                  if(id && (ver || ver===0)){
-                    map[id]=String(ver);
-                  }
-                }
-              } catch (err) {
-                console.warn('⚠️ 無法解析 before.json：', err.message);
+            for(const line of text.split(/\r?\n/)){
+              const match=line.match(/(AK[\w-]{20,})\s*@\s*([0-9]+)/);
+              if(match){
+                map[match[1]]=match[2];
               }
             }
 
-            if(!Object.keys(map).length){
-              const text=safeRead('before.txt');
-              const lines=text.split(/\r?\n/);
-              for(const L of lines){
-                const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
-                if(m){
-                  map[m[1]]=m[2];
-                }
-              }
-            }
-
+            const keys=Object.keys(map);
             fs.writeFileSync('before.map.json', JSON.stringify(map));
-            console.log('BEFORE MAP keys:', Object.keys(map));
+            console.log('Known deployment keys:', keys.length?keys.join(', '):'(none)');
           "
 
+      - name: "Check TEST_DEPLOYMENT_ID availability"
+        id: check-test-deployment
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+        run: |
+          if [ -z "${TEST_DEPLOYMENT_ID:-}" ]; then
+            echo "::warning::TEST_DEPLOYMENT_ID secret is not available for this workflow run."
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          fi
+
+
       - name: "Ensure TEST_DEPLOYMENT_ID exists BEFORE"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -229,6 +224,7 @@ jobs:
           echo "new_ver=$ver" >> "$GITHUB_OUTPUT"
 
       - name: "Update deployment to NEW_VER (TEST)"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -238,6 +234,7 @@ jobs:
           clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[TEST] CI ${GITHUB_SHA::7}"
       # AFTER snapshot (TEST)
       - name: "Verify deployment points to NEW_VER (TEST)"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -305,12 +302,24 @@ jobs:
           fi
 
       - name: "Run E2E tests (Puppeteer) against TEST"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: npm run e2e --if-present
 
+      - name: "Upload responsive screenshots"
+        if: steps.check-test-deployment.outputs.has_secret == 'true' && always()
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-screenshots
+          path: artifacts/screenshots/**/*.png
+          if-no-files-found: warn
+
       # --- Health check on TEST（容忍 302 登入轉向） ---
       - name: "Health check (TEST)"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -365,43 +374,26 @@ jobs:
         run: |
           set -e
           clasp deployments > before.txt || true
-          clasp deployments --json > before.json || true
           node -e "
             const fs=require('fs');
             const map={};
+            let text='';
+            try {
+              text=fs.readFileSync('before.txt','utf8');
+            } catch (err) {
+              console.warn('⚠️ 無法讀取 before.txt：', err.message);
+            }
 
-            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
-
-            const jsonText=safeRead('before.json').trim();
-            if(jsonText){
-              try {
-                const parsed=JSON.parse(jsonText);
-                const list=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.deployments)?parsed.deployments:[]);
-                for(const dep of list){
-                  const id=dep && dep.deploymentId;
-                  const ver=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
-                  if(id && (ver || ver===0)){
-                    map[id]=String(ver);
-                  }
-                }
-              } catch (err) {
-                console.warn('⚠️ 無法解析 before.json：', err.message);
+            for(const line of text.split(/\r?\n/)){
+              const match=line.match(/(AK[\w-]{20,})\s*@\s*([0-9]+)/);
+              if(match){
+                map[match[1]]=match[2];
               }
             }
 
-            if(!Object.keys(map).length){
-              const text=safeRead('before.txt');
-              const lines=text.split(/\r?\n/);
-              for(const L of lines){
-                const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
-                if(m){
-                  map[m[1]]=m[2];
-                }
-              }
-            }
-
+            const keys=Object.keys(map);
             fs.writeFileSync('before.map.json', JSON.stringify(map));
-            console.log('BEFORE MAP keys:', Object.keys(map));
+            console.log('Known deployment keys:', keys.length?keys.join(', '):'(none)');
           "
 
       - name: "Ensure GAS_DEPLOYMENT_ID exists BEFORE"
