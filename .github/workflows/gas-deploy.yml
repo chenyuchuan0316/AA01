@@ -16,9 +16,31 @@ defaults:
     shell: bash
 
 jobs:
-  test-stage:
+  unit-tests:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Node 18"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: "Install deps"
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: "Run unit tests (Jest)"
+        run: npm test --if-present
+
+  test-stage:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
     timeout-minutes: 25
 
     steps:
@@ -187,10 +209,6 @@ jobs:
             }
           "
 
-      # --- Unit tests / E2E tests (可先無檔；--if-present 不會 fail) ---
-      - name: "Run unit tests (Jest)"
-        run: npm test --if-present
-
       - name: "Debug TEST_DEPLOYMENT_ID length"
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
@@ -224,7 +242,7 @@ jobs:
           echo "::error::TEST health check failed (code=${code} location=${loc})"; exit 1
 
   deploy-prod:
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: [test-stage]
     timeout-minutes: 20
