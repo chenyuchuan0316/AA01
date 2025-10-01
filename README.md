@@ -25,11 +25,11 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 
 以下步驟將協助你把同一套程式部署成 Google Apps Script Web App，並取得可重複使用的網址：
 
-1. **建立 OAuth 憑證與 Script ID**
-   - 在 Apps Script 編輯器「專案設定」頁面複製 `Script ID`。
-   - 於 [Google Cloud Console](https://console.cloud.google.com/apis/credentials) 為同一專案建立 _桌面應用程式_ OAuth Client（Client ID / Client Secret）。
+1. **建立 OAuth 憑證與 Script ID**  
+   - 在 Apps Script 編輯器「專案設定」頁面複製 `Script ID`。  
+   - 於 [Google Cloud Console](https://console.cloud.google.com/apis/credentials) 為同一專案建立 *桌面應用程式* OAuth Client（Client ID / Client Secret）。  
    - 於「OAuth 同意畫面」加入 `https://www.googleapis.com/auth/script.projects` 與 `https://www.googleapis.com/auth/script.deployments` 權限範圍。
-2. **取得 refresh_token（僅需一次）**
+2. **取得 refresh_token（僅需一次）**  
    - 設定環境變數：
      ```bash
      export GAS_CLIENT_ID="<你的 Client ID>"
@@ -44,12 +44,12 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
    export GAS_CLIENT_SECRET="<桌面 OAuth Client Secret>"
    export GAS_OAUTH_REFRESH_TOKEN="<剛取得的 refresh_token>"
    ```
-4. **同步程式並建立 Web App Deployment**
-   - 於專案根目錄執行 `npm install`（首次使用時）。
-   - 以 `npm run deploy:web` 觸發 `gas-deploy.mjs`：此指令會依序呼叫 `projects.updateContent`、建立版本並更新（或建立）部署。成功後終端機會顯示最新的 Web App URL。
+4. **同步程式並建立 Web App Deployment**  
+   - 於專案根目錄執行 `npm install`（首次使用時）。  
+   - 以 `npm run deploy:web` 觸發 `gas-deploy.mjs`：此指令會依序呼叫 `projects.updateContent`、建立版本並更新（或建立）部署。成功後終端機會顯示最新的 Web App URL。  
    - 若要指定部署說明，可額外設定 `VERSION_DESC`、`DEPLOY_DESC` 環境變數；如需覆寫既有 deployment，提供 `DEPLOYMENT_ID` 即可。
-5. **後續更新**
-   - 程式碼變更後重複步驟 4 重新部署。Web App URL 不變，可直接分享給使用者作業。
+5. **後續更新**  
+   - 程式碼變更後重複步驟 4 重新部署。Web App URL 不變，可直接分享給使用者作業。  
    - 建議將以上指令整合進 GitHub Actions，讓主分支合併時自動部署。
 
 ## 開發環境需求
@@ -59,25 +59,6 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 - 安裝依賴：`npm install`
 - 單元測試：`npm test -- --runInBand`（Jest 30 需要 Node 18）
 - 健康檢查：`npm run e2e`（需要 `TEST_DEPLOYMENT_ID`；未設定時腳本會輸出跳過訊息並以 0 結束）
-- 設定 `.env`（可參考 `.env.example`）並提供 `GAS_WEBAPP_URL`，自動化驗收會引用該網址進行健康檢查、Playwright 與 pa11y-ci 掃描；若保留預設值，指令會自動改用本地 `src/Sidebar.html` 進行驗證。
-
-### 本地驗收一鍵指令
-
-執行 `npm run predeploy` 可一次完成下列檢查：
-
-1. `npm run lint` – ESLint 規範與格式化檢查。
-2. `npm run test` – Jest 單元測試與 jest-axe 無障礙斷言。
-3. `npm run e2e` – Playwright UI 驗證。
-4. `npm run test:a11y:pa11y` – 以 pa11y-ci 掃描部署頁面。
-5. `npm run test:a11y:jest` – 關鍵區塊的無障礙回歸測試。
-6. `npm run health` – Web App 健康檢查（接受 200 / 302）。
-
-所有指令必須成功才可推送或開 Draft PR，若其中一項失敗，請先修正後再重跑。
-
-### CI/工作流程產出
-
-- `coverage/`：Jest 產生的覆蓋率報告，已標記為 workflow artifact 供審查。
-- `playwright-report/`：Playwright HTML 報告，同樣會於 CI 步驟上傳，協助追蹤 UI 變動。
 
 ## npm 套件維護與自動升版
 
@@ -85,6 +66,7 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 - `npm auto upgrade` workflow：支援 `safe`（預設）與 `major` 兩種策略。Safe 策略會執行 `npm update`，Major 策略則以 `npm-check-updates` 調整 range 後重新安裝。
 - 分支命名遵循 `chore/npm-upgrade/<YYYYMMDD>-safe` 或 `chore/npm-upgrade/<YYYYMMDD>-major`，PR 標題固定為 `chore(deps): npm <strategy> upgrade`，內文包含 Before / After 過時表格。
 - 若預設的 `GITHUB_TOKEN` 因組織權限受到限制，可在 Repo Secrets 建立 `NPM_UPGRADE_TOKEN`，內容為擁有 `contents:write`、`pull_requests:write` 權限的 Fine-grained PAT。工作流程會自動優先使用該 Token 以避免 `403` 推送錯誤。
+
 
 ## 金鑰與憑證設定（Service Account / OIDC）
 
@@ -97,14 +79,11 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 
 ## Troubleshooting（常見問題排除）
 
-| 狀況                          | 可能原因                                                                        | 建議處理                                                                                      |
-| ----------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 側欄無法載入名單              | `MANAGERS_SHEET_ID` 或 `CONSULTANTS_BOOK_ID` 設定錯誤，或試算表未與執行帳號共享 | 檢查 `Constants.gs` 的 ID 與工作表名稱，並再次分享試算表給 Apps Script 執行帳號               |
-| 授權畫面重複出現              | 帳號尚未核准 Docs/Drive/Sheets 權限，或切換了不同的 Google 帳號                 | 重新登入正確帳號並授權全部權限，必要時於 Apps Script IDE 的 `Triggers` 頁面移除舊授權         |
-| 產出檔案命名重複或覆寫        | 同一位個案與個管師組合已有既有檔案                                              | 於輸出資料夾確認既有版本，必要時在 `Constants.gs` 調整命名規則或清除測試檔案                  |
-| 健康檢查返回 302 / 401        | Web App 啟用網域保護或僅允許特定帳號                                            | 於 `.env` / CI Secrets 設定具備存取權的部署網址，或於健康檢查前以 `route=health` 允許匿名訪問 |
-| Playwright/pa11y 無法載入頁面 | `GAS_WEBAPP_URL` 未設定、設定錯誤，或部署頁面需登入                             | 確認 `.env` 與 CI Secrets 已填入公開可讀取的 Web App URL，必要時建立測試用無限制部署          |
-| 下拉選單沒有 optgroup         | GAS 後端回傳的選單資料失敗或未完成載入                                          | 點擊欄位旁的「重新載入」按鈕重新取得資料，若持續失敗請檢查 `DataStore.gs` 與相關試算表        |
+| 狀況 | 可能原因 | 建議處理 |
+| --- | --- | --- |
+| 側欄無法載入名單 | `MANAGERS_SHEET_ID` 或 `CONSULTANTS_BOOK_ID` 設定錯誤，或試算表未與執行帳號共享 | 檢查 `Constants.gs` 的 ID 與工作表名稱，並再次分享試算表給 Apps Script 執行帳號 |
+| 授權畫面重複出現 | 帳號尚未核准 Docs/Drive/Sheets 權限，或切換了不同的 Google 帳號 | 重新登入正確帳號並授權全部權限，必要時於 Apps Script IDE 的 `Triggers` 頁面移除舊授權 |
+| 產出檔案命名重複或覆寫 | 同一位個案與個管師組合已有既有檔案 | 於輸出資料夾確認既有版本，必要時在 `Constants.gs` 調整命名規則或清除測試檔案 |
 
 ## 權限與資料保護注意事項
 
@@ -130,463 +109,143 @@ const HEADING_SCHEMA_VERSION = '2025-10-01';
 
 const HEADING_SCHEMA = Object.freeze([
   {
-    id: 'h1-basic',
-    tag: 'h1',
-    label: '基本資訊',
-    page: 'basic',
-    dom: { selector: '#basicInfoGroup .titlebar .h1', mode: 'replace', className: 'h1' },
-    children: [
-      {
-        id: 'h2-basic-unit-code',
-        tag: 'h2',
-        label: '單位代碼',
-        dom: {
-          selector: '#basicInfoGroup label[for="unitCode"]',
-          mode: 'labelHeading',
-          className: 'h2'
-        }
-      },
-      {
-        id: 'h2-basic-case-manager',
-        tag: 'h2',
-        label: '個案管理師',
-        dom: {
-          selector: '#basicInfoGroup label[for="caseManagerName"]',
-          mode: 'labelHeading',
-          className: 'h2'
-        }
-      },
-      {
-        id: 'h2-basic-case-name',
-        tag: 'h2',
-        label: '個案姓名',
-        dom: {
-          selector: '#basicInfoGroup label[for="caseName"]',
-          mode: 'labelHeading',
-          className: 'h2'
-        }
-      },
-      {
-        id: 'h2-basic-consultant-name',
-        tag: 'h2',
-        label: '照專姓名',
-        dom: {
-          selector: '#basicInfoGroup label[for="consultName"]',
-          mode: 'labelHeading',
-          className: 'h2'
-        }
-      },
-      {
-        id: 'h2-basic-cms-level',
-        tag: 'h2',
-        label: 'CMS 等級',
-        dom: {
-          selector: '.cms-level-row > label[for="cmsLevelValue"]',
-          mode: 'labelHeading',
-          className: 'h2'
-        }
-      }
+    id:'h1-basic', tag:'h1', label:'基本資訊', page:'basic',
+    dom:{ selector:'#basicInfoGroup .titlebar .h1', mode:'replace', className:'h1' },
+    children:[
+      { id:'h2-basic-unit-code', tag:'h2', label:'單位代碼',
+        dom:{ selector:'#basicInfoGroup label[for="unitCode"]', mode:'labelHeading', className:'h2' } },
+      { id:'h2-basic-case-manager', tag:'h2', label:'個案管理師',
+        dom:{ selector:'#basicInfoGroup label[for="caseManagerName"]', mode:'labelHeading', className:'h2' } },
+      { id:'h2-basic-case-name', tag:'h2', label:'個案姓名',
+        dom:{ selector:'#basicInfoGroup label[for="caseName"]', mode:'labelHeading', className:'h2' } },
+      { id:'h2-basic-consultant-name', tag:'h2', label:'照專姓名',
+        dom:{ selector:'#basicInfoGroup label[for="consultName"]', mode:'labelHeading', className:'h2' } },
+      { id:'h2-basic-cms-level', tag:'h2', label:'CMS 等級',
+        dom:{ selector:'.cms-level-row > label[for="cmsLevelValue"]', mode:'labelHeading', className:'h2' } }
     ]
   },
   {
-    id: 'h1-goals',
-    tag: 'h1',
-    label: '計畫目標',
-    page: 'goals',
-    dom: { selector: '#contactVisitGroup .titlebar .h1', mode: 'replace', className: 'h1' },
-    children: [
+    id:'h1-goals', tag:'h1', label:'計畫目標', page:'goals',
+    dom:{ selector:'#contactVisitGroup .titlebar .h1', mode:'replace', className:'h1' },
+    children:[
       {
-        id: 'h2-goals-call',
-        tag: 'h2',
-        label: '一、電聯日期',
-        dom: {
-          selector: '#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2',
-          mode: 'replace',
-          className: 'h2'
-        },
-        children: [
-          {
-            id: 'h3-goals-call-date',
-            tag: 'h3',
-            label: '電聯日期',
-            dom: {
-              selector: '#contactVisitGroup label[for="callDate"]',
-              mode: 'labelHeading',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-goals-call-consult',
-            tag: 'h3',
-            label: '照顧專員約訪',
-            dom: {
-              selector:
-                '#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox',
-              mode: 'labelHeading',
-              className: 'h3'
-            }
-          }
+        id:'h2-goals-call', tag:'h2', label:'一、電聯日期',
+        dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] .titlebar .h2', mode:'replace', className:'h2' },
+        children:[
+          { id:'h3-goals-call-date', tag:'h3', label:'電聯日期',
+            dom:{ selector:'#contactVisitGroup label[for="callDate"]', mode:'labelHeading', className:'h3' } },
+          { id:'h3-goals-call-consult', tag:'h3', label:'照顧專員約訪',
+            dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="call"] label.inline-checkbox', mode:'labelHeading', className:'h3' } }
         ]
       },
       {
-        id: 'h2-goals-homevisit',
-        tag: 'h2',
-        label: '二、家訪日期',
-        dom: {
-          selector: '#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2',
-          mode: 'replace',
-          className: 'h2'
-        },
-        children: [
-          {
-            id: 'h3-goals-homevisit-date',
-            tag: 'h3',
-            label: '家訪日期',
-            dom: {
-              selector: '#contactVisitGroup label[for="visitDate"]',
-              mode: 'labelHeading',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-goals-prep-date',
-            tag: 'h3',
-            label: '出院日期',
-            dom: {
-              selector: '#dischargeBox label[for="dischargeDate"]',
-              mode: 'labelHeading',
-              className: 'h3'
-            }
-          }
+        id:'h2-goals-homevisit', tag:'h2', label:'二、家訪日期',
+        dom:{ selector:'#contactVisitGroup .contact-visit-card[data-card="visit"] .titlebar .h2', mode:'replace', className:'h2' },
+        children:[
+          { id:'h3-goals-homevisit-date', tag:'h3', label:'家訪日期',
+            dom:{ selector:'#contactVisitGroup label[for="visitDate"]', mode:'labelHeading', className:'h3' } },
+          { id:'h3-goals-prep-date', tag:'h3', label:'出院日期',
+            dom:{ selector:'#dischargeBox label[for="dischargeDate"]', mode:'labelHeading', className:'h3' } }
         ]
       },
       {
-        id: 'h2-goals-companions',
-        tag: 'h2',
-        label: '三、偕同訪視者',
-        dom: { selector: '#visitPartnersCard .titlebar .h2', mode: 'replace', className: 'h2' },
-        children: [
-          {
-            id: 'h3-goals-primary-rel',
-            tag: 'h3',
-            label: '主要照顧者關係',
-            dom: {
-              selector: '#visitPartnersCard label[for="primaryRel"]',
-              mode: 'labelHeading',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-goals-primary-name',
-            tag: 'h3',
-            label: '主要照顧者姓名',
-            dom: {
-              selector: '#visitPartnersCard label[for="primaryName"]',
-              mode: 'labelHeading',
-              className: 'h3'
-            }
-          },
-          { id: 'h3-goals-extra-rel', tag: 'h3', label: '其他參與者關係' },
-          { id: 'h3-goals-extra-name', tag: 'h3', label: '其他參與者姓名' }
+        id:'h2-goals-companions', tag:'h2', label:'三、偕同訪視者',
+        dom:{ selector:'#visitPartnersCard .titlebar .h2', mode:'replace', className:'h2' },
+        children:[
+          { id:'h3-goals-primary-rel', tag:'h3', label:'主要照顧者關係',
+            dom:{ selector:'#visitPartnersCard label[for="primaryRel"]', mode:'labelHeading', className:'h3' } },
+          { id:'h3-goals-primary-name', tag:'h3', label:'主要照顧者姓名',
+            dom:{ selector:'#visitPartnersCard label[for="primaryName"]', mode:'labelHeading', className:'h3' } },
+          { id:'h3-goals-extra-rel', tag:'h3', label:'其他參與者關係' },
+          { id:'h3-goals-extra-name', tag:'h3', label:'其他參與者姓名' }
         ]
       },
       {
-        id: 'h2-goals-overview',
-        tag: 'h2',
-        label: '四、個案概況',
-        dom: {
-          selector: '#caseOverviewGroup .titlebar .h2',
-          mode: 'replace',
-          className: 'h2 heading-tier heading-tier--primary'
-        },
-        children: [
-          {
-            id: 'h3-goals-s1',
-            tag: 'h3',
-            label: '（一）身心概況',
-            dom: {
-              selector: '#section1_block > .titlebar label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          },
-          {
-            id: 'h3-goals-s2',
-            tag: 'h3',
-            label: '（二）經濟收入',
-            dom: {
-              selector: '#section2_block > .titlebar label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          },
-          {
-            id: 'h3-goals-s3',
-            tag: 'h3',
-            label: '（三）居住環境',
-            dom: {
-              selector: '#section3_block > .titlebar label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          },
-          {
-            id: 'h3-goals-s4',
-            tag: 'h3',
-            label: '（四）社會支持',
-            dom: {
-              selector: '#section4_block > .titlebar label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          },
-          {
-            id: 'h3-goals-s5',
-            tag: 'h3',
-            label: '（五）其他',
-            dom: {
-              selector: '#section5_block > .titlebar label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          },
-          {
-            id: 'h3-goals-s6',
-            tag: 'h3',
-            label: '（六）複評評值',
-            dom: {
-              selector: '#section6_block > .titlebar label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          }
+        id:'h2-goals-overview', tag:'h2', label:'四、個案概況',
+        dom:{ selector:'#caseOverviewGroup .titlebar .h2', mode:'replace', className:'h2 heading-tier heading-tier--primary' },
+        children:[
+          { id:'h3-goals-s1', tag:'h3', label:'（一）身心概況',
+            dom:{ selector:'#section1_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s2', tag:'h3', label:'（二）經濟收入',
+            dom:{ selector:'#section2_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s3', tag:'h3', label:'（三）居住環境',
+            dom:{ selector:'#section3_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s4', tag:'h3', label:'（四）社會支持',
+            dom:{ selector:'#section4_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s5', tag:'h3', label:'（五）其他',
+            dom:{ selector:'#section5_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-s6', tag:'h3', label:'（六）複評評值',
+            dom:{ selector:'#section6_block > .titlebar label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
         ]
       },
       {
-        id: 'h2-goals-targets',
-        tag: 'h2',
-        label: '五、照顧目標',
-        dom: { selector: '#careGoalsGroup .titlebar .h2', mode: 'replace', className: 'h2' },
-        children: [
-          {
-            id: 'h3-goals-targets-problems',
-            tag: 'h3',
-            label: '（一）照顧問題',
-            dom: {
-              selector: '#careGoals_block > .titlebar:nth-of-type(1) label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          },
-          {
-            id: 'h3-goals-targets-short',
-            tag: 'h3',
-            label: '（二）短期目標（0–3 個月）',
-            dom: {
-              selector: '#careGoals_block > .titlebar:nth-of-type(2) label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          },
-          {
-            id: 'h3-goals-targets-mid',
-            tag: 'h3',
-            label: '（三）中期目標（3–4 個月）',
-            dom: {
-              selector: '#careGoals_block > .titlebar:nth-of-type(3) label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          },
-          {
-            id: 'h3-goals-targets-long',
-            tag: 'h3',
-            label: '（四）長期目標（4–6 個月）',
-            dom: {
-              selector: '#careGoals_block > .titlebar:nth-of-type(4) label',
-              mode: 'replace',
-              className: 'h3 heading-tier heading-tier--primary'
-            }
-          }
+        id:'h2-goals-targets', tag:'h2', label:'五、照顧目標',
+        dom:{ selector:'#careGoalsGroup .titlebar .h2', mode:'replace', className:'h2' },
+        children:[
+          { id:'h3-goals-targets-problems', tag:'h3', label:'（一）照顧問題',
+            dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(1) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-targets-short', tag:'h3', label:'（二）短期目標（0–3 個月）',
+            dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(2) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-targets-mid', tag:'h3', label:'（三）中期目標（3–4 個月）',
+            dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(3) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } },
+          { id:'h3-goals-targets-long', tag:'h3', label:'（四）長期目標（4–6 個月）',
+            dom:{ selector:'#careGoals_block > .titlebar:nth-of-type(4) label', mode:'replace', className:'h3 heading-tier heading-tier--primary' } }
         ]
       },
       {
-        id: 'h2-goals-mismatch',
-        tag: 'h2',
-        label: '六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
-        dom: { selector: '#mismatchPlanGroup .titlebar .h2', mode: 'replace', className: 'h2' },
-        children: [
-          {
-            id: 'h3-goals-mismatch-1',
-            tag: 'h3',
-            label: '（一）目標達成的狀況以及未達成的差距',
-            dom: {
-              selector: '#mismatchPlanGroup textarea#reason1',
-              mode: 'previousLabelHeading',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-goals-mismatch-2',
-            tag: 'h3',
-            label: '（二）資源的變動情形',
-            dom: {
-              selector: '#mismatchPlanGroup textarea#reason2',
-              mode: 'previousLabelHeading',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-goals-mismatch-3',
-            tag: 'h3',
-            label: '（三）未使用的替代方案或是可能的影響',
-            dom: {
-              selector: '#mismatchPlanGroup textarea#reason3',
-              mode: 'previousLabelHeading',
-              className: 'h3'
-            }
-          }
+        id:'h2-goals-mismatch', tag:'h2', label:'六、與照專建議服務項目、問題清單不一致原因說明及未來規劃、後續追蹤計劃',
+        dom:{ selector:'#mismatchPlanGroup .titlebar .h2', mode:'replace', className:'h2' },
+        children:[
+          { id:'h3-goals-mismatch-1', tag:'h3', label:'（一）目標達成的狀況以及未達成的差距',
+            dom:{ selector:'#mismatchPlanGroup textarea#reason1', mode:'previousLabelHeading', className:'h3' } },
+          { id:'h3-goals-mismatch-2', tag:'h3', label:'（二）資源的變動情形',
+            dom:{ selector:'#mismatchPlanGroup textarea#reason2', mode:'previousLabelHeading', className:'h3' } },
+          { id:'h3-goals-mismatch-3', tag:'h3', label:'（三）未使用的替代方案或是可能的影響',
+            dom:{ selector:'#mismatchPlanGroup textarea#reason3', mode:'previousLabelHeading', className:'h3' } }
         ]
       }
     ]
   },
   {
-    id: 'h1-exec',
-    tag: 'h1',
-    label: '計畫執行規劃',
-    page: 'execution',
-    dom: {
-      selector: '.page-section[data-page="execution"] .group > .group-header .titlebar .h1',
-      mode: 'replace',
-      className: 'h1'
-    },
-    children: [
+    id:'h1-exec', tag:'h1', label:'計畫執行規劃', page:'execution',
+    dom:{ selector:'.page-section[data-page="execution"] .group > .group-header .titlebar .h1', mode:'replace', className:'h1' },
+    children:[
       {
-        id: 'h2-exec-services',
-        tag: 'h2',
-        label: '一、長照服務核定項目、頻率',
-        dom: { selector: '#planExecutionCard .titlebar label', mode: 'replace', className: 'h2' },
-        children: [
-          {
-            id: 'h3-exec-b',
-            tag: 'h3',
-            label: '（一）B碼',
-            dom: {
-              selector:
-                '#planEditor .plan-category[data-plan-category="B"] .plan-category-heading h3',
-              mode: 'replace',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-exec-c',
-            tag: 'h3',
-            label: '（二）C碼',
-            dom: {
-              selector:
-                '#planEditor .plan-category[data-plan-category="C"] .plan-category-heading h3',
-              mode: 'replace',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-exec-d',
-            tag: 'h3',
-            label: '（三）D碼',
-            dom: {
-              selector:
-                '#planEditor .plan-category[data-plan-category="D"] .plan-category-heading h3',
-              mode: 'replace',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-exec-ef',
-            tag: 'h3',
-            label: '（四）E.F碼',
-            dom: {
-              selector:
-                '#planEditor .plan-category[data-plan-category="EF"] .plan-category-heading h3',
-              mode: 'replace',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-exec-g',
-            tag: 'h3',
-            label: '（五）G碼',
-            dom: {
-              selector:
-                '#planEditor .plan-category[data-plan-category="G"] .plan-category-heading h3',
-              mode: 'replace',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-exec-sc',
-            tag: 'h3',
-            label: '（六）SC碼',
-            dom: {
-              selector:
-                '#planEditor .plan-category[data-plan-category="SC"] .plan-category-heading h3',
-              mode: 'replace',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-exec-nutrition',
-            tag: 'h3',
-            label: '（七）營養餐飲服務',
-            dom: {
-              selector:
-                '#planEditor .plan-category[data-plan-category="MEAL"] .plan-category-heading h3',
-              mode: 'replace',
-              className: 'h3'
-            }
-          },
-          {
-            id: 'h3-exec-emergency',
-            tag: 'h3',
-            label: '（八）緊急救援服務',
-            dom: {
-              selector:
-                '#planExecutionCard .plan-category[data-plan-category="EMERGENCY"] .plan-category-heading h3',
-              mode: 'replace',
-              className: 'h3'
-            }
-          }
+        id:'h2-exec-services', tag:'h2', label:'一、長照服務核定項目、頻率',
+        dom:{ selector:'#planExecutionCard .titlebar label', mode:'replace', className:'h2' },
+        children:[
+          { id:'h3-exec-b', tag:'h3', label:'（一）B碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="B"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-c', tag:'h3', label:'（二）C碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="C"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-d', tag:'h3', label:'（三）D碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="D"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-ef', tag:'h3', label:'（四）E.F碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="EF"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-g', tag:'h3', label:'（五）G碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="G"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-sc', tag:'h3', label:'（六）SC碼',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="SC"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-nutrition', tag:'h3', label:'（七）營養餐飲服務',
+            dom:{ selector:'#planEditor .plan-category[data-plan-category="MEAL"] .plan-category-heading h3', mode:'replace', className:'h3' } },
+          { id:'h3-exec-emergency', tag:'h3', label:'（八）緊急救援服務',
+            dom:{ selector:'#planExecutionCard .plan-category[data-plan-category="EMERGENCY"] .plan-category-heading h3', mode:'replace', className:'h3' } }
         ]
       },
-      {
-        id: 'h2-exec-referral',
-        tag: 'h2',
-        label: '二、轉介其他服務資源',
-        dom: { selector: '#planReferralCard .titlebar label', mode: 'replace', className: 'h2' }
-      },
-      { id: 'h2-exec-station', tag: 'h2', label: '三、巷弄長照站資訊與意願' },
-      { id: 'h2-exec-emergency-note', tag: 'h2', label: '四、緊急救援服務說明' },
-      { id: 'h2-exec-attachment2', tag: 'h2', label: '附件二（服務計畫明細）預覽' },
-      { id: 'h2-exec-attachment1', tag: 'h2', label: '附件一：計畫執行規劃預覽' }
+      { id:'h2-exec-referral', tag:'h2', label:'二、轉介其他服務資源',
+        dom:{ selector:'#planReferralCard .titlebar label', mode:'replace', className:'h2' } },
+      { id:'h2-exec-station', tag:'h2', label:'三、巷弄長照站資訊與意願' },
+      { id:'h2-exec-emergency-note', tag:'h2', label:'四、緊急救援服務說明' },
+      { id:'h2-exec-attachment2', tag:'h2', label:'附件二（服務計畫明細）預覽' },
+      { id:'h2-exec-attachment1', tag:'h2', label:'附件一：計畫執行規劃預覽' }
     ]
   },
   {
-    id: 'h1-notes',
-    tag: 'h1',
-    label: '其他備註',
-    page: 'notes',
-    dom: { selector: '#planOtherGroup .titlebar .h1', mode: 'replace', className: 'h1' },
-    children: [
-      {
-        id: 'h2-notes-other',
-        tag: 'h2',
-        label: '其他（個案特殊狀況或其他未盡事宜可備註於此）',
-        dom: {
-          selector:
-            '#planOtherGroup .section-card .titlebar .h2, #planOtherGroup .section-card .titlebar span.h2',
-          mode: 'replace',
-          className: 'h2'
-        }
-      }
+    id:'h1-notes', tag:'h1', label:'其他備註', page:'notes',
+    dom:{ selector:'#planOtherGroup .titlebar .h1', mode:'replace', className:'h1' },
+    children:[
+      { id:'h2-notes-other', tag:'h2', label:'其他（個案特殊狀況或其他未盡事宜可備註於此）',
+        dom:{ selector:'#planOtherGroup .section-card .titlebar .h2, #planOtherGroup .section-card .titlebar span.h2', mode:'replace', className:'h2' } }
     ]
   }
 ]);
@@ -613,19 +272,19 @@ HtmlService：Sidebar.html
                         └── 服務資料查詢（透過 DataStore.gs）
 ```
 
-- **前端 (Sidebar.html)**：使用原生 HTML/CSS/JavaScript 建立表單介面，並在提交前負責資料整理、文字重組、欄位驗證。
-- **後端 (`*.gs`)**：在 Apps Script Runtime 中執行。主要負責複製模板文件、依段落更新內容、查詢 Google 試算表等。
+* **前端 (Sidebar.html)**：使用原生 HTML/CSS/JavaScript 建立表單介面，並在提交前負責資料整理、文字重組、欄位驗證。
+* **後端 (`*.gs`)**：在 Apps Script Runtime 中執行。主要負責複製模板文件、依段落更新內容、查詢 Google 試算表等。
 
 ---
 
 ## 關鍵檔案與模組
 
-| 檔案           | 內容摘要                                                                                                                                                                |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AGENTS.md`    | 專案維護指南與開發原則。                                                                                                                                                |
-| `AppCore.gs`   | 入口流程、文件寫入、通用工具與人員名單查詢皆集中於此；`applyH1_*` 會透過 `renderSimpleTemplate` 套用模板字典輸出段落。亦提供 `getServiceCatalog()` 給前端取得服務資料。 |
-| `DataStore.gs` | 外部資源 ID、桃園市長照給付資料庫靜態表，以及 H1 段落所需的模板與詞彙表，供 `AppCore.gs` 與前端查詢。                                                                   |
-| `Sidebar.html` | 側欄 UI 與邏輯。負責收集使用者輸入、產生描述文字、基本驗證與呼叫後端函式。                                                                                              |
+| 檔案 | 內容摘要 |
+| --- | --- |
+| `AGENTS.md` | 專案維護指南與開發原則。|
+| `AppCore.gs` | 入口流程、文件寫入、通用工具與人員名單查詢皆集中於此；`applyH1_*` 會透過 `renderSimpleTemplate` 套用模板字典輸出段落。亦提供 `getServiceCatalog()` 給前端取得服務資料。|
+| `DataStore.gs` | 外部資源 ID、桃園市長照給付資料庫靜態表，以及 H1 段落所需的模板與詞彙表，供 `AppCore.gs` 與前端查詢。|
+| `Sidebar.html` | 側欄 UI 與邏輯。負責收集使用者輸入、產生描述文字、基本驗證與呼叫後端函式。|
 
 ---
 
@@ -633,18 +292,18 @@ HtmlService：Sidebar.html
 
 AA01 需在 Google Workspace 環境執行，並取得下列服務權限：
 
-- Google Docs API (`DocumentApp`)：讀寫公版文件內容。
-- Google Drive API (`DriveApp`)：複製模板並寫入指定資料夾。
-- Google Sheets API (`SpreadsheetApp`)：讀取個管師及照專名單。
+* Google Docs API (`DocumentApp`)：讀寫公版文件內容。
+* Google Drive API (`DriveApp`)：複製模板並寫入指定資料夾。
+* Google Sheets API (`SpreadsheetApp`)：讀取個管師及照專名單。
 
 部署前請在 `DataStore.gs` 調整以下常數為自己環境的 ID：
 
-| 常數                                            | 用途                                                             |
-| ----------------------------------------------- | ---------------------------------------------------------------- |
-| `TEMPLATE_DOC_ID`                               | 計畫書公版 Google 文件 ID。                                      |
-| `OUTPUT_FOLDER_ID`                              | 輸出文件的雲端硬碟資料夾 ID。                                    |
-| `MANAGERS_SHEET_ID` / `MANAGERS_SHEET_NAME`     | 存放個管師名單的試算表與工作表名稱（B 欄=員工編號、H 欄=姓名）。 |
-| `CONSULTANTS_BOOK_ID` / `CONSULTANTS_BOOK_NAME` | 照專名單試算表資訊（A 欄=單位代碼、B 欄=姓名、C 欄=狀態）。      |
+| 常數 | 用途 |
+| --- | --- |
+| `TEMPLATE_DOC_ID` | 計畫書公版 Google 文件 ID。|
+| `OUTPUT_FOLDER_ID` | 輸出文件的雲端硬碟資料夾 ID。|
+| `MANAGERS_SHEET_ID` / `MANAGERS_SHEET_NAME` | 存放個管師名單的試算表與工作表名稱（B 欄=員工編號、H 欄=姓名）。|
+| `CONSULTANTS_BOOK_ID` / `CONSULTANTS_BOOK_NAME` | 照專名單試算表資訊（A 欄=單位代碼、B 欄=姓名、C 欄=狀態）。|
 
 > ⚠️ 這些 ID 為特定環境的資源。若未更新，程式將無法存取或寫入正確資料。
 
@@ -710,11 +369,11 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
    - `applyAndSave` 先計算新檔名稱（`FNA1_YYYYMMDD_個案姓名_個管師姓名_V{版號}`），並以「個案×個管師」為唯一鍵遞增版號。
    - 於 `OUTPUT_FOLDER_ID` 指定的資料夾中，以 `TEMPLATE_DOC_ID` 為模板建立副本並開啟 Body。
    - `DOCUMENT_WRITERS` 依序呼叫 `applyH1_*` 函式處理各段落（邏輯集中於 `AppCore.gs`）：
-   - `applyH1_CallDate` / `applyH1_VisitDate`：更新標題列文字或插入出院日期。
-   - `applyH1_Attendees`：組出偕同訪視者句子（包含主照者、照專、其他參與者）。
-   - `applyH1_CaseProfile`：依新版層級輸出「四、個案概況」，（一）身心概況細分為基本資料、感官功能、吞嚥與飲食、口腔／牙齒、疼痛與皮膚、移動功能、排泄與輔具、ADL、IADL、情緒與行為、醫療與用藥、睡眠與日間活動、管路／裝置、身障資訊、建議措施與補充；後續保留（二）經濟收入、（三）居住環境、（四）社會支持、（五）其他、（六）複評評值（含結構化預覽），必要時補上預設文字並同步更新唯讀欄位。
-   - `applyH1_CareGoals`：寫入照顧問題、短/中期四格、長期目標。
-   - `applyH1_MismatchPlan`：整合不一致原因與常用快捷語句。
+    - `applyH1_CallDate` / `applyH1_VisitDate`：更新標題列文字或插入出院日期。
+    - `applyH1_Attendees`：組出偕同訪視者句子（包含主照者、照專、其他參與者）。
+    - `applyH1_CaseProfile`：依新版層級輸出「四、個案概況」，（一）身心概況細分為基本資料、感官功能、吞嚥與飲食、口腔／牙齒、疼痛與皮膚、移動功能、排泄與輔具、ADL、IADL、情緒與行為、醫療與用藥、睡眠與日間活動、管路／裝置、身障資訊、建議措施與補充；後續保留（二）經濟收入、（三）居住環境、（四）社會支持、（五）其他、（六）複評評值（含結構化預覽），必要時補上預設文字並同步更新唯讀欄位。
+    - `applyH1_CareGoals`：寫入照顧問題、短/中期四格、長期目標。
+    - `applyH1_MismatchPlan`：整合不一致原因與常用快捷語句。
    - 接著透過 `applyPlanExecutionPage` 與 `applyPlanServiceSummaryPage` 在文件結尾加入頁 2（計畫執行規劃）與頁 3（服務明細），自動插入分頁。
    - 完成後儲存關閉文件，回傳新檔資訊給前端。
 
@@ -725,151 +384,140 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
 
 ## 介面重點說明（Sidebar.html）
 
-- 側欄頂端提供「基本資訊／計畫目標／計畫執行規劃／其他備註」四個分頁與字級切換（A／A＋／A＋＋，對應 20px／約 24px／約 26px）。系統會記住使用者選擇並自動重新計算黏附元件與間距；螢幕高度小於 640px 時亦會自動壓縮 padding/gap 約 5–10%，避免畫面塞不下。完成「基本資訊」頁籤的必填欄位後，介面會自動帶入下一頁的「計畫目標」，縮短手動切換步驟。
-- 每個段落標題列提供「只看未填」「顯示進階」「全部收合」三種控制。切換結果會寫入 `localStorage`，重新整理或返回表單後仍維持上一個選擇；行動端首次開啟預設啟用「只看未填」，減少滑動距離。
-- **基本資訊 H1**：欄位改以 H2 標題呈現（單位代碼、個案管理師、個案姓名、照專姓名、CMS 等級），單位代碼仍決定個管師與照專名單。
-- **計畫目標 H1**：電聯日期、家訪日期、偕同訪視者皆以 H2 區塊呈現，內層使用 H3 欄位；同頁的「四、個案概況」維持 H3 標題，方便捲動導覽。
-- **（一）身心概況**：
+* 側欄頂端提供「基本資訊／計畫目標／計畫執行規劃／其他備註」四個分頁與字級切換（A／A＋／A＋＋，對應 20px／約 24px／約 26px）。系統會記住使用者選擇並自動重新計算黏附元件與間距；螢幕高度小於 640px 時亦會自動壓縮 padding/gap 約 5–10%，避免畫面塞不下。完成「基本資訊」頁籤的必填欄位後，介面會自動帶入下一頁的「計畫目標」，縮短手動切換步驟。
+* 每個段落標題列提供「只看未填」「顯示進階」「全部收合」三種控制。切換結果會寫入 `localStorage`，重新整理或返回表單後仍維持上一個選擇；行動端首次開啟預設啟用「只看未填」，減少滑動距離。
+* **基本資訊 H1**：欄位改以 H2 標題呈現（單位代碼、個案管理師、個案姓名、照專姓名、CMS 等級），單位代碼仍決定個管師與照專名單。
+* **計畫目標 H1**：電聯日期、家訪日期、偕同訪視者皆以 H2 區塊呈現，內層使用 H3 欄位；同頁的「四、個案概況」維持 H3 標題，方便捲動導覽。
+* **（一）身心概況**：
   - H4/H5 重新分組：基本資料（年齡、性別、認知溝通、意識狀態）、感官功能（視力補充／眼鏡依從性、聽力狀態／助聽依從性）、吞嚥與飲食（吞嚥等級、症狀、飲食質地、管灌方式）、口腔／牙齒、疼痛與皮膚、移動功能、排泄與輔具、ADL、IADL、情緒與行為、醫療與用藥、睡眠與日間活動、管路／裝置、身障資訊（唯讀）、建議措施與補充。
   - 內建多層邏輯（視力、聽力、疼痛、皮膚病灶、ADL、睡眠等），透過即時組句產生段落。
   - 預覽區改為分段卡片，每段提供「回到來源欄位」捷徑，並可切換「只看變更」比較上一版內容。
   - `FORM_RULES` 描述跨欄位關係（例如夜間集尿袋與夜尿次數互斥、吞嚥與飲食質地矛盾），可隱藏欄位、清空輸入、顯示警告或阻擋提交。
   - `buildSection1Text_v2` 會根據輸入組成各段落文本並提供 diff 資訊給預覽卡片。
-- **（二）~（四）**：經濟收入、居住環境、社會支持皆維持既有表單邏輯並組句；經濟收入段落同步設定身障等級／類別並回寫至「身心概況」的唯讀資訊。
-- **(五)(六)**：其他與複評評值提供自由文字欄位，使用者可直接輸入或貼上內容。
-- **正式資源（B 服務）**：日間照顧與 BD03 交通車會依 CMS 等級及桃園市給付額度自動推估每週/每月可使用次數、耗用點數與剩餘額度，並將建議文字同步至服務計畫與附件摘要。所有服務代碼在加入計畫時，側欄亦會套用對應的「使用方式」範本，讓填寫者僅需視個案微調敘述。月單位欄位新增 +1／+5／+10 以及清除快捷按鈕，行動裝置也能快速設定用量；在計畫執行規劃分頁中改以「服務類別」聚合卡呈現（如居家服務 B/C、專業服務 D…），同類型服務會自動合併於同一張卡片，方便一次檢視多個代碼。
-- **照顧目標**：支援問題清單（最多 5 項）及短/中/長期目標；長期目標會彙整短中期欄位。
-- **不一致原因與追蹤計畫**：常用快捷語句可勾選後自動附加在第三欄。
-- **附件預覽（其他備註分頁）**：顯示計畫執行規劃文字及服務明細表，與輸出附件同步更新。服務明細會依類別聚合並依承接/指定單位合併列，同時提供「複製表格」與「複製為純文字」兩種按鈕，可直接貼到試算表或 Word；自費總額、動態 padding 與浮動按鈕高度也會隨視窗更新。
-- **其他備註**：第三頁新增「其他備註」大欄位，可補充個案特殊狀況；內容會寫入附件三，未填寫時則在文件顯示「（未填寫備註）」提醒。
-- **產出按鈕**：送出前進行欄位驗證並組成 `form` 物件，若樣式檢查器偵測到半形標點或異常空白會以提醒 Toast 阻擋提交。
+* **（二）~（四）**：經濟收入、居住環境、社會支持皆維持既有表單邏輯並組句；經濟收入段落同步設定身障等級／類別並回寫至「身心概況」的唯讀資訊。
+* **(五)(六)**：其他與複評評值提供自由文字欄位，使用者可直接輸入或貼上內容。
+* **正式資源（B 服務）**：日間照顧與 BD03 交通車會依 CMS 等級及桃園市給付額度自動推估每週/每月可使用次數、耗用點數與剩餘額度，並將建議文字同步至服務計畫與附件摘要。所有服務代碼在加入計畫時，側欄亦會套用對應的「使用方式」範本，讓填寫者僅需視個案微調敘述。月單位欄位新增 +1／+5／+10 以及清除快捷按鈕，行動裝置也能快速設定用量；在計畫執行規劃分頁中改以「服務類別」聚合卡呈現（如居家服務 B/C、專業服務 D…），同類型服務會自動合併於同一張卡片，方便一次檢視多個代碼。
+* **照顧目標**：支援問題清單（最多 5 項）及短/中/長期目標；長期目標會彙整短中期欄位。
+* **不一致原因與追蹤計畫**：常用快捷語句可勾選後自動附加在第三欄。
+* **附件預覽（其他備註分頁）**：顯示計畫執行規劃文字及服務明細表，與輸出附件同步更新。服務明細會依類別聚合並依承接/指定單位合併列，同時提供「複製表格」與「複製為純文字」兩種按鈕，可直接貼到試算表或 Word；自費總額、動態 padding 與浮動按鈕高度也會隨視窗更新。
+* **其他備註**：第三頁新增「其他備註」大欄位，可補充個案特殊狀況；內容會寫入附件三，未填寫時則在文件顯示「（未填寫備註）」提醒。
+* **產出按鈕**：送出前進行欄位驗證並組成 `form` 物件，若樣式檢查器偵測到半形標點或異常空白會以提醒 Toast 阻擋提交。
 
 ### 預覽卡片、規則引擎與樣式檢查
 
-- **分段預覽與差異比對**：`SECTION1_PREVIEW_META` 定義卡片順序與錨點。最新預覽結果儲存在 `section1PreviewState.segments`，成功送出後會序列化成 map 寫入 `localStorage`（key：`AA01.section1.previousSegments`），供「只看變更」模式比較上一版內容。若卡片僅顯示變更，可點右上角按鈕跳回對應欄位調整。
-- **宣告式跨欄位規則**：`FORM_RULES` 位於 `Sidebar.html`，每條規則包含 `if` 條件陣列與 `then` 動作陣列。動作支援 `hide`（暫時隱藏）、`clear`（清空值）、`fix`（自動修正）、`warn`（顯示提醒 Toast）、`block`（標記為錯誤並阻擋提交）。`runSection1Rules()` 每次組句時執行，並在 UI 顯示警告或可點選的錯誤清單，新增規則時只需擴充 `FORM_RULES`。
-- **樣式檢查器工作流程**：`STYLE_CHECK_FIELDS` 指定需檢查的輸出欄位；`runStyleChecker()` 會檢測連續空白、半形標點與標點前空格，一旦偵測會為欄位加上 `input-invalid` 標記並以 Toast 顯示提示。送出成功後 `clearStyleCheckerMarks()` 會移除標記，避免殘留紅框。
+* **分段預覽與差異比對**：`SECTION1_PREVIEW_META` 定義卡片順序與錨點。最新預覽結果儲存在 `section1PreviewState.segments`，成功送出後會序列化成 map 寫入 `localStorage`（key：`AA01.section1.previousSegments`），供「只看變更」模式比較上一版內容。若卡片僅顯示變更，可點右上角按鈕跳回對應欄位調整。
+* **宣告式跨欄位規則**：`FORM_RULES` 位於 `Sidebar.html`，每條規則包含 `if` 條件陣列與 `then` 動作陣列。動作支援 `hide`（暫時隱藏）、`clear`（清空值）、`fix`（自動修正）、`warn`（顯示提醒 Toast）、`block`（標記為錯誤並阻擋提交）。`runSection1Rules()` 每次組句時執行，並在 UI 顯示警告或可點選的錯誤清單，新增規則時只需擴充 `FORM_RULES`。
+* **樣式檢查器工作流程**：`STYLE_CHECK_FIELDS` 指定需檢查的輸出欄位；`runStyleChecker()` 會檢測連續空白、半形標點與標點前空格，一旦偵測會為欄位加上 `input-invalid` 標記並以 Toast 顯示提示。送出成功後 `clearStyleCheckerMarks()` 會移除標記，避免殘留紅框。
 
 ## 給付與防呆規則整理
 
 以下依政策條文彙整服務代碼的額度、互斥與頻次限制，括號為來源頁碼，方便對照原始文件。
 
 ### 一、全域防呆規則（跨所有碼別）
-
-- 額度不可互相流用：個人長照服務的 B/C（照顧與專業）與 D（交通）、E/F（輔具與居家無障礙）、G（喘息）額度彼此獨立，不得互挪；同屬第一款（B/C）下各目額度也不得互挪。（第 7 條、附表二、三；p.3、p.9–10）
-- 發給週期與結餘：B/C、D 按月給付，未滿月比例計，結餘可自照顧計畫核定月起 6 個月內保留，期滿歸零；E/F 每三年給付一次；G 每年給付一次，且使用期間不得依其他法令申請相同性質補助。（p.5）
-- 聘僱外籍看護之家戶限制：B/C 額度僅給付 30%，且原則限用 C 碼；例外放行到宅沐浴車 BA09/BA09a 以及社區式交通 BD03，仍受 30% 總額度限制。（p.4、p.20–21、p.35）
-- 喘息服務（G 碼）排除條件：無家庭照顧者或已有其他法令補助臨時／短期照顧者，不得給付喘息額度。（p.4–5）
-- 可臨時提供之 BA 碼：BA01、BA07、BA12、BA14、BA17a、BA17b、BA17c、BA17d1、BA17d2、BA23、BA24 可先行服務後補核；BA22 不得臨時提供。（p.7、p.27）
-- 同時段不可重複申報原則：多數互斥指同一時段不得併報，或同日／同月限申報次數，詳各碼別條款。
+* 額度不可互相流用：個人長照服務的 B/C（照顧與專業）與 D（交通）、E/F（輔具與居家無障礙）、G（喘息）額度彼此獨立，不得互挪；同屬第一款（B/C）下各目額度也不得互挪。（第 7 條、附表二、三；p.3、p.9–10）
+* 發給週期與結餘：B/C、D 按月給付，未滿月比例計，結餘可自照顧計畫核定月起 6 個月內保留，期滿歸零；E/F 每三年給付一次；G 每年給付一次，且使用期間不得依其他法令申請相同性質補助。（p.5）
+* 聘僱外籍看護之家戶限制：B/C 額度僅給付 30%，且原則限用 C 碼；例外放行到宅沐浴車 BA09/BA09a 以及社區式交通 BD03，仍受 30% 總額度限制。（p.4、p.20–21、p.35）
+* 喘息服務（G 碼）排除條件：無家庭照顧者或已有其他法令補助臨時／短期照顧者，不得給付喘息額度。（p.4–5）
+* 可臨時提供之 BA 碼：BA01、BA07、BA12、BA14、BA17a、BA17b、BA17c、BA17d1、BA17d2、BA23、BA24 可先行服務後補核；BA22 不得臨時提供。（p.7、p.27）
+* 同時段不可重複申報原則：多數互斥指同一時段不得併報，或同日／同月限申報次數，詳各碼別條款。
 
 ### 二、AA 碼（照顧管理／政策加計）—互斥／上限
-
-- AA01 與 AA02 同月不得併計；專任個管同月 120 組為準，可超額至 150 組但超額每組減付 10%。不扣額度、免部分負擔。（p.11–12）
-- AA03：每一個 C 碼專業服務（不含 CC01）僅能申請一次，且該時段需同時提供限定 BA 碼之一。不扣額度、免部分負擔。（p.12–13）
-- AA04：臨終日前後指定時點僅限申請一次。不扣額度、免部分負擔。（p.13）
-- AA05：同服務單位對同個案每日限加計一次（不得加計於 BA16）。不扣額度、免部分負擔。（p.13–14）
-- AA06：每日限一次，限搭配 BA01／BA07／BA12 指定情形。不扣額度、免部分負擔。（p.14–15）
-- AA07：每月申請一次，限等級四級（含）以上並符合家庭條件。不扣額度、免部分負擔。（p.15）
-- AA08 與 AA09：同日不得同時申請；同服務單位同個案一日限加計一次。不扣額度、免部分負擔。（p.15）
-- AA10：夜間緊急服務一日為一給付單位。不扣額度、免部分負擔。（p.15）
-- AA11：同一領有身障證明之對象每日只限申請一次（居家式與社區式可分別計一次）。不扣額度、免部分負擔。（p.16）
-- AA12：每年上限二次（每 6 個月一次）。不扣額度、免部分負擔。（p.16–17）
+* AA01 與 AA02 同月不得併計；專任個管同月 120 組為準，可超額至 150 組但超額每組減付 10%。不扣額度、免部分負擔。（p.11–12）
+* AA03：每一個 C 碼專業服務（不含 CC01）僅能申請一次，且該時段需同時提供限定 BA 碼之一。不扣額度、免部分負擔。（p.12–13）
+* AA04：臨終日前後指定時點僅限申請一次。不扣額度、免部分負擔。（p.13）
+* AA05：同服務單位對同個案每日限加計一次（不得加計於 BA16）。不扣額度、免部分負擔。（p.13–14）
+* AA06：每日限一次，限搭配 BA01／BA07／BA12 指定情形。不扣額度、免部分負擔。（p.14–15）
+* AA07：每月申請一次，限等級四級（含）以上並符合家庭條件。不扣額度、免部分負擔。（p.15）
+* AA08 與 AA09：同日不得同時申請；同服務單位同個案一日限加計一次。不扣額度、免部分負擔。（p.15）
+* AA10：夜間緊急服務一日為一給付單位。不扣額度、免部分負擔。（p.15）
+* AA11：同一領有身障證明之對象每日只限申請一次（居家式與社區式可分別計一次）。不扣額度、免部分負擔。（p.16）
+* AA12：每年上限二次（每 6 個月一次）。不扣額度、免部分負擔。（p.16–17）
 
 ### 三、BA 碼（居家照顧）—互斥／上限
-
-- BA01：原則每日 1 組，必要時早晚各 1 組；同一時段不得與 BA07、BA23 併報。可臨時提供。（p.17）
-- BA02：每 30 分鐘 1 單位，單日上限 3 小時；不得與其他組合併用。（p.17–18）
-- BA03：不得僅作為他項服務前後之觀察；無日上限明文。（p.18）
-- BA04：每餐 1 組。（p.18）
-- BA05：在家備餐每次 1 組；一日管灌備餐 1 組；同住個案共用時僅擇一人扣 B/C 額度與部分負擔。（p.18–19）
-- BA07：同時段不得與 BA01、BA23 併報；可臨時提供。（p.19）
-- BA08：無頻次上限明文；提供者需符合資格限制。（p.19–20）
-- BA09／BA09a：外籍看護之家戶與中低收特照津貼對象可使用（例外於第 10 條），並有團隊規模要求。（p.20–21）
-- BA10：完整一次為一單位。（p.21）
-- BA11：完整一次為一單位。（p.21）
-- BA12：不得用於電梯／爬梯機／樓梯升降椅；問題清單須含「移位」或「上下樓梯」；可臨時提供。（p.21–22）
-- BA13：每 30 分鐘 1 單位；符合 BA12 條件時得併用。（p.22）
-- BA14：不適用於定期復健或透析；出門起 1.5 小時內用本碼，逾 1.5 小時改依實際時數用 BA13；可臨時提供。（p.22–23）
-- BA15：每 30 分鐘 1 單位；共用區域僅給付 50%，其餘自付；同住多個案住同一臥室僅擇一人扣額度；獨居定義明確。（p.23–24）
-- BA16：距離 5 公里內適用；含家人物品則僅給付 50%；超距離費用自付。（p.24）
-- BA17a：每日上限 3 組，可與 BA17b 同時加計；可臨時提供。（p.24–25）
-- BA17b：每日上限 3 組；可臨時提供。（p.25）
-- BA17c：每週上限 7 組；可臨時提供。（p.25–26）
-- BA17d1：每日上限 1 組；可臨時提供。（p.26）
-- BA17d2：每週上限 3 組，特殊情況得專案增次；可臨時提供。（p.26）
-- BA17e：每週上限 1 組。（p.26）
-- BA18：不得與任何其他組合同時段使用（可接續）。（p.26）
-- BA20：不得與任何其他組合同時段使用（可接續）。（p.27）
-- BA22：不得搭配其他照顧組合；服務時段 06:00–20:00 至少三次；非此時段依審核得加計 AA08；不得臨時提供。（p.27）
-- BA23：同時段不得與 BA01、BA07 併報；可臨時提供。（p.27–28）
-- BA24：若在 BA01／BA07 過程中執行，不得另計；可臨時提供。（p.28）
+* BA01：原則每日 1 組，必要時早晚各 1 組；同一時段不得與 BA07、BA23 併報。可臨時提供。（p.17）
+* BA02：每 30 分鐘 1 單位，單日上限 3 小時；不得與其他組合併用。（p.17–18）
+* BA03：不得僅作為他項服務前後之觀察；無日上限明文。（p.18）
+* BA04：每餐 1 組。（p.18）
+* BA05：在家備餐每次 1 組；一日管灌備餐 1 組；同住個案共用時僅擇一人扣 B/C 額度與部分負擔。（p.18–19）
+* BA07：同時段不得與 BA01、BA23 併報；可臨時提供。（p.19）
+* BA08：無頻次上限明文；提供者需符合資格限制。（p.19–20）
+* BA09／BA09a：外籍看護之家戶與中低收特照津貼對象可使用（例外於第 10 條），並有團隊規模要求。（p.20–21）
+* BA10：完整一次為一單位。（p.21）
+* BA11：完整一次為一單位。（p.21）
+* BA12：不得用於電梯／爬梯機／樓梯升降椅；問題清單須含「移位」或「上下樓梯」；可臨時提供。（p.21–22）
+* BA13：每 30 分鐘 1 單位；符合 BA12 條件時得併用。（p.22）
+* BA14：不適用於定期復健或透析；出門起 1.5 小時內用本碼，逾 1.5 小時改依實際時數用 BA13；可臨時提供。（p.22–23）
+* BA15：每 30 分鐘 1 單位；共用區域僅給付 50%，其餘自付；同住多個案住同一臥室僅擇一人扣額度；獨居定義明確。（p.23–24）
+* BA16：距離 5 公里內適用；含家人物品則僅給付 50%；超距離費用自付。（p.24）
+* BA17a：每日上限 3 組，可與 BA17b 同時加計；可臨時提供。（p.24–25）
+* BA17b：每日上限 3 組；可臨時提供。（p.25）
+* BA17c：每週上限 7 組；可臨時提供。（p.25–26）
+* BA17d1：每日上限 1 組；可臨時提供。（p.26）
+* BA17d2：每週上限 3 組，特殊情況得專案增次；可臨時提供。（p.26）
+* BA17e：每週上限 1 組。（p.26）
+* BA18：不得與任何其他組合同時段使用（可接續）。（p.26）
+* BA20：不得與任何其他組合同時段使用（可接續）。（p.27）
+* BA22：不得搭配其他照顧組合；服務時段 06:00–20:00 至少三次；非此時段依審核得加計 AA08；不得臨時提供。（p.27）
+* BA23：同時段不得與 BA01、BA07 併報；可臨時提供。（p.27–28）
+* BA24：若在 BA01／BA07 過程中執行，不得另計；可臨時提供。（p.28）
 
 ### 四、BB（日間照顧）與 BC（家庭托顧）—互斥／上限
-
-- 全日（BB01/03/05/07/09/11/13；BC01/03/05/07/09/11/13）：一日為一單位；交通另計（D 碼或 BD03）。（p.28–34）
-- 半日（BB02/04/06/08/10/12/14；BC02/04/06/08/10/12/14）：半日為一單位，同日不得申請兩次；交通另計。（p.28–34）
+* 全日（BB01/03/05/07/09/11/13；BC01/03/05/07/09/11/13）：一日為一單位；交通另計（D 碼或 BD03）。（p.28–34）
+* 半日（BB02/04/06/08/10/12/14；BC02/04/06/08/10/12/14）：半日為一單位，同日不得申請兩次；交通另計。（p.28–34）
 
 ### 五、BD 碼（社區式補充）
-
-- BD03：住家與機構距離 ≤10 公里方適用（超距離自付）；每趟 1 單位；須職業駕照駕駛；外籍看護之家戶可使用。（p.34–35）
-- BD01／BD02：未見額外互斥或頻次上限明文。（p.34）
+* BD03：住家與機構距離 ≤10 公里方適用（超距離自付）；每趟 1 單位；須職業駕照駕駛；外籍看護之家戶可使用。（p.34–35）
+* BD01／BD02：未見額外互斥或頻次上限明文。（p.34）
 
 ### 六、C 碼（專業服務）—互斥／上限
-
-- CA07：3 次（含評估）= 1 單位。（p.35–38）
-- CA08：4 次（含評估與 ISP 擬定）= 1 單位。（p.35–38）
-- CB01：4 次（含評估）= 1 單位；CB02：6 次；CB03：3 次；CB04：6 次。（p.35–38）
-- CC01：2 次（含評估）= 1 單位；所需輔具／空間修繕另依 E／F 碼計。（p.35–38）
-- CD02：3 次（含評估）+ 1 次評值 = 1 單位。（p.35–38）
+* CA07：3 次（含評估）= 1 單位。（p.35–38）
+* CA08：4 次（含評估與 ISP 擬定）= 1 單位。（p.35–38）
+* CB01：4 次（含評估）= 1 單位；CB02：6 次；CB03：3 次；CB04：6 次。（p.35–38）
+* CC01：2 次（含評估）= 1 單位；所需輔具／空間修繕另依 E／F 碼計。（p.35–38）
+* CD02：3 次（含評估）+ 1 次評值 = 1 單位。（p.35–38）
 
 ### 七、D 碼（交通接送）
-
-- DA01：每次 1 單位；就醫轉乘／接駁經地方政府核認後，起迄任一端不必限於居家或院所；支付價格由所在地主管機關公告；駕駛須職業駕照。（p.38–39、p.7、p.19）
+* DA01：每次 1 單位；就醫轉乘／接駁經地方政府核認後，起迄任一端不必限於居家或院所；支付價格由所在地主管機關公告；駕駛須職業駕照。（p.38–39、p.7、p.19）
 
 ### 八、G 碼（喘息服務）
-
-- GA09 居家喘息：2 小時 = 1 單位；單日上限 10 小時；如有陪同就醫可加計 BA14。（p.40）
-- GA03／GA04／GA05／GA06／GA07：單位別（全日、半日、夜間、每小時）含交通接送；GA05（機構住宿式）1 日（24 小時）= 1 單位；GA06 夜間定義 18:00–翌日 08:00。另依第 11 條排除條件執行互斥。（p.39–40、p.4–5）
+* GA09 居家喘息：2 小時 = 1 單位；單日上限 10 小時；如有陪同就醫可加計 BA14。（p.40）
+* GA03／GA04／GA05／GA06／GA07：單位別（全日、半日、夜間、每小時）含交通接送；GA05（機構住宿式）1 日（24 小時）= 1 單位；GA06 夜間定義 18:00–翌日 08:00。另依第 11 條排除條件執行互斥。（p.39–40、p.4–5）
 
 ### 九、E 碼（輔具）—互斥／上限（租賃單位／最低使用年限／擇一／依附關係）
-
-- 整體額度：每三年一次；與身障輔具補助互斥，相同項目且未達最低使用年限者不得重複申請。（第 10 條第 2 項、p.4–5、p.41–60）
-- 通則：可租賃者皆以 1 月為租賃單位（未滿月比例計）；EG01/EG02、EC03 等註明「免部分負擔」；各碼頁列出最低使用年限（多為 2–10 年）。（各碼頁）
-- EA01：限購置，最低使用年限 3 年。（p.41）
-- EB01／EB02：單支柺杖限購置，可核給雙側，年限 5／3 年。（p.41）
-- EB03：助行器限購置，年限 3 年。（p.41）
-- EB04：助步車可租賃或購置，租賃以月計，年限 3 年。（p.41–42）
-- EC01／EC02／EC03：輪椅 A/B/C 三擇一；EC02 可租賃（月租），EC03 免部分負擔，年限 3 年。（p.42–43）
-- EC04～EC06：輪椅附加功能 A/B/C 可租賃（月租），必須搭配 EC02 或 EC03 同時申請，年限 3 年。（p.43–44）
-- EC07～EC10：擺位系統 A–D 限購置；EC07 與 EC08 擇一；單支側支撐架補助減半；年限 3 年。（p.44–45）
-- EC11／EC12：電動輪椅與電動代步車二擇一，皆限租賃（月租）。（p.45–46）
-- ED01～ED06：移位腰帶／板／吊帶／滑墊／轉盤限購置，年限 3–5 年。（p.46–48）
-- ED07：移位機可租賃（月租）或購置，年限 10 年，含吊帶。ED08 吊帶限購置，僅適用於購置 ED07 滿 3 年之更換，年限 3 年。（p.48–49）
-- EE01～EE05：電話擴音、閃光／震動警示、火警、門鈴等限購置，年限 5 年。（p.49）
-- EF01～EF03：衣著／生活／飲食用輔具限購置，年限 3 年。（p.49–50）
-- EG01／EG02：氣墊床 A/B 可租賃或購置，免部分負擔，年限 3 年。（p.50–51）
-- EG03～EG09：輪椅座墊 A–G 限購置，多數免部分負擔，年限 2–5 年。（p.51–52）
-- EH01：居家用照顧床可租賃或購置，年限 5 年。EH02／EH03 附加功能需搭配 EH01 同時申請；EH04／EH05 為爬梯機（每趟或月租）。（p.52–54）
+* 整體額度：每三年一次；與身障輔具補助互斥，相同項目且未達最低使用年限者不得重複申請。（第 10 條第 2 項、p.4–5、p.41–60）
+* 通則：可租賃者皆以 1 月為租賃單位（未滿月比例計）；EG01/EG02、EC03 等註明「免部分負擔」；各碼頁列出最低使用年限（多為 2–10 年）。（各碼頁）
+* EA01：限購置，最低使用年限 3 年。（p.41）
+* EB01／EB02：單支柺杖限購置，可核給雙側，年限 5／3 年。（p.41）
+* EB03：助行器限購置，年限 3 年。（p.41）
+* EB04：助步車可租賃或購置，租賃以月計，年限 3 年。（p.41–42）
+* EC01／EC02／EC03：輪椅 A/B/C 三擇一；EC02 可租賃（月租），EC03 免部分負擔，年限 3 年。（p.42–43）
+* EC04～EC06：輪椅附加功能 A/B/C 可租賃（月租），必須搭配 EC02 或 EC03 同時申請，年限 3 年。（p.43–44）
+* EC07～EC10：擺位系統 A–D 限購置；EC07 與 EC08 擇一；單支側支撐架補助減半；年限 3 年。（p.44–45）
+* EC11／EC12：電動輪椅與電動代步車二擇一，皆限租賃（月租）。（p.45–46）
+* ED01～ED06：移位腰帶／板／吊帶／滑墊／轉盤限購置，年限 3–5 年。（p.46–48）
+* ED07：移位機可租賃（月租）或購置，年限 10 年，含吊帶。ED08 吊帶限購置，僅適用於購置 ED07 滿 3 年之更換，年限 3 年。（p.48–49）
+* EE01～EE05：電話擴音、閃光／震動警示、火警、門鈴等限購置，年限 5 年。（p.49）
+* EF01～EF03：衣著／生活／飲食用輔具限購置，年限 3 年。（p.49–50）
+* EG01／EG02：氣墊床 A/B 可租賃或購置，免部分負擔，年限 3 年。（p.50–51）
+* EG03～EG09：輪椅座墊 A–G 限購置，多數免部分負擔，年限 2–5 年。（p.51–52）
+* EH01：居家用照顧床可租賃或購置，年限 5 年。EH02／EH03 附加功能需搭配 EH01 同時申請；EH04／EH05 為爬梯機（每趟或月租）。（p.52–54）
 
 ### 十、F 碼（居家無障礙環境改善）—互斥／上限
-
-- 整體額度：每三年一次；多屬限購置，常以單處或尺寸計價；最低使用年限多為 10 年（少數 3 年）。（p.5、p.54–60）
-- FA01：扶手每 10 公分補助 150 元，年限 10 年。（p.54–55）
-- FA02：可動式扶手按單支計價，年限 10 年。（p.55）
-- FA03～FA05：非固定式斜坡板 A/B/C，年限 10 年。（p.55）
-- FA06：固定式斜坡道，年限 10 年。（p.55–56）
-- FA07：架高式和式地板拆除，年限 10 年。（p.56）
-- FA08：反光貼條或消光／止滑，單處計價，年限 3 年。（p.56）
-- FA09：隔間每平方公尺 600 元，年限 10 年。（p.57）
-- FA10：防滑措施，單處計價，年限 10 年。（p.57）
-- FA11／FA12：同一處門改善僅能擇一款（A 或 B），年限 10 年。（p.57–58）
-- FA13：水龍頭，單處計價，年限 10 年。（p.58）
-- FA14～FA21：浴缸、洗臉台、馬桶、壁掛式淋浴椅、流理台、抽油煙機位置、特殊洗槽／浴槽等，單處計價，年限 10 年。（p.58–60）
+* 整體額度：每三年一次；多屬限購置，常以單處或尺寸計價；最低使用年限多為 10 年（少數 3 年）。（p.5、p.54–60）
+* FA01：扶手每 10 公分補助 150 元，年限 10 年。（p.54–55）
+* FA02：可動式扶手按單支計價，年限 10 年。（p.55）
+* FA03～FA05：非固定式斜坡板 A/B/C，年限 10 年。（p.55）
+* FA06：固定式斜坡道，年限 10 年。（p.55–56）
+* FA07：架高式和式地板拆除，年限 10 年。（p.56）
+* FA08：反光貼條或消光／止滑，單處計價，年限 3 年。（p.56）
+* FA09：隔間每平方公尺 600 元，年限 10 年。（p.57）
+* FA10：防滑措施，單處計價，年限 10 年。（p.57）
+* FA11／FA12：同一處門改善僅能擇一款（A 或 B），年限 10 年。（p.57–58）
+* FA13：水龍頭，單處計價，年限 10 年。（p.58）
+* FA14～FA21：浴缸、洗臉台、馬桶、壁掛式淋浴椅、流理台、抽油煙機位置、特殊洗槽／浴槽等，單處計價，年限 10 年。（p.58–60）
 
 ### 十一、常見「同時段互斥／疊代」對照（程式必設的衝突集）
-
-- 同時段互斥組合：
+* 同時段互斥組合：
   - BA01 ↔ BA07／BA23
   - BA07 ↔ BA01／BA23
   - BA23 ↔ BA01／BA07
@@ -884,26 +532,25 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
   - AA01 ↔ AA02：同月互斥
 
 ### 十二、可直接落實的「防呆機制與連動」建議（邏輯清單）
-
-- 時間衝突檢核：
+* 時間衝突檢核：
   - 建立「同時段互斥集合」包含 (BA01,BA07)、(BA01,BA23)、(BA07,BA23)、BA18 全互斥、BA20 全互斥、BA22 全互斥、AA08 與 AA09 同日互斥。若有重疊區間則擋案。
-- 日／週／月上限：
+* 日／週／月上限：
   - BA02 ≤ 3 小時／日；BA17a ≤ 3 組／日；BA17b ≤ 3 組／日；BA17c ≤ 7 組／週；BA17d1 ≤ 1／日；BA17d2 ≤ 3／週（可專案放寬）；BA17e ≤ 1／週；GA09 ≤ 10 小時／日，超過即退件。
-- 事件型上限：
+* 事件型上限：
   - BA01 原則 1 組／日（可早晚各 1）；BA04 每餐 1 組；BA05 在家備餐每次 1 組／一日管灌備餐 1 組；BA10/11 完整一次 1 單位；BB/BC 半日同日不得二次；GA05 1 日為 1 單位。
-- 條件式開關：
+* 條件式開關：
   - BA12 需問題清單含「移位」或「上下樓梯」，且未使用電梯／爬梯機／樓梯升降椅。
   - BA14 超過 1.5 小時自動改以 BA13 補差；復健／透析請改走 D 碼與 BA13 等其他代碼。
   - BA15 共用區域自動 50% 給付；BA16 超 5 公里自付差額。
-- AA 加計互斥與次數：
+* AA 加計互斥與次數：
   - AA01/AA02 同月互斥；AA08 與 AA09 同日互斥且每日限加計一次；AA07 每月一次；AA11 每日一次（居家式與社區式各計）。
-- 聘僱外籍看護自動限縮：
+* 聘僱外籍看護自動限縮：
   - B/C 總額度上限 30%；預設僅允許 C 碼，但放行 BA09/BA09a、BD03 例外；結帳時阻擋其他 BA 碼。
-- 喘息（G）排他：
+* 喘息（G）排他：
   - 若無家庭照顧者或已領受他法同質臨托／短期照顧，阻擋 G 碼。
-- 額度週期與結餘：
+* 額度週期與結餘：
   - B/C、D 月度結餘保留 6 個月；E/F 三年一次；G 一年一次。期滿自動歸零；複評升／降等依第 13 條從優生效日處理結餘。
-- 輔具互斥與依附：
+* 輔具互斥與依附：
   - EC01/02/03 三擇一；EC11/EC12 二擇一；EC07/EC08 二擇一；EC04～EC06 必須搭配 EC02 或 EC03；EH02/EH03 必須搭配 EH01。
   - 與身障輔具補助重疊檢核：相同項目且未達最低使用年限則阻擋。
 
@@ -911,14 +558,14 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
 
 ## 常見維護與擴充建議
 
-- 新增段落：在 `AppCore.gs` 中新增對應的 `applyH1_NewSection(body, form)`，並於 `DOCUMENT_WRITERS` 中按段落順序呼叫。
-- 調整輸出格式：優先修改 `AppCore.gs` 內對應的 `applyH1_*` 段落，必要時更新同檔案中的共用工具函式；若涉及固定句構或詞彙，請同步調整 `DataStore.gs` 的 `H1_*` 模板字典後再套用。
-- 新增欄位：
+* 新增段落：在 `AppCore.gs` 中新增對應的 `applyH1_NewSection(body, form)`，並於 `DOCUMENT_WRITERS` 中按段落順序呼叫。
+* 調整輸出格式：優先修改 `AppCore.gs` 內對應的 `applyH1_*` 段落，必要時更新同檔案中的共用工具函式；若涉及固定句構或詞彙，請同步調整 `DataStore.gs` 的 `H1_*` 模板字典後再套用。
+* 新增欄位：
   1. 在 `Sidebar.html` 新增 UI 與資料整合邏輯。
   2. 調整 `applyAndSave` 的 `form` 組裝。
   3. 在 `AppCore.gs` 中對應的 `applyH1_*` 函式使用新欄位。
-- 更新給付資料：若桃園市長照給付標準調整，請同步更新 `桃園市_長照給付資料庫_v1.xlsx` 並重新產出 `DataStore.gs` 中的 `TAOYUAN_LTC_DATA` 段落，同時檢視 `Sidebar.html` 內的服務代碼敘述是否對應。
-- 即時欄位驗證：若新增欄位需依條件顯示錯誤提示，請於 `Sidebar.html` 的 `validateSection1` 或相關段落驗證函式補強，維持與 UI 提示一致。
+* 更新給付資料：若桃園市長照給付標準調整，請同步更新 `桃園市_長照給付資料庫_v1.xlsx` 並重新產出 `DataStore.gs` 中的 `TAOYUAN_LTC_DATA` 段落，同時檢視 `Sidebar.html` 內的服務代碼敘述是否對應。
+* 即時欄位驗證：若新增欄位需依條件顯示錯誤提示，請於 `Sidebar.html` 的 `validateSection1` 或相關段落驗證函式補強，維持與 UI 提示一致。
 
 ---
 
@@ -934,9 +581,9 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
 
 ## 版本控管
 
-- 目前程式碼以平面檔案管理，適合直接複製到 Apps Script IDE。
-- 建議在雲端端開啟 `File → Manage Versions`，將穩定版標記版本，以便回復。
-- 若與多名開發者協作，建議採用 Git 儲存庫（如本專案）搭配 `clasp` 同步程式碼。
+* 目前程式碼以平面檔案管理，適合直接複製到 Apps Script IDE。
+* 建議在雲端端開啟 `File → Manage Versions`，將穩定版標記版本，以便回復。
+* 若與多名開發者協作，建議採用 Git 儲存庫（如本專案）搭配 `clasp` 同步程式碼。
 
 ---
 
@@ -952,9 +599,9 @@ AA01 可以透過兩種模式使用：綁定 Google 文件的側欄（原始設�
 
 若使用者或同仁發現：
 
-- 字典/下拉選項需更新。
-- 新段落文字格式與政策調整。
-- 產出文件內容有誤或漏填。
+* 字典/下拉選項需更新。
+* 新段落文字格式與政策調整。
+* 產出文件內容有誤或漏填。
 
 請更新 Issues 或直接修改程式後提交 PR，並確保 README 與 `Constants.gs` 的說明保持同步。
 
