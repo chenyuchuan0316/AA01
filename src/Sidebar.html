@@ -91,6 +91,7 @@
       :root{
         --intro-colw:clamp(220px, 60vw, 300px);
         --checkcol-min:160px;
+        --wizard-gap:var(--space-xs);
       }
       html{ font-size:clamp(18px, 4.8vw, 20px); }
       .app-container{ padding-right:0; }
@@ -108,7 +109,6 @@
 
       .wizard{
         overflow-x:auto;
-        --wizard-gap:var(--space-xs);
         gap:var(--wizard-gap);
         padding-bottom:4px;
         scroll-snap-type:x proximity;
