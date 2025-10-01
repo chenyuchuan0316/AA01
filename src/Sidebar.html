@@ -73,6 +73,7 @@
       --sticky-padding-inline:clamp(10px, 3.2vw, 18px);
       --wizard-index-size:34px;
       --wizard-index-font:0.95rem;
+      --wizard-gap:var(--space-sm);
       --group-header-spacing:var(--space-xs);
       --bottom-bar-min-height:48px;
       --layout-max:1440px;
@@ -90,6 +91,7 @@
       :root{
         --intro-colw:clamp(220px, 60vw, 300px);
         --checkcol-min:160px;
+        --wizard-gap:var(--space-xs);
       }
       html{ font-size:clamp(18px, 4.8vw, 20px); }
       .app-container{ padding-right:0; }
@@ -107,7 +109,7 @@
 
       .wizard{
         overflow-x:auto;
-        gap:var(--space-xs);
+        gap:var(--wizard-gap);
         padding-bottom:4px;
         scroll-snap-type:x proximity;
         -webkit-overflow-scrolling:touch;
@@ -1000,7 +1002,7 @@
       display:flex;
       justify-content:flex-start;
       align-items:center;
-      gap:var(--space-sm);
+      gap:var(--wizard-gap);
       flex-wrap:wrap;
     }
     .wizard-step{
@@ -1031,8 +1033,8 @@
       content:'';
       position:absolute;
       top:calc(var(--wizard-index-size) / 2);
-      left:-50%;
-      width:100%;
+      left:calc(-50% - var(--wizard-gap) / 2);
+      width:calc(100% + var(--wizard-gap));
       height:4px;
       background:#dbe5ff;
       z-index:-1;
@@ -8654,7 +8656,6 @@
       return 0;
     }
 
-
     function applyCaseManagerOptions(list, options){
       const select=document.getElementById('caseManagerName');
       if(!select) return;
@@ -8715,6 +8716,14 @@
       if(!select) return;
       const unit=document.getElementById('unitCode').value;
       const previousValue=(select.value || '').trim();
+      if(!unit){
+        applyCaseManagerOptions([], {
+          previousValue,
+          placeholder:'（請先輸入單位代碼）',
+          allowPlaceholderSelection:true
+        });
+        return;
+      }
       const handleFailure=()=>{
         applyCaseManagerOptions([], {
           previousValue,
@@ -8806,6 +8815,14 @@
       if(!select) return;
       const unit=document.getElementById('unitCode').value;
       const previousValue=(select.value || '').trim();
+      if(!unit){
+        applyConsultantOptions([], {
+          previousValue,
+          placeholder:'（請先輸入單位代碼）',
+          allowPlaceholderSelection:true
+        });
+        return;
+      }
       const handleFailure=()=>{
         applyConsultantOptions([], {
           previousValue,
