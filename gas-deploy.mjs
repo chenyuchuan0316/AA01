@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { google } from 'googleapis';
+import { pathToFileURL } from 'node:url';
 
 // -----------------------------
 // 讀取必要環境變數（由 GitHub Secrets 注入）
@@ -120,6 +121,25 @@ function collectAppsScriptFilesFromDir(dir, files, usedNames) {
     const ext = path.extname(ent.name).toLowerCase();
     const base = path.basename(ent.name, ext);
 
+    if (ent.name === 'appsscript.json') {
+      const manifestText = fs.readFileSync(full, 'utf8').trim();
+      let manifestObj;
+      try {
+        manifestObj = JSON.parse(manifestText);
+      } catch (e) {
+        throw new Error(`appsscript.json 不是有效 JSON：${e.message}`);
+      }
+      addAppsScriptFile(
+        files,
+        usedNames,
+        'appsscript',
+        'JSON',
+        JSON.stringify(manifestObj),
+        full
+      );
+      continue;
+    }
+
     if (ext === '.gs' || ext === '.js') {
       addAppsScriptFile(
         files,
@@ -146,10 +166,34 @@ function collectAppsScriptFilesFromDir(dir, files, usedNames) {
   }
 }
 
-function buildFilesFromRepoRoot() {
+function resolveClaspRootDir(cwd) {
+  const claspPath = path.join(cwd, '.clasp.json');
+  if (!fs.existsSync(claspPath)) {
+    return { absolute: null, setting: null };
+  }
+
+  try {
+    const claspText = fs.readFileSync(claspPath, 'utf8');
+    const claspJson = JSON.parse(claspText);
+    if (!claspJson.rootDir) {
+      return { absolute: null, setting: null };
+    }
+    const abs = path.resolve(cwd, claspJson.rootDir);
+    if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) {
+      return { absolute: abs, setting: claspJson.rootDir };
+    }
+    return { absolute: null, setting: claspJson.rootDir };
+  } catch (err) {
+    console.warn('⚠️ 無法解析 .clasp.json：', err.message);
+    return { absolute: null, setting: null };
+  }
+}
+
+export function buildFilesFromRepoRoot() {
   const cwd = process.cwd();
   const files = [];
   const usedNames = new Map(); // name → { type, origin }
+  const searchHints = new Set(['repo 根目錄']);
 
   const rootEntries = fs.readdirSync(cwd, { withFileTypes: true });
   for (const ent of rootEntries) {
@@ -203,21 +247,48 @@ function buildFilesFromRepoRoot() {
     }
   }
 
+  const { absolute: claspRootDir, setting: claspRootSetting } = resolveClaspRootDir(cwd);
+  if (claspRootSetting) {
+    searchHints.add(claspRootSetting);
+  }
+
   const srcDir = path.join(cwd, 'src');
+  const dirsToScan = new Set();
+  if (claspRootDir) {
+    dirsToScan.add(claspRootDir);
+  }
   if (fs.existsSync(srcDir) && fs.statSync(srcDir).isDirectory()) {
-    collectAppsScriptFilesFromDir(srcDir, files, usedNames);
+    dirsToScan.add(srcDir);
+  }
+
+  for (const dir of dirsToScan) {
+    const rel = path.relative(cwd, dir) || '.';
+    if (rel && rel !== '.') {
+      searchHints.add(rel);
+    }
+    collectAppsScriptFilesFromDir(dir, files, usedNames);
   }
 
   // 確認 manifest 存在
   const hasManifest = files.some(f => f.type === 'JSON' && f.name === 'appsscript');
   if (!hasManifest) {
-    throw new Error('找不到 appsscript.json（請放在 repo 根目錄，檔名須正確）');
+    const hintText = Array.from(searchHints).join(' 或 ');
+    throw new Error(`找不到 appsscript.json（請放在 ${hintText}，檔名須正確）`);
   }
 
   // 至少要有一個 SERVER_JS 或 HTML
   const hasCode = files.some(f => f.type === 'SERVER_JS' || f.type === 'HTML');
   if (!hasCode) {
     console.warn('⚠️ 找不到任何 .gs/.js/.html；仍會只更新 manifest。');
+  }
+
+  const sidebarHtml = files.find(
+    f => f.type === 'HTML' && f.name === 'Sidebar'
+  );
+  if (!sidebarHtml) {
+    throw new Error(
+      '找不到 Sidebar.html（請確認檔案存在並位於 rootDir 可被部署的範圍內）'
+    );
   }
 
   return files;
@@ -239,7 +310,7 @@ function tryGetWebAppUrl(deployment) {
 // -----------------------------
 // 主流程
 // -----------------------------
-(async () => {
+async function main() {
   const script = await getScriptClient();
 
   // 1) 上傳原始碼
@@ -335,9 +406,23 @@ function tryGetWebAppUrl(deployment) {
   } else {
     console.log('ℹ️ 此部署沒有 Web App 進入點（Add-on / Library 等情境屬正常）');
   }
-})().catch(err => {
-  // 盡量輸出 API 詳細錯誤
-  const data = err?.response?.data || err;
-  console.error('❌ DEPLOY ERROR\n', JSON.stringify(data, null, 2));
-  process.exit(1);
-});
+}
+
+const isCliInvocation = (() => {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return import.meta.url === pathToFileURL(entry).href;
+  } catch (err) {
+    return false;
+  }
+})();
+
+if (isCliInvocation) {
+  main().catch(err => {
+    // 盡量輸出 API 詳細錯誤
+    const data = err?.response?.data || err;
+    console.error('❌ DEPLOY ERROR\n', JSON.stringify(data, null, 2));
+    process.exit(1);
+  });
+}
