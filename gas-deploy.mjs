@@ -254,11 +254,6 @@ export function buildFilesFromRepoRoot() {
     searchHints.add(claspRootSetting);
   }
 
-  const { absolute: claspRootDir, setting: claspRootSetting } = resolveClaspRootDir(cwd);
-  if (claspRootSetting) {
-    searchHints.add(claspRootSetting);
-  }
-
   const srcDir = path.join(cwd, 'src');
   const dirsToScan = new Set();
   if (claspRootDir) {

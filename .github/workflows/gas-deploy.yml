@@ -38,7 +38,7 @@ jobs:
         run: npm test --if-present
 
   test-stage:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     needs: [unit-tests]
     timeout-minutes: 25
@@ -76,8 +76,35 @@ jobs:
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
-      - name: "Ensure .clasp.json has scriptId"
-        run: node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.stderr.write('Missing scriptId\n');process.exit(2)}; console.log('scriptId=', j.scriptId)"
+      - name: "Preflight: check TEST secrets & clasp & script"
+        run: |
+          set -e
+
+          echo "=== 1) Secrets 注入 ==="
+          echo "TEST_DEPLOYMENT_ID len: ${#TEST_DEPLOYMENT_ID}"
+          if [ -z "${TEST_DEPLOYMENT_ID:-}" ]; then
+            echo "::error::TEST_DEPLOYMENT_ID is empty. Fix: Repo → Settings → Secrets → Actions → add TEST_DEPLOYMENT_ID=<你的測試 AK…>"; exit 1;
+          fi
+
+          echo "=== 2) clasp 憑證 ==="
+          echo "(whoami)"
+          if ! clasp whoami; then
+            echo "::error::clasp not logged in or token invalid. Fix: 重取本機 ~/.clasprc.json（用 @fuancare.com.tw 有編輯權限的帳號），base64 上傳到 CLASPRC_JSON"; exit 1;
+          fi
+
+          echo "=== 3) 專案定位 ==="
+          echo -n "scriptId in repo: "
+          node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('.clasp.json','utf8')); if(!j.scriptId){console.error('Missing scriptId in .clasp.json'); process.exit(1);} console.log(j.scriptId);"
+          echo "(deployments of this script)"
+          if ! clasp deployments > before.txt; then
+            echo "::error::Cannot list deployments. Usually bad credential or wrong scriptId"; exit 1;
+          fi
+          cat before.txt || true
+
+          echo "=== 4) 解析部署清單（ID→版本） ==="
+          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const map={};for(const L of t.split(/\r?\n/)){const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);if(m){map[m[1]]=m[2];}}console.log('Known IDs:',Object.keys(map).join(',')||'(none)'); if(!map[process.env.TEST_DEPLOYMENT_ID]){console.error('TEST_DEPLOYMENT_ID not found in this script.'); process.exit(2);} else {console.log('Found TEST_DEPLOYMENT_ID. current version =', map[process.env.TEST_DEPLOYMENT_ID]);}"
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
 
       - name: "Guard: appsscript.json must declare webapp"
         run: |
