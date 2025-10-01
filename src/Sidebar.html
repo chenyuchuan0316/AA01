@@ -71,8 +71,9 @@
       --side-nav-w:280px;
       --sticky-padding-block:var(--space-xs);
       --sticky-padding-inline:clamp(10px, 3.2vw, 18px);
-      --wizard-index-size:clamp(32px, 4vw, 40px);
-      --wizard-index-font:clamp(0.85rem, 2.1vw, 1rem);
+      --wizard-index-size:34px;
+      --wizard-index-font:0.95rem;
+      --wizard-gap:var(--space-sm);
       --group-header-spacing:var(--space-xs);
       --bottom-bar-min-height:48px;
       --layout-max:1440px;
@@ -106,11 +107,12 @@
       .summary-value{ font-size:1.05rem; }
 
       .wizard{
-        grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
-        gap:var(--space-sm);
-        padding-bottom:0;
-        overflow:visible;
-        scroll-snap-type:none;
+        overflow-x:auto;
+        --wizard-gap:var(--space-xs);
+        gap:var(--wizard-gap);
+        padding-bottom:4px;
+        scroll-snap-type:x proximity;
+        -webkit-overflow-scrolling:touch;
       }
       .wizard-step{
         min-width:0;
@@ -1020,10 +1022,11 @@
     }
     .wizard{
       position:relative;
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
-      align-items:stretch;
-      gap:var(--space-sm);
+      display:flex;
+      justify-content:flex-start;
+      align-items:center;
+      gap:var(--wizard-gap);
+      flex-wrap:wrap;
     }
     .wizard-step{
       position:relative;
@@ -1052,8 +1055,8 @@
       content:'';
       position:absolute;
       top:calc(var(--wizard-index-size) / 2);
-      left:calc(-50% - var(--space-sm) / 2);
-      width:calc(100% + var(--space-sm));
+      left:calc(-50% - var(--wizard-gap) / 2);
+      width:calc(100% + var(--wizard-gap));
       height:4px;
       background:#dbe5ff;
       z-index:-1;
@@ -4810,6 +4813,20 @@
     const HEADING_DOM_REGISTRY = {};
     let HEADING_INDEX_ORDER = 0;
 
+    const SIDE_NAV_MEDIA_QUERY = '(max-width: 1279px)';
+    const SIDE_NAV_TOGGLE_STATE = { button:null, backdrop:null, media:null, expanded:false };
+    const SIDE_NAV_STATE = (function(){
+      const fallback = { root:null, accordion:null, items:[], sections:{} };
+      if(typeof window === 'undefined'){
+        return fallback;
+      }
+      if(window.SIDE_NAV_STATE && typeof window.SIDE_NAV_STATE === 'object'){
+        return window.SIDE_NAV_STATE;
+      }
+      window.SIDE_NAV_STATE = fallback;
+      return window.SIDE_NAV_STATE;
+    })();
+
     const VALID_HEADING_TAGS = ['h1','h2','h3','h4','h5','h6'];
 
     function normalizeHeadingTag(tag, parent){
@@ -4955,9 +4972,6 @@
     function getHeadingGroup(anchorId){
       return anchorId ? headingGroupRegistry[anchorId] || null : null;
     }
-
-    const SIDE_NAV_MEDIA_QUERY = '(max-width: 1279px)';
-    const SIDE_NAV_TOGGLE_STATE = { button:null, backdrop:null, media:null, expanded:false };
 
     function getSideNavToggleElements(){
       if(!SIDE_NAV_TOGGLE_STATE.button){
@@ -6262,12 +6276,6 @@
     let globalBannerElements = null;
     let lastSavedTimestamp = null;
 
-    const SIDE_NAV_STATE = {
-      root:null,
-      accordion:null,
-      items:[],
-      sections:{}
-    };
     const Scheduler = (function(){
       let rafId = 0;
       const queues = {
@@ -8845,15 +8853,18 @@
       if(!statusEl) return;
       if(typeof state === 'string' && state){
         statusEl.dataset.state = state;
-      }
-      if(typeof message === 'string' && message.trim()){
-        const text=message.trim();
-        statusEl.dataset.customText = text;
-        statusEl.textContent = text;
       }else{
-        delete statusEl.dataset.customText;
-        statusEl.removeAttribute('data-custom-text');
-        if(!statusEl.textContent){
+        delete statusEl.dataset.state;
+        statusEl.removeAttribute('data-state');
+      }
+      if(typeof message === 'string'){
+        const text=message.trim();
+        if(text){
+          statusEl.dataset.customText = text;
+          statusEl.textContent = text;
+        }else{
+          delete statusEl.dataset.customText;
+          statusEl.removeAttribute('data-custom-text');
           statusEl.textContent='';
         }
       }
@@ -8931,54 +8942,6 @@
         select.dispatchEvent(changeEvent);
         updateBasicInfoCompletion();
       }
-    }
-
-
-    function filterSelectOptionsByTerm(select, term){
-      if(!select || !select.options) return;
-      const normalized=String(term || '').trim().toLowerCase();
-      const options=Array.from(select.options);
-      let hasMatch=false;
-      options.forEach((option, index)=>{
-        if(index===0){
-          option.hidden=false;
-          return;
-        }
-        const text=(option.textContent || '').toLowerCase();
-        const match=!normalized || text.includes(normalized);
-        option.hidden=!match;
-        if(match){ hasMatch=true; }
-      });
-      if(select.selectedIndex > 0){
-        const current=select.options[select.selectedIndex];
-        if(current && current.hidden){
-          select.selectedIndex=0;
-        }
-      }
-      select.dataset.hasMatches = hasMatch ? '1' : '0';
-    }
-
-    function refreshSearchableSelect(selectId, filterId){
-      const select=document.getElementById(selectId);
-      const filter=document.getElementById(filterId);
-      if(!select || !filter) return;
-      filterSelectOptionsByTerm(select, filter.value || '');
-    }
-
-    function setupSearchableSelect(selectId, filterId){
-      const select=document.getElementById(selectId);
-      const filter=document.getElementById(filterId);
-      if(!select || !filter) return;
-      if(filter.dataset.searchAttached === '1'){
-        refreshSearchableSelect(selectId, filterId);
-        return;
-      }
-      const handleFilter=()=>{ filterSelectOptionsByTerm(select, filter.value || ''); };
-      ['input','change'].forEach(evt=>{ filter.addEventListener(evt, handleFilter); });
-      filter.addEventListener('focus', handleFilter);
-      select.addEventListener('change', handleFilter);
-      filter.dataset.searchAttached='1';
-      handleFilter();
     }
 
 
@@ -9061,7 +9024,9 @@
         applyCaseManagerOptions([], {
           previousValue,
           fallbackValue: previousValue,
-          placeholder:'（載入失敗，請手動輸入或重新嘗試）'
+          placeholder:'（載入失敗，請手動輸入或重新嘗試）',
+          allowPlaceholderSelection:true,
+          keepEnabled:true
         });
         applyBasicInfoFieldLoadState('caseManagerName','error');
         setBasicInfoStatusMessage('caseManagerStatus','無法載入名單，請手動輸入或點「重新載入」。','invalid');
@@ -9087,7 +9052,9 @@
       if(status === 0){
         applyCaseManagerOptions([], {
           previousValue,
-          placeholder:'（載入中…）'
+          placeholder:'（載入中…）',
+          allowPlaceholderSelection:true,
+          keepEnabled:true
         });
       }
     }
@@ -9173,7 +9140,9 @@
         applyConsultantOptions([], {
           previousValue,
           fallbackValue: previousValue,
-          placeholder:'（載入失敗，請手動輸入或重新嘗試）'
+          placeholder:'（載入失敗，請手動輸入或重新嘗試）',
+          allowPlaceholderSelection:true,
+          keepEnabled:true
         });
         applyBasicInfoFieldLoadState('consultName','error');
         setBasicInfoStatusMessage('consultStatus','無法載入名單，請手動輸入或點「重新載入」。','invalid');
@@ -9199,7 +9168,9 @@
       if(status === 0){
         applyConsultantOptions([], {
           previousValue,
-          placeholder:'（載入中…）'
+          placeholder:'（載入中…）',
+          allowPlaceholderSelection:true,
+          keepEnabled:true
         });
       }
     }
