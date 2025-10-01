@@ -16,9 +16,31 @@ defaults:
     shell: bash
 
 jobs:
-  test-stage:
+  unit-tests:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Node 18"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: "Install deps"
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: "Run unit tests (Jest)"
+        run: npm test --if-present
+
+  test-stage:
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
     timeout-minutes: 25
 
     steps:
@@ -48,30 +70,111 @@ jobs:
             const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';
             let s=process.env.CLASPRC_JSON||'';let j;
             try{ j=JSON.parse(s); }catch(e){ s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); }
-            if(!j.token && j.tokens && j.tokens.default){ j.token=j.tokens.default; }
+            const ensureClientSettings=(source)=>{
+              if(!source) return;
+              const cid=source.client_id||source.clientId;
+              const cs=source.client_secret||source.clientSecret;
+              if(cid && cs && !j.oauth2ClientSettings){
+                j.oauth2ClientSettings={clientId:cid,clientSecret:cs};
+              }
+            };
+            if(!j.token && j.tokens && j.tokens.default){
+              j.token=j.tokens.default;
+              ensureClientSettings(j.tokens.default);
+            }
+            if(j.token){
+              ensureClientSettings(j.token);
+            }
             fs.writeFileSync(p, JSON.stringify(j,null,2));
           "
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
-      - name: "Ensure .clasp.json has scriptId"
-        run: node -e "const j=require('./.clasp.json'); if(!j.scriptId){process.stderr.write('Missing scriptId\n');process.exit(2)}; console.log('scriptId=', j.scriptId)"
+      - name: "Preflight: check TEST secrets & clasp & script"
+        run: |
+          set -e
+
+          echo "=== 1) Secrets 注入 ==="
+          echo "TEST_DEPLOYMENT_ID len: ${#TEST_DEPLOYMENT_ID}"
+          if [ -z "${TEST_DEPLOYMENT_ID:-}" ]; then
+            echo "::error::TEST_DEPLOYMENT_ID is empty. Fix: Repo → Settings → Secrets → Actions → add TEST_DEPLOYMENT_ID=<你的測試 AK…>"; exit 1;
+          fi
+
+          echo "=== 2) clasp 憑證 ==="
+          echo "(whoami)"
+          if ! clasp whoami; then
+            echo "::error::clasp not logged in or token invalid. Fix: 重取本機 ~/.clasprc.json（用 @fuancare.com.tw 有編輯權限的帳號），base64 上傳到 CLASPRC_JSON"; exit 1;
+          fi
+
+          echo "=== 3) 專案定位 ==="
+          echo -n "scriptId in repo: "
+          node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync('.clasp.json','utf8')); if(!j.scriptId){console.error('Missing scriptId in .clasp.json'); process.exit(1);} console.log(j.scriptId);"
+          echo "(deployments of this script)"
+          if ! clasp deployments > before.txt; then
+            echo "::error::Cannot list deployments. Usually bad credential or wrong scriptId"; exit 1;
+          fi
+          cat before.txt || true
+
+          echo "=== 4) 解析部署清單（ID→版本） ==="
+          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const map={};for(const L of t.split(/\r?\n/)){const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);if(m){map[m[1]]=m[2];}}console.log('Known IDs:',Object.keys(map).join(',')||'(none)'); if(!map[process.env.TEST_DEPLOYMENT_ID]){console.error('TEST_DEPLOYMENT_ID not found in this script.'); process.exit(2);} else {console.log('Found TEST_DEPLOYMENT_ID. current version =', map[process.env.TEST_DEPLOYMENT_ID]);}"
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
 
       - name: "Guard: appsscript.json must declare webapp"
         run: |
           node - <<'EOF'
           const fs = require('fs');
-          const m = JSON.parse(fs.readFileSync('appsscript.json','utf8'));
-          if (!m.webapp || !m.webapp.access || !m.webapp.executeAs) {
+          const path = require('path');
+
+          const cwd = process.cwd();
+          const candidates = [];
+
+          try {
+            const clasp = JSON.parse(fs.readFileSync(path.join(cwd, '.clasp.json'), 'utf8'));
+            if (clasp.rootDir) {
+              candidates.push(path.join(cwd, clasp.rootDir, 'appsscript.json'));
+            }
+          } catch (err) {
+            if (err.code !== 'ENOENT') {
+              console.warn('⚠️ 無法解析 .clasp.json：', err.message);
+            }
+          }
+
+          candidates.push(path.join(cwd, 'appsscript.json'));
+
+          let manifestPath = null;
+          for (const candidate of candidates) {
+            if (!candidate) continue;
+            if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+              manifestPath = candidate;
+              break;
+            }
+          }
+
+          if (!manifestPath) {
+            console.error('找不到 appsscript.json（根目錄或 .clasp.json 的 rootDir 中都沒有）');
+            process.exit(1);
+          }
+
+          let manifest;
+          try {
+            manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          } catch (err) {
+            console.error('appsscript.json 不是有效 JSON：', err.message);
+            process.exit(1);
+          }
+
+          if (!manifest.webapp || !manifest.webapp.access || !manifest.webapp.executeAs) {
             console.error('appsscript.json missing webapp.access/executeAs');
             process.exit(1);
           }
-          const okLog = ['STACKDRIVER','CLOUD','NONE'].includes(m.exceptionLogging||'STACKDRIVER');
+          const okLog = ['STACKDRIVER','CLOUD','NONE'].includes(manifest.exceptionLogging || 'STACKDRIVER');
           if (!okLog) {
-            console.error('exceptionLogging must be STACKDRIVER|CLOUD|NONE, got:', m.exceptionLogging);
+            console.error('exceptionLogging must be STACKDRIVER|CLOUD|NONE, got:', manifest.exceptionLogging);
             process.exit(1);
           }
-          console.log('webapp OK:', m.webapp, 'exceptionLogging=', m.exceptionLogging);
+          const rel = path.relative(cwd, manifestPath) || 'appsscript.json';
+          console.log('webapp OK:', manifest.webapp, 'manifest=', rel, 'exceptionLogging=', manifest.exceptionLogging);
           EOF
 
       # BEFORE snapshot（文字解析 fallback）
@@ -79,13 +182,79 @@ jobs:
         run: |
           set -e
           clasp deployments > before.txt || true
-          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const lines=t.split(/\r?\n/);const map={};for(const L of lines){const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);if(m){map[m[1]]=m[2];}}fs.writeFileSync('before.map.json',JSON.stringify(map));console.log('BEFORE MAP:',map)"
+          clasp deployments --json > before.json || true
+          node -e "
+            const fs=require('fs');
+            const map={};
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
 
-      - name: "Ensure TEST_DEPLOYMENT_ID exists BEFORE"
+            const jsonText=safeRead('before.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed && Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const depId=dep && dep.deploymentId;
+                  const depVer=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(depId){
+                    map[depId]=depVer!=null?String(depVer):'';
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 before.json：', err.message);
+              }
+            }
+
+            if(!Object.keys(map).length){
+              const text=safeRead('before.txt');
+              const regex=/(AK[\w-]{20,})/g;
+              let m;
+              while((m=regex.exec(text))){
+                if(!map[m[1]]){
+                  map[m[1]]='';
+                }
+              }
+            }
+
+            const keys=Object.keys(map);
+            fs.writeFileSync('before.map.json', JSON.stringify(map, null, 2));
+            console.log('Known deployment keys:', keys.length?keys.join(', '):'(none)');
+          "
+
+      - name: "Check TEST_DEPLOYMENT_ID availability"
+        id: check-test-deployment
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
-          node -e "const fs=require('fs');const id=process.env.TEST_DEPLOYMENT_ID;const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));if(!id||!map[id]){console.error('TEST_DEPLOYMENT_ID not found.');process.exit(1);}console.log('Found test deployment BEFORE. Current version =',map[id]);"
+          if [ -z "${TEST_DEPLOYMENT_ID:-}" ]; then
+            echo "::warning::TEST_DEPLOYMENT_ID secret is not available for this workflow run."
+            echo "has_secret=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secret=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Ensure TEST_DEPLOYMENT_ID exists BEFORE"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+        run: |
+          node -e "
+            const fs=require('fs');
+            const hasOwn=Object.prototype.hasOwnProperty;
+            const id=(process.env.TEST_DEPLOYMENT_ID||'').trim();
+            if(!id){
+              console.error('Missing TEST_DEPLOYMENT_ID secret.');
+              process.exit(1);
+            }
+            const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));
+            if(!hasOwn.call(map, id)){
+              const known=Object.keys(map);
+              console.error('TEST_DEPLOYMENT_ID not found. Known deployments: '+(known.length?known.join(', '):'(none)'));
+              process.exit(1);
+            }
+            const current=map[id];
+            console.log('Found test deployment BEFORE. Current version =', current?current:'<unknown>');
+          "
 
       # --- push & deploy to TEST ---
       - name: "Inject CI env (TEST)"
@@ -114,6 +283,7 @@ jobs:
           echo "new_ver=$ver" >> "$GITHUB_OUTPUT"
 
       - name: "Update deployment to NEW_VER (TEST)"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -123,33 +293,62 @@ jobs:
           clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[TEST] CI ${GITHUB_SHA::7}"
       # AFTER snapshot (TEST)
       - name: "Verify deployment points to NEW_VER (TEST)"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
           set -e
           clasp deployments > after.txt || true
+          clasp deployments --json > after.json || true
           node -e "
             const fs=require('fs');
-            const id=process.env.TEST_DEPLOYMENT_ID;
-            const ver=process.env.NEW_VER;
-            const t=fs.readFileSync('after.txt','utf8');
-            const lines=t.split(/\r?\n/);
-            let cur=null;
-            for(const L of lines){
-              const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
-              if(m && m[1]===id){ cur=m[2]; break; }
+            const id=(process.env.TEST_DEPLOYMENT_ID||'').trim();
+            const ver=(process.env.NEW_VER||'').trim();
+            if(!id){ console.error('Missing TEST_DEPLOYMENT_ID secret.'); process.exit(1); }
+            if(!ver){ console.error('Missing NEW_VER env.'); process.exit(1); }
+
+            const map={};
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
+
+            const jsonText=safeRead('after.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const depId=dep && dep.deploymentId;
+                  const depVer=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(depId && (depVer || depVer===0)){
+                    map[depId]=String(depVer);
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 after.json：', err.message);
+              }
             }
-            if(!cur){ console.error('Dep ID not found AFTER'); process.exit(1); }
-            console.log('Deployment', id, 'now points to version', cur);
-            if(String(cur)!==String(ver)){
-              console.error('Version mismatch: expected', ver, 'got', cur);
+
+            if(!Object.keys(map).length){
+              const text=safeRead('after.txt');
+              const lines=text.split(/\r?\n/);
+              for(const L of lines){
+                const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
+                if(m){
+                  map[m[1]]=m[2];
+                }
+              }
+            }
+
+            const current=map[id];
+            if(!current){
+              console.error('TEST_DEPLOYMENT_ID not found AFTER. Known deployments: '+(Object.keys(map).length?Object.keys(map).join(', '):'(none)'));
               process.exit(1);
             }
+            if(current!==ver){
+              console.error('Deployment still points to', current, 'expected', ver);
+              process.exit(1);
+            }
+            console.log('Deployment updated to version', current);
           "
-
-      # --- Unit tests / E2E tests (可先無檔；--if-present 不會 fail) ---
-      - name: "Run unit tests (Jest)"
-        run: npm test --if-present
 
       - name: "Debug TEST_DEPLOYMENT_ID length"
         env:
@@ -162,12 +361,24 @@ jobs:
           fi
 
       - name: "Run E2E tests (Puppeteer) against TEST"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: npm run e2e --if-present
 
+      - name: "Upload responsive screenshots"
+        if: steps.check-test-deployment.outputs.has_secret == 'true' && always()
+        env:
+          TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-screenshots
+          path: artifacts/screenshots/**/*.png
+          if-no-files-found: warn
+
       # --- Health check on TEST（容忍 302 登入轉向） ---
       - name: "Health check (TEST)"
+        if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -184,7 +395,7 @@ jobs:
           echo "::error::TEST health check failed (code=${code} location=${loc})"; exit 1
 
   deploy-prod:
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: [test-stage]
     timeout-minutes: 20
@@ -222,13 +433,66 @@ jobs:
         run: |
           set -e
           clasp deployments > before.txt || true
-          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const lines=t.split(/\r?\n/);const map={};for(const L of lines){const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);if(m){map[m[1]]=m[2];}}fs.writeFileSync('before.map.json',JSON.stringify(map));console.log('BEFORE MAP:',map)"
+          clasp deployments --json > before.json || true
+          node -e "
+            const fs=require('fs');
+            const map={};
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
+
+            const jsonText=safeRead('before.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed && Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const depId=dep && dep.deploymentId;
+                  const depVer=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(depId){
+                    map[depId]=depVer!=null?String(depVer):'';
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 before.json：', err.message);
+              }
+            }
+
+            if(!Object.keys(map).length){
+              const text=safeRead('before.txt');
+              const regex=/(AK[\w-]{20,})/g;
+              let m;
+              while((m=regex.exec(text))){
+                if(!map[m[1]]){
+                  map[m[1]]='';
+                }
+              }
+            }
+
+            const keys=Object.keys(map);
+            fs.writeFileSync('before.map.json', JSON.stringify(map, null, 2));
+            console.log('Known deployment keys:', keys.length?keys.join(', '):'(none)');
+          "
 
       - name: "Ensure GAS_DEPLOYMENT_ID exists BEFORE"
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          node -e "const fs=require('fs');const id=process.env.GAS_DEPLOYMENT_ID;const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));if(!id||!map[id]){console.error('GAS_DEPLOYMENT_ID not found.');process.exit(1);}console.log('Found prod deployment BEFORE. Current version =',map[id]);"
+          node -e "
+            const fs=require('fs');
+            const hasOwn=Object.prototype.hasOwnProperty;
+            const id=(process.env.GAS_DEPLOYMENT_ID||'').trim();
+            if(!id){
+              console.error('Missing GAS_DEPLOYMENT_ID secret.');
+              process.exit(1);
+            }
+            const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));
+            if(!hasOwn.call(map, id)){
+              const known=Object.keys(map);
+              console.error('GAS_DEPLOYMENT_ID not found. Known deployments: '+(known.length?known.join(', '):'(none)'));
+              process.exit(1);
+            }
+            const current=map[id];
+            console.log('Found prod deployment BEFORE. Current version =', current?current:'<unknown>');
+          "
 
       - name: "Inject CI env (PROD)"
         env:
@@ -271,23 +535,55 @@ jobs:
           set -e
 
           clasp deployments > after.txt || true
+          clasp deployments --json > after.json || true
           node -e "
             const fs=require('fs');
-            const id=process.env.GAS_DEPLOYMENT_ID;
-            const ver=process.env.NEW_VER;
-            const t=fs.readFileSync('after.txt','utf8');
-            const lines=t.split(/\r?\n/);
-            let cur=null;
-            for(const L of lines){
-              const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
-              if(m && m[1]===id){ cur=m[2]; break; }
+            const id=(process.env.GAS_DEPLOYMENT_ID||'').trim();
+            const ver=(process.env.NEW_VER||'').trim();
+            if(!id){ console.error('Missing GAS_DEPLOYMENT_ID secret.'); process.exit(1); }
+            if(!ver){ console.error('Missing NEW_VER env.'); process.exit(1); }
+
+            const map={};
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
+
+            const jsonText=safeRead('after.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const depId=dep && dep.deploymentId;
+                  const depVer=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(depId && (depVer || depVer===0)){
+                    map[depId]=String(depVer);
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 after.json：', err.message);
+              }
             }
-            if(!cur){ console.error('Dep ID not found AFTER'); process.exit(1); }
-            console.log('Deployment', id, 'now points to version', cur);
-            if(String(cur)!==String(ver)){
-              console.error('Version mismatch: expected', ver, 'got', cur);
+
+            if(!Object.keys(map).length){
+              const text=safeRead('after.txt');
+              const lines=text.split(/\r?\n/);
+              for(const L of lines){
+                const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
+                if(m){
+                  map[m[1]]=m[2];
+                }
+              }
+            }
+
+            const current=map[id];
+            if(!current){
+              console.error('GAS_DEPLOYMENT_ID not found AFTER. Known deployments: '+(Object.keys(map).length?Object.keys(map).join(', '):'(none)'));
               process.exit(1);
             }
+            if(current!==ver){
+              console.error('Deployment still points to', current, 'expected', ver);
+              process.exit(1);
+            }
+            console.log('Deployment updated to version', current);
           "
 
       - name: "Health check (PROD)"
