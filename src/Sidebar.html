@@ -1052,8 +1052,8 @@
       content:'';
       position:absolute;
       top:calc(var(--wizard-index-size) / 2);
-      left:-50%;
-      width:100%;
+      left:calc(-50% - var(--space-sm) / 2);
+      width:calc(100% + var(--space-sm));
       height:4px;
       background:#dbe5ff;
       z-index:-1;
@@ -1305,6 +1305,32 @@
       flex-direction:column;
       gap:var(--space-xxs);
       min-width:0;
+    }
+    #basicInfoGroup .basic-info-field .basic-info-actions{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:var(--space-xxs);
+      margin-top:calc(var(--space-xxs) / 2);
+    }
+    #basicInfoGroup .basic-info-field .basic-info-actions button{
+      appearance:none;
+      border:none;
+      background:none;
+      color:var(--accent);
+      font-size:0.85rem;
+      font-weight:600;
+      padding:0;
+      cursor:pointer;
+    }
+    #basicInfoGroup .basic-info-field .basic-info-actions button:hover,
+    #basicInfoGroup .basic-info-field .basic-info-actions button:focus-visible{
+      text-decoration:underline;
+    }
+    #basicInfoGroup .basic-info-field .basic-info-actions button:focus-visible{
+      outline:2px solid rgba(11,87,208,0.35);
+      outline-offset:2px;
+      border-radius:6px;
     }
     #basicInfoGroup .basic-info-field label{ margin-bottom:0; }
     #basicInfoGroup .unit-code-field{
@@ -3085,7 +3111,10 @@
                   <select id="caseManagerName" aria-describedby="caseManagerHint">
                     <option value="" class="placeholder-option" disabled selected>請選擇</option>
                   </select>
-                  <p class="field-hint" id="caseManagerHint">支援即時搜尋，輸入姓氏或職稱關鍵字即可快速篩選名單。</p>
+                  <div class="basic-info-actions" data-select-support="caseManagerName">
+                    <button type="button" data-action="reload-case-managers">重新載入</button>
+                    <button type="button" data-action="manual-case-manager">手動輸入</button>
+                  </div>
                   <div class="basic-info-status" id="caseManagerStatus" role="status" aria-live="polite"></div>
                 </div>
               </div>
@@ -3104,7 +3133,10 @@
                   <select id="consultName" aria-describedby="consultNameHint">
                     <option value="" class="placeholder-option" disabled selected>請選擇</option>
                   </select>
-                  <p class="field-hint" id="consultNameHint">可輸入姓名或單位關鍵字過濾列表，協助快速找到對應的照專。</p>
+                  <div class="basic-info-actions" data-select-support="consultName">
+                    <button type="button" data-action="reload-consultants">重新載入</button>
+                    <button type="button" data-action="manual-consult">手動輸入</button>
+                  </div>
                   <div class="basic-info-status" id="consultStatus" role="status" aria-live="polite"></div>
                 </div>
               </div>
@@ -8808,6 +8840,99 @@
       return 0;
     }
 
+    function setBasicInfoStatusMessage(statusId, message, state){
+      const statusEl=document.getElementById(statusId);
+      if(!statusEl) return;
+      if(typeof state === 'string' && state){
+        statusEl.dataset.state = state;
+      }
+      if(typeof message === 'string' && message.trim()){
+        const text=message.trim();
+        statusEl.dataset.customText = text;
+        statusEl.textContent = text;
+      }else{
+        delete statusEl.dataset.customText;
+        statusEl.removeAttribute('data-custom-text');
+        if(!statusEl.textContent){
+          statusEl.textContent='';
+        }
+      }
+    }
+
+    function applyBasicInfoFieldLoadState(fieldId, state){
+      const field=document.getElementById(fieldId);
+      if(!field) return;
+      const container=field.closest('.basic-info-field');
+      if(!container) return;
+      if(typeof state === 'string' && state){
+        container.dataset.loadState = state;
+      }else{
+        container.removeAttribute('data-load-state');
+      }
+    }
+
+    function getManualSelectValues(select){
+      if(!select) return [];
+      const values=[];
+      const seen=new Set();
+      Array.prototype.forEach.call(select.options, option=>{
+        if(!option || !option.dataset || option.dataset.manual !== '1') return;
+        const text=(option.value || '').trim();
+        if(!text || seen.has(text)) return;
+        seen.add(text);
+        values.push(text);
+      });
+      return values;
+    }
+
+    function ensureManualSelectOption(select, value){
+      if(!select) return null;
+      const text=typeof value === 'string' ? value.trim() : '';
+      if(!text) return null;
+      let option=null;
+      Array.prototype.forEach.call(select.options, current=>{
+        if(option) return;
+        if(!current) return;
+        if((current.value || '').trim() === text){
+          option=current;
+        }
+      });
+      if(!option){
+        option=document.createElement('option');
+        option.value=text;
+        option.textContent=text;
+        select.appendChild(option);
+      }
+      option.dataset.manual='1';
+      option.disabled=false;
+      option.classList.remove('placeholder-option');
+      return option;
+    }
+
+    function promptManualSelectValue(fieldId, statusId, label){
+      const select=document.getElementById(fieldId);
+      if(!select) return;
+      const current=(select.value || '').trim();
+      const promptLabel=label ? String(label).trim() : '';
+      const message=promptLabel ? `請輸入${promptLabel}` : '請輸入內容';
+      const input=window.prompt(`${message}：`, current);
+      if(input === null) return;
+      const text=String(input).trim();
+      if(!text){
+        return;
+      }
+      const option=ensureManualSelectOption(select, text);
+      if(option){
+        select.disabled=false;
+        select.value=text;
+        setBasicInfoStatusMessage(statusId, '', null);
+        applyBasicInfoFieldLoadState(fieldId, '');
+        const changeEvent=new Event('change', { bubbles:true });
+        select.dispatchEvent(changeEvent);
+        updateBasicInfoCompletion();
+      }
+    }
+
 
     function filterSelectOptionsByTerm(select, term){
       if(!select || !select.options) return;
@@ -8863,6 +8988,8 @@
       const previousValue=options && typeof options.previousValue === 'string'
         ? options.previousValue.trim()
         : (select.value || '').trim();
+      const manualEntries=getManualSelectValues(select);
+      const manualSet=new Set(manualEntries);
       const hasData=Array.isArray(list) && list.length > 0;
       const placeholderText=(options && options.placeholder)
         ? options.placeholder
@@ -8876,37 +9003,47 @@
       placeholder.selected=true;
       select.appendChild(placeholder);
       let matched=false;
+      const existingValues=new Set();
+      const appendOption=(value, isManual)=>{
+        const text=typeof value === 'string' ? value.trim() : '';
+        if(!text || existingValues.has(text)) return;
+        const option=document.createElement('option');
+        option.value=text;
+        option.textContent=text;
+        if(isManual){
+          option.dataset.manual='1';
+        }
+        if(text === previousValue){
+          option.selected=true;
+          matched=true;
+        }
+        select.appendChild(option);
+        existingValues.add(text);
+      };
       if(hasData){
         list.forEach(name=>{
           const text=String(name || '').trim();
           if(!text) return;
-          const option=document.createElement('option');
-          option.value=text;
-          option.textContent=text;
-          if(text === previousValue){
-            option.selected=true;
-            matched=true;
-          }
-          select.appendChild(option);
+          appendOption(text, manualSet.has(text));
         });
-        select.disabled=false;
-      }else if(options && options.fallbackValue){
+      }
+      if(!hasData && options && options.fallbackValue){
         const preserved=String(options.fallbackValue).trim();
         if(preserved){
-          const option=document.createElement('option');
-          option.value=preserved;
-          option.textContent=preserved;
-          option.selected=true;
-          select.appendChild(option);
-          matched=true;
-          select.disabled=false;
+          appendOption(preserved, manualSet.has(preserved));
         }
-      }else{
-        select.disabled=!(options && options.keepEnabled);
       }
+      manualEntries.forEach(text=>{
+        appendOption(text, true);
+      });
       if(!matched){
         select.selectedIndex=0;
       }
+      let shouldEnable=hasData || manualEntries.length > 0 || (options && options.keepEnabled);
+      if(!shouldEnable && select.options.length > 1){
+        shouldEnable=true;
+      }
+      select.disabled=!shouldEnable;
       buildApprovalPlanPreview();
       scheduleSummaryUpdate();
       updateBasicInfoCompletion({ silent:true });
@@ -8916,19 +9053,27 @@
     function loadManagers(){
       const select=document.getElementById('caseManagerName');
       if(!select) return;
-      const unit=document.getElementById('unitCode').value;
+      const unit=document.getElementById('unitCode')?.value || '';
       const previousValue=(select.value || '').trim();
+      setBasicInfoStatusMessage('caseManagerStatus','正在載入個案管理師名單…','invalid');
+      applyBasicInfoFieldLoadState('caseManagerName','loading');
       const handleFailure=()=>{
         applyCaseManagerOptions([], {
           previousValue,
           fallbackValue: previousValue,
-          placeholder:'（載入失敗）'
+          placeholder:'（載入失敗，請手動輸入或重新嘗試）'
         });
+        applyBasicInfoFieldLoadState('caseManagerName','error');
+        setBasicInfoStatusMessage('caseManagerStatus','無法載入名單，請手動輸入或點「重新載入」。','invalid');
+        updateBasicInfoCompletion({ silent:true });
       };
       const attemptFetch=runner=>{
         try{
           runner.withSuccessHandler(list=>{
             applyCaseManagerOptions(Array.isArray(list) ? list : [], { previousValue });
+            applyBasicInfoFieldLoadState('caseManagerName','');
+            setBasicInfoStatusMessage('caseManagerStatus','', null);
+            updateBasicInfoCompletion({ silent:true });
           }).withFailureHandler(()=>{ handleFailure(); }).getCaseManagersByUnit(unit);
         }catch(err){
           handleFailure();
@@ -8954,6 +9099,8 @@
       const previousValue=options && typeof options.previousValue === 'string'
         ? options.previousValue.trim()
         : (select.value || '').trim();
+      const manualEntries=getManualSelectValues(select);
+      const manualSet=new Set(manualEntries);
       const hasData=Array.isArray(list) && list.length > 0;
       const placeholderText=(options && options.placeholder)
         ? options.placeholder
@@ -8967,37 +9114,47 @@
       placeholder.selected=true;
       select.appendChild(placeholder);
       let matched=false;
+      const existingValues=new Set();
+      const appendOption=(value, isManual)=>{
+        const text=typeof value === 'string' ? value.trim() : '';
+        if(!text || existingValues.has(text)) return;
+        const option=document.createElement('option');
+        option.value=text;
+        option.textContent=text;
+        if(isManual){
+          option.dataset.manual='1';
+        }
+        if(text === previousValue){
+          option.selected=true;
+          matched=true;
+        }
+        select.appendChild(option);
+        existingValues.add(text);
+      };
       if(hasData){
         list.forEach(name=>{
           const text=String(name || '').trim();
           if(!text) return;
-          const option=document.createElement('option');
-          option.value=text;
-          option.textContent=text;
-          if(text === previousValue){
-            option.selected=true;
-            matched=true;
-          }
-          select.appendChild(option);
+          appendOption(text, manualSet.has(text));
         });
-        select.disabled=false;
-      }else if(options && options.fallbackValue){
+      }
+      if(!hasData && options && options.fallbackValue){
         const preserved=String(options.fallbackValue).trim();
         if(preserved){
-          const option=document.createElement('option');
-          option.value=preserved;
-          option.textContent=preserved;
-          option.selected=true;
-          select.appendChild(option);
-          matched=true;
-          select.disabled=false;
+          appendOption(preserved, manualSet.has(preserved));
         }
-      }else{
-        select.disabled=!(options && options.keepEnabled);
       }
+      manualEntries.forEach(text=>{
+        appendOption(text, true);
+      });
       if(!matched){
         select.selectedIndex=0;
       }
+      let shouldEnable=hasData || manualEntries.length > 0 || (options && options.keepEnabled);
+      if(!shouldEnable && select.options.length > 1){
+        shouldEnable=true;
+      }
+      select.disabled=!shouldEnable;
       updateConsultVisitText();
       toggleCallDateByConsultVisit();
       scheduleSummaryUpdate();
@@ -9008,19 +9165,27 @@
     function loadConsultants(){
       const select=document.getElementById('consultName');
       if(!select) return;
-      const unit=document.getElementById('unitCode').value;
+      const unit=document.getElementById('unitCode')?.value || '';
       const previousValue=(select.value || '').trim();
+      setBasicInfoStatusMessage('consultStatus','正在載入照專名單…','invalid');
+      applyBasicInfoFieldLoadState('consultName','loading');
       const handleFailure=()=>{
         applyConsultantOptions([], {
           previousValue,
           fallbackValue: previousValue,
-          placeholder:'（載入失敗）'
+          placeholder:'（載入失敗，請手動輸入或重新嘗試）'
         });
+        applyBasicInfoFieldLoadState('consultName','error');
+        setBasicInfoStatusMessage('consultStatus','無法載入名單，請手動輸入或點「重新載入」。','invalid');
+        updateBasicInfoCompletion({ silent:true });
       };
       const attemptFetch=runner=>{
         try{
           runner.withSuccessHandler(list=>{
             applyConsultantOptions(Array.isArray(list) ? list : [], { previousValue });
+            applyBasicInfoFieldLoadState('consultName','');
+            setBasicInfoStatusMessage('consultStatus','', null);
+            updateBasicInfoCompletion({ silent:true });
           }).withFailureHandler(()=>{ handleFailure(); }).getConsultantsByUnit(unit);
         }catch(err){
           handleFailure();
@@ -18059,7 +18224,12 @@
       if(statusEl){
         statusEl.dataset.state = status;
         const label=field.label || '';
-        if(filled){
+        const override=statusEl.dataset && typeof statusEl.dataset.customText === 'string'
+          ? statusEl.dataset.customText
+          : '';
+        if(override){
+          statusEl.textContent = override;
+        }else if(filled){
           statusEl.textContent = label ? `「${label}」已完成` : '已完成';
         }else{
           statusEl.textContent = label ? `請完成「${label}」` : '請完成此欄位';
@@ -18479,6 +18649,10 @@
       bindAction('reset-respite-phrases', resetRespitePhrases);
       bindAction('reset-meal-phrases', resetMealPhrases);
       bindAction('apply-and-save', applyAndSave);
+      bindAction('reload-case-managers', ()=>{ loadManagers(); });
+      bindAction('manual-case-manager', ()=>{ promptManualSelectValue('caseManagerName','caseManagerStatus','個案管理師姓名'); });
+      bindAction('reload-consultants', ()=>{ loadConsultants(); });
+      bindAction('manual-consult', ()=>{ promptManualSelectValue('consultName','consultStatus','照專姓名'); });
     }
 
     function applyEllipsisTooltips(){
