@@ -70,7 +70,21 @@ jobs:
             const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';
             let s=process.env.CLASPRC_JSON||'';let j;
             try{ j=JSON.parse(s); }catch(e){ s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); }
-            if(!j.token && j.tokens && j.tokens.default){ j.token=j.tokens.default; }
+            const ensureClientSettings=(source)=>{
+              if(!source) return;
+              const cid=source.client_id||source.clientId;
+              const cs=source.client_secret||source.clientSecret;
+              if(cid && cs && !j.oauth2ClientSettings){
+                j.oauth2ClientSettings={clientId:cid,clientSecret:cs};
+              }
+            };
+            if(!j.token && j.tokens && j.tokens.default){
+              j.token=j.tokens.default;
+              ensureClientSettings(j.tokens.default);
+            }
+            if(j.token){
+              ensureClientSettings(j.token);
+            }
             fs.writeFileSync(p, JSON.stringify(j,null,2));
           "
           test -s "$HOME/.clasprc.json"
