@@ -23,7 +23,10 @@ try {
   const results = await pa11y(targetUrl, {
     standard: 'WCAG2AA',
     timeout: 20000,
-    actions: ['wait for element #appMain to be visible', 'wait for 1500']
+    actions: ['wait for element #appMain to be visible'],
+    chromeLaunchConfig: {
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
   });
 
   if (results.issues.length > 0) {
