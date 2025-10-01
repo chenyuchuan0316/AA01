@@ -73,6 +73,7 @@
       --sticky-padding-inline:clamp(10px, 3.2vw, 18px);
       --wizard-index-size:34px;
       --wizard-index-font:0.95rem;
+      --wizard-gap:var(--space-sm);
       --group-header-spacing:var(--space-xs);
       --bottom-bar-min-height:48px;
       --layout-max:1440px;
@@ -90,6 +91,7 @@
       :root{
         --intro-colw:clamp(220px, 60vw, 300px);
         --checkcol-min:160px;
+        --wizard-gap:var(--space-xs);
       }
       html{ font-size:clamp(18px, 4.8vw, 20px); }
       .app-container{ padding-right:0; }
@@ -107,7 +109,7 @@
 
       .wizard{
         overflow-x:auto;
-        gap:var(--space-xs);
+        gap:var(--wizard-gap);
         padding-bottom:4px;
         scroll-snap-type:x proximity;
         -webkit-overflow-scrolling:touch;
@@ -1000,7 +1002,7 @@
       display:flex;
       justify-content:flex-start;
       align-items:center;
-      gap:var(--space-sm);
+      gap:var(--wizard-gap);
       flex-wrap:wrap;
     }
     .wizard-step{
@@ -1031,8 +1033,8 @@
       content:'';
       position:absolute;
       top:calc(var(--wizard-index-size) / 2);
-      left:-50%;
-      width:100%;
+      left:calc(-50% - var(--wizard-gap) / 2);
+      width:calc(100% + var(--wizard-gap));
       height:4px;
       background:#dbe5ff;
       z-index:-1;
@@ -8654,6 +8656,104 @@
       return 0;
     }
 
+    const ROSTER_CACHE_TTL=1000*60*60*6; // 6 小時
+    const rosterCacheKeys={
+      manager:'aa01_case_manager_roster_v1',
+      consultant:'aa01_consultant_roster_v1'
+    };
+    const rosterCacheState={
+      storage:null,
+      storageReady:false,
+      manager:null,
+      consultant:null
+    };
+
+    function ensureRosterStorage(){
+      if(rosterCacheState.storageReady) return rosterCacheState.storage;
+      rosterCacheState.storageReady=true;
+      try{
+        if(typeof window !== 'undefined' && window && window.localStorage){
+          const storage=window.localStorage;
+          const probe='aa01_roster_probe';
+          storage.setItem(probe, '1');
+          storage.removeItem(probe);
+          rosterCacheState.storage=storage;
+        }
+      }catch(err){
+        rosterCacheState.storage=null;
+      }
+      return rosterCacheState.storage;
+    }
+
+    function ensureRosterCache(type){
+      if(!type || !(type in rosterCacheKeys)) return {};
+      if(rosterCacheState[type]) return rosterCacheState[type];
+      const storage=ensureRosterStorage();
+      if(!storage){
+        rosterCacheState[type]={};
+        return rosterCacheState[type];
+      }
+      const key=rosterCacheKeys[type];
+      let parsed={};
+      try{
+        const raw=storage.getItem(key);
+        if(raw){
+          const data=JSON.parse(raw);
+          if(data && typeof data === 'object'){ parsed=data; }
+        }
+      }catch(err){
+        parsed={};
+      }
+      rosterCacheState[type]=parsed || {};
+      return rosterCacheState[type];
+    }
+
+    function persistRosterCache(type){
+      if(!type || !(type in rosterCacheKeys)) return;
+      const storage=ensureRosterStorage();
+      if(!storage) return;
+      try{
+        storage.setItem(rosterCacheKeys[type], JSON.stringify(rosterCacheState[type] || {}));
+      }catch(err){}
+    }
+
+    function normalizeUnitKeyForCache(value){
+      if(value === undefined || value === null) return '';
+      return String(value).trim();
+    }
+
+    function normalizeUnitPrefixForCache(value){
+      const text=normalizeUnitKeyForCache(value);
+      return text ? text.substring(0, 4) : '';
+    }
+
+    function resolveRosterUnitKey(type, value){
+      if(type === 'manager') return normalizeUnitPrefixForCache(value);
+      return normalizeUnitKeyForCache(value);
+    }
+
+    function getCachedRoster(type, unitKey){
+      if(!type || !unitKey) return null;
+      const cache=ensureRosterCache(type);
+      const entry=cache && cache[unitKey] ? cache[unitKey] : null;
+      if(!entry || !Array.isArray(entry.list)) return null;
+      return entry;
+    }
+
+    function isRosterEntryStale(entry){
+      if(!entry || !entry.updatedAt) return true;
+      return (Date.now() - entry.updatedAt) > ROSTER_CACHE_TTL;
+    }
+
+    function saveRosterToCache(type, unitKey, list){
+      if(!type || !unitKey) return;
+      if(!Array.isArray(list)){ list=[]; }
+      const cache=ensureRosterCache(type);
+      cache[unitKey]={ list:list.slice(), updatedAt:Date.now() };
+      rosterCacheState[type]=cache;
+      persistRosterCache(type);
+    }
+
 
     function applyCaseManagerOptions(list, options){
       const select=document.getElementById('caseManagerName');
@@ -8714,29 +8814,59 @@
       const select=document.getElementById('caseManagerName');
       if(!select) return;
       const unit=document.getElementById('unitCode').value;
+      const unitKey=resolveRosterUnitKey('manager', unit);
       const previousValue=(select.value || '').trim();
-      const handleFailure=()=>{
+      if(!unitKey){
         applyCaseManagerOptions([], {
           previousValue,
-          fallbackValue: previousValue,
-          placeholder:'（載入失敗）'
+          placeholder:'（請先輸入單位代碼）',
+          allowPlaceholderSelection:true,
+          keepEnabled:false
         });
+        return;
+      }
+      const cached=getCachedRoster('manager', unitKey);
+      const hasCached=!!(cached && Array.isArray(cached.list) && cached.list.length);
+      if(hasCached){
+        applyCaseManagerOptions(cached.list, {
+          previousValue,
+          keepEnabled:true
+        });
+      }
+      const handleFailure=()=>{
+        if(!hasCached){
+          applyCaseManagerOptions([], {
+            previousValue,
+            fallbackValue: previousValue,
+            placeholder:'（載入失敗）',
+            keepEnabled:true
+          });
+        }
       };
       const attemptFetch=runner=>{
         try{
           runner.withSuccessHandler(list=>{
-            applyCaseManagerOptions(Array.isArray(list) ? list : [], { previousValue });
+            const safeList=Array.isArray(list) ? list : [];
+            saveRosterToCache('manager', unitKey, safeList);
+            applyCaseManagerOptions(safeList, {
+              previousValue,
+              keepEnabled:true
+            });
           }).withFailureHandler(()=>{ handleFailure(); }).getCaseManagersByUnit(unit);
         }catch(err){
           handleFailure();
         }
       };
+      const shouldFetch=!cached || isRosterEntryStale(cached);
+      if(!shouldFetch){
+        return;
+      }
       const status=runWithGoogleRunner(attemptFetch, {
         retries: 8,
         delay: 250,
         onUnavailable: handleFailure
       });
-      if(status === 0){
+      if(status === 0 && !hasCached){
         applyCaseManagerOptions([], {
           previousValue,
           placeholder:'（載入中…）'
@@ -8805,29 +8935,59 @@
       const select=document.getElementById('consultName');
       if(!select) return;
       const unit=document.getElementById('unitCode').value;
+      const unitKey=resolveRosterUnitKey('consultant', unit);
       const previousValue=(select.value || '').trim();
-      const handleFailure=()=>{
+      if(!unitKey){
         applyConsultantOptions([], {
           previousValue,
-          fallbackValue: previousValue,
-          placeholder:'（載入失敗）'
+          placeholder:'（請先輸入單位代碼）',
+          allowPlaceholderSelection:true,
+          keepEnabled:false
         });
+        return;
+      }
+      const cached=getCachedRoster('consultant', unitKey);
+      const hasCached=!!(cached && Array.isArray(cached.list) && cached.list.length);
+      if(hasCached){
+        applyConsultantOptions(cached.list, {
+          previousValue,
+          keepEnabled:true
+        });
+      }
+      const handleFailure=()=>{
+        if(!hasCached){
+          applyConsultantOptions([], {
+            previousValue,
+            fallbackValue: previousValue,
+            placeholder:'（載入失敗）',
+            keepEnabled:true
+          });
+        }
       };
       const attemptFetch=runner=>{
         try{
           runner.withSuccessHandler(list=>{
-            applyConsultantOptions(Array.isArray(list) ? list : [], { previousValue });
+            const safeList=Array.isArray(list) ? list : [];
+            saveRosterToCache('consultant', unitKey, safeList);
+            applyConsultantOptions(safeList, {
+              previousValue,
+              keepEnabled:true
+            });
           }).withFailureHandler(()=>{ handleFailure(); }).getConsultantsByUnit(unit);
         }catch(err){
           handleFailure();
         }
       };
+      const shouldFetch=!cached || isRosterEntryStale(cached);
+      if(!shouldFetch){
+        return;
+      }
       const status=runWithGoogleRunner(attemptFetch, {
         retries: 8,
         delay: 250,
         onUnavailable: handleFailure
       });
-      if(status === 0){
+      if(status === 0 && !hasCached){
         applyConsultantOptions([], {
           previousValue,
           placeholder:'（載入中…）'
