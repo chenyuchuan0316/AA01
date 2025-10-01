@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "types": ["jest", "node"],
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["__tests__/**/*", "test/**/*", "playwright/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
