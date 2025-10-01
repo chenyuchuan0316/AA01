@@ -70,8 +70,8 @@
       --section-col-min:340px;
       --section-col-max:560px;
       --section-col-preferred:50%;
-      --grid-col-min-2:220px;
-      --grid-col-min-3:180px;
+      --card-col-min:320px;
+      --card-col-max:1fr;
       --checkcol-min:190px;
       --textarea-min:110px;
       --intro-colw:clamp(260px, 28vw, 360px);
@@ -220,7 +220,12 @@
       #contactVisitGroup .contact-visit-card-body{ gap:var(--space-xs); }
       .preview{ font-size:calc(var(--fs-base) * 0.95); }
     
-      .section-card-grid{ grid-template-columns:1fr; }
+      .section-card-grid,
+      #contactVisitGroup .contact-visit-cards,
+      .home-care-grid,
+      .checkgrid{
+        grid-template-columns:1fr;
+      }
     
       .span-2,
       .span-3{ grid-column:auto; }
@@ -278,10 +283,6 @@
       }
       #basicInfoGroup .cms-level-row{
         grid-column:1 / -1;
-      }
-    
-      #contactVisitGroup .contact-visit-cards{
-        grid-template-columns:repeat(3, minmax(220px, 1fr));
       }
     
       #careGoals_block{
@@ -1068,11 +1069,6 @@
       gap:var(--space-xs);
       margin-top:var(--space-xxs);
     }
-    #contactVisitGroup .contact-visit-cards{
-      display:grid;
-      gap:var(--space-sm);
-    }
-    
     #contactVisitGroup .contact-visit-card{
       border:1px solid var(--border);
       border-radius:var(--radius);
@@ -1806,7 +1802,6 @@
     }
 
     /* Home care 卡式清單（維持放大字與輸入） */
-    .home-care-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:var(--space-sm); }
     .home-care-item{
       position:relative;
       display:flex;
@@ -2477,13 +2472,22 @@
     /* 行動端微調 */
     
     /* === Section card 通用網格與工具類 === */
-    .section-card-grid{
+    .section-card-grid,
+    #contactVisitGroup .contact-visit-cards,
+    .home-care-grid,
+    .checkgrid{
       display:grid;
       gap:var(--space-sm);
-      grid-template-columns:repeat(auto-fit, minmax(280px, min(50%, 1fr)));
+      grid-template-columns:repeat(auto-fill, minmax(var(--card-grid-min, var(--card-col-min)), var(--card-col-max)));
       align-items:start;
     }
-    
+
+    .checkgrid{ --card-grid-min:var(--checkcol-min); }
+
+    .cards-2{
+      grid-template-columns:repeat(2, minmax(var(--card-grid-min, var(--card-col-min)), var(--card-col-max)));
+    }
+
     .section-card{
       display:flex;
       flex-direction:column;
@@ -2525,12 +2529,6 @@
         align-items:center;
       }
       .autogrid .field > label{ justify-self:end; }
-    }
-    .checkgrid{
-      display:grid;
-      gap:12px;
-      grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
-      align-items:start;
     }
     .checkgrid .check-item{
       display:flex;
@@ -2696,7 +2694,7 @@
   </div>
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
-    <div class="group card-main" id="contactVisitGroup" data-collapsed="0" data-plan-locked="0">
+    <div class="group card-main" id="contactVisitGroup" data-span="full" data-collapsed="0" data-plan-locked="0">
       <div class="group-header">
         <div class="titlebar">
           <span class="h1">計畫目標</span>

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "jest",
-    "e2e": "node e2e/health.e2e.js"
+    "e2e": "node e2e/run-e2e.js"
   },
   "devDependencies": {
     "@google/clasp": "^2.5.0",
