@@ -193,58 +193,65 @@ export function buildFilesFromRepoRoot() {
   const cwd = process.cwd();
   const files = [];
   const usedNames = new Map(); // name → { type, origin }
-  const searchHints = new Set(['repo 根目錄']);
+  const { absolute: claspRootDir, setting: claspRootSetting } = resolveClaspRootDir(cwd);
+  const searchHints = new Set();
 
-  const rootEntries = fs.readdirSync(cwd, { withFileTypes: true });
-  for (const ent of rootEntries) {
-    if (!ent.isFile()) continue;
+  if (!claspRootDir) {
+    searchHints.add('repo 根目錄');
 
-    const full = path.join(cwd, ent.name);
-    const ext = path.extname(ent.name).toLowerCase();
-    const base = path.basename(ent.name, ext);
+    const rootEntries = fs.readdirSync(cwd, { withFileTypes: true });
+    for (const ent of rootEntries) {
+      if (!ent.isFile()) continue;
 
-    if (ent.name === 'appsscript.json') {
-      const manifestText = fs.readFileSync(full, 'utf8').trim();
-      let manifestObj;
-      try {
-        manifestObj = JSON.parse(manifestText);
-      } catch (e) {
-        throw new Error(`appsscript.json 不是有效 JSON：${e.message}`);
+      const full = path.join(cwd, ent.name);
+      const ext = path.extname(ent.name).toLowerCase();
+      const base = path.basename(ent.name, ext);
+
+      if (ent.name === 'appsscript.json') {
+        const manifestText = fs.readFileSync(full, 'utf8').trim();
+        let manifestObj;
+        try {
+          manifestObj = JSON.parse(manifestText);
+        } catch (e) {
+          throw new Error(`appsscript.json 不是有效 JSON：${e.message}`);
+        }
+        addAppsScriptFile(
+          files,
+          usedNames,
+          'appsscript',
+          'JSON',
+          JSON.stringify(manifestObj),
+          full
+        );
+        continue;
       }
-      addAppsScriptFile(
-        files,
-        usedNames,
-        'appsscript',
-        'JSON',
-        JSON.stringify(manifestObj),
-        full
-      );
-      continue;
-    }
 
-    if (ext === '.gs' || ext === '.js') {
-      addAppsScriptFile(
-        files,
-        usedNames,
-        base,
-        'SERVER_JS',
-        fs.readFileSync(full, 'utf8'),
-        full
-      );
-      continue;
-    }
+      if (ext === '.gs' || ext === '.js') {
+        addAppsScriptFile(
+          files,
+          usedNames,
+          base,
+          'SERVER_JS',
+          fs.readFileSync(full, 'utf8'),
+          full
+        );
+        continue;
+      }
 
-    if (ext === '.html' || ext === '.htm') {
-      addAppsScriptFile(
-        files,
-        usedNames,
-        base,
-        'HTML',
-        fs.readFileSync(full, 'utf8'),
-        full
-      );
-      continue;
+      if (ext === '.html' || ext === '.htm') {
+        addAppsScriptFile(
+          files,
+          usedNames,
+          base,
+          'HTML',
+          fs.readFileSync(full, 'utf8'),
+          full
+        );
+        continue;
+      }
     }
+  } else if (claspRootSetting) {
+    searchHints.add(claspRootSetting);
   }
 
   const { absolute: claspRootDir, setting: claspRootSetting } = resolveClaspRootDir(cwd);
