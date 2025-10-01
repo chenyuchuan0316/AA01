@@ -2833,6 +2833,8 @@
       color:#475569;
     }
     .basic-info-status::before{ content:''; font-weight:700; }
+    .basic-info-status[data-state="pending"]{ color:#1f2937; }
+    .basic-info-status[data-state="pending"]::before{ content:'…'; }
     .basic-info-status[data-state="invalid"]{ color:#b91c1c; }
     .basic-info-status[data-state="invalid"]::before{ content:'!'; }
     .basic-info-status[data-state="complete"]{ color:rgb(var(--status-complete) / 1); }
@@ -8848,6 +8850,150 @@
       return 0;
     }
 
+    const ROSTER_CACHE_PREFIX = 'aa01.roster';
+    const ROSTER_CACHE_TTL = 1000 * 60 * 60 * 6;
+    const rosterCacheState = { manager:null, consultant:null };
+    const rosterMemoryCache = {
+      manager:Object.create(null),
+      consultant:Object.create(null)
+    };
+    const rosterFetchState = {
+      manager:{ requestId:0, pendingUnit:'' },
+      consultant:{ requestId:0, pendingUnit:'' }
+    };
+
+    function safeStorageGet(key){
+      if(!key || typeof sessionStorage === 'undefined') return null;
+      try{
+        return sessionStorage.getItem(key);
+      }catch(err){
+        return null;
+      }
+    }
+
+    function safeStorageSet(key, value){
+      if(!key || typeof sessionStorage === 'undefined') return;
+      try{
+        if(value === null){
+          sessionStorage.removeItem(key);
+        }else{
+          sessionStorage.setItem(key, value);
+        }
+      }catch(err){}
+    }
+
+    function safeStorageRemove(key){
+      if(!key || typeof sessionStorage === 'undefined') return;
+      try{
+        sessionStorage.removeItem(key);
+      }catch(err){}
+    }
+
+    function getRosterStorageKey(type){
+      return `${ROSTER_CACHE_PREFIX}.${type === 'consultant' ? 'consultants' : 'managers'}`;
+    }
+
+    function getRosterCacheMap(type){
+      if(type !== 'manager' && type !== 'consultant') return Object.create(null);
+      if(rosterCacheState[type]){
+        return rosterCacheState[type];
+      }
+      const raw=safeStorageGet(getRosterStorageKey(type));
+      let map=Object.create(null);
+      if(raw){
+        try{
+          const parsed=JSON.parse(raw);
+          if(parsed && typeof parsed === 'object'){
+            Object.keys(parsed).forEach(unit=>{
+              map[unit] = parsed[unit];
+            });
+          }
+        }catch(err){}
+      }
+      rosterCacheState[type] = map;
+      return map;
+    }
+
+    function persistRosterCache(type){
+      if(type !== 'manager' && type !== 'consultant') return;
+      const key=getRosterStorageKey(type);
+      const map=rosterCacheState[type] || Object.create(null);
+      const cleaned=Object.create(null);
+      const now=Date.now();
+      Object.keys(map).forEach(unit=>{
+        const entry=map[unit];
+        if(!entry || !Array.isArray(entry.list)) return;
+        const ts=typeof entry.ts === 'number' ? entry.ts : Number(entry.ts) || 0;
+        if(!ts || (now - ts) > ROSTER_CACHE_TTL) return;
+        cleaned[unit] = { list: entry.list.slice(), ts: ts };
+      });
+      if(Object.keys(cleaned).length){
+        safeStorageSet(key, JSON.stringify(cleaned));
+      }else{
+        safeStorageRemove(key);
+      }
+    }
+
+    function pruneRosterCache(type, limit){
+      const map=getRosterCacheMap(type);
+      const units=Object.keys(map || {});
+      if(units.length <= limit) return false;
+      units.sort((a,b)=>{
+        const aEntry=map[a];
+        const bEntry=map[b];
+        const aTs=aEntry && typeof aEntry.ts === 'number' ? aEntry.ts : Number(aEntry && aEntry.ts) || 0;
+        const bTs=bEntry && typeof bEntry.ts === 'number' ? bEntry.ts : Number(bEntry && bEntry.ts) || 0;
+        return aTs - bTs;
+      });
+      let removed=false;
+      while(units.length > limit){
+        const unit=units.shift();
+        if(unit && map[unit]){
+          delete map[unit];
+          removed=true;
+        }
+      }
+      return removed;
+    }
+
+    function getCachedRoster(type, unit){
+      if(!unit) return null;
+      const map=getRosterCacheMap(type);
+      if(!map || typeof map !== 'object') return null;
+      const entry=map[unit];
+      if(!entry || !Array.isArray(entry.list)) return null;
+      const ts=typeof entry.ts === 'number' ? entry.ts : Number(entry.ts) || 0;
+      if(!ts || (Date.now() - ts) > ROSTER_CACHE_TTL){
+        delete map[unit];
+        persistRosterCache(type);
+        return null;
+      }
+      return entry.list.slice();
+    }
+
+    function storeRosterCache(type, unit, list){
+      if(!unit || !Array.isArray(list)) return;
+      const map=getRosterCacheMap(type);
+      map[unit] = { list: list.slice(), ts: Date.now() };
+      pruneRosterCache(type, 40);
+      persistRosterCache(type);
+    }
+
+    function getMemoryRoster(type, unit){
+      const store=rosterMemoryCache[type];
+      if(!store || !unit) return null;
+      const list=store[unit];
+      return Array.isArray(list) ? list.slice() : null;
+    }
+
+    function storeMemoryRoster(type, unit, list){
+      if(!unit || !Array.isArray(list)) return;
+      if(!rosterMemoryCache[type]){
+        rosterMemoryCache[type] = Object.create(null);
+      }
+      rosterMemoryCache[type][unit] = list.slice();
+    }
+
     function applyCaseManagerOptions(list, options){
       const select=document.getElementById('caseManagerName');
       if(!select) return;
@@ -8914,80 +9060,6 @@
       scheduleSummaryUpdate();
       updateBasicInfoCompletion({ silent:true });
       refreshSearchableSelect('caseManagerName','caseManagerFilter');
-    }
-
-    function loadManagers(){
-      const select=document.getElementById('caseManagerName');
-      if(!select) return;
-      const unit=document.getElementById('unitCode').value;
-      const unitKey=resolveRosterUnitKey('manager', unit);
-      const previousValue=(select.value || '').trim();
-      if(!unit){
-        applyCaseManagerOptions([], {
-          previousValue,
-          placeholder:'（請先輸入單位代碼）',
-          allowPlaceholderSelection:true
-        });
-        return;
-      }
-      const handleFailure=()=>{
-        applyCaseManagerOptions([], {
-          previousValue,
-          placeholder:'（請先輸入單位代碼）',
-          allowPlaceholderSelection:true,
-          keepEnabled:false
-        });
-        return;
-      }
-      const cached=getCachedRoster('manager', unitKey);
-      const hasCached=!!(cached && Array.isArray(cached.list) && cached.list.length);
-      if(hasCached){
-        applyCaseManagerOptions(cached.list, {
-          previousValue,
-          keepEnabled:true
-        });
-      }
-      const handleFailure=()=>{
-        if(!hasCached){
-          applyCaseManagerOptions([], {
-            previousValue,
-            fallbackValue: previousValue,
-            placeholder:'（載入失敗）',
-            keepEnabled:true
-          });
-        }
-      };
-      const attemptFetch=runner=>{
-        try{
-          runner.withSuccessHandler(list=>{
-            const safeList=Array.isArray(list) ? list : [];
-            saveRosterToCache('manager', unitKey, safeList);
-            applyCaseManagerOptions(safeList, {
-              previousValue,
-              keepEnabled:true
-            });
-          }).withFailureHandler(()=>{ handleFailure(); }).getCaseManagersByUnit(unit);
-        }catch(err){
-          handleFailure();
-        }
-      };
-      const shouldFetch=!cached || isRosterEntryStale(cached);
-      if(!shouldFetch){
-        return;
-      }
-      const status=runWithGoogleRunner(attemptFetch, {
-        retries: 8,
-        delay: 250,
-        onUnavailable: handleFailure
-      });
-      if(status === 0 && !hasCached){
-        applyCaseManagerOptions([], {
-          previousValue,
-          placeholder:'（載入中…）',
-          allowPlaceholderSelection:true,
-          keepEnabled:true
-        });
-      }
     }
 
     /* ===== 照專名單 ===== */
@@ -9060,78 +9132,140 @@
       updateBasicInfoCompletion({ silent:true });
     }
 
-    function loadConsultants(){
-      const select=document.getElementById('consultName');
-      if(!select) return;
-      const unit=document.getElementById('unitCode').value;
-      const unitKey=resolveRosterUnitKey('consultant', unit);
-      const previousValue=(select.value || '').trim();
-      if(!unit){
-        applyConsultantOptions([], {
-          previousValue,
-          placeholder:'（請先輸入單位代碼）',
-          allowPlaceholderSelection:true
-        });
-        return;
+    const ROSTER_CONFIG = Object.freeze({
+      manager:{
+        selectId:'caseManagerName',
+        statusId:'caseManagerStatus',
+        label:'個案管理師',
+        method:'getCaseManagersByUnit',
+        type:'manager',
+        apply:applyCaseManagerOptions
+      },
+      consultant:{
+        selectId:'consultName',
+        statusId:'consultStatus',
+        label:'照專姓名',
+        method:'getConsultantsByUnit',
+        type:'consultant',
+        apply:applyConsultantOptions
       }
-      const handleFailure=()=>{
-        applyConsultantOptions([], {
+    });
+
+    function sanitizeRosterList(list){
+      if(!Array.isArray(list) || !list.length) return [];
+      const seen=new Set();
+      const sanitized=[];
+      list.forEach(entry=>{
+        const text=String(entry || '').trim();
+        if(!text || seen.has(text)) return;
+        seen.add(text);
+        sanitized.push(text);
+      });
+      try{
+        sanitized.sort((a,b)=>a.localeCompare(b, 'zh-Hant', { numeric:true }));
+      }catch(err){
+        sanitized.sort();
+      }
+      return sanitized;
+    }
+
+    function loadRoster(type){
+      const cfg=ROSTER_CONFIG[type];
+      if(!cfg) return;
+      const select=document.getElementById(cfg.selectId);
+      if(!select) return;
+      const unitEl=document.getElementById('unitCode');
+      const unit=unitEl && typeof unitEl.value === 'string' ? unitEl.value.trim() : '';
+      const previousValue=(select.value || '').trim();
+      const state=rosterFetchState[type];
+      state.pendingUnit = unit;
+      const requestId=++state.requestId;
+      if(!unit){
+        cfg.apply([], {
           previousValue,
           placeholder:'（請先輸入單位代碼）',
           allowPlaceholderSelection:true,
-          keepEnabled:false
-        });
-        return;
-      }
-      const cached=getCachedRoster('consultant', unitKey);
-      const hasCached=!!(cached && Array.isArray(cached.list) && cached.list.length);
-      if(hasCached){
-        applyConsultantOptions(cached.list, {
-          previousValue,
           keepEnabled:true
         });
-      }
-      const handleFailure=()=>{
-        if(!hasCached){
-          applyConsultantOptions([], {
-            previousValue,
-            fallbackValue: previousValue,
-            placeholder:'（載入失敗）',
-            keepEnabled:true
-          });
-        }
-      };
-      const attemptFetch=runner=>{
-        try{
-          runner.withSuccessHandler(list=>{
-            const safeList=Array.isArray(list) ? list : [];
-            saveRosterToCache('consultant', unitKey, safeList);
-            applyConsultantOptions(safeList, {
-              previousValue,
-              keepEnabled:true
-            });
-          }).withFailureHandler(()=>{ handleFailure(); }).getConsultantsByUnit(unit);
-        }catch(err){
-          handleFailure();
-        }
-      };
-      const shouldFetch=!cached || isRosterEntryStale(cached);
-      if(!shouldFetch){
+        setBasicInfoNotice(cfg.statusId, '請先輸入單位代碼', { state:'info' });
         return;
       }
-      const status=runWithGoogleRunner(attemptFetch, {
-        retries: 8,
-        delay: 250,
-        onUnavailable: handleFailure
-      });
-      if(status === 0 && !hasCached){
-        applyConsultantOptions([], {
+      const cachedList=getMemoryRoster(type, unit) || getCachedRoster(type, unit);
+      if(cachedList && cachedList.length){
+        storeMemoryRoster(type, unit, cachedList);
+        cfg.apply(cachedList, { previousValue });
+        setBasicInfoNotice(cfg.statusId, `${cfg.label}名單更新中…`, { state:'loading' });
+      }else{
+        cfg.apply([], {
           previousValue,
           placeholder:'（載入中…）',
           allowPlaceholderSelection:true,
           keepEnabled:true
         });
+        setBasicInfoNotice(cfg.statusId, `${cfg.label}名單載入中…`, { state:'loading' });
       }
+      requestRoster(type, unit, previousValue, requestId);
+    }
+
+    function requestRoster(type, unit, previousValue, requestId){
+      const cfg=ROSTER_CONFIG[type];
+      if(!cfg || !unit) return;
+      const hasCachedData=!!(getMemoryRoster(type, unit) && getMemoryRoster(type, unit).length);
+      const handleSuccess=list=>{
+        const state=rosterFetchState[type];
+        if(state.requestId !== requestId || state.pendingUnit !== unit) return;
+        const sanitized=sanitizeRosterList(list);
+        storeMemoryRoster(type, unit, sanitized);
+        storeRosterCache(type, unit, sanitized);
+        if(sanitized.length){
+          clearBasicInfoNotice(cfg.statusId);
+        }else{
+          setBasicInfoNotice(cfg.statusId, `${cfg.label}名單目前沒有資料`, { state:'info' });
+        }
+        cfg.apply(sanitized, { previousValue });
+      };
+      const handleFailure=()=>{
+        const state=rosterFetchState[type];
+        if(state.requestId !== requestId || state.pendingUnit !== unit) return;
+        const cached=getMemoryRoster(type, unit);
+        if(cached && cached.length){
+          setBasicInfoNotice(cfg.statusId, `${cfg.label}名單更新失敗，已保留前次資料`, { state:'warn' });
+          cfg.apply(cached, { previousValue });
+        }else{
+          setBasicInfoNotice(cfg.statusId, `${cfg.label}名單載入失敗，請稍後再試`, { state:'error' });
+          cfg.apply([], {
+            previousValue,
+            fallbackValue: previousValue,
+            placeholder:'（載入失敗）',
+            keepEnabled:true,
+            allowPlaceholderSelection:true
+
+          });
+        }
+      };
+      const attemptFetch=runner=>{
+        try{
+          runner.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure)[cfg.method](unit);
+        }catch(err){
+          handleFailure();
+        }
+      };
+      const result=runWithGoogleRunner(attemptFetch, {
+        retries: hasCachedData ? 12 : 24,
+        delay: 250,
+        onUnavailable: handleFailure
+      });
+      if(result === -1){
+        handleFailure();
+      }
+    }
+
+    function loadManagers(){
+      loadRoster('manager');
+    }
+
+    function loadConsultants(){
+      loadRoster('consultant');
     }
 
     /* ===== 三、偕同訪視者（下拉＋多筆） ===== */
@@ -18127,6 +18261,35 @@
       return '';
     }
 
+    function setBasicInfoNotice(statusId, message, options){
+      const statusEl=document.getElementById(statusId);
+      if(!statusEl) return;
+      if(!message){
+        clearBasicInfoNotice(statusId);
+        return;
+      }
+      statusEl.textContent = message;
+      statusEl.dataset.notice = '1';
+      const noticeState = options && options.state ? options.state : '';
+      if(noticeState){
+        statusEl.dataset.noticeState = noticeState;
+      }else{
+        delete statusEl.dataset.noticeState;
+      }
+      if(noticeState === 'loading' || noticeState === 'info'){
+        statusEl.dataset.state = 'pending';
+      }else if(noticeState === 'warn' || noticeState === 'error'){
+        statusEl.dataset.state = 'invalid';
+      }
+    }
+
+    function clearBasicInfoNotice(statusId){
+      const statusEl=document.getElementById(statusId);
+      if(!statusEl) return;
+      delete statusEl.dataset.notice;
+      delete statusEl.dataset.noticeState;
+    }
+
     function updateBasicInfoFieldState(field, filled){
       const status = filled ? 'complete' : 'invalid';
       if(field.type === 'cms'){
@@ -18152,16 +18315,26 @@
       }
       const statusEl=document.getElementById(field.statusId);
       if(statusEl){
-        statusEl.dataset.state = status;
         const label=field.label || '';
-        const override=statusEl.dataset && typeof statusEl.dataset.customText === 'string'
-          ? statusEl.dataset.customText
-          : '';
-        if(override){
-          statusEl.textContent = override;
-        }else if(filled){
+        const hasNotice=statusEl.dataset && statusEl.dataset.notice === '1';
+        const noticeState=hasNotice ? (statusEl.dataset.noticeState || '') : '';
+        if(filled){
+          if(hasNotice){
+            delete statusEl.dataset.notice;
+            delete statusEl.dataset.noticeState;
+          }
+          statusEl.dataset.state = 'complete';
           statusEl.textContent = label ? `「${label}」已完成` : '已完成';
+        }else if(hasNotice){
+          if(noticeState === 'loading' || noticeState === 'info'){
+            statusEl.dataset.state = 'pending';
+          }else if(noticeState === 'warn' || noticeState === 'error'){
+            statusEl.dataset.state = 'invalid';
+          }else{
+            statusEl.dataset.state = status;
+          }
         }else{
+          statusEl.dataset.state = status;
           statusEl.textContent = label ? `請完成「${label}」` : '請完成此欄位';
         }
       }
