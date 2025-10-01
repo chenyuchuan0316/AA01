@@ -101,9 +101,15 @@ jobs:
           fi
 
           echo "=== 2) clasp 憑證 ==="
-          echo "(whoami)"
-          if ! clasp whoami; then
-            echo "::error::clasp not logged in or token invalid. Fix: 重取本機 ~/.clasprc.json（用 @fuancare.com.tw 有編輯權限的帳號），base64 上傳到 CLASPRC_JSON"; exit 1;
+          echo "(clasp login status)"
+          if clasp help whoami >/dev/null 2>&1; then
+            if ! clasp whoami; then
+              echo "::error::clasp not logged in or token invalid. Fix: 重取本機 ~/.clasprc.json（用 @fuancare.com.tw 有編輯權限的帳號），base64 上傳到 CLASPRC_JSON"; exit 1;
+            fi
+          else
+            if ! clasp login --status; then
+              echo "::error::clasp not logged in or token invalid. Fix: 重取本機 ~/.clasprc.json（用 @fuancare.com.tw 有編輯權限的帳號），base64 上傳到 CLASPRC_JSON"; exit 1;
+            fi
           fi
 
           echo "=== 3) 專案定位 ==="
