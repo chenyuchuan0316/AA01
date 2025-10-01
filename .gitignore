@@ -1,10 +1,16 @@
-node_modules/
+﻿node_modules/
 *.log
 sa.json
 gha-creds-*.json
 
 client_secret.json
 .client_secret.json
+
+
+client_secret.json
+.client_secret.json
+sa.json
+
 
 # allow GitHub Actions
 !.github
@@ -13,8 +19,3 @@ client_secret.json
 
 # CI-injected metadata file (created during workflow before clasp push)
 00_ci_env.gs
-
-coverage/
-playwright-report/
-playwright-results/
-artifacts/
