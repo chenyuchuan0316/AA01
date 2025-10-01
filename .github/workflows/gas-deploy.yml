@@ -38,7 +38,7 @@ jobs:
         run: npm test --if-present
 
   test-stage:
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: [unit-tests]
     timeout-minutes: 25
@@ -141,25 +141,42 @@ jobs:
         run: |
           set -e
           clasp deployments > before.txt || true
+          clasp deployments --json > before.json || true
           node -e "
             const fs=require('fs');
             const map={};
-            let text='';
-            try {
-              text=fs.readFileSync('before.txt','utf8');
-            } catch (err) {
-              console.warn('⚠️ 無法讀取 before.txt：', err.message);
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
+
+            const jsonText=safeRead('before.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed && Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const depId=dep && dep.deploymentId;
+                  const depVer=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(depId){
+                    map[depId]=depVer!=null?String(depVer):'';
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 before.json：', err.message);
+              }
             }
 
-            for(const line of text.split(/\r?\n/)){
-              const match=line.match(/(AK[\w-]{20,})\s*@\s*([0-9]+)/);
-              if(match){
-                map[match[1]]=match[2];
+            if(!Object.keys(map).length){
+              const text=safeRead('before.txt');
+              const regex=/(AK[\w-]{20,})/g;
+              let m;
+              while((m=regex.exec(text))){
+                if(!map[m[1]]){
+                  map[m[1]]='';
+                }
               }
             }
 
             const keys=Object.keys(map);
-            fs.writeFileSync('before.map.json', JSON.stringify(map));
+            fs.writeFileSync('before.map.json', JSON.stringify(map, null, 2));
             console.log('Known deployment keys:', keys.length?keys.join(', '):'(none)');
           "
 
@@ -175,7 +192,6 @@ jobs:
             echo "has_secret=true" >> "$GITHUB_OUTPUT"
           fi
 
-
       - name: "Ensure TEST_DEPLOYMENT_ID exists BEFORE"
         if: steps.check-test-deployment.outputs.has_secret == 'true'
         env:
@@ -183,18 +199,20 @@ jobs:
         run: |
           node -e "
             const fs=require('fs');
+            const hasOwn=Object.prototype.hasOwnProperty;
             const id=(process.env.TEST_DEPLOYMENT_ID||'').trim();
             if(!id){
               console.error('Missing TEST_DEPLOYMENT_ID secret.');
               process.exit(1);
             }
             const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));
-            if(!map[id]){
+            if(!hasOwn.call(map, id)){
               const known=Object.keys(map);
               console.error('TEST_DEPLOYMENT_ID not found. Known deployments: '+(known.length?known.join(', '):'(none)'));
               process.exit(1);
             }
-            console.log('Found test deployment BEFORE. Current version =', map[id]);
+            const current=map[id];
+            console.log('Found test deployment BEFORE. Current version =', current?current:'<unknown>');
           "
 
       # --- push & deploy to TEST ---
@@ -374,25 +392,42 @@ jobs:
         run: |
           set -e
           clasp deployments > before.txt || true
+          clasp deployments --json > before.json || true
           node -e "
             const fs=require('fs');
             const map={};
-            let text='';
-            try {
-              text=fs.readFileSync('before.txt','utf8');
-            } catch (err) {
-              console.warn('⚠️ 無法讀取 before.txt：', err.message);
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
+
+            const jsonText=safeRead('before.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed && Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const depId=dep && dep.deploymentId;
+                  const depVer=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(depId){
+                    map[depId]=depVer!=null?String(depVer):'';
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 before.json：', err.message);
+              }
             }
 
-            for(const line of text.split(/\r?\n/)){
-              const match=line.match(/(AK[\w-]{20,})\s*@\s*([0-9]+)/);
-              if(match){
-                map[match[1]]=match[2];
+            if(!Object.keys(map).length){
+              const text=safeRead('before.txt');
+              const regex=/(AK[\w-]{20,})/g;
+              let m;
+              while((m=regex.exec(text))){
+                if(!map[m[1]]){
+                  map[m[1]]='';
+                }
               }
             }
 
             const keys=Object.keys(map);
-            fs.writeFileSync('before.map.json', JSON.stringify(map));
+            fs.writeFileSync('before.map.json', JSON.stringify(map, null, 2));
             console.log('Known deployment keys:', keys.length?keys.join(', '):'(none)');
           "
 
@@ -402,18 +437,20 @@ jobs:
         run: |
           node -e "
             const fs=require('fs');
+            const hasOwn=Object.prototype.hasOwnProperty;
             const id=(process.env.GAS_DEPLOYMENT_ID||'').trim();
             if(!id){
               console.error('Missing GAS_DEPLOYMENT_ID secret.');
               process.exit(1);
             }
             const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));
-            if(!map[id]){
+            if(!hasOwn.call(map, id)){
               const known=Object.keys(map);
               console.error('GAS_DEPLOYMENT_ID not found. Known deployments: '+(known.length?known.join(', '):'(none)'));
               process.exit(1);
             }
-            console.log('Found prod deployment BEFORE. Current version =', map[id]);
+            const current=map[id];
+            console.log('Found prod deployment BEFORE. Current version =', current?current:'<unknown>');
           "
 
       - name: "Inject CI env (PROD)"
