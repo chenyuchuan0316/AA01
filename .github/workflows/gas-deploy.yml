@@ -141,13 +141,66 @@ jobs:
         run: |
           set -e
           clasp deployments > before.txt || true
-          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const lines=t.split(/\r?\n/);const map={};for(const L of lines){const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);if(m){map[m[1]]=m[2];}}fs.writeFileSync('before.map.json',JSON.stringify(map));console.log('BEFORE MAP:',map)"
+          clasp deployments --json > before.json || true
+          node -e "
+            const fs=require('fs');
+            const map={};
+
+            const safeRead=(file)=>{
+              try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; }
+            };
+
+            const jsonText=safeRead('before.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const id=dep && dep.deploymentId;
+                  const ver=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(id && (ver || ver===0)){
+                    map[id]=String(ver);
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 before.json：', err.message);
+              }
+            }
+
+            if(!Object.keys(map).length){
+              const text=safeRead('before.txt');
+              const lines=text.split(/\r?\n/);
+              for(const L of lines){
+                const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
+                if(m){
+                  map[m[1]]=m[2];
+                }
+              }
+            }
+
+            fs.writeFileSync('before.map.json', JSON.stringify(map));
+            console.log('BEFORE MAP keys:', Object.keys(map));
+          "
 
       - name: "Ensure TEST_DEPLOYMENT_ID exists BEFORE"
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
-          node -e "const fs=require('fs');const id=process.env.TEST_DEPLOYMENT_ID;const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));if(!id||!map[id]){console.error('TEST_DEPLOYMENT_ID not found.');process.exit(1);}console.log('Found test deployment BEFORE. Current version =',map[id]);"
+          node -e "
+            const fs=require('fs');
+            const id=(process.env.TEST_DEPLOYMENT_ID||'').trim();
+            if(!id){
+              console.error('Missing TEST_DEPLOYMENT_ID secret.');
+              process.exit(1);
+            }
+            const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));
+            if(!map[id]){
+              const known=Object.keys(map);
+              console.error('TEST_DEPLOYMENT_ID not found. Known deployments: '+(known.length?known.join(', '):'(none)'));
+              process.exit(1);
+            }
+            console.log('Found test deployment BEFORE. Current version =', map[id]);
+          "
 
       # --- push & deploy to TEST ---
       - name: "Inject CI env (TEST)"
@@ -190,23 +243,55 @@ jobs:
         run: |
           set -e
           clasp deployments > after.txt || true
+          clasp deployments --json > after.json || true
           node -e "
             const fs=require('fs');
-            const id=process.env.TEST_DEPLOYMENT_ID;
-            const ver=process.env.NEW_VER;
-            const t=fs.readFileSync('after.txt','utf8');
-            const lines=t.split(/\r?\n/);
-            let cur=null;
-            for(const L of lines){
-              const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
-              if(m && m[1]===id){ cur=m[2]; break; }
+            const id=(process.env.TEST_DEPLOYMENT_ID||'').trim();
+            const ver=(process.env.NEW_VER||'').trim();
+            if(!id){ console.error('Missing TEST_DEPLOYMENT_ID secret.'); process.exit(1); }
+            if(!ver){ console.error('Missing NEW_VER env.'); process.exit(1); }
+
+            const map={};
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
+
+            const jsonText=safeRead('after.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const depId=dep && dep.deploymentId;
+                  const depVer=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(depId && (depVer || depVer===0)){
+                    map[depId]=String(depVer);
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 after.json：', err.message);
+              }
             }
-            if(!cur){ console.error('Dep ID not found AFTER'); process.exit(1); }
-            console.log('Deployment', id, 'now points to version', cur);
-            if(String(cur)!==String(ver)){
-              console.error('Version mismatch: expected', ver, 'got', cur);
+
+            if(!Object.keys(map).length){
+              const text=safeRead('after.txt');
+              const lines=text.split(/\r?\n/);
+              for(const L of lines){
+                const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
+                if(m){
+                  map[m[1]]=m[2];
+                }
+              }
+            }
+
+            const current=map[id];
+            if(!current){
+              console.error('TEST_DEPLOYMENT_ID not found AFTER. Known deployments: '+(Object.keys(map).length?Object.keys(map).join(', '):'(none)'));
               process.exit(1);
             }
+            if(current!==ver){
+              console.error('Deployment still points to', current, 'expected', ver);
+              process.exit(1);
+            }
+            console.log('Deployment updated to version', current);
           "
 
       - name: "Debug TEST_DEPLOYMENT_ID length"
@@ -280,13 +365,64 @@ jobs:
         run: |
           set -e
           clasp deployments > before.txt || true
-          node -e "const fs=require('fs');const t=fs.readFileSync('before.txt','utf8');const lines=t.split(/\r?\n/);const map={};for(const L of lines){const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);if(m){map[m[1]]=m[2];}}fs.writeFileSync('before.map.json',JSON.stringify(map));console.log('BEFORE MAP:',map)"
+          clasp deployments --json > before.json || true
+          node -e "
+            const fs=require('fs');
+            const map={};
+
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
+
+            const jsonText=safeRead('before.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const id=dep && dep.deploymentId;
+                  const ver=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(id && (ver || ver===0)){
+                    map[id]=String(ver);
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 before.json：', err.message);
+              }
+            }
+
+            if(!Object.keys(map).length){
+              const text=safeRead('before.txt');
+              const lines=text.split(/\r?\n/);
+              for(const L of lines){
+                const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
+                if(m){
+                  map[m[1]]=m[2];
+                }
+              }
+            }
+
+            fs.writeFileSync('before.map.json', JSON.stringify(map));
+            console.log('BEFORE MAP keys:', Object.keys(map));
+          "
 
       - name: "Ensure GAS_DEPLOYMENT_ID exists BEFORE"
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          node -e "const fs=require('fs');const id=process.env.GAS_DEPLOYMENT_ID;const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));if(!id||!map[id]){console.error('GAS_DEPLOYMENT_ID not found.');process.exit(1);}console.log('Found prod deployment BEFORE. Current version =',map[id]);"
+          node -e "
+            const fs=require('fs');
+            const id=(process.env.GAS_DEPLOYMENT_ID||'').trim();
+            if(!id){
+              console.error('Missing GAS_DEPLOYMENT_ID secret.');
+              process.exit(1);
+            }
+            const map=JSON.parse(fs.readFileSync('before.map.json','utf8'));
+            if(!map[id]){
+              const known=Object.keys(map);
+              console.error('GAS_DEPLOYMENT_ID not found. Known deployments: '+(known.length?known.join(', '):'(none)'));
+              process.exit(1);
+            }
+            console.log('Found prod deployment BEFORE. Current version =', map[id]);
+          "
 
       - name: "Inject CI env (PROD)"
         env:
@@ -329,23 +465,55 @@ jobs:
           set -e
 
           clasp deployments > after.txt || true
+          clasp deployments --json > after.json || true
           node -e "
             const fs=require('fs');
-            const id=process.env.GAS_DEPLOYMENT_ID;
-            const ver=process.env.NEW_VER;
-            const t=fs.readFileSync('after.txt','utf8');
-            const lines=t.split(/\r?\n/);
-            let cur=null;
-            for(const L of lines){
-              const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
-              if(m && m[1]===id){ cur=m[2]; break; }
+            const id=(process.env.GAS_DEPLOYMENT_ID||'').trim();
+            const ver=(process.env.NEW_VER||'').trim();
+            if(!id){ console.error('Missing GAS_DEPLOYMENT_ID secret.'); process.exit(1); }
+            if(!ver){ console.error('Missing NEW_VER env.'); process.exit(1); }
+
+            const map={};
+            const safeRead=(file)=>{ try { return fs.readFileSync(file,'utf8'); } catch (err) { return ''; } };
+
+            const jsonText=safeRead('after.json').trim();
+            if(jsonText){
+              try {
+                const parsed=JSON.parse(jsonText);
+                const list=Array.isArray(parsed)?parsed:(parsed&&Array.isArray(parsed.deployments)?parsed.deployments:[]);
+                for(const dep of list){
+                  const depId=dep && dep.deploymentId;
+                  const depVer=dep && dep.deploymentConfig && (dep.deploymentConfig.versionNumber ?? dep.deploymentConfig.version);
+                  if(depId && (depVer || depVer===0)){
+                    map[depId]=String(depVer);
+                  }
+                }
+              } catch (err) {
+                console.warn('⚠️ 無法解析 after.json：', err.message);
+              }
             }
-            if(!cur){ console.error('Dep ID not found AFTER'); process.exit(1); }
-            console.log('Deployment', id, 'now points to version', cur);
-            if(String(cur)!==String(ver)){
-              console.error('Version mismatch: expected', ver, 'got', cur);
+
+            if(!Object.keys(map).length){
+              const text=safeRead('after.txt');
+              const lines=text.split(/\r?\n/);
+              for(const L of lines){
+                const m=L.match(/(AK[\w-]{20,}).*@([0-9]+)/);
+                if(m){
+                  map[m[1]]=m[2];
+                }
+              }
+            }
+
+            const current=map[id];
+            if(!current){
+              console.error('GAS_DEPLOYMENT_ID not found AFTER. Known deployments: '+(Object.keys(map).length?Object.keys(map).join(', '):'(none)'));
               process.exit(1);
             }
+            if(current!==ver){
+              console.error('Deployment still points to', current, 'expected', ver);
+              process.exit(1);
+            }
+            console.log('Deployment updated to version', current);
           "
 
       - name: "Health check (PROD)"
