@@ -22,7 +22,10 @@ const viewports = [
 (async () => {
   await fs.promises.mkdir(screenshotDir, { recursive: true });
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
 
   try {
     for (const viewport of viewports) {
