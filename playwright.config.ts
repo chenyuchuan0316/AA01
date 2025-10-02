@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
-import fs from 'node:fs';
 
-const hasAuthState = fs.existsSync('auth.json');
+const hasAuthState = process.env.HAS_AUTH === 'true';
 
 export default defineConfig({
   testDir: './playwright',
