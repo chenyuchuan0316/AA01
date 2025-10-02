@@ -24,11 +24,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -39,7 +38,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
-      - name: Install Playwright browsers
+      - name: Install Playwright deps
         run: npx playwright install --with-deps
 
       - name: Restore Playwright auth state
@@ -54,10 +53,10 @@ jobs:
       - name: Run unit tests
         run: npm run test
 
-      - name: Run local UI E2E
+      - name: Run local E2E (@ui)
         run: npm run e2e:ui
 
-      - name: Run remote E2E (requires auth)
+      - name: Run remote E2E (@remote)
         if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
         run: npm run e2e:remote
         env:
@@ -69,13 +68,13 @@ jobs:
       - name: Run accessibility regression
         run: npm run test:a11y:jest
 
-      - name: Health check (200 or 302)
+      - name: Health check (200/302 or skip)
         run: npm run health
         env:
           GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
 
       - name: Upload Playwright report
-        if: always()
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -83,7 +82,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload coverage report
-        if: always()
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: coverage
