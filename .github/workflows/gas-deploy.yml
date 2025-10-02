@@ -109,16 +109,14 @@ jobs:
             exit 1
           fi
 
-          python - <<'PY'
-import os
-
-creds = os.environ.get("CLASP_CREDENTIALS", "")
-if not creds:
-    raise SystemExit("::error::Missing CLASP_CREDENTIALS secret")
-
-with open("service-account.json", "w", encoding="utf-8") as fh:
-    fh.write(creds)
-PY
+          node - <<'NODE'
+          const fs = require('fs');
+          const creds = process.env.CLASP_CREDENTIALS || '';
+          if (!creds) {
+            throw new Error('::error::Missing CLASP_CREDENTIALS secret');
+          }
+          fs.writeFileSync('service-account.json', creds);
+          NODE
 
           npx clasp login --creds service-account.json
           rm -f service-account.json
