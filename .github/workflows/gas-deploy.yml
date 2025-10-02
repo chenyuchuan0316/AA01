@@ -33,6 +33,12 @@ jobs:
       - name: "Install dependencies"
         run: npm ci
 
+      - name: "Cache Playwright browsers"
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
       - name: "Install Playwright browsers"
         run: npx playwright install --with-deps
 
@@ -57,18 +63,26 @@ jobs:
       - name: "Install dependencies"
         run: npm ci
 
+      - name: "Cache Playwright browsers"
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
       - name: "Install Playwright browsers"
         run: npx playwright install --with-deps
 
       - name: Restore Playwright auth state
         if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
-        run: echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
+        run: |
+          echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
+          echo "auth.json restored"
 
       - name: Run local UI E2E
         run: npm run e2e:ui
 
       - name: Run remote E2E (requires auth)
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
+        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
         run: npm run e2e:remote
         env:
           GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
