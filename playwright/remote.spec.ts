@@ -13,16 +13,16 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
   test('desktop (>=1280): static sidebar; no toggle present', async ({ page }) => {
     await openPage(page); // ★ 一律先導到 GAS 頁
     await page.setViewportSize({ width: 1280, height: 900 });
-    const toggle = page.locator('#sideNavToggleButton');
+    const toggle = page.getByTestId('side-nav-toggle');
     await expect(toggle).toHaveCount(0); // 桌機通常沒有 toggle
-    await expect(page.locator('nav#sideNav')).toBeVisible();
+    await expect(page.getByTestId('side-nav').first()).toBeVisible();
   });
 
   test('tablet (640–1279): toggle exists, nav opens/closes', async ({ page }) => {
     await openPage(page);
     await page.setViewportSize({ width: 1024, height: 900 });
-    const toggle = page.locator('#sideNavToggleButton');
-    const sideNav = page.locator('nav#sideNav');
+    const toggle = page.getByTestId('side-nav-toggle').first();
+    const sideNav = page.getByTestId('side-nav').first();
 
     await expect(toggle).toBeVisible();
     await expect(sideNav).toBeHidden({ timeout: 0 });
@@ -39,8 +39,8 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
   test('mobile (<640): toggle exists, overlay behavior holds', async ({ page }) => {
     await openPage(page);
     await page.setViewportSize({ width: 390, height: 844 });
-    const toggle = page.locator('#sideNavToggleButton');
-    const sideNav = page.locator('nav#sideNav');
+    const toggle = page.getByTestId('side-nav-toggle').first();
+    const sideNav = page.getByTestId('side-nav').first();
 
     await expect(toggle).toBeVisible();
     await expect(sideNav).toBeHidden({ timeout: 0 });
@@ -51,7 +51,7 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
 
   test('contact visit grid renders', async ({ page }) => {
     await openPage(page);
-    const grid = page.locator('#contactVisitGroup .section-card-grid');
+    const grid = page.getByTestId('contact-visit-grid').first();
     await expect(grid).toBeVisible();
   });
 });
