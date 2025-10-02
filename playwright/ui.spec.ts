@@ -1,10 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
+import { isRemoteTarget, openPage } from './utils/openPage';
 
-const targetUrl = process.env.AA01_TARGET_URL ?? '';
-const isFileTarget = targetUrl.startsWith('file:');
+const isLocalTarget = !isRemoteTarget();
 
 async function forceVisible(page: Page, selector: string, displayValue?: string) {
-  if (!isFileTarget) {
+  if (!isLocalTarget) {
     return;
   }
   await page.evaluate(
@@ -23,7 +23,7 @@ async function forceVisible(page: Page, selector: string, displayValue?: string)
 }
 
 async function ensureContactVisitGridVisible(page: Page) {
-  if (!isFileTarget) {
+  if (!isLocalTarget) {
     return;
   }
   await page.evaluate(() => {
@@ -64,19 +64,8 @@ async function ensureContactVisitGridVisible(page: Page) {
   });
 }
 
-async function openPage(page: Page, width: number) {
-  await page.setViewportSize({ width, height: 960 });
-  if (!targetUrl) {
-    throw new Error(
-      'AA01_TARGET_URL is not defined. Did you configure GAS_WEBAPP_URL or provide a fallback?'
-    );
-  }
-  await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
-  await page.waitForLoadState('load');
-}
-
-test.describe('AA01 Sidebar UI smoke checks', () => {
-  test('contact visit cards switch between 3/2/1 column layouts', async ({ page }) => {
+test.describe('@ui AA01 Sidebar UI smoke checks', () => {
+  test('@ui contact visit cards switch between 3/2/1 column layouts', async ({ page }) => {
     await openPage(page, 1280);
     await ensureContactVisitGridVisible(page);
     const grid = page.locator('#contactVisitGroup .section-card-grid');
@@ -105,7 +94,7 @@ test.describe('AA01 Sidebar UI smoke checks', () => {
     expect(mobileColumns).toBe(1);
   });
 
-  test('side navigation overlay toggles with the drawer trigger', async ({ page }) => {
+  test('@ui side navigation overlay toggles with the drawer trigger', async ({ page }) => {
     await openPage(page, 600);
 
     await page.evaluate(() => {
@@ -130,7 +119,7 @@ test.describe('AA01 Sidebar UI smoke checks', () => {
     await expect(page.locator('body')).toHaveAttribute('data-side-nav-open', '0');
   });
 
-  test('relationship select keeps grouped options', async ({ page }) => {
+  test('@ui relationship select keeps grouped options', async ({ page }) => {
     await openPage(page, 1024);
     await ensureContactVisitGridVisible(page);
     await forceVisible(page, '#primaryRel', 'block');
@@ -140,7 +129,7 @@ test.describe('AA01 Sidebar UI smoke checks', () => {
     await expect(select.locator('optgroup[label="孫輩"] option')).toContainText(['案孫', '案孫女']);
   });
 
-  test('required field status regions follow their inputs', async ({ page }) => {
+  test('@ui required field status regions follow their inputs', async ({ page }) => {
     await openPage(page, 1024);
     const checks = await page.evaluate(() => {
       const pairs = [
