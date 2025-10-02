@@ -1,31 +1,52 @@
-import { expect, test } from '@playwright/test';
-import { isRemoteTarget, openPage } from './utils/openPage';
+import { test, expect } from '@playwright/test';
 
-const hasAuthState = process.env.HAS_AUTH === 'true';
-const gasUrl = process.env.GAS_WEBAPP_URL ?? '';
-const skipReason = !isRemoteTarget()
-  ? 'remote target not enabled'
-  : !gasUrl
-    ? 'GAS_WEBAPP_URL not set'
-    : !hasAuthState
-      ? 'HAS_AUTH flag not enabled for remote tests'
-      : '';
+const HAS_AUTH = process.env.HAS_AUTH === 'true';
 
-test.describe('@remote GAS sidebar smoke checks', () => {
-  if (skipReason) {
-    // eslint-disable-next-line playwright/no-skipped-test
-    test.skip(true, skipReason);
-  }
+test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
+  // eslint-disable-next-line playwright/no-skipped-test
+  test.skip(
+    !HAS_AUTH,
+    'HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL'
+  );
 
-  test('@remote sidebar renders navigation for authenticated session', async ({ page }) => {
-    await openPage(page);
-    const toggleButton = page.locator('#sideNavToggleButton');
+  test('desktop (>=1280): sidebar is static; no toggle expected', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const toggle = page.locator('#sideNavToggleButton');
+    await expect(toggle).toHaveCount(0); // 桌機通常沒有 toggle
+    await expect(page.locator('nav#sideNav')).toBeVisible(); // 側欄常駐
+  });
+
+  test('tablet (640–1279): toggle exists, nav opens/closes', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 900 });
+    const toggle = page.locator('#sideNavToggleButton');
     const sideNav = page.locator('nav#sideNav');
 
-    await expect(toggleButton).toBeVisible();
+    await expect(toggle).toBeVisible();
     await expect(sideNav).toBeHidden({ timeout: 0 });
 
-    await toggleButton.click();
+    await toggle.click();
     await expect(sideNav).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', /true/i);
+
+    await toggle.click();
+    await expect(sideNav).toBeHidden();
+    await expect(toggle).toHaveAttribute('aria-expanded', /false/i);
+  });
+
+  test('mobile (<640): toggle exists, overlay behavior holds', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const toggle = page.locator('#sideNavToggleButton');
+    const sideNav = page.locator('nav#sideNav');
+
+    await expect(toggle).toBeVisible();
+    await expect(sideNav).toBeHidden({ timeout: 0 });
+
+    await toggle.click();
+    await expect(sideNav).toBeVisible();
+  });
+
+  test('contact visit grid renders regardless of title text', async ({ page }) => {
+    const grid = page.locator('#contactVisitGroup .section-card-grid');
+    await expect(grid).toBeVisible();
   });
 });
