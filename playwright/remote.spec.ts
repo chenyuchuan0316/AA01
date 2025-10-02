@@ -19,7 +19,13 @@ test.describe('@remote GAS sidebar smoke checks', () => {
 
   test('@remote sidebar renders navigation for authenticated session', async ({ page }) => {
     await openPage(page);
-    await expect(page).toHaveTitle(/AA01/);
-    await expect(page.locator('#sideNavToggleButton')).toBeVisible();
+    const toggleButton = page.locator('#sideNavToggleButton');
+    const sideNav = page.locator('nav#sideNav');
+
+    await expect(toggleButton).toBeVisible();
+    await expect(sideNav).toBeHidden({ timeout: 0 });
+
+    await toggleButton.click();
+    await expect(sideNav).toBeVisible();
   });
 });
