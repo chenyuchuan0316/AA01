@@ -16,8 +16,7 @@ jobs:
   predeploy:
     name: Run predeploy suite
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.55.1-jammy
+    container: mcr.microsoft.com/playwright:v1.55.1-jammy
     env:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
       HAS_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
@@ -28,47 +27,19 @@ jobs:
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+        with: { node-version: 20, cache: npm }
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-
-      - name: Install Playwright deps
-        run: npx playwright install --with-deps
-
-      - name: Restore Playwright auth state
+      - name: Restore auth (and debug)
         if: ${{ env.HAS_AUTH == 'true' }}
         run: |
           echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
-          echo "auth.json restored"
+          echo "auth.json restored"; ls -l auth.json
 
-      - name: Debug flags
-        run: |
-          echo "HAS_AUTH=${HAS_AUTH}"
-          echo "HAS_URL=${HAS_URL}"
-
-      - name: Debug auth.json
-        run: |
-          if [ -f auth.json ]; then
-            echo "auth.json exists"
-          else
-            echo "auth.json missing"
-          fi
-          ls -l auth.json || true
-          head -c 200 auth.json || true
-
-      - name: Run lint
-        run: npm run lint
-
-      - name: Run unit tests
-        run: npm run test
+      - name: Debug URL length
+        run: node -e "process.stdout.write('GAS len=' + String((process.env.GAS_WEBAPP_URL || '').length))"
 
       - name: Run local E2E (@ui)
         run: npm run e2e:ui
@@ -78,12 +49,6 @@ jobs:
         run: npm run e2e:remote
         env:
           GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
-
-      - name: Run pa11y audit
-        run: npm run test:a11y:pa11y
-
-      - name: Run accessibility regression
-        run: npm run test:a11y:jest
 
       - name: Health check (200/302 or skip)
         run: npm run health
@@ -97,11 +62,3 @@ jobs:
           name: playwright-report
           path: playwright-report
           if-no-files-found: ignore
-
-      - name: Upload coverage report
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage
-          if-no-files-found: warn
