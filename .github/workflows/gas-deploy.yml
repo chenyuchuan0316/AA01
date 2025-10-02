@@ -58,6 +58,30 @@ jobs:
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
           npx playwright install --with-deps
 
+      - name: "Setup clasp credentials"
+        env:
+          CLASP_CREDENTIALS: ${{ secrets.CLASP_CREDENTIALS }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CLASP_CREDENTIALS:-}" ]; then
+            echo "::error::Missing CLASP_CREDENTIALS secret" >&2
+            exit 1
+          fi
+
+          python - <<'PY'
+import os
+
+creds = os.environ.get("CLASP_CREDENTIALS", "")
+if not creds:
+    raise SystemExit("::error::Missing CLASP_CREDENTIALS secret")
+
+with open("service-account.json", "w", encoding="utf-8") as fh:
+    fh.write(creds)
+PY
+
+          npx clasp login --creds service-account.json
+          rm -f service-account.json
+
       - name: "Install latest clasp"
         run: npm i -g @google/clasp
 
