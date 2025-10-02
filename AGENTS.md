@@ -2,6 +2,36 @@
 
 本檔案為 `/workspace/AA01` 專案的開發規範。所有在此資料夾內進行的修改（含程式、樣式、文件）皆需遵循以下指引。
 
+## 規則優先序（Policy Precedence）
+1. **執行優先（Execute-first）** 為預設模式。
+2. 若本檔其他條款與「執行優先」衝突，請以本段為準。
+3. 僅當使用者明確要求「先審後動」或「僅審查」時，才切換為計畫優先。
+
+## 行為準則
+- Codex 可以依照使用者的任務卡直接修改檔案、建立分支並提交 PR。
+- 預設直接執行；僅在使用者明定「先審後動／僅審查」時先提交計畫。
+
+### 模糊任務處理
+- 任務描述不完整時，仍須建立分支、執行自動檢查與最小修復，並於 PR 內補齊驗收計畫與證據。
+
+## 自動修復流程（Auto-repair）
+1. 依序修正並重跑驗證（lint/test/e2e/health）：
+   - YAML 與 GitHub Actions `if` 表達式（例如 `if: secrets.X` → `if: ${{ secrets.X }}`）。
+   - Actions `env` 映射（`HAS_AUTH`、`HAS_URL`、`GAS_WEBAPP_URL` 等）。
+   - Playwright 執行環境（優先官方容器版本，否則 `npx playwright install --with-deps` 搭配快取）。
+   - 認證／網址設定（`storageState` 使用 `process.env.HAS_AUTH === 'true' ? 'auth.json' : undefined`、健康檢查 `GAS_WEBAPP_URL` 映射）。
+   - `openPage` 相關設定（支援 `E2E_PATH`、等待條件 `domcontentloaded`→`networkidle`、偵測 `accounts.google.com`）。
+   - 測試定位符與 RWD 斷言（優先 `data-testid`，桌機/平板/手機差異驗證）。
+   - 健康檢查流程（`/exec?route=health` 預期 200 或 302 導向登入）。
+2. 最多進行 20 輪或 30 分鐘，期間每次修復皆需重新執行相關驗證。
+
+## 智慧停損
+- 若連續兩輪出現相同錯誤或無實質進展，需立即停止並回報目前狀態與建議的下一步。
+
+## 安全邊界
+- 禁止修改 secrets、金鑰及其他敏感設定。
+- 不得停用分支保護或組織策略，亦不得直接推送至 `main`。
+
 ## 專案定位與整體原則
 - 這是一個綁定 Google 文件的 Google Apps Script（GAS）專案，目的為協助長照計畫文件的批次填寫與產出。
 - GAS 執行環境無法使用 npm 或第三方函式庫，請以平台原生 API（DocumentApp、DriveApp、SpreadsheetApp 等）完成需求。
