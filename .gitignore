@@ -18,3 +18,5 @@ coverage/
 playwright-report/
 playwright-results/
 artifacts/
+auth.json
+auth.json.b64

@@ -1,41 +1,33 @@
 import { defineConfig, devices } from '@playwright/test';
-import { config as loadEnv } from 'dotenv';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 
-loadEnv();
-
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-const sidebarPath = path.resolve(dirname, 'src', 'Sidebar.html');
-const fallbackUrl = `file://${sidebarPath}`;
-const rawEnvUrl = process.env.GAS_WEBAPP_URL?.trim() ?? '';
-const placeholderValues = new Set(['', 'https://example.com', '<your-gas-webapp-url>']);
-const envUrl = placeholderValues.has(rawEnvUrl) ? '' : rawEnvUrl;
-const targetUrl = envUrl || fallbackUrl;
-
-process.env.AA01_TARGET_URL = targetUrl;
-
-const isHttp = /^https?:/i.test(targetUrl);
+const hasAuthState = fs.existsSync('auth.json');
 
 export default defineConfig({
   testDir: './playwright',
-  timeout: 60000,
-  expect: {
-    timeout: 5000
-  },
+  timeout: 30_000,
+  retries: 1,
+  reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
+  outputDir: 'playwright-results',
+  snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{ext}',
   use: {
-    baseURL: isHttp ? targetUrl : undefined,
-    actionTimeout: 15000,
-    navigationTimeout: 30000,
-    trace: 'on-first-retry'
+    storageState: hasAuthState ? 'auth.json' : undefined,
+    baseURL: process.env.GAS_WEBAPP_URL || undefined,
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure'
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'Desktop',
       use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'Tablet',
+      use: { ...devices['iPad Mini'] }
+    },
+    {
+      name: 'Mobile',
+      use: { ...devices['iPhone 12'] }
     }
-  ],
-  reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
-  outputDir: 'playwright-results',
-  snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{ext}'
+  ]
 });

@@ -58,8 +58,17 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 - npm ≥ 10.8.0（CI 目前使用 10.8.2）
 - 安裝依賴：`npm install`
 - 單元測試：`npm test -- --runInBand`（Jest 30 需要 Node 18）
-- 健康檢查：`npm run e2e`（需要 `TEST_DEPLOYMENT_ID`；未設定時腳本會輸出跳過訊息並以 0 結束）
+- Playwright（本地 UI）：`npm run e2e:ui`（預設載入 `src/Sidebar.html`，不需登入即可執行）
+- Playwright（遠端部署）：`npm run e2e:remote`（需存在 `auth.json` 與 `GAS_WEBAPP_URL`；缺少任一條件時測試自動 skip）
+- 健康檢查：`npm run health`（`GAS_WEBAPP_URL` 未設定或為 placeholder 時輸出 `skip` 並以 0 結束）
 - 設定 `.env`（可參考 `.env.example`）並提供 `GAS_WEBAPP_URL`，自動化驗收會引用該網址進行健康檢查、Playwright 與 pa11y-ci 掃描；若保留預設值，指令會自動改用本地 `src/Sidebar.html` 進行驗證。
+
+### Playwright 登入態管理（auth.json）
+
+- 第一次執行遠端 E2E 前，請先安裝瀏覽器：`npx playwright install`
+- 以部署網址登入並儲存 storage state：`npx playwright open --save-storage=auth.json <GAS_WEBAPP_URL>`
+- `auth.json` 僅供本地或 CI 使用，請勿提交至版本控制；建議每 30–60 天重新產生一次以避免登入態過期。
+- 若需要於 CI 還原，可將 `auth.json` 內容以 `base64` 編碼後寫入 `PLAYWRIGHT_AUTH_STATE` Secret。
 
 ### 本地驗收一鍵指令
 
@@ -73,6 +82,20 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 6. `npm run health` – Web App 健康檢查（接受 200 / 302）。
 
 所有指令必須成功才可推送或開 Draft PR，若其中一項失敗，請先修正後再重跑。
+
+### 手動驗證流程
+
+```bash
+npm run e2e:ui         # 本地 UI 規格（不需登入）
+npm run e2e:remote     # 遠端部署；需 auth.json 與 GAS_WEBAPP_URL，缺少條件會自動 skip
+npm run health         # 健康檢查；200/302 視為成功，未設或 placeholder 會輸出 skip
+```
+
+### CI 驗證需求
+
+- `PLAYWRIGHT_AUTH_STATE`：`auth.json` 的 Base64 字串（缺少時遠端 E2E 會跳過，但流程仍為綠燈）。
+- `GAS_WEBAPP_URL`：部署 URL，提供遠端 E2E 與健康檢查使用。
+- workflow 會自動還原 `auth.json`、安裝 Playwright 瀏覽器、執行 `npm run e2e:ui`、`npm run e2e:remote`（條件式）、`npm run health`，並於無論成功或失敗時上傳 `playwright-report`。
 
 ### CI/工作流程產出
 
