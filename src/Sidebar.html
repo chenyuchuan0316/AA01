@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8" />
   <title>AA01計畫助手（快速填寫）</title>
@@ -12,6 +12,25 @@
   <meta name="color-scheme" content="light" />
 
   <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .sr-fieldset {
+      border: 0;
+      margin: 0;
+      padding: 0;
+      min-inline-size: auto;
+    }
+
     /* ===== AA01 表單 — 放大字級、強對比、兩欄桌機、單欄手機、觸控友善 =====
        尺寸基準（依需求可再調）：
        - 根字級（html）：桌機 19→20px（視寬度），手機依檔位 clamp(20px~26px)
@@ -3085,7 +3104,7 @@
           <div class="side-nav-title">群組導覽</div>
           <div class="side-nav-accordion" id="sideNavAccordion"></div>
         </nav>
-        <main class="app-main" id="appMain">
+        <div class="app-main" id="appMain" role="main">
           <div class="page-section" data-page="basic" data-active="1" data-columns="1">
     <div class="group" id="basicInfoGroup">
       <div class="group-header">
@@ -3289,6 +3308,7 @@
                           <div class="field" data-field-size="long">
                             <label class="h3">溝通語言／方式</label>
                             <div class="checkcol" id="s1_lang_box"></div>
+                            <label class="sr-only" for="s1_lang_note">語言備註</label>
                             <input id="s1_lang_note" type="text" placeholder="備註（例如：以台語為主）" style="margin-top:var(--space-xs);">
                           </div>
                     </div>
@@ -3317,6 +3337,7 @@
                           <div class="field" data-field-size="medium">
                             <label class="h3">視力補充說明【選填】</label>
                             <div class="checkcol" id="s1_vision_note_box"></div>
+                            <label class="sr-only" for="s1_vision_other">視覺—其他說明</label>
                             <input id="s1_vision_other" type="text" placeholder="其他說明" style="display:none; margin-top:var(--space-xs);">
                             <div id="s1_glasses_adherence_wrap" style="display:none; margin-top:var(--space-xs);">
                               <label class="h4" for="s1_glasses_adherence">配戴情形</label>
@@ -3404,6 +3425,7 @@
                           <div class="field" data-field-size="long">
                             <label class="h3">口腔牙齒／假牙</label>
                             <div class="checkcol" id="s1_oral_box"></div>
+                            <label class="sr-only" for="s1_oral_note">口語溝通備註</label>
                             <input id="s1_oral_note" type="text" placeholder="備註" style="margin-top:var(--space-xs);">
                           </div>
                         </div>
@@ -3430,6 +3452,7 @@
                               <option>重度協助</option>
                               <option>完全依賴</option>
                             </select>
+                            <label class="sr-only" for="s1_transfer_how">移位方式</label>
                             <input id="s1_transfer_how" type="text" placeholder="請說明協助方式" style="display:none; margin-top:var(--space-xs);" data-show-values="中度協助,重度協助">
                           </div>
                           <div class="field" data-field-size="medium">
@@ -3480,6 +3503,7 @@
                               <option>過去1年≧2次</option>
                               <option>不明</option>
                             </select>
+                            <label class="sr-only" for="s1_fall_times">近半年跌倒次數</label>
                             <input id="s1_fall_times" type="number" min="0" placeholder="次數" style="display:none; margin-top:var(--space-xs);">
                           </div>
                           <div class="field" data-field-size="long">
@@ -3508,6 +3532,7 @@
                               <option>跨步不穩</option>
                               <option>其他</option>
                             </select>
+                            <label class="sr-only" for="s1_gait_note">步態備註</label>
                             <input id="s1_gait_note" type="text" placeholder="備註" style="margin-top:var(--space-xs);">
                           </div>
                         </div>
@@ -3526,49 +3551,69 @@
                         <span class="h5 heading-tier heading-tier--subsection">ADL 日常生活活動</span>
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_adl_eating">進食</label>
-                            <select id="s1_adl_eating">
-                              <option selected>獨立</option>
-                              <option>部分協助</option>
-                              <option>完全協助</option>
-                            </select>
-                            <input id="s1_adl_eating_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_eating" data-required-label="進食的部分協助方式">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">日常生活活動—進食</legend>
+                              <label class="h3" for="s1_adl_eating">進食</label>
+                              <select id="s1_adl_eating">
+                                <option selected>獨立</option>
+                                <option>部分協助</option>
+                                <option>完全協助</option>
+                              </select>
+                              <label class="sr-only" for="s1_adl_eating_how">進食方式</label>
+                              <input id="s1_adl_eating_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_eating" data-required-label="進食的部分協助方式">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_adl_groom">盥洗（刷牙／洗臉）</label>
-                            <select id="s1_adl_groom">
-                              <option selected>獨立</option>
-                              <option>部分協助</option>
-                              <option>完全協助</option>
-                            </select>
-                            <input id="s1_adl_groom_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_groom" data-required-label="刷牙/洗臉的部分協助方式">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">日常生活活動—盥洗</legend>
+                              <label class="h3" for="s1_adl_groom">盥洗（刷牙／洗臉）</label>
+                              <select id="s1_adl_groom">
+                                <option selected>獨立</option>
+                                <option>部分協助</option>
+                                <option>完全協助</option>
+                              </select>
+                              <label class="sr-only" for="s1_adl_groom_how">盥洗方式</label>
+                              <input id="s1_adl_groom_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_groom" data-required-label="刷牙/洗臉的部分協助方式">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_adl_bathing">洗澡</label>
-                            <select id="s1_adl_bathing">
-                              <option selected>獨立</option>
-                              <option>部分協助</option>
-                              <option>完全協助</option>
-                            </select>
-                            <input id="s1_adl_bathing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_bathing" data-required-label="洗澡的部分協助方式">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">日常生活活動—洗澡</legend>
+                              <label class="h3" for="s1_adl_bathing">洗澡</label>
+                              <select id="s1_adl_bathing">
+                                <option selected>獨立</option>
+                                <option>部分協助</option>
+                                <option>完全協助</option>
+                              </select>
+                              <label class="sr-only" for="s1_adl_bathing_how">洗澡方式</label>
+                              <input id="s1_adl_bathing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_bathing" data-required-label="洗澡的部分協助方式">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_adl_dressing">穿脫衣</label>
-                            <select id="s1_adl_dressing">
-                              <option selected>獨立</option>
-                              <option>部分協助</option>
-                              <option>完全協助</option>
-                            </select>
-                            <input id="s1_adl_dressing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_dressing" data-required-label="穿脫衣的部分協助方式">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">日常生活活動—穿脫衣</legend>
+                              <label class="h3" for="s1_adl_dressing">穿脫衣</label>
+                              <select id="s1_adl_dressing">
+                                <option selected>獨立</option>
+                                <option>部分協助</option>
+                                <option>完全協助</option>
+                              </select>
+                              <label class="sr-only" for="s1_adl_dressing_how">穿脫衣方式</label>
+                              <input id="s1_adl_dressing_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_adl_dressing" data-required-label="穿脫衣的部分協助方式">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_post_toilet">如廁後清潔</label>
-                            <select id="s1_post_toilet">
-                              <option selected>獨立</option>
-                              <option>部分協助</option>
-                              <option>完全協助</option>
-                            </select>
-                            <input id="s1_post_toilet_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_post_toilet" data-required-label="如廁後清潔的部分協助方式">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">日常生活活動—如廁後清潔</legend>
+                              <label class="h3" for="s1_post_toilet">如廁後清潔</label>
+                              <select id="s1_post_toilet">
+                                <option selected>獨立</option>
+                                <option>部分協助</option>
+                                <option>完全協助</option>
+                              </select>
+                              <label class="sr-only" for="s1_post_toilet_how">如廁後清潔方式</label>
+                              <input id="s1_post_toilet_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_post_toilet" data-required-label="如廁後清潔的部分協助方式">
+                            </fieldset>
                           </div>
                         </div>
                       </section>
@@ -3586,74 +3631,100 @@
                         <span class="h5 heading-tier heading-tier--subsection">IADL 工具性日常活動</span>
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_phone">電話使用</label>
-                            <select id="s1_phone">
-                              <option selected>會撥打與接聽</option>
-                              <option>僅能接聽</option>
-                              <option>不會使用</option>
-                            </select>
-                            <div id="s1_phone_note_wrap" style="display:none; margin-top:var(--space-xs);">
-                              <div class="checkcol" id="s1_phone_note_box"></div>
-                              <input id="s1_phone_note_other" type="text" placeholder="其他說明" style="display:none; margin-top:var(--space-xs);">
-                            </div>
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">工具性日常活動—電話使用</legend>
+                              <label class="h3" for="s1_phone">電話使用</label>
+                              <select id="s1_phone">
+                                <option selected>會撥打與接聽</option>
+                                <option>僅能接聽</option>
+                                <option>不會使用</option>
+                              </select>
+                              <div id="s1_phone_note_wrap" style="display:none; margin-top:var(--space-xs);">
+                                <div class="checkcol" id="s1_phone_note_box"></div>
+                                <label class="sr-only" for="s1_phone_note_other">電話使用其他說明</label>
+                                <input id="s1_phone_note_other" type="text" placeholder="其他說明" style="display:none; margin-top:var(--space-xs);">
+                              </div>
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_shopping">外出購物</label>
-                            <select id="s1_shopping">
-                              <option>可獨立</option>
-                              <option selected>需陪同</option>
-                              <option>不外出</option>
-                            </select>
-                            <select id="s1_shopping_how" style="display:none; margin-top:var(--space-xs);">
-                              <option value="" class="placeholder-option" disabled selected>方式/說明</option>
-                              <option>家屬陪同購物</option>
-                              <option>由家屬代購</option>
-                              <option>使用外送平台</option>
-                              <option>居服員陪同／代購</option>
-                              <option>外看（看護／志工）代購</option>
-                              <option>其他</option>
-                            </select>
-                            <input id="s1_shopping_how_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">工具性日常活動—外出購物</legend>
+                              <label class="h3" for="s1_shopping">外出購物</label>
+                              <select id="s1_shopping">
+                                <option>可獨立</option>
+                                <option selected>需陪同</option>
+                                <option>不外出</option>
+                              </select>
+                              <label class="sr-only" for="s1_shopping_how">採購方式</label>
+                              <select id="s1_shopping_how" style="display:none; margin-top:var(--space-xs);">
+                                <option value="" class="placeholder-option" disabled selected>方式/說明</option>
+                                <option>家屬陪同購物</option>
+                                <option>由家屬代購</option>
+                                <option>使用外送平台</option>
+                                <option>居服員陪同／代購</option>
+                                <option>外看（看護／志工）代購</option>
+                                <option>其他</option>
+                              </select>
+                              <label class="sr-only" for="s1_shopping_how_other">採購方式其他說明</label>
+                              <input id="s1_shopping_how_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_meal_prep">備餐</label>
-                            <select id="s1_meal_prep">
-                              <option>獨立</option>
-                              <option selected>部分協助</option>
-                              <option>完全由家屬</option>
-                            </select>
-                            <input id="s1_meal_prep_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_meal_prep" data-required-label="備餐的部分協助方式">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">工具性日常活動—備餐</legend>
+                              <label class="h3" for="s1_meal_prep">備餐</label>
+                              <select id="s1_meal_prep">
+                                <option>獨立</option>
+                                <option selected>部分協助</option>
+                                <option>完全由家屬</option>
+                              </select>
+                              <label class="sr-only" for="s1_meal_prep_how">備餐方式</label>
+                              <input id="s1_meal_prep_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_meal_prep" data-required-label="備餐的部分協助方式">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_dishwash">餐具清洗</label>
-                            <select id="s1_dishwash">
-                              <option>乾淨</option>
-                              <option selected>尚可或不一定乾淨</option>
-                              <option>無法自行清洗</option>
-                            </select>
-                            <select id="s1_dishwash_how" style="display:none; margin-top:var(--space-xs);">
-                              <option>由他人代辦</option>
-                              <option>其他</option>
-                            </select>
-                            <input id="s1_dishwash_how_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">工具性日常活動—餐具清洗</legend>
+                              <label class="h3" for="s1_dishwash">餐具清洗</label>
+                              <select id="s1_dishwash">
+                                <option>乾淨</option>
+                                <option selected>尚可或不一定乾淨</option>
+                                <option>無法自行清洗</option>
+                              </select>
+                              <label class="sr-only" for="s1_dishwash_how">餐具清洗方式</label>
+                              <select id="s1_dishwash_how" style="display:none; margin-top:var(--space-xs);">
+                                <option>由他人代辦</option>
+                                <option>其他</option>
+                              </select>
+                              <label class="sr-only" for="s1_dishwash_how_other">餐具清洗其他方式</label>
+                              <input id="s1_dishwash_how_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_housework">家務整理</label>
-                            <select id="s1_housework">
-                              <option>獨立</option>
-                              <option selected>部分協助</option>
-                              <option>完全由家屬</option>
-                            </select>
-                            <input id="s1_housework_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_housework" data-required-label="家務整理的部分協助方式">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">工具性日常活動—家務整理</legend>
+                              <label class="h3" for="s1_housework">家務整理</label>
+                              <select id="s1_housework">
+                                <option>獨立</option>
+                                <option selected>部分協助</option>
+                                <option>完全由家屬</option>
+                              </select>
+                              <label class="sr-only" for="s1_housework_how">家務整理方式</label>
+                              <input id="s1_housework_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_housework" data-required-label="家務整理的部分協助方式">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_finance">財務管理</label>
-                            <select id="s1_finance">
-                              <option selected>獨立</option>
-                              <option>部分協助</option>
-                              <option>他人代辦</option>
-                            </select>
-                            <input id="s1_finance_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_finance" data-required-label="財務管理的部分協助方式">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">工具性日常活動—財務管理</legend>
+                              <label class="h3" for="s1_finance">財務管理</label>
+                              <select id="s1_finance">
+                                <option selected>獨立</option>
+                                <option>部分協助</option>
+                                <option>他人代辦</option>
+                              </select>
+                              <label class="sr-only" for="s1_finance_how">財務管理方式</label>
+                              <input id="s1_finance_how" type="text" placeholder="部分協助方式" style="display:none; margin-top:var(--space-xs);" data-required-when="partial" data-required-source="s1_finance" data-required-label="財務管理的部分協助方式">
+                            </fieldset>
                           </div>
                         </div>
                       </section>
@@ -3675,27 +3746,35 @@
                             <div class="checkcol" id="s1_excretion_aids_box"></div>
                           </div>
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_urine_day">日間排尿情形</label>
-                            <select id="s1_urine_day" data-urine-mode="day">
-                              <option selected>正常（4–6次）</option>
-                              <option>偏少（少於3次）</option>
-                              <option>偏多（7–9次）</option>
-                              <option>失禁</option>
-                              <option>其他</option>
-                            </select>
-                            <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">排尿情形—日間</legend>
+                              <label class="h3" for="s1_urine_day">日間排尿情形</label>
+                              <select id="s1_urine_day" data-urine-mode="day">
+                                <option selected>正常（4–6次）</option>
+                                <option>偏少（少於3次）</option>
+                                <option>偏多（7–9次）</option>
+                                <option>失禁</option>
+                                <option>其他</option>
+                              </select>
+                              <label class="sr-only" for="s1_urine_day_other">白天排尿—其他</label>
+                              <input id="s1_urine_day_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            </fieldset>
                           </div>
                           <div class="field" id="s1_urine_night_wrap" data-field-size="medium">
-                            <label class="h3" for="s1_urine_night">夜間排尿情形</label>
-                            <select id="s1_urine_night" data-urine-mode="night">
-                              <option selected>夜間未起夜</option>
-                              <option>夜間起夜1次</option>
-                              <option>夜間起夜2–3次</option>
-                              <option>夜間起夜≥4次</option>
-                              <option>夜間有尿失禁</option>
-                              <option>其他</option>
-                            </select>
-                            <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">排尿情形—夜間</legend>
+                              <label class="h3" for="s1_urine_night">夜間排尿情形</label>
+                              <select id="s1_urine_night" data-urine-mode="night">
+                                <option selected>夜間未起夜</option>
+                                <option>夜間起夜1次</option>
+                                <option>夜間起夜2–3次</option>
+                                <option>夜間起夜≥4次</option>
+                                <option>夜間有尿失禁</option>
+                                <option>其他</option>
+                              </select>
+                              <label class="sr-only" for="s1_urine_night_other">夜間排尿—其他</label>
+                              <input id="s1_urine_night_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            </fieldset>
                           </div>
                           <div class="field" id="s1_nocturia_wrap" data-field-size="short" style="display:none;">
                             <label class="h3" for="s1_nocturia_count">夜尿次數數值</label>
@@ -3720,6 +3799,7 @@
                           <div class="field" data-field-size="long">
                             <label class="h3">慢性病史</label>
                             <div class="checkcol" id="s1_dhx_box"></div>
+                            <label class="sr-only" for="s1_dhx_other">其他慢性病</label>
                             <input id="s1_dhx_other" type="text" placeholder="其他慢性病" style="display:none; margin-top:var(--space-xs);">
                           </div>
                           <div class="field" data-field-size="medium">
@@ -3738,6 +3818,7 @@
                           <div class="field" data-field-size="long">
                             <label class="h3">現用藥物種類</label>
                             <div class="checkcol" id="s1_med_classes_box"></div>
+                            <label class="sr-only" for="s1_med_classes_other">其他用藥</label>
                             <input id="s1_med_classes_other" type="text" placeholder="其他用藥" style="display:none; margin-top:var(--space-xs);">
                           </div>
                           <div class="field" data-field-size="medium">
@@ -3767,6 +3848,7 @@
                               <option>交通接送服務</option>
                               <option>其他</option>
                             </select>
+                            <label class="sr-only" for="s1_visit_transport_other">就醫交通其他方式</label>
                             <input id="s1_visit_transport_other" type="text" placeholder="請填寫其他交通方式" style="display:none; margin-top:var(--space-xs);">
                           </div>
                         </div>
@@ -3777,6 +3859,7 @@
                           <div class="field" data-field-size="long">
                             <label class="h3">管路／裝置</label>
                             <div class="checkcol" id="s1_devices_box"></div>
+                            <label class="sr-only" for="s1_devices_note">管路／裝置備註</label>
                             <input id="s1_devices_note" type="text" placeholder="備註" style="margin-top:var(--space-xs);">
                           </div>
                         </div>
@@ -3853,29 +3936,35 @@
                         <span class="h5 heading-tier heading-tier--subsection">睡眠與日間活動</span>
                         <div class="autogrid autogrid--wide">
                           <div class="field" data-field-size="medium">
-                            <label class="h3" for="s1_sleep">睡眠品質</label>
-                            <select id="s1_sleep">
-                              <option>良好</option>
-                              <option>尚可</option>
-                              <option selected>不佳</option>
-                            </select>
-                            <select id="s1_sleep_reason" style="display:none; margin-top:var(--space-xs);">
-                              <option value="" class="placeholder-option" disabled selected>失眠原因</option>
-                              <option>疼痛</option>
-                              <option>頻尿</option>
-                              <option>慢性疾病</option>
-                              <option>焦慮、憂鬱</option>
-                              <option>生活壓力</option>
-                              <option>環境干擾</option>
-                              <option>不良睡眠習慣</option>
-                              <option>日夜顛倒</option>
-                              <option>藥物影響</option>
-                              <option>咖啡因</option>
-                              <option>酒精</option>
-                              <option>其他</option>
-                            </select>
-                            <select id="s1_sleep_reason_detail" style="display:none; margin-top:var(--space-xs);"></select>
-                            <input id="s1_sleep_reason_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            <fieldset class="sr-fieldset">
+                              <legend class="sr-only">睡眠與日間活動—睡眠品質</legend>
+                              <label class="h3" for="s1_sleep">睡眠品質</label>
+                              <select id="s1_sleep">
+                                <option>良好</option>
+                                <option>尚可</option>
+                                <option selected>不佳</option>
+                              </select>
+                              <label class="sr-only" for="s1_sleep_reason">睡眠不佳原因</label>
+                              <select id="s1_sleep_reason" style="display:none; margin-top:var(--space-xs);">
+                                <option value="" class="placeholder-option" disabled selected>失眠原因</option>
+                                <option>疼痛</option>
+                                <option>頻尿</option>
+                                <option>慢性疾病</option>
+                                <option>焦慮、憂鬱</option>
+                                <option>生活壓力</option>
+                                <option>環境干擾</option>
+                                <option>不良睡眠習慣</option>
+                                <option>日夜顛倒</option>
+                                <option>藥物影響</option>
+                                <option>咖啡因</option>
+                                <option>酒精</option>
+                                <option>其他</option>
+                              </select>
+                              <label class="sr-only" for="s1_sleep_reason_detail">睡眠不佳原因細項</label>
+                              <select id="s1_sleep_reason_detail" style="display:none; margin-top:var(--space-xs);"></select>
+                              <label class="sr-only" for="s1_sleep_reason_other">睡眠不佳其他說明</label>
+                              <input id="s1_sleep_reason_other" type="text" placeholder="請說明" style="display:none; margin-top:var(--space-xs);">
+                            </fieldset>
                           </div>
                           <div class="field" data-field-size="medium">
                             <label class="h3" for="s1_daytime">白天活動【選填】</label>
@@ -3928,6 +4017,7 @@
                               <select id="s1_location_subregion">
                                 <option value="" class="placeholder-option" disabled selected>請選擇</option>
                               </select>
+                              <label class="sr-only" for="s1_location_subregion_other">其他部位</label>
                               <input id="s1_location_subregion_other" type="text" placeholder="請填寫其他部位" style="display:none; margin-top:var(--space-xs);">
                             </div>
                             <div class="field" data-field-size="short">
@@ -3959,16 +4049,19 @@
                               <option>關節附近</option>
                               <option>其他</option>
                             </select>
+                            <label class="sr-only" for="s1_lesion_layer_other">病灶層次其他說明</label>
                             <input id="s1_lesion_layer_other" type="text" placeholder="請填寫" style="display:none; margin-top:var(--space-xs);">
                           </div>
                           <div class="field" id="s1_lesion_size_wrap" data-field-size="medium" style="display:none;">
                             <label class="h3">病灶大小</label>
                             <div class="lesion-size-grid">
                               <div class="lesion-size-field">
+                                <label class="sr-only" for="s1_lesion_length">病灶長度（公分）</label>
                                 <input id="s1_lesion_length" type="number" min="0" step="0.1" placeholder="長">
                                 <span class="unit">cm</span>
                               </div>
                               <div class="lesion-size-field">
+                                <label class="sr-only" for="s1_lesion_width">病灶寬度（公分）</label>
                                 <input id="s1_lesion_width" type="number" min="0" step="0.1" placeholder="寬">
                                 <span class="unit">cm</span>
                               </div>
@@ -3996,6 +4089,7 @@
                                 <option>已安排追蹤</option>
                                 <option>持續治療中</option>
                               </select>
+                              <label class="sr-only" for="s1_lesion_hospital">醫療院所名稱</label>
                               <input id="s1_lesion_hospital" type="text" placeholder="醫療院所名稱" style="display:none; margin-top:var(--space-xs);">
                             </div>
                           </div>
@@ -4035,7 +4129,7 @@
                         </div>
                       </section>
                     </div>
-                    <textarea id="section1_out" style="display:none;" data-progress-ignore="1"></textarea>
+                    <textarea id="section1_out" style="display:none;" data-progress-ignore="1" aria-hidden="true" tabindex="-1"></textarea>
                     <div id="section1_errors" class="error-messages" data-progress-ignore="1"></div>
                     <div class="preview-toolbar" style="margin-top:var(--space-xs);">
                       <span class="hint">預覽（主題分段）：</span>
@@ -4061,25 +4155,25 @@
                   <div>
                     <div class="autogrid autogrid--wide">
                       <div>
-                        <label class="h4">戶籍／福利身分</label>
-                        <select id="s2_id">
+                    <label class="h4" for="s2_id">戶籍／福利身分</label>
+                    <select id="s2_id">
                           <option>一般戶</option><option>中低收入戶</option><option>低收入戶</option>
                         </select>
                       </div>
                       <div>
-                        <label class="h4">身心障礙等級</label>
-                        <select id="s2_dis_level"><!-- 選擇身心障礙等級 -->
+                    <label class="h4" for="s2_dis_level">身心障礙等級</label>
+                    <select id="s2_dis_level"><!-- 選擇身心障礙等級 -->
                           <option>無</option><option>輕度</option><option>中度</option><option>重度</option><option>極重度</option>
                         </select>
                       </div>
                     </div>
                     <div id="disCatBox" style="display:none; margin-top:var(--space-xs);"><!-- 類別欄位，預設隱藏 -->
-                      <label class="h4">身心障礙類別（等級≠無才需選）</label>
-                      <select id="s2_dis_cat"><!-- 選擇身心障礙類別 --></select>
+                    <label class="h4" for="s2_dis_cat">身心障礙類別（等級≠無才需選）</label>
+                    <select id="s2_dis_cat"><!-- 選擇身心障礙類別 --></select>
                     </div>
                   </div>
                 </div>
-              <textarea id="section2_out" style="display:none;" data-progress-ignore="1"></textarea>
+              <textarea id="section2_out" style="display:none;" data-progress-ignore="1" aria-hidden="true" tabindex="-1"></textarea>
             </div>
             <div id="section3_block" data-section="s3">
               <div class="titlebar">
@@ -4087,28 +4181,29 @@
               </div>
                 <div class="autogrid autogrid--wide">
                   <div>
-                    <label class="h4">居住型態</label>
+                    <label class="h4" for="s3_type">居住型態</label>
                     <select id="s3_type">
                       <option>透天</option><option>鐵皮屋</option><option>公寓</option><option>大樓</option><option>套房</option><option>其他</option>
                     </select>
+                    <label class="sr-only" for="s3_type_other">其他居住型態</label>
                     <input id="s3_type_other" type="text" placeholder="請輸入其他型態" style="display:none; margin-top:var(--space-xs);">
                   </div>
                   <div>
-                    <label class="h4">居住權屬</label>
+                    <label class="h4" for="s3_own">居住權屬</label>
                     <select id="s3_own"><option>自有</option><option>租賃</option><option>借住</option></select>
                   </div>
                   <div>
-                    <label class="h4">整潔度／異味</label>
+                    <label class="h4" for="s3_clean">整潔度／異味</label>
                     <select id="s3_clean"><option>非常整潔</option><option>整潔</option><option>尚可</option><option>需改善</option><option>髒亂</option></select>
                   </div>
                 </div>
                 <div class="autogrid autogrid--wide" style="margin-top:var(--space-xs);">
                   <div id="s3_rent_amount_wrap" style="display:none;">
-                    <label class="h5">租金金額（元/月）</label>
+                    <label class="h5" for="s3_rent_amount">租金金額（元/月）</label>
                     <input id="s3_rent_amount" type="number" min="0" placeholder="例：12000">
                   </div>
                   <div id="s3_rent_fee_wrap" style="display:none;">
-                    <label class="h5">是否含管理費</label>
+                    <label class="h5" for="s3_rent_fee">是否含管理費</label>
                     <select id="s3_rent_fee">
                       <option value="" class="placeholder-option" disabled selected>請選擇</option>
                       <option value="含管理費">含管理費</option>
@@ -4116,7 +4211,7 @@
                     </select>
                   </div>
                   <div>
-                    <label class="h5">異味</label>
+                    <label class="h5" for="s3_smell">異味</label>
                     <select id="s3_smell"><option>無</option><option>輕微</option><option>明顯</option></select>
                   </div>
                 </div>
@@ -4130,7 +4225,7 @@
                     <div class="checkcol" id="s3_aids"></div>
                   </div>
                 </div>
-              <textarea id="section3_out" style="display:none;" data-progress-ignore="1"></textarea>
+              <textarea id="section3_out" style="display:none;" data-progress-ignore="1" aria-hidden="true" tabindex="-1"></textarea>
             </div>
             <div id="section4_block" data-section="s4">
               <div class="titlebar">
@@ -4147,7 +4242,7 @@
                     <div id="sp_primaryName_text" class="badge">—</div>
                   </div>
                   <div>
-                    <label class="h4">同住狀態</label>
+                    <label class="h4" for="sp_cohabit">同住狀態</label>
                     <select id="sp_cohabit"><option value="">—不選—</option><option>同住</option><option>不同住</option></select>
                   </div>
                 </div>
@@ -4161,7 +4256,7 @@
                 </div>
                 <div class="autogrid autogrid--wide">
                   <div class="field-intro">
-                    <label class="h4">關係</label>
+                    <label class="h4" for="sp_deciderRel">關係</label>
                     <select id="sp_deciderRel">
                       <option value="">—不選—</option>
                       <optgroup label="配偶"><option>案妻</option><option>案夫</option></optgroup>
@@ -4174,11 +4269,11 @@
                     </select>
                   </div>
                   <div class="field-intro">
-                    <label class="h4">姓名</label>
+                    <label class="h4" for="sp_deciderName">姓名</label>
                     <input id="sp_deciderName" type="text" placeholder="請選擇">
                   </div>
                   <div>
-                    <label class="h4">聯絡電話</label>
+                    <label class="h4" for="sp_deciderPhone">聯絡電話</label>
                     <input id="sp_deciderPhone" type="tel" placeholder="例如：0912-345678">
                   </div>
                 </div>
@@ -4253,7 +4348,9 @@
                   <label class="h4">非正式資源（多選，每類需填「單位名稱」）</label>
                   <div>
                     <label class="h5 inline"><input type="checkbox" id="sp_inf_pt" data-inf-toggle="pt"> 據點</label>
+                    <label class="sr-only" for="sp_inf_pt_name">據點單位名稱</label>
                     <input id="sp_inf_pt_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+                    <label class="sr-only" for="sp_inf_pt_freq">據點參與頻率</label>
                     <select id="sp_inf_pt_freq" style="display:none; margin-top:var(--space-xs);"><!-- 據點頻率 -->
                     <option value="">—請選擇頻率—</option>
                     <option>每週</option>
@@ -4265,7 +4362,9 @@
                   </div>
                   <div>
                     <label class="h5 inline"><input type="checkbox" id="sp_inf_nb" data-inf-toggle="nb"> 鄰里</label>
+                    <label class="sr-only" for="sp_inf_nb_name">鄰里資源名稱</label>
                     <input id="sp_inf_nb_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+                    <label class="sr-only" for="sp_inf_nb_freq">鄰里參與頻率</label>
                     <select id="sp_inf_nb_freq" style="display:none; margin-top:var(--space-xs);"><!-- 鄰里頻率 -->
                     <option value="">—請選擇頻率—</option>
                     <option>每週</option>
@@ -4277,7 +4376,9 @@
                   </div>
                   <div>
                     <label class="h5 inline"><input type="checkbox" id="sp_inf_rg" data-inf-toggle="rg"> 宗教社團</label>
+                    <label class="sr-only" for="sp_inf_rg_name">宗教社團名稱</label>
                     <input id="sp_inf_rg_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+                    <label class="sr-only" for="sp_inf_rg_freq">宗教社團參與頻率</label>
                     <select id="sp_inf_rg_freq" style="display:none; margin-top:var(--space-xs);"><!-- 宗教社團頻率 -->
                     <option value="">—請選擇頻率—</option>
                     <option>每週</option>
@@ -4289,7 +4390,9 @@
                   </div>
                   <div>
                     <label class="h5 inline"><input type="checkbox" id="sp_inf_fw" data-inf-toggle="fw"> 財團／社會福利</label>
+                    <label class="sr-only" for="sp_inf_fw_name">財團或社福資源名稱</label>
                     <input id="sp_inf_fw_name" type="text" placeholder="單位名稱，可多個以、分隔" style="display:none;">
+                    <label class="sr-only" for="sp_inf_fw_freq">財團或社福參與頻率</label>
                     <select id="sp_inf_fw_freq" style="display:none; margin-top:var(--space-xs);"><!-- 財團頻率 -->
                     <option value="">—請選擇頻率—</option>
                     <option>每週</option>
@@ -4308,23 +4411,24 @@
                   <div class="subtle">勾選將只輸出「標題短語」，說明文字僅作參考。</div>
                 </div>
 
-              <textarea id="section4_out" style="display:none;" data-progress-ignore="1"></textarea>
+              <textarea id="section4_out" style="display:none;" data-progress-ignore="1" aria-hidden="true" tabindex="-1"></textarea>
             </div>
         <div id="section5_block" data-section="s5">
               <div class="titlebar">
-                <label class="h3 heading-tier heading-tier--primary">其他</label>
+                <label id="section5_label" class="h3 heading-tier heading-tier--primary" for="section5">其他</label>
               </div>
-              <textarea id="section5" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
+              <label class="sr-only" for="section5">其他</label>
+              <textarea id="section5" aria-labelledby="section5_label" aria-label="其他" placeholder="如個案成長背景、職業、生活習慣、價值觀等。"></textarea>
             </div>
         <div id="section6_block" data-section="s6">
               <div class="titlebar">
                 <label class="h3 heading-tier heading-tier--primary">複評評值</label>
               </div>
               <div class="autogrid autogrid--wide">
-                <div><label class="h4">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
-                <div><label class="h4">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
+                <div><label class="h4" for="s6_before">介入前</label><textarea id="s6_before" placeholder="如果為新評，則無需輸入"></textarea></div>
+                <div><label class="h4" for="s6_after">介入後</label><textarea id="s6_after" placeholder="如果為新評，則無需輸入"></textarea></div>
               </div>
-              <textarea id="section6_struct" style="display:none;" data-progress-ignore="1"></textarea>
+              <textarea id="section6_struct" style="display:none;" data-progress-ignore="1" aria-hidden="true" tabindex="-1"></textarea>
             </div>
     </div>
 
@@ -4348,7 +4452,7 @@
                 </div>
                 <div class="checkcol" id="problemList"></div>
                 <div class="virtual-checklist-print" id="problemListPrint" aria-hidden="true"></div>
-                <label class="h4" style="margin-top:var(--space-xs);">補充說明（可選）</label>
+                <label class="h4" for="problemNote" style="margin-top:var(--space-xs);">補充說明（可選）</label>
                 <textarea id="problemNote" placeholder="例如：近期以移位與吞嚥為優先風險…"></textarea>
               </div>
 
@@ -4357,12 +4461,12 @@
               </div>
               <div class="care-goal-block">
                 <div class="autogrid autogrid--wide">
-                  <div id="short_care_wrap"><label class="h4">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
-                  <div id="short_prof_wrap"><label class="h4">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
-                  <div id="short_car_wrap"><label class="h4">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
-                  <div id="short_resp_wrap"><label class="h4">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
-                  <div id="short_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
-                  <div id="short_meal_wrap"><label class="h4">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
+                  <div id="short_care_wrap"><label class="h4" for="short_care">照顧服務</label><textarea id="short_care" placeholder="填寫欄位"></textarea></div>
+                  <div id="short_prof_wrap"><label class="h4" for="short_prof">專業服務</label><textarea id="short_prof" placeholder="填寫欄位"></textarea></div>
+                  <div id="short_car_wrap"><label class="h4" for="short_car">交通接送</label><textarea id="short_car"  placeholder="填寫欄位"></textarea></div>
+                  <div id="short_resp_wrap"><label class="h4" for="short_resp">喘息服務</label><textarea id="short_resp" placeholder="填寫欄位"></textarea></div>
+                  <div id="short_access_wrap"><label class="h4" for="short_access">無障礙及輔具</label><textarea id="short_access" placeholder="填寫欄位"></textarea></div>
+                  <div id="short_meal_wrap"><label class="h4" for="short_meal">營養送餐</label><textarea id="short_meal" placeholder="填寫欄位"></textarea></div>
                 </div>
               </div>
 
@@ -4371,12 +4475,12 @@
               </div>
               <div class="care-goal-block">
                 <div class="autogrid autogrid--wide">
-                  <div id="mid_care_wrap"><label class="h4">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
-                  <div id="mid_prof_wrap"><label class="h4">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
-                  <div id="mid_car_wrap"><label class="h4">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
-                  <div id="mid_resp_wrap"><label class="h4">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
-                  <div id="mid_access_wrap"><label class="h4">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
-                  <div id="mid_meal_wrap"><label class="h4">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
+                  <div id="mid_care_wrap"><label class="h4" for="mid_care">照顧服務</label><textarea id="mid_care" placeholder="填寫欄位"></textarea></div>
+                  <div id="mid_prof_wrap"><label class="h4" for="mid_prof">專業服務</label><textarea id="mid_prof" placeholder="填寫欄位"></textarea></div>
+                  <div id="mid_car_wrap"><label class="h4" for="mid_car">交通接送</label><textarea id="mid_car"  placeholder="填寫欄位"></textarea></div>
+                  <div id="mid_resp_wrap"><label class="h4" for="mid_resp">喘息服務</label><textarea id="mid_resp" placeholder="填寫欄位"></textarea></div>
+                  <div id="mid_access_wrap"><label class="h4" for="mid_access">無障礙及輔具</label><textarea id="mid_access" placeholder="填寫欄位"></textarea></div>
+                  <div id="mid_meal_wrap"><label class="h4" for="mid_meal">營養送餐</label><textarea id="mid_meal" placeholder="填寫欄位"></textarea></div>
                 </div>
               </div>
 
@@ -4384,6 +4488,7 @@
                 <label class="h3 heading-tier heading-tier--primary">長期目標（4–6 個月）</label>
               </div>
               <div class="care-goals-side-inner">
+                <label class="sr-only" for="long_goal">長期目標</label>
                 <textarea id="long_goal" placeholder="將由短/中期彙整自動填入；可再微調。"></textarea>
                 <div class="hr"></div>
                 <label class="h4">目標文字預覽（含碼別與各期結構）</label>
@@ -4403,24 +4508,27 @@
           </div>
           <div class="group-content">
             <div class="row"><div>
-              <label class="h3">目標達成的狀況以及未達成的差距</label>
+              <label class="h3" for="reason1">目標達成的狀況以及未達成的差距</label>
               <textarea id="reason1" placeholder="填寫欄位"></textarea>
             </div></div>
             <div class="row"><div>
-              <label class="h3">資源的變動情形</label>
+              <label class="h3" for="reason2">資源的變動情形</label>
               <textarea id="reason2" placeholder="填寫欄位"></textarea>
             </div></div>
             <div class="row"><div>
-              <label class="h3">未使用的替代方案或是可能的影響</label>
+              <label class="h3" for="reason3">未使用的替代方案或是可能的影響</label>
               <textarea id="reason3" placeholder="填寫欄位"></textarea>
               <div class="hr"></div>
               <label class="h4">常用快捷（勾選即加入第 3 格）</label>
               <div style="margin:var(--space-xs) 0;">
+                <label class="sr-only" for="rq1_no">原核定服務</label>
                 <input id="rq1_no" type="text" placeholder="原服務，例如：備餐" style="margin-right:4px;">
+                <label class="sr-only" for="rq1_alt">替代服務</label>
                 <input id="rq1_alt" type="text" placeholder="替代服務，例如：代購服務">
               </div>
               <label class="h5 inline"><input type="checkbox" id="rq1"> 1.經與<span id="rq1_who">案○</span>討論，目前暫無<span id="rq1_no_preview" data-def="備餐">備餐</span>之需求，改為<span id="rq1_alt_preview" data-def="代購服務">代購服務</span>。</label>
               <div style="margin:var(--space-xs) 0;">
+                <label class="sr-only" for="rq2_service">暫無需求服務名稱</label>
                 <input id="rq2_service" type="text" placeholder="服務，例如：專業服務">
               </div>
               <label class="h5 inline"><input type="checkbox" id="rq2"> 2.經與<span id="rq2_who">案○</span>討論，目前因個案身體狀況，暫無<span id="rq2_service_preview" data-def="專業服務">專業服務</span>需求，日後待個案狀況好轉後，依當下狀況核定，續追蹤。</label>
@@ -4428,6 +4536,7 @@
                 <div class="hint" id="mismatch_diff_text">與照專建議服務不一致項目：</div>
                 <div class="mismatch-diff" id="mismatch_diff_list"></div>
                 <div class="checkcol" id="mismatch_reason_box" data-legend="與照專建議服務不一致項目"></div>
+                <label class="sr-only" for="mismatch_reason_other">其他原因說明</label>
                 <input id="mismatch_reason_other" type="text" placeholder="請說明其他原因" style="display:none; margin-top:var(--space-xs);">
                 <div class="field-error" id="mismatch_reason_error"></div>
               </div>
@@ -4459,9 +4568,10 @@
 
         <section class="section-card" id="planReferralCard">
           <div class="titlebar">
-            <label class="h2">轉介其他服務資源</label>
+            <label id="plan_referral_extra_label" class="h2" for="plan_referral_extra">轉介其他服務資源</label>
           </div>
-          <textarea id="plan_referral_extra" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
+          <label class="sr-only" for="plan_referral_extra">轉介其他服務資源</label>
+          <textarea id="plan_referral_extra" aria-labelledby="plan_referral_extra_label" aria-label="轉介其他服務資源" placeholder="例：慈濟資源站－已聯繫，提供物資協助"></textarea>
         </section>
 
         <section class="section-card" id="planStationCard">
@@ -4542,11 +4652,12 @@
 
         <section class="section-card" id="planExecutionPreviewCard">
           <div class="titlebar">
-            <label class="h2">附件一：計畫執行規劃預覽</label>
+            <label id="plan_text_label" class="h2" for="plan_text">附件一：計畫執行規劃預覽</label>
           </div>
           <span class="h3">預覽內容</span>
           <div class="hint">預覽（可複製貼上至計畫執行規劃頁面）：</div>
-          <textarea id="plan_text" class="plan-preview" readonly></textarea>
+          <label class="sr-only" for="plan_text">附件一：計畫執行規劃預覽</label>
+          <textarea id="plan_text" class="plan-preview" readonly aria-labelledby="plan_text_label" aria-label="附件一：計畫執行規劃預覽"></textarea>
         </section>
       </div>
       </div>
@@ -4582,7 +4693,7 @@
       </div>
     </div>
   </div>
-        </main>
+        </div>
       </div>
 
       <div class="floating-actions" id="floatingActions" aria-label="頁面操作">

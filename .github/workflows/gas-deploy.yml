@@ -33,6 +33,7 @@ jobs:
       - name: "Install deps"
         run: |
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npx playwright install --with-deps
 
       - name: "Run unit tests (Jest)"
         run: npm test --if-present
@@ -55,6 +56,7 @@ jobs:
       - name: "Install deps"
         run: |
           if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npx playwright install --with-deps
 
       - name: "Install latest clasp"
         run: npm i -g @google/clasp
