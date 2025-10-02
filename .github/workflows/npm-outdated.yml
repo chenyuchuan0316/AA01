@@ -2,18 +2,25 @@ name: npm outdated report
 
 on:
   schedule:
-    - cron: '0 1 * * 1'
+    - cron: '0 1 * * 1' # 每週一 01:00 UTC
   workflow_dispatch:
+    inputs:
+      run_e2e:
+        description: 'Run E2E and health checks (manual only)'
+        type: boolean
+        default: false
+        required: false
 
 jobs:
   outdated:
     name: Generate outdated inventory
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -22,29 +29,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 僅在手動且勾選 run_e2e 時，才安裝瀏覽器與跑本地 @ui
       - name: Install Playwright browsers
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e }}
         run: npx playwright install --with-deps
 
-      - name: Restore Playwright auth state
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
-        run: echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
-
-      - name: Run local UI E2E
+      - name: Run local UI E2E (@ui)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e }}
         run: npm run e2e:ui
 
-      - name: Run remote E2E (requires auth)
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
+      # 遠端 E2E/Health 需要 secrets；但 schedule 不會跑它們
+      - name: Restore Playwright auth state
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e && secrets.PLAYWRIGHT_AUTH_STATE != '' }}
+        run: |
+          echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
+          echo "auth.json restored"
+
+      - name: Run remote E2E (@remote)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e && secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
         run: npm run e2e:remote
         env:
           GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
 
-      - name: Health check (200 or 302)
+      - name: Health check (200/302 or skip)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e }}
         run: npm run health
         env:
           GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
 
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Upload Playwright report
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_e2e }}
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report
@@ -58,26 +73,20 @@ jobs:
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
-          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-          const exists = fs.existsSync('outdated.json');
-          if (!exists) {
-            await fs.promises.appendFile(summaryPath, 'No outdated data produced.\n');
-            process.exit(0);
+          const out = process.env.GITHUB_STEP_SUMMARY;
+          const have = fs.existsSync('outdated.json');
+          if (!have) { await fs.promises.appendFile(out, 'No outdated data produced.\n'); process.exit(0); }
+          const raw = fs.readFileSync('outdated.json','utf8').trim();
+          const data = raw ? JSON.parse(raw) : {};
+          const rows = Object.entries(data).sort((a,b)=>a[0].localeCompare(b[0]));
+          let md = '# npm outdated report\n\n';
+          if (!rows.length) md += '✅ All dependencies are up-to-date.\n';
+          else {
+            md += '| Package | Current | Wanted | Latest |\n| --- | --- | --- | --- |\n';
+            for (const [name, info] of rows)
+              md += `| ${name} | ${info.current ?? '-'} | ${info.wanted ?? '-'} | ${info.latest ?? '-'} |\n`;
           }
-          const raw = fs.readFileSync('outdated.json', 'utf8').trim();
-          const json = raw ? JSON.parse(raw) : {};
-          const entries = Object.entries(json).sort((a, b) => a[0].localeCompare(b[0]));
-          let output = '# npm outdated report\n\n';
-          if (!entries.length) {
-            output += '✅ All dependencies are up-to-date.\n';
-          } else {
-            output += '| Package | Current | Wanted | Latest |\n';
-            output += '| --- | --- | --- | --- |\n';
-            for (const [name, info] of entries) {
-              output += `| ${name} | ${info.current ?? '-'} | ${info.wanted ?? '-'} | ${info.latest ?? '-'} |\n`;
-            }
-          }
-          await fs.promises.appendFile(summaryPath, output);
+          await fs.promises.appendFile(out, md);
           NODE
 
       - name: Upload outdated.json artifact
