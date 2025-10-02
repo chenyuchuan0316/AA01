@@ -3075,13 +3075,13 @@
       </header>
       <div class="app-body">
         <div class="app-body-controls">
-          <button type="button" class="side-nav-trigger" id="sideNavToggleButton" aria-controls="sideNav" aria-expanded="false">
+          <button id="sideNavToggleButton" class="side-nav-trigger" data-testid="side-nav-toggle" type="button" aria-controls="sideNav" aria-expanded="false">
             <span class="side-nav-trigger-icon" aria-hidden="true"></span>
             <span>群組導覽</span>
           </button>
         </div>
         <div class="side-nav-backdrop" id="sideNavBackdrop" role="presentation" aria-hidden="true"></div>
-        <nav class="side-nav" id="sideNav" aria-label="群組導覽" data-empty="1" tabindex="-1">
+        <nav id="sideNav" class="side-nav" data-empty="1" data-testid="side-nav" aria-label="群組導覽" tabindex="-1">
           <div class="side-nav-title">群組導覽</div>
           <div class="side-nav-accordion" id="sideNavAccordion"></div>
         </nav>
@@ -3168,14 +3168,14 @@
   </div>
 
   <div class="page-section" data-page="goals" data-active="0" data-columns="2">
-    <div class="group card-main" id="contactVisitGroup" data-span="full" data-collapsed="0" data-plan-locked="0">
-      <div class="group-header">
-        <div class="titlebar">
-          <span class="h1">計畫目標</span>
+      <div class="group card-main" id="contactVisitGroup" data-span="full" data-collapsed="0" data-plan-locked="0">
+        <div class="group-header">
+          <div class="titlebar">
+            <span class="h1">計畫目標</span>
+          </div>
         </div>
-      </div>
-      <div class="group-content">
-        <div class="section-card-grid">
+        <div class="group-content">
+          <div class="section-card-grid" data-testid="contact-visit-grid">
             <section class="section-card contact-visit-card" data-card="call">
               <div class="titlebar contact-visit-card-header">
                 <span class="h2">電聯日期</span>
