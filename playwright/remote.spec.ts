@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openPage } from './utils/openPage';
 
 const HAS_AUTH = process.env.HAS_AUTH === 'true';
 
@@ -9,14 +10,16 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
     'HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL'
   );
 
-  test('desktop (>=1280): sidebar is static; no toggle expected', async ({ page }) => {
+  test('desktop (>=1280): static sidebar; no toggle present', async ({ page }) => {
+    await openPage(page); // ★ 一律先導到 GAS 頁
     await page.setViewportSize({ width: 1280, height: 900 });
     const toggle = page.locator('#sideNavToggleButton');
     await expect(toggle).toHaveCount(0); // 桌機通常沒有 toggle
-    await expect(page.locator('nav#sideNav')).toBeVisible(); // 側欄常駐
+    await expect(page.locator('nav#sideNav')).toBeVisible();
   });
 
   test('tablet (640–1279): toggle exists, nav opens/closes', async ({ page }) => {
+    await openPage(page);
     await page.setViewportSize({ width: 1024, height: 900 });
     const toggle = page.locator('#sideNavToggleButton');
     const sideNav = page.locator('nav#sideNav');
@@ -26,14 +29,15 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
 
     await toggle.click();
     await expect(sideNav).toBeVisible();
-    await expect(toggle).toHaveAttribute('aria-expanded', /true/i);
+    await expect(toggle).toHaveAttribute('aria-expanded', /\btrue\b/i);
 
     await toggle.click();
     await expect(sideNav).toBeHidden();
-    await expect(toggle).toHaveAttribute('aria-expanded', /false/i);
+    await expect(toggle).toHaveAttribute('aria-expanded', /\bfalse\b/i);
   });
 
   test('mobile (<640): toggle exists, overlay behavior holds', async ({ page }) => {
+    await openPage(page);
     await page.setViewportSize({ width: 390, height: 844 });
     const toggle = page.locator('#sideNavToggleButton');
     const sideNav = page.locator('nav#sideNav');
@@ -45,7 +49,8 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
     await expect(sideNav).toBeVisible();
   });
 
-  test('contact visit grid renders regardless of title text', async ({ page }) => {
+  test('contact visit grid renders', async ({ page }) => {
+    await openPage(page);
     const grid = page.locator('#contactVisitGroup .section-card-grid');
     await expect(grid).toBeVisible();
   });

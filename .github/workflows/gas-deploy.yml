@@ -87,6 +87,12 @@ jobs:
         env:
           GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
 
+      - name: Debug secrets → env mapping
+        run: |
+          node -e "process.stdout.write('GAS_WEBAPP_URL length=' + String((process.env.GAS_WEBAPP_URL || '').length))"
+        env:
+          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
+
       - name: Health check (200 or 302)
         run: npm run health
         env:
