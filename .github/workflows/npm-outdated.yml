@@ -2,11 +2,11 @@ name: npm outdated report
 
 on:
   schedule:
-    - cron: '0 1 * * 1' # 每週一 01:00 UTC
+    - cron: '0 1 * * 1'   # 每週一 01:00 UTC
   workflow_dispatch:
     inputs:
       run_e2e:
-        description: 'Run E2E and health checks (manual only)'
+        description: 'Run local @ui E2E (no secrets needed)'
         type: boolean
         default: false
         required: false
@@ -15,7 +15,6 @@ jobs:
   outdated:
     name: Generate outdated inventory
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -29,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 僅在手動且勾選 run_e2e 時，才安裝瀏覽器與跑本地 @ui
+      # 僅手動且勾選 run_e2e 時，安裝瀏覽器並跑本地 @ui（不需要 secrets）
       - name: Install Playwright browsers
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e }}
         run: npx playwright install --with-deps
@@ -37,25 +36,6 @@ jobs:
       - name: Run local UI E2E (@ui)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e }}
         run: npm run e2e:ui
-
-      # 遠端 E2E/Health 需要 secrets；但 schedule 不會跑它們
-      - name: Restore Playwright auth state
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e && secrets.PLAYWRIGHT_AUTH_STATE != '' }}
-        run: |
-          echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
-          echo "auth.json restored"
-
-      - name: Run remote E2E (@remote)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e && secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
-        run: npm run e2e:remote
-        env:
-          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
-
-      - name: Health check (200/302 or skip)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_e2e }}
-        run: npm run health
-        env:
-          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
 
       - name: Upload Playwright report
         if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_e2e }}
@@ -74,8 +54,8 @@ jobs:
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const out = process.env.GITHUB_STEP_SUMMARY;
-          const have = fs.existsSync('outdated.json');
-          if (!have) { await fs.promises.appendFile(out, 'No outdated data produced.\n'); process.exit(0); }
+          const has = fs.existsSync('outdated.json');
+          if (!has) { await fs.promises.appendFile(out, 'No outdated data produced.\n'); process.exit(0); }
           const raw = fs.readFileSync('outdated.json','utf8').trim();
           const data = raw ? JSON.parse(raw) : {};
           const rows = Object.entries(data).sort((a,b)=>a[0].localeCompare(b[0]));
