@@ -46,17 +46,17 @@ jobs:
         run: npm outdated --json > before.json || true
 
       - name: Run safe updates
-        if: env.STRATEGY == 'safe'
+        if: ${{ env.STRATEGY == 'safe' }}
         run: npm update --no-audit --no-fund
 
       - name: Run major updates with npm-check-updates
-        if: env.STRATEGY == 'major'
+        if: ${{ env.STRATEGY == 'major' }}
         run: |
           npx npm-check-updates@latest --target=latest -u
           npm install --no-audit --no-fund
 
       - name: Re-install dependencies to sync lockfile
-        if: env.STRATEGY == 'safe'
+        if: ${{ env.STRATEGY == 'safe' }}
         run: npm install --no-audit --no-fund
 
       - name: Capture outdated (after)

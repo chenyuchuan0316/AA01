@@ -1,5 +1,9 @@
 name: GAS staged test & deploy (single workflow)
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   pull_request:
     branches: [ "main" ]
@@ -50,6 +54,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [unit-tests]
     timeout-minutes: 25
+    env:
+      PLAYWRIGHT_AUTH_STATE_B64: ${{ secrets.PLAYWRIGHT_AUTH_STATE }}
+      GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
+      HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
+      HAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
+      HAS_REMOTE_TEST: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
 
     steps:
       - name: "Checkout"
@@ -73,59 +83,43 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Restore Playwright auth state
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
+        if: ${{ env.HAS_AUTH == 'true' }}
         run: |
-          echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
+          echo "${PLAYWRIGHT_AUTH_STATE_B64}" | base64 -d > auth.json
           echo "auth.json restored"
 
       - name: Run local UI E2E
         run: npm run e2e:ui
 
-      - name: Run remote E2E (requires auth)
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
-        run: npm run e2e:remote
-        env:
-          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
+      - name: Auto-repair remote E2E (requires auth)
+        if: ${{ env.HAS_REMOTE_TEST == 'true' }}
+        run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "npm run health"
 
       - name: Debug secrets → env mapping
         run: |
           node -e "process.stdout.write('GAS_WEBAPP_URL length=' + String((process.env.GAS_WEBAPP_URL || '').length))"
-        env:
-          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
 
       - name: Health check (200/302 or skip)
+        if: ${{ env.HAS_WEBAPP_URL == 'true' }}
         run: npm run health
+
+      - name: Build artifact index
+        if: always()
+        run: node scripts/build-artifact-index.mjs
         env:
-          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
+          ARTIFACT_SOURCES: |
+            playwright-report
+            artifacts
+          ARTIFACT_INDEX_PATH: artifacts/index.json
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
-          path: playwright-report
+          path: |
+            playwright-report
+            artifacts/index.json
           if-no-files-found: ignore
-
-      - name: "Setup clasp credentials"
-        env:
-          CLASP_CREDENTIALS: ${{ secrets.CLASP_CREDENTIALS }}
-        run: |
-          set -euo pipefail
-          if [ -z "${CLASP_CREDENTIALS:-}" ]; then
-            echo "::error::Missing CLASP_CREDENTIALS secret" >&2
-            exit 1
-          fi
-
-          node - <<'NODE'
-          const fs = require('fs');
-          const creds = process.env.CLASP_CREDENTIALS || '';
-          if (!creds) {
-            throw new Error('::error::Missing CLASP_CREDENTIALS secret');
-          }
-          fs.writeFileSync('service-account.json', creds);
-          NODE
-
-          npx clasp login --creds service-account.json
-          rm -f service-account.json
 
       - name: "Install latest clasp"
         run: npm i -g @google/clasp
@@ -178,9 +172,7 @@ jobs:
               echo "::error::clasp not logged in or token invalid. Fix: 重取本機 ~/.clasprc.json（用 @fuancare.com.tw 有編輯權限的帳號），base64 上傳到 CLASPRC_JSON"; exit 1;
             fi
           else
-            if ! clasp login --status; then
-              echo "::error::clasp not logged in or token invalid. Fix: 重取本機 ~/.clasprc.json（用 @fuancare.com.tw 有編輯權限的帳號），base64 上傳到 CLASPRC_JSON"; exit 1;
-            fi
+            echo "::error::Installed clasp does not support whoami; upgrade to latest and provide CLASPRC_JSON token."; exit 1;
           fi
 
           echo "=== 3) 專案定位 ==="

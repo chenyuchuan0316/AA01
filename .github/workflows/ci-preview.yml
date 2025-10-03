@@ -1,22 +1,35 @@
 name: ci-preview
 on:
+  workflow_dispatch:
   push:
     branches-ignore: [ main ]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  issues:
+    types: [opened, reopened]
+  issue_comment:
+    types: [created]
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   preview:
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/playwright:v1.55.1-jammy
     concurrency:
-      group: preview-${{ github.ref }}
+      group: preview-${{ github.ref || (github.event.issue && format('issue-{0}', github.event.issue.number)) || format('run-{0}', github.run_id) }}
       cancel-in-progress: true
     env:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
       TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
       E2E_PATH: ${{ vars.E2E_PATH }}
+    if: >-
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '/preview'))
 
     steps:
       - uses: actions/checkout@v4
@@ -24,10 +37,23 @@ jobs:
         with: { node-version: 20, cache: npm }
       - run: npm ci
 
-      - name: Setup clasp credentials
+      - name: Write ~/.clasprc.json
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
-          echo '${{ secrets.CLASP_CREDENTIALS }}' > ~/.clasprc.json
-          echo "✔ wrote ~/.clasprc.json"
+          set -euo pipefail
+          [ -n "${CLASPRC_JSON:-}" ] || { echo "::error::Missing CLASPRC_JSON"; exit 1; }
+          node -e "
+            const fs=require('fs');const p=process.env.HOME+'/.clasprc.json';
+            let s=process.env.CLASPRC_JSON||'';let j;
+            try{ j=JSON.parse(s); }
+            catch(e){ s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); }
+            if(!j.token && j.tokens && j.tokens.default){ j.token=j.tokens.default; }
+            fs.mkdirSync(require('path').dirname(p),{recursive:true});
+            fs.writeFileSync(p, JSON.stringify(j,null,2));
+          "
+          test -s "$HOME/.clasprc.json"
+          cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
       - name: Create GAS version
         id: ver
@@ -53,12 +79,22 @@ jobs:
         if: ${{ env.HAS_AUTH == 'true' }}
         run: echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
 
-      - name: Run remote E2E (@remote → staging)
+      - name: Auto-repair remote E2E (@remote → staging)
         if: ${{ env.HAS_AUTH == 'true' }}
-        run: npm run e2e:remote
+        run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "npm run health"
         env:
           GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
           E2E_PATH: ${{ env.E2E_PATH }}
+
+      - name: Build artifact index
+        id: artifact_index
+        if: always()
+        run: node scripts/build-artifact-index.mjs
+        env:
+          ARTIFACT_SOURCES: |
+            playwright-report
+            artifacts
+          ARTIFACT_INDEX_PATH: artifacts/index.json
 
       - name: Health (200/302 or skip)
         run: npm run health
@@ -69,7 +105,9 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: playwright-report
+          path: |
+            playwright-report
+            artifacts/index.json
           if-no-files-found: ignore
 
       - name: Comment to PR (if exists)
@@ -81,3 +119,5 @@ jobs:
           message: |
             **Staging preview** for `${{ github.ref }}`:
             ${{ steps.url.outputs.url }}${{ env.E2E_PATH || '' }}
+            
+            ${{ steps.artifact_index.outputs.markdown || '_(no artifacts detected)_' }}
