@@ -143,15 +143,6 @@ jobs:
             artifacts
           ARTIFACT_INDEX_PATH: artifacts/index.json
 
-      - name: Build artifact index
-        if: always()
-        run: node scripts/build-artifact-index.mjs
-        env:
-          ARTIFACT_SOURCES: |
-            playwright-report
-            artifacts
-          ARTIFACT_INDEX_PATH: artifacts/index.json
-
       - uses: actions/upload-artifact@v4
         if: always()
         with:
