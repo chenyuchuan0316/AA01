@@ -24,11 +24,9 @@ test('handles query-only paths correctly', () => {
   assert.equal(result.path, '?route=health');
 });
 
-test('keeps GAS exec base while converting /exec query into query-only path', () => {
+test('throws when GAS exec base receives /exec with query syntax', () => {
   const base = 'https://script.google.com/macros/s/AKID/exec';
-  const result = buildTargetURL(base, '/exec?route=AA01');
-  assert.equal(result.href, 'https://script.google.com/macros/s/AKID/exec?route=AA01');
-  assert.equal(result.path, '?route=AA01');
+  assert.throws(() => buildTargetURL(base, '/exec?route=AA01'), /query-only/);
 });
 
 test('throws when attempting to override GAS exec path without query', () => {

@@ -87,7 +87,7 @@ jobs:
           BASE="${BASE_URL:-}"
           PATH_INPUT="${PATH_INPUT:-}"
           if printf '%s' "$BASE" | grep -qE '^https://script\.google\.com/.*/exec/?$' && \
-             printf '%s' "$PATH_INPUT" | grep -qE '^/exec(\?|$)'; then
+             printf '%s' "$PATH_INPUT" | grep -qE '^/exec(/|\?|$)'; then
             echo "::error::E2E_PATH should be query-only when base ends with /exec (use \"?route=...\")"
             exit 1
           fi
