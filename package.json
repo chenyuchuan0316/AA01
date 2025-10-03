@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "eslint --max-warnings=0 --ext .js,.cjs,.mjs,.ts,.tsx __tests__ playwright scripts",
+    "lint": "eslint --max-warnings=0 --ext .js,.cjs,.mjs,.ts,.tsx src __tests__ playwright scripts",
     "format": "prettier --check .",
     "test": "jest --config=jest.config.cjs",
     "test:watch": "jest --watch --config=jest.config.cjs",

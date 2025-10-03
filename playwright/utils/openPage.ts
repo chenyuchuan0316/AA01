@@ -1,30 +1,36 @@
 import path from 'node:path';
 import type { Page } from '@playwright/test';
+import { buildRemoteUrl } from '../../src/utils/buildRemoteUrl.js';
 
 const localHtml = 'file://' + path.resolve('src/Sidebar.html');
 
-function joinUrl(base: string, extra?: string) {
-  if (!extra) return base;
-  if (/^[?#]/.test(extra)) return base + extra;
-  if (extra.startsWith('/')) return base.replace(/\/+$/, '') + extra;
-  return base.replace(/\/+$/, '') + '/' + extra.replace(/^\/+/, '');
-}
-
 export function isRemoteTarget(): boolean {
-  return process.env.E2E_TARGET === 'remote' && Boolean(process.env.GAS_WEBAPP_URL);
+  return process.env.E2E_TARGET === 'remote';
 }
 
 export async function openPage(page: Page, width = 1280, height = 960) {
   await page.setViewportSize({ width, height });
-  const base = process.env.GAS_WEBAPP_URL || '';
-  const extra = process.env.E2E_PATH || '';
-  const target = isRemoteTarget() ? joinUrl(base, extra) : localHtml;
-  await page.goto(target, { waitUntil: 'domcontentloaded' });
+
+  const remote = isRemoteTarget();
+  let targetUrl = localHtml;
+
+  if (remote) {
+    const remoteUrl = buildRemoteUrl(process.env.GAS_WEBAPP_URL, process.env.E2E_PATH);
+    targetUrl = remoteUrl.toString();
+    console.info('[openPage] remote target URL', targetUrl);
+  }
+
+  await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
   // eslint-disable-next-line playwright/no-networkidle
   await page.waitForLoadState('networkidle');
 
-  if (isRemoteTarget()) {
-    const currentUrl = page.url();
+  const currentUrl = page.url();
+
+  if (remote) {
+    console.info('[openPage] remote final URL', currentUrl);
+    if (/\/exec\/exec/i.test(currentUrl) || /\/exec\/exec/i.test(targetUrl)) {
+      throw new Error(`duplicate /exec detected in remote URL: ${currentUrl}`);
+    }
     if (/accounts\.google\.com/i.test(currentUrl)) {
       throw new Error('登入態過期，請重新產生 auth.json 後重試');
     }
@@ -39,4 +45,5 @@ export async function openPage(page: Page, width = 1280, height = 960) {
       basicInfoText.first().waitFor({ state: 'visible', timeout: 10000 })
     ]);
   }
+  return { targetUrl, finalUrl: currentUrl };
 }
