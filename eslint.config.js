@@ -10,7 +10,14 @@ const playwrightTest = playwrightPlugin.configs['playwright-test'];
 
 export default [
   {
-    ignores: ['node_modules', 'coverage', 'playwright-report', 'playwright-results', 'dist']
+    ignores: [
+      'node_modules',
+      'coverage',
+      'artifacts',
+      'playwright-report',
+      'playwright-results',
+      'dist'
+    ]
   },
   {
     ...js.configs.recommended,
