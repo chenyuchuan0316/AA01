@@ -28,3 +28,7 @@ jobs:
             reports/**
             coverage/**
             jscpd-report/**
+          node-version: 20
+      - name: Placeholder audit
+        run: echo "Codex audit workflow placeholder"
+
