@@ -16,7 +16,7 @@ permissions:
 
 defaults:
   run:
-    shell: bash
+    shell: bash {0}
 
 jobs:
   preview:
@@ -53,27 +53,31 @@ jobs:
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
-          bash -eo pipefail <<'BASH'
           set -euo pipefail
           : "${CLASPRC_JSON:?Missing CLASPRC_JSON}"
-          node -e "
-            const fs=require('fs'), path=require('path');
-            const p=process.env.HOME+'/.clasprc.json';
-            let s=process.env.CLASPRC_JSON||''; let j;
-            try { j=JSON.parse(s); }
-            catch (e) { s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); }
-            if(!j.token && j.tokens?.default) j.token=j.tokens.default;
-            fs.mkdirSync(path.dirname(p), {recursive:true});
-            fs.writeFileSync(p, JSON.stringify(j,null,2));
-          "
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const p = process.env.HOME + '/.clasprc.json';
+          let s = process.env.CLASPRC_JSON || '';
+          let j;
+          try {
+            j = JSON.parse(s);
+          } catch (e) {
+            s = s.replace(/\s+/g, '');
+            j = JSON.parse(Buffer.from(s, 'base64').toString());
+          }
+          if (!j.token && j.tokens?.default) j.token = j.tokens.default;
+          fs.mkdirSync(path.dirname(p), { recursive: true });
+          fs.writeFileSync(p, JSON.stringify(j, null, 2));
+          NODE
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
-          BASH
 
       - name: Create GAS version
         id: ver
         run: |
-          set -e
+          set -euo pipefail
           npx clasp version "ci:${GITHUB_SHA::7}" || true
           VER=$(npx clasp versions | awk '/^@/ {v=$2} END{print v}')
           [ -n "$VER" ] || (echo "No version found"; exit 1)

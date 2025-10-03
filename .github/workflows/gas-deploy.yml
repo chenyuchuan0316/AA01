@@ -17,7 +17,7 @@ concurrency:
 
 defaults:
   run:
-    shell: bash
+    shell: bash {0}
 
 jobs:
   unit-tests:
@@ -92,6 +92,7 @@ jobs:
       - name: Restore Playwright auth state
         if: ${{ env.HAS_AUTH == 'true' }}
         run: |
+          set -euo pipefail
           echo "${PLAYWRIGHT_AUTH_STATE_B64}" | base64 -d > auth.json
           echo "auth.json restored"
 
@@ -122,6 +123,7 @@ jobs:
           LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
       - name: Debug secrets → env mapping
         run: |
+          set -euo pipefail
           node -e "process.stdout.write('GAS_WEBAPP_URL length=' + String((process.env.GAS_WEBAPP_URL || '').length))"
 
       - name: Health check (200/302 or skip)
@@ -167,26 +169,30 @@ jobs:
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
-          bash -eo pipefail <<'BASH'
           set -euo pipefail
           : "${CLASPRC_JSON:?Missing CLASPRC_JSON}"
-          node -e "
-            const fs=require('fs'), path=require('path');
-            const p=process.env.HOME+'/.clasprc.json';
-            let s=process.env.CLASPRC_JSON||''; let j;
-            try { j=JSON.parse(s); }
-            catch (e) { s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); }
-            if(!j.token && j.tokens?.default) j.token=j.tokens.default;
-            fs.mkdirSync(path.dirname(p), {recursive:true});
-            fs.writeFileSync(p, JSON.stringify(j,null,2));
-          "
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const p = process.env.HOME + '/.clasprc.json';
+          let s = process.env.CLASPRC_JSON || '';
+          let j;
+          try {
+            j = JSON.parse(s);
+          } catch (e) {
+            s = s.replace(/\s+/g, '');
+            j = JSON.parse(Buffer.from(s, 'base64').toString());
+          }
+          if (!j.token && j.tokens?.default) j.token = j.tokens.default;
+          fs.mkdirSync(path.dirname(p), { recursive: true });
+          fs.writeFileSync(p, JSON.stringify(j, null, 2));
+          NODE
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
-          BASH
 
       - name: "Preflight: check TEST secrets & clasp & script"
         run: |
-          set -e
+          set -euo pipefail
 
           echo "=== 1) Secrets 注入 ==="
           echo "TEST_DEPLOYMENT_ID len: ${#TEST_DEPLOYMENT_ID}"
@@ -220,6 +226,7 @@ jobs:
 
       - name: "Guard: appsscript.json must declare webapp"
         run: |
+          set -euo pipefail
           node - <<'EOF'
           const fs = require('fs');
           const path = require('path');
@@ -278,7 +285,7 @@ jobs:
       # BEFORE snapshot（文字解析 fallback）
       - name: "Snapshot BEFORE"
         run: |
-          set -e
+          set -euo pipefail
           clasp deployments > before.txt || true
           clasp deployments --json > before.json || true
           node -e "
@@ -324,6 +331,7 @@ jobs:
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
+          set -euo pipefail
           if [ -z "${TEST_DEPLOYMENT_ID:-}" ]; then
             echo "::warning::TEST_DEPLOYMENT_ID secret is not available for this workflow run."
             echo "has_secret=false" >> "$GITHUB_OUTPUT"
@@ -336,6 +344,7 @@ jobs:
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
+          set -euo pipefail
           node -e "
             const fs=require('fs');
             const hasOwn=Object.prototype.hasOwnProperty;
@@ -359,7 +368,7 @@ jobs:
         env:
           SHA: ${{ github.sha }}
         run: |
-          set -e
+          set -euo pipefail
           SHORT_SHA="${SHA::7}"
           cat > 00_ci_env.gs <<EOF
           const CI_ENV = 'TEST';
@@ -372,7 +381,7 @@ jobs:
       - name: "Create new version (TEST)"
         id: mkver-test
         run: |
-          set -e
+          set -euo pipefail
           out=$(clasp version "[TEST] CI ${GITHUB_SHA::7}" || true)
           echo "$out"
           ver=$(echo "$out" | sed -n "s/Created version \([0-9][0-9]*\).*/\1/p")
@@ -385,7 +394,7 @@ jobs:
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
-          set -e
+          set -euo pipefail
           [ -n "${TEST_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing TEST_DEPLOYMENT_ID"; exit 1; }
           [ -n "${NEW_VER:-}" ] || { echo "::error::Missing NEW_VER"; exit 1; }
           clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[TEST] CI ${GITHUB_SHA::7}"
@@ -395,7 +404,7 @@ jobs:
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
-          set -e
+          set -euo pipefail
           clasp deployments > after.txt || true
           clasp deployments --json > after.json || true
           node -e "
@@ -452,6 +461,7 @@ jobs:
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
+          set -euo pipefail
           if [ -n "${TEST_DEPLOYMENT_ID:-}" ]; then
             echo "len=${#TEST_DEPLOYMENT_ID}"
           else
@@ -480,7 +490,7 @@ jobs:
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
-          set -e
+          set -euo pipefail
           URL="https://script.google.com/macros/s/${TEST_DEPLOYMENT_ID}/exec?route=health&v=${GITHUB_SHA::7}"
           code=$(curl -sS -o /dev/null -w "%{http_code}" -D headers.txt "$URL" || true)
           loc=$(awk 'BEGIN{IGNORECASE=1}/^Location:/{print $2}' headers.txt | tr -d '\r\n')
@@ -515,26 +525,30 @@ jobs:
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
-          bash -eo pipefail <<'BASH'
           set -euo pipefail
           : "${CLASPRC_JSON:?Missing CLASPRC_JSON}"
-          node -e "
-            const fs=require('fs'), path=require('path');
-            const p=process.env.HOME+'/.clasprc.json';
-            let s=process.env.CLASPRC_JSON||''; let j;
-            try { j=JSON.parse(s); }
-            catch (e) { s=s.replace(/\s+/g,''); j=JSON.parse(Buffer.from(s,'base64').toString()); }
-            if(!j.token && j.tokens?.default) j.token=j.tokens.default;
-            fs.mkdirSync(path.dirname(p), {recursive:true});
-            fs.writeFileSync(p, JSON.stringify(j,null,2));
-          "
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const p = process.env.HOME + '/.clasprc.json';
+          let s = process.env.CLASPRC_JSON || '';
+          let j;
+          try {
+            j = JSON.parse(s);
+          } catch (e) {
+            s = s.replace(/\s+/g, '');
+            j = JSON.parse(Buffer.from(s, 'base64').toString());
+          }
+          if (!j.token && j.tokens?.default) j.token = j.tokens.default;
+          fs.mkdirSync(path.dirname(p), { recursive: true });
+          fs.writeFileSync(p, JSON.stringify(j, null, 2));
+          NODE
           test -s "$HOME/.clasprc.json"
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
-          BASH
 
       - name: "Snapshot BEFORE"
         run: |
-          set -e
+          set -euo pipefail
           clasp deployments > before.txt || true
           clasp deployments --json > before.json || true
           node -e "
@@ -579,6 +593,7 @@ jobs:
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
+          set -euo pipefail
           node -e "
             const fs=require('fs');
             const hasOwn=Object.prototype.hasOwnProperty;
@@ -601,7 +616,7 @@ jobs:
         env:
           SHA: ${{ github.sha }}
         run: |
-          set -e
+          set -euo pipefail
           SHORT_SHA="${SHA::7}"
           cat > 00_ci_env.gs <<EOF
           const CI_ENV = 'PROD';
@@ -614,7 +629,7 @@ jobs:
       - name: "Create new version (PROD)"
         id: mkver-prod
         run: |
-          set -e
+          set -euo pipefail
           out=$(clasp version "[PROD] CI ${GITHUB_SHA::7}" || true)
           echo "$out"
           ver=$(echo "$out" | sed -n "s/Created version \([0-9][0-9]*\).*/\1/p")
@@ -626,7 +641,7 @@ jobs:
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          set -e
+          set -euo pipefail
           [ -n "${GAS_DEPLOYMENT_ID:-}" ] || { echo "::error::Missing GAS_DEPLOYMENT_ID"; exit 1; }
           [ -n "${NEW_VER:-}" ] || { echo "::error::Missing NEW_VER"; exit 1; }
           clasp deploy --deploymentId "$GAS_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[PROD] CI ${GITHUB_SHA::7}"
@@ -635,7 +650,7 @@ jobs:
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          set -e
+          set -euo pipefail
 
           clasp deployments > after.txt || true
           clasp deployments --json > after.json || true
@@ -693,7 +708,7 @@ jobs:
         env:
           GAS_DEPLOYMENT_ID: ${{ secrets.GAS_DEPLOYMENT_ID }}
         run: |
-          set -e
+          set -euo pipefail
           URL="https://script.google.com/macros/s/${GAS_DEPLOYMENT_ID}/exec?route=health&v=${GITHUB_SHA::7}"
           code=$(curl -sS -o /dev/null -w "%{http_code}" -D headers.txt "$URL" || true)
           loc=$(awk 'BEGIN{IGNORECASE=1}/^Location:/{print $2}' headers.txt | tr -d '\r\n')
