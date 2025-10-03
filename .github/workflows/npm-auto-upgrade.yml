@@ -4,6 +4,10 @@ permissions:
 
 name: npm auto upgrade
 
+defaults:
+  run:
+    shell: bash {0}
+
 on:
   schedule:
     - cron: '30 1 * * 1'
@@ -52,6 +56,7 @@ jobs:
       - name: Run major updates with npm-check-updates
         if: ${{ env.STRATEGY == 'major' }}
         run: |
+          set -euo pipefail
           npx npm-check-updates@latest --target=latest -u
           npm install --no-audit --no-fund
 
@@ -94,6 +99,7 @@ jobs:
 
       - name: Build upgrade summary
         run: |
+          set -euo pipefail
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const load = path => {
@@ -127,6 +133,7 @@ jobs:
 
       - name: Validate PR token permissions
         run: |
+          set -euo pipefail
           if [ "${PR_TOKEN}" = "" ]; then
             echo "::error::PR token is not configured. Set the NPM_UPGRADE_TOKEN secret with a token that has repo scope."
             exit 1
