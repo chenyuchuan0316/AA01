@@ -54,6 +54,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [unit-tests]
     timeout-minutes: 25
+    env:
+      PLAYWRIGHT_AUTH_STATE_B64: ${{ secrets.PLAYWRIGHT_AUTH_STATE }}
+      GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
+      HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
+      HAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
+      HAS_REMOTE_TEST: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
 
     steps:
       - name: "Checkout"
@@ -77,30 +83,33 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Restore Playwright auth state
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
+        if: ${{ env.HAS_AUTH == 'true' }}
         run: |
-          echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
+          echo "${PLAYWRIGHT_AUTH_STATE_B64}" | base64 -d > auth.json
           echo "auth.json restored"
 
       - name: Run local UI E2E
         run: npm run e2e:ui
 
       - name: Auto-repair remote E2E (requires auth)
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
+        if: ${{ env.HAS_REMOTE_TEST == 'true' }}
         run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "npm run health"
-        env:
-          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
-
       - name: Debug secrets → env mapping
         run: |
           node -e "process.stdout.write('GAS_WEBAPP_URL length=' + String((process.env.GAS_WEBAPP_URL || '').length))"
-        env:
-          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
 
       - name: Health check (200/302 or skip)
+        if: ${{ env.HAS_WEBAPP_URL == 'true' }}
         run: npm run health
+
+      - name: Build artifact index
+        if: always()
+        run: node scripts/build-artifact-index.mjs
         env:
-          GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
+          ARTIFACT_SOURCES: |
+            playwright-report
+            artifacts
+          ARTIFACT_INDEX_PATH: artifacts/index.json
 
       - name: Build artifact index
         if: always()
