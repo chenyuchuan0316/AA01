@@ -24,7 +24,9 @@ jobs:
     env:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
       TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
-      E2E_PATH: ${{ vars.E2E_PATH }}
+      E2E_PATH: ${{ vars.E2E_PATH || '?route=AA01' }}
+      E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
+      LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
     if: >-
       github.event_name == 'push' ||
       github.event_name == 'workflow_dispatch' ||
@@ -79,12 +81,28 @@ jobs:
         if: ${{ env.HAS_AUTH == 'true' }}
         run: echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
 
+      - name: Preflight – forbid overriding GAS exec path
+        run: |
+          set -euo pipefail
+          BASE="${BASE_URL:-}"
+          PATH_INPUT="${PATH_INPUT:-}"
+          if printf '%s' "$BASE" | grep -qE '^https://script\.google\.com/.*/exec/?$' && \
+             printf '%s' "$PATH_INPUT" | grep -qE '^/exec(/|\?|$)'; then
+            echo "::error::E2E_PATH should be query-only when base ends with /exec (use \"?route=...\")"
+            exit 1
+          fi
+        env:
+          BASE_URL: ${{ steps.url.outputs.url }}
+          PATH_INPUT: ${{ env.E2E_PATH }}
+
       - name: Auto-repair remote E2E (@remote → staging)
         if: ${{ env.HAS_AUTH == 'true' }}
         run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "npm run health"
         env:
           GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
           E2E_PATH: ${{ env.E2E_PATH }}
+          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
+          LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
 
       - name: Build artifact index
         id: artifact_index
@@ -100,6 +118,8 @@ jobs:
         run: npm run health
         env:
           GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
+          E2E_PATH: ${{ env.E2E_PATH }}
+          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
 
       - uses: actions/upload-artifact@v4
         if: always()
