@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "eslint --max-warnings=0 --no-error-on-unmatched-pattern --ext .js,.cjs,.mjs,.ts,.tsx src __tests__ playwright scripts",
     "format": "prettier --check .",
+    "typecheck": "tsc --project tsconfig.test.json --noEmit",
     "test": "npm run test:url-helper && jest --config=jest.config.cjs",
     "test:watch": "jest --watch --config=jest.config.cjs",
     "test:url-helper": "node --test tests/url-helper.node.test.mjs",
@@ -17,6 +18,7 @@
     "test:a11y:jest": "jest --config=jest.config.cjs --runTestsByPath __tests__/a11y/sidebar-a11y.test.ts",
     "health": "node scripts/health-check.mjs",
     "check": "npm-run-all lint test e2e test:a11y:pa11y test:a11y:jest health",
+    "build": "echo \"No build step configured\"",
     "predeploy": "npm run check",
     "prepare": "husky install"
   },

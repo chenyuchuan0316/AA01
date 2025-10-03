@@ -1,3 +1,29 @@
+name: Codex Audit Placeholder
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Placeholder audit
+        run: echo "Codex audit workflow placeholder"
+=======
 name: codex-audit
 on:
   issue_comment:
