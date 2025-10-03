@@ -34,6 +34,12 @@ test('throws when attempting to override GAS exec path without query', () => {
   assert.throws(() => buildTargetURL(base, '/exec'), /query-only/);
 });
 
+test('retains GAS exec base when given trailing slash', () => {
+  const base = 'https://script.google.com/macros/s/AKID/exec';
+  const result = buildTargetURL(base, '/');
+  assert.equal(result.href, 'https://script.google.com/macros/s/AKID/exec');
+  assert.equal(result.path, '');
+});
 test('normalizes multi-slash and dot segments', () => {
   const result = buildTargetURL('https://example.com', '/foo//bar/../baz');
   assert.equal(result.href, 'https://example.com/foo/baz');

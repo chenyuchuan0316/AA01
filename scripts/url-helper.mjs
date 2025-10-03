@@ -39,7 +39,8 @@ export function buildTargetURL(baseRaw, e2ePathRaw) {
 
   if (isGasWebApp && /^\/exec(\/|\?|$)/.test(normalizedPath) && !normalizedPath.startsWith('?')) {
     throw new Error(
-      'E2E_PATH should be query-only (e.g. "?route=...") when GAS_WEBAPP_URL already ends with /exec.'
+      `E2E_PATH should be query-only (e.g. "?route=...") when GAS_WEBAPP_URL already ends with /exec. Received: ${normalizedPath}`
+
     );
   }
 
