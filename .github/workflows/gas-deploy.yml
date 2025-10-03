@@ -16,8 +16,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: gas-ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ format('{0}-{1}', github.workflow, github.event.pull_request.number || github.ref_name || github.run_id) }}
+  cancel-in-progress: false
 
 defaults:
   run:
