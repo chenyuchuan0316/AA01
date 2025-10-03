@@ -170,24 +170,17 @@ jobs:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
           set -euo pipefail
-          : "${CLASPRC_JSON:?Missing CLASPRC_JSON}"
-          node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const p = process.env.HOME + '/.clasprc.json';
-          let s = process.env.CLASPRC_JSON || '';
-          let j;
-          try {
-            j = JSON.parse(s);
-          } catch (e) {
-            s = s.replace(/\s+/g, '');
-            j = JSON.parse(Buffer.from(s, 'base64').toString());
-          }
-          if (!j.token && j.tokens?.default) j.token = j.tokens.default;
-          fs.mkdirSync(path.dirname(p), { recursive: true });
-          fs.writeFileSync(p, JSON.stringify(j, null, 2));
-          NODE
-          test -s "$HOME/.clasprc.json"
+          if [[ -z "${CLASPRC_JSON:-}" ]]; then
+            echo "Error: CLASPRC_JSON is empty or not set!" >&2
+            exit 1
+          fi
+          mkdir -p "$HOME"
+          if [[ "${CLASPRC_JSON:0:1}" == "{" ]]; then
+            printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          else
+            echo "$CLASPRC_JSON" | tr -d '[:space:]' | base64 -d > "$HOME/.clasprc.json"
+          fi
+          test -s "$HOME/.clasprc.json" || { echo "Failed to write ~/.clasprc.json" >&2; exit 1; }
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
       - name: "Preflight: check TEST secrets & clasp & script"
@@ -526,24 +519,17 @@ jobs:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
         run: |
           set -euo pipefail
-          : "${CLASPRC_JSON:?Missing CLASPRC_JSON}"
-          node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const p = process.env.HOME + '/.clasprc.json';
-          let s = process.env.CLASPRC_JSON || '';
-          let j;
-          try {
-            j = JSON.parse(s);
-          } catch (e) {
-            s = s.replace(/\s+/g, '');
-            j = JSON.parse(Buffer.from(s, 'base64').toString());
-          }
-          if (!j.token && j.tokens?.default) j.token = j.tokens.default;
-          fs.mkdirSync(path.dirname(p), { recursive: true });
-          fs.writeFileSync(p, JSON.stringify(j, null, 2));
-          NODE
-          test -s "$HOME/.clasprc.json"
+          if [[ -z "${CLASPRC_JSON:-}" ]]; then
+            echo "Error: CLASPRC_JSON is empty or not set!" >&2
+            exit 1
+          fi
+          mkdir -p "$HOME"
+          if [[ "${CLASPRC_JSON:0:1}" == "{" ]]; then
+            printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          else
+            echo "$CLASPRC_JSON" | tr -d '[:space:]' | base64 -d > "$HOME/.clasprc.json"
+          fi
+          test -s "$HOME/.clasprc.json" || { echo "Failed to write ~/.clasprc.json" >&2; exit 1; }
           cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
       - name: "Snapshot BEFORE"

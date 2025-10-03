@@ -44,6 +44,14 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
    export GAS_CLIENT_SECRET="<桌面 OAuth Client Secret>"
    export GAS_OAUTH_REFRESH_TOKEN="<剛取得的 refresh_token>"
    ```
+
+### CLASPRC_JSON Secret 管理
+
+- GitHub Actions 的 `CLASPRC_JSON` Secret 必須維持為 **完整的 `.clasprc.json`**，可以直接貼上 JSON 文字，或先轉為 Base64 字串後存入 Secret。請選擇一種格式並保持一致，避免混淆。
+- 若提供 Base64 字串，請確保沒有多餘換行；若提供 JSON 文字，請確認內容與本機 `.clasprc.json` 完整一致（含 `token` / `tokens.default` 欄位）。
+- 憑證過期時請使用 `clasp login --no-localhost` 重新取得新的 `.clasprc.json`，並立即更新 Secret。建議於每次部署失敗出現 `invalid_grant` 時優先檢查這項設定。
+- 在更新 Secret 後，可本地或於 CI 中執行 `npx clasp auth status`（或 `clasp whoami`）確認登入狀態正常，確保部署流程不會因憑證過期中斷。
+
 4. **同步程式並建立 Web App Deployment**
    - 於專案根目錄執行 `npm install`（首次使用時）。
    - 以 `npm run deploy:web` 觸發 `gas-deploy.mjs`：此指令會依序呼叫 `projects.updateContent`、建立版本並更新（或建立）部署。成功後終端機會顯示最新的 Web App URL。
