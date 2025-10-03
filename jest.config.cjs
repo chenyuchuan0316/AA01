@@ -8,6 +8,7 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.(js|ts)'],
   setupFilesAfterEnv: [path.resolve(__dirname, 'test', 'setup-tests.ts')],
   collectCoverage: true,
+  coverageProvider: 'v8',
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
@@ -16,6 +17,9 @@ module.exports = {
         tsconfig: path.resolve(__dirname, 'tsconfig.test.json')
       }
     ]
+  },
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
   extensionsToTreatAsEsm: ['.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'cjs', 'mjs', 'json'],
