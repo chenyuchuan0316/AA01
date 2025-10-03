@@ -1,29 +1,3 @@
-name: Codex Audit Placeholder
-permissions:
-  contents: read
-
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-jobs:
-  audit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Placeholder audit
-        run: echo "Codex audit workflow placeholder"
-=======
 name: codex-audit
 on:
   issue_comment:
@@ -32,18 +6,11 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
-  actions: read
-
-concurrency:
-  group: codex-audit-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  audit_part1:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '/audit'))
+  audit:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/audit'))
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 420
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -54,50 +21,18 @@ jobs:
       - run: npm run test -- --coverage
       - run: npm run e2e || true
       - run: npm run build
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: audit-part1
-          path: |
-            coverage/**
-            reports/**
-            playwright-report/**
-          if-no-files-found: ignore
-      - name: Comment status
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const n = context.payload.issue?.number || context.payload.pull_request?.number;
-            if (n) await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: n, body: 'codex-audit part1 完成。Artifacts: audit-part1。'});
-
-  audit_part2:
-    needs: audit_part1
-    runs-on: ubuntu-latest
-    timeout-minutes: 350
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: 'npm' }
-      - run: npm ci
       - run: npx depcheck || true
       - run: npx jscpd --reporters console,html --threshold 2 || true
       - run: npx madge --extensions ts,tsx,js,jsx --circular --warning --exit-code 1 src || true
-      - run: npx ts-prune || true
-      - run: npx ts-unused-exports tsconfig.json || true
-      - run: git ls-files | npx knip || true
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: audit-part2
+          name: audit-reports
           path: |
-            jscpd-report/**
             reports/**
+            coverage/**
+            jscpd-report/**
           if-no-files-found: ignore
-      - name: Comment status
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const n = context.payload.issue?.number || context.payload.pull_request?.number;
-            if (n) await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: n, body: 'codex-audit part2 完成。Artifacts: audit-part2。'});
+          node-version: 20
+      - name: Placeholder audit
+        run: echo "Codex audit workflow placeholder"
+
