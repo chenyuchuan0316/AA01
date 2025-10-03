@@ -21,10 +21,10 @@ defaults:
 jobs:
   preview:
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.55.1-jammy
     concurrency:
-      group: preview-${{ github.ref || (github.event.issue && format('issue-{0}', github.event.issue.number)) || format('run-{0}', github.run_id) }}
-      cancel-in-progress: true
+      group: ${{ github.workflow }}:${{ github.job }}:${{ github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 45
     env:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
       TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
@@ -45,6 +45,9 @@ jobs:
         run: npm ci
         env:
           HUSKY: '0'
+
+      - name: Install Playwright dependencies
+        run: npx playwright install --with-deps
 
       - name: Write ~/.clasprc.json
         env:

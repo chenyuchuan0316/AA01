@@ -21,7 +21,9 @@ jobs:
   predeploy:
     name: Run predeploy suite
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.55.1-jammy
+    concurrency:
+      group: ${{ github.workflow }}:${{ github.job }}:${{ github.ref }}
+      cancel-in-progress: false
     env:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
       HAS_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
@@ -42,6 +44,9 @@ jobs:
         env:
           HUSKY: '0'
 
+      - name: Install Playwright dependencies
+        run: npx playwright install --with-deps
+        
       - name: Write ~/.clasprc.json
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
