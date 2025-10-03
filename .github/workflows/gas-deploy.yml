@@ -60,6 +60,9 @@ jobs:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
       HAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
       HAS_REMOTE_TEST: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
+      E2E_PATH: ${{ vars.E2E_PATH || '?route=AA01' }}
+      E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
+      LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
 
     steps:
       - name: "Checkout"
@@ -91,9 +94,28 @@ jobs:
       - name: Run local UI E2E
         run: npm run e2e:ui
 
+      - name: Preflight – forbid overriding GAS exec path
+        run: |
+          set -euo pipefail
+          BASE="${BASE_URL:-}"
+          PATH_INPUT="${PATH_INPUT:-}"
+          if printf '%s' "$BASE" | grep -qE '^https://script\.google\.com/.*/exec/?$' && \
+             printf '%s' "$PATH_INPUT" | grep -qE '^/exec(\?|$)'; then
+            echo "::error::E2E_PATH should be query-only when base ends with /exec (use \"?route=...\")"
+            exit 1
+          fi
+        env:
+          BASE_URL: ${{ env.GAS_WEBAPP_URL }}
+          PATH_INPUT: ${{ env.E2E_PATH }}
+
       - name: Auto-repair remote E2E (requires auth)
         if: ${{ env.HAS_REMOTE_TEST == 'true' }}
         run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "npm run health"
+        env:
+          GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
+          E2E_PATH: ${{ env.E2E_PATH }}
+          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
+          LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
       - name: Debug secrets → env mapping
         run: |
           node -e "process.stdout.write('GAS_WEBAPP_URL length=' + String((process.env.GAS_WEBAPP_URL || '').length))"
@@ -101,6 +123,10 @@ jobs:
       - name: Health check (200/302 or skip)
         if: ${{ env.HAS_WEBAPP_URL == 'true' }}
         run: npm run health
+        env:
+          GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
+          E2E_PATH: ${{ env.E2E_PATH }}
+          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
 
       - name: Build artifact index
         if: always()
