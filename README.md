@@ -8,7 +8,7 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 
 本文說明整體架構、環境需求、運作流程以及每個檔案的角色，協助開發者或使用者快速了解系統。
 
-> 更新日期：2025-10-21
+> 更新日期：2025-10-22
 
 ## Environments
 
@@ -69,7 +69,7 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 - 單元測試：`npm test -- --runInBand`（Jest 30 需要 Node 18）
 - Playwright（本地 UI）：`npm run e2e:ui`（預設載入 `src/Sidebar.html`，不需登入即可執行）
 - Playwright（遠端部署）：`npm run e2e:remote`（需存在 `auth.json` 與 `GAS_WEBAPP_URL`；缺少任一條件時測試自動 skip）
-- 健康檢查：`npm run health`（`GAS_WEBAPP_URL` 未設定或為 placeholder 時輸出 `skip` 並以 0 結束）
+- 健康檢查：`npm run health`（等同 `node scripts/health-check.mjs`，`GAS_WEBAPP_URL` 未設定或為 placeholder 時輸出 `skip` 並以 0 結束）
 - 設定 `.env`（可參考 `.env.example`）並提供 `GAS_WEBAPP_URL`，自動化驗收會引用該網址進行健康檢查、Playwright 與 pa11y-ci 掃描；若保留預設值，指令會自動改用本地 `src/Sidebar.html` 進行驗證。
 
 ### Playwright 登入態管理（auth.json）
@@ -104,12 +104,22 @@ npm run health         # 健康檢查；200/302 視為成功，未設或 placeho
 
 - `PLAYWRIGHT_AUTH_STATE`：`auth.json` 的 Base64 字串（缺少時遠端 E2E 會跳過，但流程仍為綠燈）。
 - `GAS_WEBAPP_URL`：部署 URL，提供遠端 E2E 與健康檢查使用。
-- workflow 會自動還原 `auth.json`、安裝 Playwright 瀏覽器、執行 `npm run e2e:ui`、`npm run e2e:remote`（條件式）、`npm run health`，並於無論成功或失敗時上傳 `playwright-report`。
+- workflow 會自動還原 `auth.json`、安裝 Playwright 瀏覽器、執行 `npm run e2e:ui`、`npm run e2e:remote`（條件式）、`node scripts/health-check.mjs`，並於無論成功或失敗時上傳 `artifacts/playwright-report/` 與 `artifacts/health*.json`。
+
+### GAS_WEBAPP_URL 與 E2E_PATH 設定規則
+
+- 所有 CI 及測試指令皆透過 `scripts/url-helper.mjs` 的 `buildTargetURL` 將 `GAS_WEBAPP_URL` 與 `E2E_PATH` 組合成最終網址，避免重複附加 `/exec` 或遺漏查詢字串。
+- 若 Web App 部署網址以 `/exec` 結尾（正式部署），`E2E_PATH` **只能** 是查詢參數，必須以 `?` 開頭，例如：`?route=AA01`。填入 `/exec?...` 或任何以 `/` 起始的路徑會觸發 workflow 的防呆檢查並立即中止。
+- 若使用 `/dev` 或自訂網域（不含 `/exec`），可在 `E2E_PATH` 設定路徑或查詢字串，例如：`/preview`, `/staging?route=AA01`；`buildTargetURL` 會自動處理斜線與查詢字元。
+- 請將 `GAS_WEBAPP_URL` Secret/變數的尾端斜線移除（例如 `.../exec` 而非 `.../exec/`）；`assertHttpBase` 會再度標準化，但先行整理可降低誤判。
+- 健康檢查使用相同規則並透過 `node scripts/health-check.mjs` 執行；HTTP 200 或 3xx（含導向 Google 登入）皆視為成功，並輸出 `artifacts/health-url.json` 與 `artifacts/health.json` 供除錯。
 
 ### CI/工作流程產出
 
 - `coverage/`：Jest 產生的覆蓋率報告，已標記為 workflow artifact 供審查。
-- `playwright-report/`：Playwright HTML 報告，同樣會於 CI 步驟上傳，協助追蹤 UI 變動。
+- `artifacts/playwright-report/`：Playwright HTML 報告（含遠端/本地測試結果），CI 會固定上傳供審查。
+- `artifacts/playwright-results/`：Playwright 截圖、trace、影片等輸出，便於追查失敗原因。
+- `artifacts/health-url.json` 與 `artifacts/health.json`：健康檢查的目標網址、HTTP 狀態與回應摘要，部署異常時可直接下載檢視。
 
 ## npm 套件維護與自動升版
 

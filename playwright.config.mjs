@@ -20,8 +20,8 @@ export default defineConfig({
   timeout: baseTimeout + 10000,
   expect: { timeout: baseTimeout },
   retries: 1,
-  reporter: [['line'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
-  outputDir: 'playwright-results',
+  reporter: [['line'], ['html', { outputFolder: 'artifacts/playwright-report', open: 'never' }]],
+  outputDir: 'artifacts/playwright-results',
   snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{ext}',
   use: {
     storageState: hasAuthState ? 'auth.json' : undefined,
