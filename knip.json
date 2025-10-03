@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "ignore": [
+    "gas-deploy.mjs",
+    "get-refresh-token.mjs",
+    "scripts/url-helper.d.ts",
+    "depcheck.config.cjs"
+  ],
+  "ignoreDependencies": ["googleapis"],
+  "ignoreBinaries": ["clasp", "jscpd", "madge"]
+}

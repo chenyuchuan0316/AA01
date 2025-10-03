@@ -1,9 +1,8 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { axe } from 'jest-axe';
 
 describe('AA01 Sidebar accessibility', () => {
-  const sidebarHtml = fs.readFileSync(path.resolve(__dirname, '../../src/Sidebar.html'), 'utf8');
+  const sidebarHtml = fs.readFileSync(new URL('../../src/Sidebar.html', import.meta.url), 'utf8');
 
   beforeEach(() => {
     document.body.innerHTML = sidebarHtml;
