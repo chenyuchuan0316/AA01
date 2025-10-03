@@ -1,7 +1,17 @@
-import { test, expect } from '@playwright/test';
-import { openPage } from './utils/openPage';
+import { test, expect, type Page } from '@playwright/test';
+import { openPage } from './utils/openPage.js';
 
 const HAS_AUTH = process.env.HAS_AUTH === 'true';
+const DESKTOP_VIEWPORT = { width: 1280, height: 900 } as const;
+const TABLET_VIEWPORT = { width: 1024, height: 900 } as const;
+const MOBILE_VIEWPORT = { width: 390, height: 844 } as const;
+
+async function openRemoteSidebar(page: Page, viewport: { width: number; height: number }) {
+  await openPage(page, viewport.width, viewport.height);
+  const toggle = page.getByTestId('side-nav-toggle').first();
+  const sideNav = page.getByTestId('side-nav').first();
+  return { toggle, sideNav };
+}
 
 test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
   // eslint-disable-next-line playwright/no-skipped-test
@@ -11,8 +21,7 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
   );
 
   test('desktop (>=1280): static sidebar; no toggle present', async ({ page }) => {
-    await openPage(page); // ★ 一律先導到 GAS 頁
-    await page.setViewportSize({ width: 1280, height: 900 });
+    await openPage(page, DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height);
     const toggle = page.getByTestId('side-nav-toggle');
     await expect(toggle).toHaveCount(0); // 桌機通常沒有 toggle
     await expect(page.getByTestId('side-nav').first()).toBeVisible();
@@ -25,10 +34,7 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
   });
 
   test('tablet (640–1279): toggle exists, nav opens/closes', async ({ page }) => {
-    await openPage(page);
-    await page.setViewportSize({ width: 1024, height: 900 });
-    const toggle = page.getByTestId('side-nav-toggle').first();
-    const sideNav = page.getByTestId('side-nav').first();
+    const { toggle, sideNav } = await openRemoteSidebar(page, TABLET_VIEWPORT);
 
     await expect(toggle).toBeVisible();
     await expect(sideNav).toBeHidden({ timeout: 0 });
@@ -43,10 +49,7 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
   });
 
   test('mobile (<640): toggle exists, overlay behavior holds', async ({ page }) => {
-    await openPage(page);
-    await page.setViewportSize({ width: 390, height: 844 });
-    const toggle = page.getByTestId('side-nav-toggle').first();
-    const sideNav = page.getByTestId('side-nav').first();
+    const { toggle, sideNav } = await openRemoteSidebar(page, MOBILE_VIEWPORT);
 
     await expect(toggle).toBeVisible();
     await expect(sideNav).toBeHidden({ timeout: 0 });

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { isRemoteTarget, openPage } from './utils/openPage';
+import { isRemoteTarget, openPage } from './utils/openPage.js';
 
 const isLocalTarget = !isRemoteTarget();
 

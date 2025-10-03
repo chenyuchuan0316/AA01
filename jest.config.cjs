@@ -6,11 +6,11 @@ module.exports = {
   rootDir: __dirname,
   testEnvironment: 'jsdom',
   testMatch: ['**/__tests__/**/*.test.(js|ts)'],
-  setupFilesAfterEnv: [path.resolve(__dirname, 'test', 'setup-tests.ts')],
+  setupFilesAfterEnv: [path.resolve(__dirname, 'test', 'setup-tests.cjs')],
   collectCoverage: true,
   coverageProvider: 'v8',
   transform: {
-    '^.+\\.(ts|tsx)$': [
+    '^.+\\.(ts|tsx|mjs)$': [
       'ts-jest',
       {
         useESM: true,
@@ -21,9 +21,17 @@ module.exports = {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   },
-  extensionsToTreatAsEsm: ['.ts'],
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'cjs', 'mjs', 'json'],
-  collectCoverageFrom: ['src/**/*.{js,ts}', '__tests__/**/*.{js,ts}', '!**/fixtures/**'],
+  collectCoverageFrom: [
+    'scripts/**/*.{mjs,js,ts}',
+    'src/**/*.{js,ts}',
+    '!scripts/**/*.d.ts',
+    '!scripts/auto-repair.mjs',
+    '!scripts/health-check.mjs',
+    '!scripts/run-pa11y.mjs',
+    '!**/fixtures/**'
+  ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
   clearMocks: true

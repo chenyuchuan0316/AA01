@@ -1,0 +1,6 @@
+{
+  "threshold": 2,
+  "reporters": ["console", "html"],
+  "path": ["src", "__tests__", "test", "playwright", "scripts"],
+  "ignore": ["**/node_modules/**", "**/reports/**", "**/dist/**", "**/*.snap", "**/coverage/**"]
+}

@@ -2,14 +2,14 @@
 
 ## 套件總覽
 
-| 套件 | 升級前 | 升級後 | 備註 |
-| --- | --- | --- | --- |
-| jest | 29.7.0 | 30.2.0 | 搭配 `glob@10`，落實 Node 18 需求。 |
-| puppeteer | 22.15.0 | 24.22.3 | 預設 headless 行為調整，未直接引用但已記錄使用注意事項。 |
-| glob（transitive） | 7.x | 10.4.x | 經由 Jest 更新，移除 `inflight`。 |
-| google-auth-library | 7.14.1 | 9.15.1（override） | 改採 `gtoken@7`，完全移除 `google-p12-pem`。 |
-| gtoken | 5.3.x | 7.0.1（override） | 與 `google-auth-library` 相容，支援 ADC/OIDC。 |
-| googleapis / googleapis-common | 84.x / 6.x | 148.x / 7.2.x（override） | Script API discovery 更新，部署腳本仍相容。 |
+| 套件                           | 升級前     | 升級後                    | 備註                                                     |
+| ------------------------------ | ---------- | ------------------------- | -------------------------------------------------------- |
+| jest                           | 29.7.0     | 30.2.0                    | 搭配 `glob@10`，落實 Node 18 需求。                      |
+| puppeteer                      | 22.15.0    | 24.22.3                   | 預設 headless 行為調整，未直接引用但已記錄使用注意事項。 |
+| glob（transitive）             | 7.x        | 10.4.x                    | 經由 Jest 更新，移除 `inflight`。                        |
+| google-auth-library            | 7.14.1     | 9.15.1（override）        | 改採 `gtoken@7`，完全移除 `google-p12-pem`。             |
+| gtoken                         | 5.3.x      | 7.0.1（override）         | 與 `google-auth-library` 相容，支援 ADC/OIDC。           |
+| googleapis / googleapis-common | 84.x / 6.x | 148.x / 7.2.x（override） | Script API discovery 更新，部署腳本仍相容。              |
 
 ## 高風險修復摘要
 
@@ -20,7 +20,7 @@
 ## 測試與 CI
 
 - `npm test -- --runInBand`：Jest 30 單元測試通過。
-- `npm run e2e`：健康檢查腳本在未設定 `TEST_DEPLOYMENT_ID` 時會記錄「Skipping」並以 0 結束，維持 302 redirect 視為成功的既有邏輯。
+- `npm run e2e`：Playwright UI 與遠端煙測均通過；若未提供 `HAS_AUTH=true` 或缺少 `auth.json` / `GAS_WEBAPP_URL`，遠端場景會自動 `test.skip`。
 - GitHub Actions：新增 `npm-outdated.yml` 與 `npm-auto-upgrade.yml`，可手動觸發並於每週排程執行，產出 Before/After 清單並自動開 PR（含 `dependencies`、`automated-pr` 標籤）。
 
 ## 後續建議
