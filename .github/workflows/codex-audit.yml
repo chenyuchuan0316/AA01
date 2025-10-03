@@ -1,4 +1,6 @@
 name: Codex Audit Placeholder
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:
