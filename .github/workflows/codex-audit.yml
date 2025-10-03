@@ -3,9 +3,12 @@ on:
   issue_comment:
     types: [created]
   workflow_dispatch:
+
+permissions:
+  contents: read
 jobs:
   audit:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.comment.body, '/audit')
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/audit'))
     runs-on: ubuntu-latest
     timeout-minutes: 420
     steps:
@@ -28,6 +31,7 @@ jobs:
             reports/**
             coverage/**
             jscpd-report/**
+          if-no-files-found: ignore
           node-version: 20
       - name: Placeholder audit
         run: echo "Codex audit workflow placeholder"
