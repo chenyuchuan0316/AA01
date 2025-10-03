@@ -1,5 +1,9 @@
 name: predeploy quality gate
 
+env:
+  CI: true
+  HUSKY: 0
+
 on:
   pull_request:
     branches:

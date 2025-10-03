@@ -1,5 +1,9 @@
 name: GAS staged test & deploy (single workflow)
 
+env:
+  CI: true
+  HUSKY: 0
+
 permissions:
   contents: write
   pull-requests: write
