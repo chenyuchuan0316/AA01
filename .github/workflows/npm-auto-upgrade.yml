@@ -4,6 +4,10 @@ permissions:
 
 name: npm auto upgrade
 
+env:
+  CI: true
+  HUSKY: 0
+
 defaults:
   run:
     shell: bash {0}
