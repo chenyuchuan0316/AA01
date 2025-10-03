@@ -93,7 +93,7 @@ jobs:
         env:
           GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
 
-      - name: Health check (200 or 302)
+      - name: Health check (200/302 or skip)
         run: npm run health
         env:
           GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
