@@ -21,6 +21,7 @@ jobs:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
       HAS_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
       GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
+      E2E_PATH: ${{ vars.E2E_PATH }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -31,6 +32,24 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Setup clasp credentials
+        run: |
+          echo '${{ secrets.CLASP_CREDENTIALS }}' > ~/.clasprc.json
+          echo "✔ wrote ~/.clasprc.json"
+
+      - name: Create GAS version (prod)
+        id: ver_prod
+        run: |
+          set -e
+          npx clasp version "prod:${GITHUB_SHA::7}" || true
+          VER=$(npx clasp versions | awk '/^@/ {v=$2} END{print v}')
+          [ -n "$VER" ] || (echo "No version found"; exit 1)
+          echo "ver=$VER" >> $GITHUB_OUTPUT
+          echo "Created version $VER"
+
+      - name: Update PROD deployment
+        run: npx clasp deploy -i "${{ secrets.GAS_DEPLOYMENT_ID }}" -V "${{ steps.ver_prod.outputs.ver }}"
 
       - name: Restore auth (and debug)
         if: ${{ env.HAS_AUTH == 'true' }}
@@ -49,6 +68,7 @@ jobs:
         run: npm run e2e:remote
         env:
           GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
+          E2E_PATH: ${{ env.E2E_PATH }}
 
       - name: Health check (200/302 or skip)
         run: npm run health
