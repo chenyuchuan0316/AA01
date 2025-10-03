@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { buildRemoteUrl } from '../../src/utils/buildRemoteUrl.js';
+import { buildTargetURL } from '../../scripts/url-helper.mjs';
 
 const localHtml = 'file://' + path.resolve('src/Sidebar.html');
 
@@ -15,8 +15,8 @@ export async function openPage(page: Page, width = 1280, height = 960) {
   let targetUrl = localHtml;
 
   if (remote) {
-    const remoteUrl = buildRemoteUrl(process.env.GAS_WEBAPP_URL, process.env.E2E_PATH);
-    targetUrl = remoteUrl.toString();
+    const remoteUrl = buildTargetURL(process.env.GAS_WEBAPP_URL, process.env.E2E_PATH);
+    targetUrl = remoteUrl.href;
     console.info('[openPage] remote target URL', targetUrl);
   }
 
