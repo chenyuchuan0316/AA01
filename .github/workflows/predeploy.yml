@@ -46,7 +46,7 @@ jobs:
 
       - name: Install Playwright dependencies
         run: npx playwright install --with-deps
-
+        
       - name: Write ~/.clasprc.json
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
