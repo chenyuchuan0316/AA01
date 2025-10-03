@@ -27,8 +27,8 @@ jobs:
   preview:
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}:${{ github.job }}:${{ github.ref }}
-      cancel-in-progress: false
+      group: ${{ format('{0}-{1}', github.workflow, github.event.pull_request.number || github.event.issue.number || github.ref_name || github.run_id) }}
+      cancel-in-progress: true
     timeout-minutes: 45
     env:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
@@ -108,8 +108,7 @@ jobs:
           set -euo pipefail
           BASE="${BASE_URL:-}"
           PATH_INPUT="${PATH_INPUT:-}"
-          if printf '%s' "$BASE" | grep -qE '^https://script\.google\.com/.*/exec/?$' && \
-             printf '%s' "$PATH_INPUT" | grep -qE '^/exec(/|\?|$)'; then
+          if [[ ("$BASE" == */exec || "$BASE" == */exec/) && -n "$PATH_INPUT" && "$PATH_INPUT" == /* ]]; then
             echo "::error::E2E_PATH should be query-only when base ends with /exec (use \"?route=...\")"
             exit 1
           fi
@@ -119,25 +118,15 @@ jobs:
 
       - name: Auto-repair remote E2E (@remote → staging)
         if: ${{ env.HAS_AUTH == 'true' }}
-        run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "npm run health"
+        run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "node scripts/health-check.mjs"
         env:
           GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
           E2E_PATH: ${{ env.E2E_PATH }}
           E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
           LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
 
-      - name: Build artifact index
-        id: artifact_index
-        if: always()
-        run: node scripts/build-artifact-index.mjs
-        env:
-          ARTIFACT_SOURCES: |
-            playwright-report
-            artifacts
-          ARTIFACT_INDEX_PATH: artifacts/index.json
-
       - name: Health (200/302 or skip)
-        run: npm run health
+        run: node scripts/health-check.mjs
         env:
           GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
           E2E_PATH: ${{ env.E2E_PATH }}
@@ -146,11 +135,27 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
-          path: |
-            playwright-report
-            artifacts/index.json
+          name: playwright-report-${{ github.job }}
+          path: artifacts/playwright-report
           if-no-files-found: ignore
+
+      - name: Upload health artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-check-${{ github.job }}
+          path: artifacts/health*.json
+          if-no-files-found: ignore
+
+      - name: Detect Playwright report
+        id: detect_playwright_report
+        if: always()
+        run: |
+          if [ -d artifacts/playwright-report ]; then
+            echo "has-report=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-report=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Comment to PR (if exists)
         if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
@@ -161,5 +166,6 @@ jobs:
           message: |
             **Staging preview** for `${{ github.ref }}`:
             ${{ steps.url.outputs.url }}${{ env.E2E_PATH || '' }}
-            
-            ${{ steps.artifact_index.outputs.markdown || '_(no artifacts detected)_' }}
+
+            - Health artifacts: `health-check-${{ github.job }}`
+            ${{ steps.detect_playwright_report.outputs.has-report == 'true' && format('- Playwright report: `{0}`', format('playwright-report-{0}', github.job)) || '- Playwright report: _(not generated)_' }}
