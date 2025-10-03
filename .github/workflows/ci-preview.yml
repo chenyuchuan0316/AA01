@@ -68,12 +68,11 @@ jobs:
           fi
           mkdir -p "$HOME"
           if [[ "${CLASPRC_JSON:0:1}" == "{" ]]; then
-            printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+            echo "$CLASPRC_JSON" > "$HOME/.clasprc.json"
           else
             echo "$CLASPRC_JSON" | tr -d '[:space:]' | base64 -d > "$HOME/.clasprc.json"
           fi
           test -s "$HOME/.clasprc.json" || { echo "Failed to write ~/.clasprc.json" >&2; exit 1; }
-          cp "$HOME/.clasprc.json" "$GITHUB_WORKSPACE/.clasprc.json"
 
       - name: Create GAS version
         id: ver
