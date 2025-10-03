@@ -10,6 +10,6 @@
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["__tests__/**/*", "test/**/*", "playwright/**/*"],
+  "include": ["__tests__/**/*", "test/**/*", "playwright/**/*", "src/utils/**/*"],
   "exclude": ["node_modules", "dist"]
 }

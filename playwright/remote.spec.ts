@@ -18,6 +18,12 @@ test.describe('AA01 remote sidebar RWD smoke (@remote)', () => {
     await expect(page.getByTestId('side-nav').first()).toBeVisible();
   });
 
+  test('remote target URL is normalized', async ({ page }) => {
+    const { targetUrl, finalUrl } = await openPage(page);
+    expect(targetUrl).not.toMatch(/\/exec\/exec/i);
+    expect(finalUrl).not.toMatch(/\/exec\/exec/i);
+  });
+
   test('tablet (640–1279): toggle exists, nav opens/closes', async ({ page }) => {
     await openPage(page);
     await page.setViewportSize({ width: 1024, height: 900 });
