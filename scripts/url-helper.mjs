@@ -27,16 +27,41 @@ export function normalizePath(e2ePathRaw) {
 export function buildTargetURL(baseRaw, e2ePathRaw) {
   const base = assertHttpBase(baseRaw);
   const normalizedPath = normalizePath(e2ePathRaw);
+  const baseUrl = new URL(base);
+  const baseString = baseUrl.toString();
+  const isGasWebApp =
+    baseUrl.hostname === 'script.google.com' &&
+    /\/macros\/s\/[^/]+\/exec\/?$/.test(baseUrl.pathname);
 
   if (!normalizedPath) {
-    const url = new URL(base);
-    return { href: url.toString(), base: url.toString(), path: '' };
+    return { href: baseString, base: baseString, path: '' };
+  }
+
+  if (isGasWebApp && /^\/exec(\/|$)/.test(normalizedPath) && normalizedPath.indexOf('?') === -1) {
+    throw new Error(
+      'E2E_PATH should be query-only (e.g. "?route=...") when GAS_WEBAPP_URL already ends with /exec.'
+    );
+  }
+
+  if (normalizedPath.startsWith('?')) {
+    baseUrl.search = normalizedPath.slice(1);
+    return { href: baseUrl.toString(), base: baseString, path: normalizedPath };
+  }
+
+  if (isGasWebApp && normalizedPath.startsWith('/')) {
+    const queryIndex = normalizedPath.indexOf('?');
+    const query = queryIndex >= 0 ? normalizedPath.slice(queryIndex + 1) : '';
+    if (query) {
+      baseUrl.search = query;
+      return { href: baseUrl.toString(), base: baseString, path: `?${query}` };
+    }
+    return { href: baseString, base: baseString, path: '' };
   }
 
   const url = new URL(normalizedPath, base);
   return {
     href: url.toString(),
-    base: new URL(base).toString(),
+    base: baseString,
     path: normalizedPath
   };
 }
