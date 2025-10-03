@@ -1,23 +1,30 @@
-name: Codex Audit Placeholder
-
+name: codex-audit
 on:
+  issue_comment:
+    types: [created]
   workflow_dispatch:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   audit:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.comment.body, '/audit')
     runs-on: ubuntu-latest
+    timeout-minutes: 420
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: 'npm' }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck || npx tsc --noEmit
+      - run: npm run test -- --coverage
+      - run: npm run e2e || true
+      - run: npm run build
+      - run: npx depcheck || true
+      - run: npx jscpd --reporters console,html --threshold 2 || true
+      - run: npx madge --extensions ts,tsx,js,jsx --circular --warning --exit-code 1 src || true
+      - uses: actions/upload-artifact@v4
         with:
-          node-version: 20
-      - name: Placeholder audit
-        run: echo "Codex audit workflow placeholder"
+          name: audit-reports
+          path: |
+            reports/**
+            coverage/**
+            jscpd-report/**
