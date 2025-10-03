@@ -22,7 +22,9 @@ jobs:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
       HAS_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
       GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
-      E2E_PATH: ${{ vars.E2E_PATH }}
+      E2E_PATH: ${{ vars.E2E_PATH || '/exec?route=AA01' }}
+      E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
+      LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -84,11 +86,15 @@ jobs:
         env:
           GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
           E2E_PATH: ${{ env.E2E_PATH }}
+          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
+          LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
 
       - name: Health check (200/302 or skip)
         run: npm run health
         env:
           GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
+          E2E_PATH: ${{ env.E2E_PATH }}
+          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
 
       - name: Build artifact index
         if: always()

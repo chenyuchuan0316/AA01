@@ -1,26 +1,40 @@
 #!/usr/bin/env node
+import 'dotenv/config';
 import process from 'node:process';
+import { buildTargetURL, safeWriteJson } from './url-helper.mjs';
 
-const rawUrl = process.env.GAS_WEBAPP_URL?.trim() ?? '';
-const placeholderValues = new Set(['', 'https://example.com', '<your-gas-webapp-url>']);
-const isPlaceholder = placeholderValues.has(rawUrl) || /__PLACEHOLDER__/i.test(rawUrl);
+async function main() {
+  const base = process.env.GAS_WEBAPP_URL;
+  const e2ePath = process.env.E2E_PATH;
+  const target = buildTargetURL(base, e2ePath);
 
-if (!rawUrl || isPlaceholder) {
-  console.info('skip');
-  process.exit(0);
-}
+  console.info(`HEALTH_TARGET_URL=${target.href}`);
+  safeWriteJson('artifacts/health-url.json', target);
 
-try {
-  const response = await fetch(rawUrl, { redirect: 'manual' });
-  const { status } = response;
-  console.info(`health: status = ${status}`);
-  if (status === 200 || status === 302) {
-    process.exit(0);
+  const response = await fetch(target.href, { redirect: 'manual' });
+  const bodyText = await response.text();
+
+  const summary = {
+    url: target.href,
+    status: response.status,
+    redirected: response.redirected,
+    location: response.headers.get('location'),
+    bodySnippet: bodyText.slice(0, 500)
+  };
+
+  safeWriteJson('artifacts/health.json', summary);
+
+  if (response.status === 200) {
+    return;
   }
-  console.error(`health: fail with status = ${status}`);
-  process.exit(1);
-} catch (error) {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error('health: network error:', message);
-  process.exit(1);
+  if (response.status >= 300 && response.status < 400) {
+    return;
+  }
+  throw new Error(`Unexpected status code: ${response.status}`);
 }
+
+main().catch(error => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error('HEALTH_CHECK_ERROR:', message);
+  process.exitCode = 1;
+});
