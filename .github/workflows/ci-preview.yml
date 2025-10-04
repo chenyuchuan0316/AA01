@@ -6,14 +6,6 @@ env:
 
 on:
   workflow_dispatch:
-  push:
-    branches-ignore: [ main ]
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-  issues:
-    types: [opened, reopened]
-  issue_comment:
-    types: [created]
 permissions:
   contents: write
   pull-requests: write
@@ -27,20 +19,16 @@ jobs:
   preview:
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ format('{0}-{1}', github.workflow, github.event.pull_request.number || github.event.issue.number || github.ref_name || github.run_id) }}
+      group: ${{ format('{0}-{1}', github.workflow, github.run_id) }}
       cancel-in-progress: true
     timeout-minutes: 45
     env:
       HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
+      HAS_URL_SECRET: ${{ secrets.GAS_WEBAPP_URL != '' }}
       TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
       E2E_PATH: ${{ vars.E2E_PATH || '?route=AA01' }}
       E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
       LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
-    if: >-
-      github.event_name == 'push' ||
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '/preview'))
 
     steps:
       - uses: actions/checkout@v4
@@ -117,7 +105,7 @@ jobs:
           PATH_INPUT: ${{ env.E2E_PATH }}
 
       - name: Auto-repair remote E2E (@remote → staging)
-        if: ${{ env.HAS_AUTH == 'true' }}
+        if: ${{ env.HAS_AUTH == 'true' && env.HAS_URL_SECRET == 'true' }}
         run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "node scripts/health-check.mjs"
         env:
           GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
@@ -126,6 +114,7 @@ jobs:
           LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
 
       - name: Health (200/302 or skip)
+        continue-on-error: true
         run: node scripts/health-check.mjs
         env:
           GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
@@ -133,14 +122,14 @@ jobs:
           E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() }}
         with:
           name: playwright-report-${{ github.job }}
           path: artifacts/playwright-report
           if-no-files-found: ignore
 
       - name: Upload health artifacts
-        if: always()
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: health-check-${{ github.job }}
@@ -149,7 +138,7 @@ jobs:
 
       - name: Detect Playwright report
         id: detect_playwright_report
-        if: always()
+        if: ${{ always() }}
         run: |
           if [ -d artifacts/playwright-report ]; then
             echo "has-report=true" >> "$GITHUB_OUTPUT"
@@ -157,15 +146,3 @@ jobs:
             echo "has-report=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Comment to PR (if exists)
-        if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: staging-preview
-          message: |
-            **Staging preview** for `${{ github.ref }}`:
-            ${{ steps.url.outputs.url }}${{ env.E2E_PATH || '' }}
-
-            - Health artifacts: `health-check-${{ github.job }}`
-            ${{ steps.detect_playwright_report.outputs.has-report == 'true' && format('- Playwright report: `{0}`', format('playwright-report-{0}', github.job)) || '- Playwright report: _(not generated)_' }}

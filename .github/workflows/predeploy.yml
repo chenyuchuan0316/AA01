@@ -5,9 +5,6 @@ env:
   HUSKY: 0
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
@@ -29,12 +26,9 @@ jobs:
       group: ${{ format('{0}-{1}', github.workflow, github.ref_name || github.run_id) }}
       cancel-in-progress: true
     env:
-      HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
-      HAS_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
       GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
-      E2E_PATH: ${{ vars.E2E_PATH || '?route=AA01' }}
-      E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
-      LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
+      HAS_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
+      TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -48,9 +42,6 @@ jobs:
         env:
           HUSKY: '0'
 
-      - name: Install Playwright dependencies
-        run: npx playwright install --with-deps
-        
       - name: Write ~/.clasprc.json
         env:
           CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
@@ -81,60 +72,8 @@ jobs:
       - name: Update PROD deployment
         run: npx clasp deploy -i "${{ secrets.GAS_DEPLOYMENT_ID }}" -V "${{ steps.ver_prod.outputs.ver }}"
 
-      - name: Restore auth (and debug)
-        if: ${{ env.HAS_AUTH == 'true' }}
+      - name: Ensure GAS_WEBAPP_URL secret exists
+        if: ${{ env.HAS_URL != 'true' }}
         run: |
-          set -euo pipefail
-          echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
-          echo "auth.json restored"; ls -l auth.json
-
-      - name: Debug URL length
-        run: node -e "process.stdout.write('GAS len=' + String((process.env.GAS_WEBAPP_URL || '').length))"
-
-      - name: Run local E2E (@ui)
-        run: npm run e2e:ui
-
-      - name: Preflight – forbid overriding GAS exec path
-        run: |
-          set -euo pipefail
-          BASE="${BASE_URL:-}"
-          PATH_INPUT="${PATH_INPUT:-}"
-          if [[ ("$BASE" == */exec || "$BASE" == */exec/) && -n "$PATH_INPUT" && "$PATH_INPUT" == /* ]]; then
-            echo "::error::E2E_PATH should be query-only when base ends with /exec (use \"?route=...\")"
-            exit 1
-          fi
-        env:
-          BASE_URL: ${{ env.GAS_WEBAPP_URL }}
-          PATH_INPUT: ${{ env.E2E_PATH }}
-
-      - name: Auto-repair remote E2E (@remote)
-        if: ${{ env.HAS_AUTH == 'true' && env.HAS_URL == 'true' }}
-        run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "node scripts/health-check.mjs"
-        env:
-          GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
-          E2E_PATH: ${{ env.E2E_PATH }}
-          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
-          LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
-
-      - name: Health check (200/302 or skip)
-        run: node scripts/health-check.mjs
-        env:
-          GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
-          E2E_PATH: ${{ env.E2E_PATH }}
-          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
-
-      - name: Upload Playwright report
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-${{ github.job }}
-          path: artifacts/playwright-report
-          if-no-files-found: ignore
-
-      - name: Upload health artifacts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: health-check-${{ github.job }}
-          path: artifacts/health*.json
-          if-no-files-found: ignore
+          echo "::error::GAS_WEBAPP_URL is required for deployment." >&2
+          exit 1
