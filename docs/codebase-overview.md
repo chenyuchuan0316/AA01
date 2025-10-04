@@ -53,10 +53,10 @@
 
 ## 5. `__tests__/` 目錄（Jest 測試）
 
-- `sample.test.ts`：驗證 `fixtures/basic-form.json` 提供的基本欄位結構，做為 smoke 測試基礎。【F:__tests__/sample.test.ts†L1-L17】
-- `fixtures/basic-form.json`：最小化表單 JSON 固定資 料，用於測試與樣本輸出。【F:__tests__/fixtures/basic-form.json†L1-L5】
-- `a11y/sidebar-a11y.test.ts`：載入 `Sidebar.html`，以 jest-axe 檢查基本資料區塊與側欄導覽的無障礙違規。【F:__tests__/a11y/sidebar-a11y.test.ts†L1-L25】
-- `scripts/url-helper.test.ts`：涵蓋 `assertHttpBase`、`normalizePath`、`buildTargetURL`、`safeWriteJson` 的錯誤處理與路徑標準化邏輯。【F:__tests__/scripts/url-helper.test.ts†L1-L42】
+- `sample.test.ts`：驗證 `fixtures/basic-form.json` 提供的基本欄位結構，做為 smoke 測試基礎。【F:**tests**/sample.test.ts†L1-L17】
+- `fixtures/basic-form.json`：最小化表單 JSON 固定資 料，用於測試與樣本輸出。【F:**tests**/fixtures/basic-form.json†L1-L5】
+- `a11y/sidebar-a11y.test.ts`：載入 `Sidebar.html`，以 jest-axe 檢查基本資料區塊與側欄導覽的無障礙違規。【F:**tests**/a11y/sidebar-a11y.test.ts†L1-L25】
+- `scripts/url-helper.test.ts`：涵蓋 `assertHttpBase`、`normalizePath`、`buildTargetURL`、`safeWriteJson` 的錯誤處理與路徑標準化邏輯。【F:**tests**/scripts/url-helper.test.ts†L1-L42】
 
 ## 6. `playwright/` 目錄（E2E 測試）
 
@@ -80,9 +80,8 @@
 
 - `package.json`：定義 npm 指令、lint-staged 規則、開發相依與 overrides；測試流程涵蓋 lint、Jest、Playwright、pa11y、健康檢查與 predeploy 檢查。【F:package.json†L1-L38】
 - `package-lock.json`：鎖定 npm 相依版本，確保 CI 與本地環境一致。
-- `tsconfig.test.json` / `tsconfig.json`：採 NodeNext 模組解析，納入 `__tests__/`、`test/`、`playwright/` 與 `src/utils/`，並關閉 emit；根 `tsconfig.json` 單純延伸測試設定。【F:tsconfig.test.json†L1-L15】【F:tsconfig.json†L1-L3】
+- `tsconfig.json`：採 NodeNext 模組解析，納入 `scripts/`、`src/`、`__tests__/`、`test/`、`playwright/`，關閉 emit 並內建 `jest`/`node` 型別，統一提供所有工具鏈使用。【F:tsconfig.json†L1-L24】
 - `jest.config.cjs`：主 Jest 設定，使用 jsdom 環境、ts-jest ESM 轉換、coverage 收集規則與測試啟動檔案。【F:jest.config.cjs†L1-L30】
-- `jest.config.js`：簡化版本（Node 環境、無轉換），可提供部分外部腳本或工具需求。【F:jest.config.js†L1-L6】
 - `eslint.config.js`：ESLint flat config，整合 TypeScript、Jest、Playwright 規則與忽略目錄設定。【F:eslint.config.js†L1-L45】
 - `prettier.config.cjs`：Prettier 格式化偏好（100 字寬、2 空格、單引號、忽略 HTML 空白敏感度）。【F:prettier.config.cjs†L1-L9】
 - `depcheck.config.cjs`：Depcheck 設定特殊解析器與忽略清單，避免誤報常用工具。【F:depcheck.config.cjs†L1-L15】

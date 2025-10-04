@@ -1,7 +1,8 @@
-type,path,duplicate_of,action,reason,risk,status
-report,reports/檔案定義清單.csv,檔案定義清單.csv,archive-or-delete,Stale inventory snapshot superseded by regenerated root file,low,planned
-report,reports/工作流盤點報告.md,工作流盤點報告.md,archive-or-delete,Legacy workflow audit conflicts with current assessment,low,planned
-report,reports/去重執行對照表.csv,去重執行對照表.csv,archive-or-delete,Historical dedup tracker duplicated by new run,low,planned
-doc,reports/codebase-overview.md,docs/codebase-overview.md,merge-into-docs,Report copy drifts from maintained docs version,medium,planned
-hook,.husky/_/pre-commit,.husky/pre-commit,remove-legacy,Legacy Husky scaffold duplicates active lint hook,low,planned
-hook,.husky/_/pre-push,.husky/pre-push,remove-legacy,Legacy Husky scaffold duplicates active test hook,low,planned
+type,path,duplicate_of,action,reason,risk,status,commit
+report,reports/檔案定義清單.csv,檔案定義清單.csv,archive-or-delete,Archive legacy inventory snapshot while noting active root file,low,keep,1c0cfc3
+report,reports/工作流盤點報告.md,工作流盤點報告.md,archive-or-delete,Retain historical workflow audit for traceability alongside current version,low,keep,1c0cfc3
+report,reports/去重執行對照表.csv,去重執行對照表.csv,archive-or-delete,Keep previous dedup tracker as reference for ongoing cleanups,low,keep,1c0cfc3
+doc,reports/codebase-overview.md,docs/codebase-overview.md,merge-into-docs,Preserve archived architecture write-up for comparison with maintained doc,medium,keep,1c0cfc3
+hook,.husky/_/pre-commit,.husky/pre-commit,remove-legacy,Husky template stub still required for hook bootstrap; leave documented for now,low,keep,1c0cfc3
+hook,.husky/_/pre-push,.husky/pre-push,remove-legacy,Husky template stub still required for hook bootstrap; leave documented for now,low,keep,1c0cfc3
+config,tsconfig.test.json,tsconfig.json,merge-into-single-config,Consolidated TypeScript settings into one shared project for CI tooling,low,done,1c0cfc3

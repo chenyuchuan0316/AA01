@@ -7,7 +7,7 @@ path,type,owner,dependencies,affects_test,affects_deploy,notes
 .github/dependabot.yml,config,DevOps,Dependabot,no,no,Security and upgrade schedule for npm packages
 .github/pull_request_template.md,doc,Process,GitHub PR,no,no,Checklist that enforces change summary and testing evidence
 .github/workflows/_tmpl_clasp.json,template,DevOps,GitHub Actions,no,yes,Starter clasp workflow JSON kept for reference only
-.github/workflows/ci.yml,workflow,DevOps,"npm run lint; npm test; npm run e2e:*; npm run test:a11y:*; node scripts/health-check.mjs",yes,yes,Main PR quality gate running lint/unit/e2e/a11y/health suites
+.github/workflows/ci.yml,workflow,DevOps,"npm run lint; npm test; npm run e2e:ui; npm run e2e:remote; npm run test:a11y:pa11y; node scripts/health-check.mjs",yes,yes,Single PR CI covering lint/unit/local e2e/health/a11y with remote run gated by secrets
 .github/workflows/ci-preview.yml,workflow,DevOps,"npx clasp; npm run e2e:*; node scripts/health-check.mjs",no,yes,Manual staging deploy plus local/remote Playwright smoke and health check
 .github/workflows/codex-audit.yml,workflow,QA,"npm run lint; npm run typecheck; npm test; npm run e2e; npx jscpd; npx madge; npx knip",yes,no,Two-phase manual/issue_comment audit covering quality gates and static analysis
 .github/workflows/gas-deploy.yml,workflow,DevOps,"npm test; npm run e2e:*; clasp",yes,yes,Single workflow for staged testing then production clasp deploy with health verification
@@ -57,7 +57,7 @@ docs/upgrade-report.md,doc,Docs,reports,no,no,Snapshot of upgrade findings aggre
 eslint.config.js,config,QA,"@eslint/js; @typescript-eslint; jest; playwright",yes,no,Flat ESLint configuration applied across scripts/tests
 gas-deploy.mjs,script,DevOps,"googleapis; .gas-deploy.json; .clasp.json",no,yes,Apps Script API deployment orchestrator supporting multiple auth modes
 get-refresh-token.mjs,script,DevOps,googleapis,no,yes,Interactive OAuth helper to capture refresh tokens for deployments
-jest.config.cjs,config,QA,"ts-jest; test/setup-tests.cjs",yes,no,Primary Jest configuration enabling jsdom and coverage collection
+jest.config.cjs,config,QA,"ts-jest; test/setup-tests.cjs; tsconfig.json",yes,no,Primary Jest configuration enabling jsdom and coverage collection
 knip.json,config,QA,knip,no,no,Unused code/exports scanning configuration
 outdated.json,data,DevOps,npm outdated,no,no,Most recent outdated dependency snapshot cached from tooling
 package-lock.json,lockfile,DevOps,npm,yes,yes,Lockfile ensuring deterministic installs for CI and deploy
@@ -79,8 +79,7 @@ scripts/url-helper.d.ts,types,QA,scripts/url-helper.mjs,yes,no,Type definitions 
 scripts/url-helper.mjs,util,QA,"node:fs; node:path",yes,yes,Core helper to normalize GAS_WEBAPP_URL and persist artifacts
 test/setup-tests.cjs,config,QA,"@testing-library/jest-dom; jest-axe",yes,no,Extends Jest matchers for DOM and accessibility assertions
 test/setup-tests.d.ts,types,QA,jest-axe,yes,no,Type augmentation for custom Jest matchers
-tsconfig.json,config,DevOps,TypeScript,yes,yes,Base TypeScript settings covering scripts and Apps Script sources
-tsconfig.test.json,config,DevOps,TypeScript,yes,no,Test-specific tsconfig extending base for Jest/Playwright
+tsconfig.json,config,DevOps,TypeScript,yes,yes,Unified TypeScript settings covering scripts, tests, Playwright, and Apps Script sources
 去重執行對照表.csv,data,Docs,n/a,no,no,Current deduplication tracker produced by this audit
 工作流盤點報告.md,doc,Docs,n/a,no,no,Current workflow inventory produced by this audit
 新增 文字文件.txt,note,Docs,n/a,no,no,Manual command log kept for historical context

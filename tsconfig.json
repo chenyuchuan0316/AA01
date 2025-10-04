@@ -10,8 +10,8 @@
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "types": ["node"]
+    "types": ["jest", "node"]
   },
-  "include": ["scripts/**/*", "src/**/*"],
+  "include": ["scripts/**/*", "src/**/*", "__tests__/**/*", "test/**/*", "playwright/**/*"],
   "exclude": ["node_modules", "dist", "coverage", "artifacts", "playwright-report"]
 }
