@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "node"]
+  },
+  "include": [
+    "src/**/*",
+    "scripts/**/*",
+    "__tests__/**/*",
+    "playwright/**/*",
+    "test/**/*",
+    "gas-deploy.mjs",
+    "get-refresh-token.mjs",
+    "playwright.config.mjs"
+  ]
+}
