@@ -192,7 +192,10 @@ var _self =
         tokenize: function (e, t) {
           var a = t.rest;
           if (a) {
-            for (var n in a) t[n] = a[n];
+            for (var n in a) {
+              if (n === "__proto__" || n === "constructor" || n === "prototype") continue;
+              t[n] = a[n];
+            }
             delete t.rest;
           }
           var r = new o();
