@@ -1,0 +1,449 @@
+
+> gas-webapp@0.1.0 e2e
+> npm run e2e:ui && npm run e2e:remote
+
+
+> gas-webapp@0.1.0 e2e:ui
+> cross-env E2E_TARGET=local playwright test --grep @ui
+
+
+Running 12 tests using 1 worker
+
+[1A[2K[1/12] [Desktop] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts
+[1A[2K[2/12] [Desktop] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts (retry #1)
+[1A[2K  1) [Desktop] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-3982d-etween-3-2-1-column-layouts-Desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-3982d-etween-3-2-1-column-layouts-Desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[3/12] [Desktop] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger
+[1A[2K[4/12] [Desktop] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger (retry #1)
+[1A[2K  2) [Desktop] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-cfcb5-les-with-the-drawer-trigger-Desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-cfcb5-les-with-the-drawer-trigger-Desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[5/12] [Desktop] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options
+[1A[2K[6/12] [Desktop] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options (retry #1)
+[1A[2K  3) [Desktop] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-5e8dd-elect-keeps-grouped-options-Desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-5e8dd-elect-keeps-grouped-options-Desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[7/12] [Desktop] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs
+[1A[2K[8/12] [Desktop] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs (retry #1)
+[1A[2K  4) [Desktop] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium_headless_shell-1193/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-85a51-regions-follow-their-inputs-Desktop-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-85a51-regions-follow-their-inputs-Desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[9/12] [Tablet] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts
+[1A[2K[10/12] [Tablet] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts (retry #1)
+[1A[2K  5) [Tablet] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-3982d-etween-3-2-1-column-layouts-Tablet-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-3982d-etween-3-2-1-column-layouts-Tablet-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[11/12] [Tablet] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger
+[1A[2K[12/12] [Tablet] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger (retry #1)
+[1A[2K  6) [Tablet] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-cfcb5-les-with-the-drawer-trigger-Tablet-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-cfcb5-les-with-the-drawer-trigger-Tablet-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[13/12] (retries) [Tablet] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options
+[1A[2K[14/12] (retries) [Tablet] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options (retry #1)
+[1A[2K  7) [Tablet] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-5e8dd-elect-keeps-grouped-options-Tablet-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-5e8dd-elect-keeps-grouped-options-Tablet-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[15/12] (retries) [Tablet] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs
+[1A[2K[16/12] (retries) [Tablet] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs (retry #1)
+[1A[2K  8) [Tablet] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-85a51-regions-follow-their-inputs-Tablet-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-85a51-regions-follow-their-inputs-Tablet-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[17/12] (retries) [Mobile] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts
+[1A[2K[18/12] (retries) [Mobile] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts (retry #1)
+[1A[2K  9) [Mobile] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-3982d-etween-3-2-1-column-layouts-Mobile-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-3982d-etween-3-2-1-column-layouts-Mobile-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[19/12] (retries) [Mobile] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger
+[1A[2K[20/12] (retries) [Mobile] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger (retry #1)
+[1A[2K  10) [Mobile] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-cfcb5-les-with-the-drawer-trigger-Mobile-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-cfcb5-les-with-the-drawer-trigger-Mobile-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[21/12] (retries) [Mobile] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options
+[1A[2K[22/12] (retries) [Mobile] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options (retry #1)
+[1A[2K  11) [Mobile] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-5e8dd-elect-keeps-grouped-options-Mobile-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-5e8dd-elect-keeps-grouped-options-Mobile-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K[23/12] (retries) [Mobile] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs
+[1A[2K[24/12] (retries) [Mobile] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs (retry #1)
+[1A[2K  12) [Mobile] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs 
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/webkit-2203/pw_run.sh
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-85a51-regions-follow-their-inputs-Mobile-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace artifacts/playwright-results/ui--ui-AA01-Sidebar-UI-smo-85a51-regions-follow-their-inputs-Mobile-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  12 failed
+    [Desktop] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts 
+    [Desktop] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger 
+    [Desktop] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options 
+    [Desktop] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs 
+    [Tablet] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts 
+    [Tablet] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger 
+    [Tablet] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options 
+    [Tablet] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs 
+    [Mobile] › playwright/ui.spec.ts:68:3 › @ui AA01 Sidebar UI smoke checks › @ui contact visit cards switch between 3/2/1 column layouts 
+    [Mobile] › playwright/ui.spec.ts:97:3 › @ui AA01 Sidebar UI smoke checks › @ui side navigation overlay toggles with the drawer trigger 
+    [Mobile] › playwright/ui.spec.ts:122:3 › @ui AA01 Sidebar UI smoke checks › @ui relationship select keeps grouped options 
+    [Mobile] › playwright/ui.spec.ts:132:3 › @ui AA01 Sidebar UI smoke checks › @ui required field status regions follow their inputs 
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report artifacts/playwright-report[39m
+[36m[39m

@@ -16,7 +16,8 @@ export default [
       'artifacts',
       'playwright-report',
       'playwright-results',
-      'dist'
+      'dist',
+      'reports'
     ]
   },
   {

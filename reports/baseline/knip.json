@@ -1,0 +1,12 @@
+{
+  "files": [
+    "scripts/auto-repair.mjs",
+    "scripts/health-check.mjs",
+    "scripts/run-pa11y.mjs",
+    "scripts/url-helper.mjs",
+    "test/setup-tests.cjs",
+    "playwright/utils/openPage.ts",
+    "reports/baseline/jscpd/html/js/prism.js"
+  ],
+  "issues": []
+}

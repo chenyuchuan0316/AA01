@@ -1,0 +1,762 @@
+{
+  "config": {
+    "configFile": "/workspace/AA01/playwright.config.mjs",
+    "rootDir": "/workspace/AA01/playwright",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [["list"], ["json"]],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/workspace/AA01/artifacts/playwright-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Desktop",
+        "name": "Desktop",
+        "testDir": "/workspace/AA01/playwright",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 40000
+      },
+      {
+        "outputDir": "/workspace/AA01/artifacts/playwright-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Tablet",
+        "name": "Tablet",
+        "testDir": "/workspace/AA01/playwright",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 40000
+      },
+      {
+        "outputDir": "/workspace/AA01/artifacts/playwright-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Mobile",
+        "name": "Mobile",
+        "testDir": "/workspace/AA01/playwright",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 40000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "remote.spec.ts",
+      "file": "remote.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AA01 remote sidebar RWD smoke (@remote)",
+          "file": "remote.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [
+            {
+              "title": "desktop (>=1280): static sidebar; no toggle present",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Desktop",
+                  "projectName": "Desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.863Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-3da003f4c48d0aa0bb20",
+              "file": "remote.spec.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "remote target URL is normalized",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Desktop",
+                  "projectName": "Desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.864Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-712ef2c28ee55b4fcad4",
+              "file": "remote.spec.ts",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "tablet (640–1279): toggle exists, nav opens/closes",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Desktop",
+                  "projectName": "Desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.864Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-f5e47b00391cc72d8c62",
+              "file": "remote.spec.ts",
+              "line": 36,
+              "column": 3
+            },
+            {
+              "title": "mobile (<640): toggle exists, overlay behavior holds",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Desktop",
+                  "projectName": "Desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.865Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-2a79cd78cfba79f6a344",
+              "file": "remote.spec.ts",
+              "line": 51,
+              "column": 3
+            },
+            {
+              "title": "contact visit grid renders",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Desktop",
+                  "projectName": "Desktop",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.865Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-b525d2961503f3264afe",
+              "file": "remote.spec.ts",
+              "line": 61,
+              "column": 3
+            },
+            {
+              "title": "desktop (>=1280): static sidebar; no toggle present",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.865Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-bb185658c13f54c40258",
+              "file": "remote.spec.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "remote target URL is normalized",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.865Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-8bad9999e0885f5738e3",
+              "file": "remote.spec.ts",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "tablet (640–1279): toggle exists, nav opens/closes",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.866Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-14d3a17a2b27e1579921",
+              "file": "remote.spec.ts",
+              "line": 36,
+              "column": 3
+            },
+            {
+              "title": "mobile (<640): toggle exists, overlay behavior holds",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.866Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-4a0c31b755ff71ca38cd",
+              "file": "remote.spec.ts",
+              "line": 51,
+              "column": 3
+            },
+            {
+              "title": "contact visit grid renders",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Tablet",
+                  "projectName": "Tablet",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.866Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-02312161c369c1d3fd85",
+              "file": "remote.spec.ts",
+              "line": 61,
+              "column": 3
+            },
+            {
+              "title": "desktop (>=1280): static sidebar; no toggle present",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile",
+                  "projectName": "Mobile",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.867Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-a67916b4d263e882aa57",
+              "file": "remote.spec.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "remote target URL is normalized",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile",
+                  "projectName": "Mobile",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.867Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-a72e3c6a10fcb159f283",
+              "file": "remote.spec.ts",
+              "line": 30,
+              "column": 3
+            },
+            {
+              "title": "tablet (640–1279): toggle exists, nav opens/closes",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile",
+                  "projectName": "Mobile",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.867Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-6bef3a9c9297f24531c7",
+              "file": "remote.spec.ts",
+              "line": 36,
+              "column": 3
+            },
+            {
+              "title": "mobile (<640): toggle exists, overlay behavior holds",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile",
+                  "projectName": "Mobile",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.867Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-55c7b67b34bcef78d494",
+              "file": "remote.spec.ts",
+              "line": 51,
+              "column": 3
+            },
+            {
+              "title": "contact visit grid renders",
+              "ok": true,
+              "tags": ["remote)"],
+              "tests": [
+                {
+                  "timeout": 40000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "HAS_AUTH false → 跳過遠端測試；請提供 PLAYWRIGHT_AUTH_STATE 與 GAS_WEBAPP_URL",
+                      "location": {
+                        "file": "/workspace/AA01/playwright/remote.spec.ts",
+                        "line": 18,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "Mobile",
+                  "projectName": "Mobile",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-10-03T22:01:14.867Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f93c19e99fb531cfc4f3-62b95ba789620e5633a9",
+              "file": "remote.spec.ts",
+              "line": 61,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-10-03T22:01:14.806Z",
+    "duration": 62.61500000000001,
+    "expected": 0,
+    "skipped": 15,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

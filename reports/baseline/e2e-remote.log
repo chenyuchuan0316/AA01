@@ -1,0 +1,21 @@
+PLAYWRIGHT_BASEURL(remote)=https://example.com/
+
+Running 15 tests using 1 worker
+
+  -   1 [Desktop] › playwright/remote.spec.ts:23:3 › AA01 remote sidebar RWD smoke (@remote) › desktop (>=1280): static sidebar; no toggle present
+  -   2 [Desktop] › playwright/remote.spec.ts:30:3 › AA01 remote sidebar RWD smoke (@remote) › remote target URL is normalized
+  -   3 [Desktop] › playwright/remote.spec.ts:36:3 › AA01 remote sidebar RWD smoke (@remote) › tablet (640–1279): toggle exists, nav opens/closes
+  -   4 [Desktop] › playwright/remote.spec.ts:51:3 › AA01 remote sidebar RWD smoke (@remote) › mobile (<640): toggle exists, overlay behavior holds
+  -   5 [Desktop] › playwright/remote.spec.ts:61:3 › AA01 remote sidebar RWD smoke (@remote) › contact visit grid renders
+  -   6 [Tablet] › playwright/remote.spec.ts:23:3 › AA01 remote sidebar RWD smoke (@remote) › desktop (>=1280): static sidebar; no toggle present
+  -   7 [Tablet] › playwright/remote.spec.ts:30:3 › AA01 remote sidebar RWD smoke (@remote) › remote target URL is normalized
+  -   8 [Tablet] › playwright/remote.spec.ts:36:3 › AA01 remote sidebar RWD smoke (@remote) › tablet (640–1279): toggle exists, nav opens/closes
+  -   9 [Tablet] › playwright/remote.spec.ts:51:3 › AA01 remote sidebar RWD smoke (@remote) › mobile (<640): toggle exists, overlay behavior holds
+  -  10 [Tablet] › playwright/remote.spec.ts:61:3 › AA01 remote sidebar RWD smoke (@remote) › contact visit grid renders
+  -  11 [Mobile] › playwright/remote.spec.ts:23:3 › AA01 remote sidebar RWD smoke (@remote) › desktop (>=1280): static sidebar; no toggle present
+  -  12 [Mobile] › playwright/remote.spec.ts:30:3 › AA01 remote sidebar RWD smoke (@remote) › remote target URL is normalized
+  -  13 [Mobile] › playwright/remote.spec.ts:36:3 › AA01 remote sidebar RWD smoke (@remote) › tablet (640–1279): toggle exists, nav opens/closes
+  -  14 [Mobile] › playwright/remote.spec.ts:51:3 › AA01 remote sidebar RWD smoke (@remote) › mobile (<640): toggle exists, overlay behavior holds
+  -  15 [Mobile] › playwright/remote.spec.ts:61:3 › AA01 remote sidebar RWD smoke (@remote) › contact visit grid renders
+
+  15 skipped
