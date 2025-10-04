@@ -6,33 +6,75 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+
+concurrency:
+  group: codex-audit-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: false
+
 jobs:
-  audit:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/audit'))
+  audit_part1:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '/audit'))
     runs-on: ubuntu-latest
-    timeout-minutes: 420
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: 'npm' }
+        with: { node-version: 20, cache: npm }
       - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck || npx tsc --noEmit
-      - run: npm run test -- --coverage
-      - run: npm run e2e || true
-      - run: npm run build
-      - run: npx depcheck || true
-      - run: npx jscpd --reporters console,html --threshold 2 || true
-      - run: npx madge --extensions ts,tsx,js,jsx --circular --warning --exit-code 1 src || true
-      - uses: actions/upload-artifact@v4
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - run: echo "phase: lint" && npm run lint
+      - run: echo "phase: typecheck" && (npm run typecheck || npx tsc --noEmit)
+      - run: echo "phase: test" && npm run test -- --coverage
+      - run: echo "phase: e2e" && (npm run e2e || true)
+      - run: echo "phase: build" && npm run build
+      - name: Upload part1 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: audit-reports
+          name: audit-part1
           path: |
-            reports/**
             coverage/**
-            jscpd-report/**
+            reports/**
+            artifacts/playwright-report/**
           if-no-files-found: ignore
-          node-version: 20
-      - name: Placeholder audit
-        run: echo "Codex audit workflow placeholder"
+      - name: Comment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const n = context.payload.issue?.number; 
+            if (n) await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: n, body: 'codex-audit part1 完成，已上傳 artifacts：audit-part1。'});
 
+  audit_part2:
+    needs: audit_part1
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - name: Duplicate code report (jscpd)
+        run: npx jscpd --reporters console,html --min-tokens 40 --threshold 1.5 --output jscpd-report || true
+      - name: Circular deps (madge JSON)
+        run: npx madge --extensions ts,tsx,js,jsx --circular --json src > reports/madge.json || true
+      - name: Unused files/exports (knip)
+        run: npx knip --strict --exports --reporter json > reports/knip.json || true
+      - name: Upload part2 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-part2
+          path: |
+            jscpd-report/**
+            reports/**
+          if-no-files-found: ignore
+      - name: Comment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const n = context.payload.issue?.number; 
+            if (n) await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: n, body: 'codex-audit part2 完成，已上傳 artifacts：audit-part2。全部結束。'});
