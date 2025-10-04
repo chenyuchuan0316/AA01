@@ -1,0 +1,16 @@
+[
+  {
+    "type": "infrastructure",
+    "file": "playwright/ui.spec.ts",
+    "line": 0,
+    "evidence": "Playwright browsers missing in CI container, launching chromium/webkit fails",
+    "risk": "E2E suite cannot run without installing browsers via 'npx playwright install'."
+  },
+  {
+    "type": "infrastructure",
+    "file": "scripts/health-check.mjs",
+    "line": 0,
+    "evidence": "Health check script fails with ENETUNREACH when contacting remote endpoints",
+    "risk": "Health monitoring requires network access or mock endpoints to avoid false negatives."
+  }
+]

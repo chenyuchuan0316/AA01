@@ -1,0 +1,285 @@
+{
+  "statistics": {
+    "detectionDate": "2025-10-03T21:59:41.769Z",
+    "formats": {
+      "javascript": {
+        "sources": {
+          "/workspace/AA01/scripts/url-helper.mjs": {
+            "lines": 77,
+            "tokens": 824,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/scripts/run-pa11y.mjs": {
+            "lines": 44,
+            "tokens": 456,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/scripts/health-check.mjs": {
+            "lines": 78,
+            "tokens": 702,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/scripts/auto-repair.mjs": {
+            "lines": 129,
+            "tokens": 1362,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/test/setup-tests.cjs": {
+            "lines": 5,
+            "tokens": 47,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 333,
+          "tokens": 3391,
+          "sources": 5,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "typescript": {
+        "sources": {
+          "/workspace/AA01/scripts/url-helper.d.ts": {
+            "lines": 6,
+            "tokens": 137,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/playwright/utils/openPage.ts": {
+            "lines": 48,
+            "tokens": 551,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/playwright/ui.spec.ts": {
+            "lines": 163,
+            "tokens": 1678,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/playwright/remote.spec.ts": {
+            "lines": 65,
+            "tokens": 793,
+            "sources": 1,
+            "clones": 2,
+            "duplicatedLines": 14,
+            "duplicatedTokens": 126,
+            "percentage": 21.54,
+            "percentageTokens": 15.89,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/test/setup-tests.d.ts": {
+            "lines": 8,
+            "tokens": 44,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/__tests__/scripts/url-helper.test.ts": {
+            "lines": 72,
+            "tokens": 742,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/__tests__/a11y/sidebar-a11y.test.ts": {
+            "lines": 27,
+            "tokens": 275,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/__tests__/sample.test.ts": {
+            "lines": 19,
+            "tokens": 186,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 408,
+          "tokens": 4406,
+          "sources": 8,
+          "clones": 1,
+          "duplicatedLines": 7,
+          "duplicatedTokens": 63,
+          "percentage": 1.72,
+          "percentageTokens": 1.43,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      },
+      "json": {
+        "sources": {
+          "/workspace/AA01/__tests__/fixtures/basic-form.json": {
+            "lines": 5,
+            "tokens": 29,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "/workspace/AA01/src/appsscript.json": {
+            "lines": 9,
+            "tokens": 53,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 14,
+          "tokens": 82,
+          "sources": 2,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      }
+    },
+    "total": {
+      "lines": 755,
+      "tokens": 7879,
+      "sources": 15,
+      "clones": 1,
+      "duplicatedLines": 7,
+      "duplicatedTokens": 63,
+      "percentage": 0.93,
+      "percentageTokens": 0.8,
+      "newDuplicatedLines": 0,
+      "newClones": 0
+    }
+  },
+  "duplicates": [
+    {
+      "format": "typescript",
+      "lines": 8,
+      "fragment": ");\n\n    await expect(toggle).toBeVisible();\n    await expect(sideNav).toBeHidden({ timeout: 0 });\n\n    await toggle.click();\n    await expect(sideNav).toBeVisible();\n  }",
+      "tokens": 0,
+      "firstFile": {
+        "name": "playwright/remote.spec.ts",
+        "start": 52,
+        "end": 59,
+        "startLoc": {
+          "line": 52,
+          "column": 16,
+          "position": 657
+        },
+        "endLoc": {
+          "line": 59,
+          "column": 2,
+          "position": 720
+        }
+      },
+      "secondFile": {
+        "name": "playwright/remote.spec.ts",
+        "start": 37,
+        "end": 44,
+        "startLoc": {
+          "line": 37,
+          "column": 16,
+          "position": 489
+        },
+        "endLoc": {
+          "line": 44,
+          "column": 6,
+          "position": 552
+        }
+      }
+    }
+  ]
+}

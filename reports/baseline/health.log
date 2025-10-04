@@ -1,0 +1,205 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> gas-webapp@0.1.0 health
+> node scripts/health-check.mjs
+
+HEALTH_TARGET_URL=https://example.com/
+HEALTH_CHECK_ERROR: fetch failed
+HEALTH_CHECK_CAUSE: AggregateError [ENETUNREACH]: 
+    at internalConnectMultiple (node:net:1122:18)
+    at internalConnectMultiple (node:net:1190:5)
+    at internalConnectMultiple (node:net:1190:5)
+    at internalConnectMultiple (node:net:1190:5)
+    at internalConnectMultiple (node:net:1190:5)
+    at internalConnectMultiple (node:net:1190:5)
+    at internalConnectMultiple (node:net:1190:5)
+    at internalConnectMultiple (node:net:1190:5)
+    at internalConnectMultiple (node:net:1190:5)
+    at internalConnectMultiple (node:net:1190:5) {
+  code: 'ENETUNREACH',
+  [errors]: [
+    Error: connect ENETUNREACH 2600:1408:ec00:36::1736:7f31:443 - Local (:::0)
+        at internalConnectMultiple (node:net:1186:16)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+        at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1526:7)
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:132:8) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '2600:1408:ec00:36::1736:7f31',
+      port: 443
+    },
+    Error: connect ENETUNREACH 23.192.228.80:443 - Local (0.0.0.0:0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+        at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1526:7)
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:132:8) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '23.192.228.80',
+      port: 443
+    },
+    Error: connect ENETUNREACH 2600:1408:ec00:36::1736:7f24:443 - Local (:::0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+        at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1526:7)
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:132:8) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '2600:1408:ec00:36::1736:7f24',
+      port: 443
+    },
+    Error: connect ENETUNREACH 23.220.75.245:443 - Local (0.0.0.0:0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+        at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1526:7)
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:132:8) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '23.220.75.245',
+      port: 443
+    },
+    Error: connect ENETUNREACH 2600:1406:bc00:53::b81e:94ce:443 - Local (:::0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+        at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1526:7)
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:132:8) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '2600:1406:bc00:53::b81e:94ce',
+      port: 443
+    },
+    Error: connect ENETUNREACH 23.220.75.232:443 - Local (0.0.0.0:0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+        at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1526:7)
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:132:8) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '23.220.75.232',
+      port: 443
+    },
+    Error: connect ENETUNREACH 2600:1406:bc00:53::b81e:94c8:443 - Local (:::0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+        at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1526:7)
+        at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:132:8) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '2600:1406:bc00:53::b81e:94c8',
+      port: 443
+    },
+    Error: connect ENETUNREACH 23.215.0.138:443 - Local (0.0.0.0:0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+        at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1526:7) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '23.215.0.138',
+      port: 443
+    },
+    Error: connect ENETUNREACH 2600:1406:5e00:6::17ce:bc1b:443 - Local (:::0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '2600:1406:5e00:6::17ce:bc1b',
+      port: 443
+    },
+    Error: connect ENETUNREACH 23.215.0.136:443 - Local (0.0.0.0:0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '23.215.0.136',
+      port: 443
+    },
+    Error: connect ENETUNREACH 2600:1406:5e00:6::17ce:bc12:443 - Local (:::0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '2600:1406:5e00:6::17ce:bc12',
+      port: 443
+    },
+    Error: connect ENETUNREACH 23.192.228.84:443 - Local (0.0.0.0:0)
+        at internalConnectMultiple (node:net:1186:16)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5)
+        at internalConnectMultiple (node:net:1190:5) {
+      errno: -101,
+      code: 'ENETUNREACH',
+      syscall: 'connect',
+      address: '23.192.228.84',
+      port: 443
+    }
+  ]
+}
