@@ -1,6 +1,13 @@
-﻿type,path,duplicate_of,action,reason,risk,status,備註
-config,jest.config.js,jest.config.cjs,移除,合併為單一 Jest 設定檔,低,done,commit: chore: unify ci and deduplicate configs
-config,.eslintrc,eslint.config.js,移除,改用 flat config 作為唯一來源,低,done,commit: chore: unify ci and deduplicate configs
-config,tsconfig.json,tsconfig.test.json,調整,根設定僅保留通用規則,低,done,commit: chore: unify ci and deduplicate configs
-config,tsconfig.test.json,tsconfig.json,調整,測試設定延伸自通用規則,低,done,commit: chore: unify ci and deduplicate configs
-script,scripts/url-helper.mjs,N/A,保留,統一路徑與 URL 組裝來源,低,keep,維持單一來源
+﻿type,path,duplicate_of,action,reason,risk,status,commit,備註
+workflow,.github/workflows/ci-preview.yml,.github/workflows/ci.yml,整併,手動 preview workflow 與 CI 測試重疊,中,todo,,僅保留部署測試必要步驟
+workflow,.github/workflows/gas-deploy.yml,.github/workflows/ci.yml,整併,手動部署流程與 CI 測試重疊,中,todo,,含 clasp 部署與遠端測試
+workflow,.github/workflows/npm-auto-upgrade.yml,.github/workflows/ci.yml,調整,排程流程觸發 npm update 後重複跑測試,低,todo,,考慮改為單純報告
+workflow,.github/workflows/npm-outdated.yml,.github/workflows/ci.yml,調整,排程流程僅需報告依賴狀態,低,todo,,避免重複 UI E2E
+workflow,.github/workflows/predeploy.yml,.github/workflows/gas-deploy.yml,停用,main push 時再跑部署流程造成重複,高,todo,,推送 production 時與 staged 重疊
+workflow,.github/workflows/codex-audit.yml,.github/workflows/ci.yml,調整,審計流程重複執行 lint/test/e2e,中,todo,,評估拆分與 CI 共用產物
+workflow,.github/workflows/gas-deploy.yml.bak-20250929-054713,.github/workflows/gas-deploy.yml,移除,備份檔案不應保留在 workflow 目錄,低,todo,,避免被誤認為有效 workflow
+workflow,.github/workflows/_tmpl_clasp.json,N/A,保留,僅作為流程模板參考,低,keep,,未被 GitHub 載入
+workflow,.github/workflows/新增 文字文件.txt,N/A,移除,非 workflow 定義檔,低,todo,,避免污染流程列表
+config,tsconfig.json,tsconfig.test.json,整併,基底與測試設定高度重疊,中,todo,,Wave1 合併為單一設定檔
+config,tsconfig.test.json,tsconfig.json,整併,測試設定可繼承共用規則,中,todo,,Wave1 合併為單一設定檔
+config,jest.config.cjs,N/A,整併,規劃與 tsconfig 收斂並確認僅此一份設定,低,todo,,Wave1 內確認無其他 Jest 設定來源
