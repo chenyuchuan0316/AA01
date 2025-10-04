@@ -1,10 +1,17 @@
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { jest } from '@jest/globals';
 import * as helpers from '../../scripts/url-helper.mjs';
 
 describe('buildTargetURL', () => {
   it('throws when GAS_WEBAPP_URL is missing', () => {
     expect(() => helpers.buildTargetURL('', '/')).toThrow(/GAS_WEBAPP_URL is required/);
+  });
+
+  it('normalizes whitespace before validating the base URL', () => {
+    const result = helpers.buildTargetURL('  https://example.com  ', '/sample');
+    expect(result.href).toBe('https://example.com/sample');
   });
 
   it('returns normalized base url when path is empty', () => {
@@ -40,6 +47,12 @@ describe('buildTargetURL', () => {
     const result = helpers.buildTargetURL('https://example.com', '/foo//bar/../baz');
     expect(result.href).toBe('https://example.com/foo/baz');
   });
+
+  it('prefixes missing leading slash for path segments', () => {
+    const result = helpers.buildTargetURL('https://example.com/root/', 'child/grand');
+    expect(result.href).toBe('https://example.com/child/grand');
+    expect(result.path).toBe('/child/grand');
+  });
 });
 
 describe('assertHttpBase', () => {
@@ -53,6 +66,15 @@ describe('normalizePath', () => {
   it('retains query prefixes and ensures leading slash', () => {
     expect(helpers.normalizePath('?foo=bar')).toBe('?foo=bar');
     expect(helpers.normalizePath('foo/bar')).toBe('/foo/bar');
+  });
+
+  it('returns empty string when provided nullish values', () => {
+    expect(helpers.normalizePath(undefined)).toBe('');
+    expect(helpers.normalizePath('   ')).toBe('');
+  });
+
+  it('collapses duplicate slashes inside the path', () => {
+    expect(helpers.normalizePath('/foo//bar///baz')).toBe('/foo/bar/baz');
   });
 });
 
@@ -68,6 +90,20 @@ describe('safeWriteJson', () => {
       );
     } finally {
       spy.mockRestore();
+    }
+  });
+
+  it('creates directories and writes JSON payloads successfully', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'url-helper-test-'));
+    const filePath = path.join(dir, 'output', 'data.json');
+
+    try {
+      helpers.safeWriteJson(filePath, { answer: 42 });
+
+      const written = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      expect(written).toEqual({ answer: 42 });
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
     }
   });
 });
