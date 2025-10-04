@@ -44,26 +44,37 @@ async function main() {
   console.info(`HEALTH_TARGET_URL=${target.href}`);
   safeWriteJson('artifacts/health-url.json', target);
 
-  const response = await fetchWithProxy(target.href);
-  const bodyText = await response.text();
+  const summary = { url: target.href };
 
-  const summary = {
-    url: target.href,
-    status: response.status,
-    redirected: response.redirected,
-    location: response.headers.get('location'),
-    bodySnippet: bodyText.slice(0, 500)
-  };
+  try {
+    const response = await fetchWithProxy(target.href);
+    const bodyText = await response.text();
 
-  safeWriteJson('artifacts/health.json', summary);
+    summary.status = response.status;
+    summary.redirected = response.redirected;
+    summary.location = response.headers.get('location');
+    summary.bodySnippet = bodyText.slice(0, 500);
 
-  if (response.status === 200) {
-    return;
+    if (response.status === 200) {
+      return;
+    }
+    if (response.status >= 300 && response.status < 400) {
+      return;
+    }
+    throw new Error(`Unexpected status code: ${response.status}`);
+  } catch (error) {
+    if (error instanceof Error) {
+      summary.error = {
+        message: error.message,
+        cause: error.cause && typeof error.cause === 'object' ? String(error.cause) : undefined
+      };
+    } else {
+      summary.error = { message: String(error) };
+    }
+    throw error;
+  } finally {
+    safeWriteJson('artifacts/health.json', summary);
   }
-  if (response.status >= 300 && response.status < 400) {
-    return;
-  }
-  throw new Error(`Unexpected status code: ${response.status}`);
 }
 
 main().catch(error => {
