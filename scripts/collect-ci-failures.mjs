@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { promises as fs } from 'node:fs';
 import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const DEFAULT_RESULTS_PATH = 'reports/ci-step-results.json';
 const DEFAULT_REPORT_PATH = 'reports/ci-failure-report.md';
@@ -162,8 +163,8 @@ async function writeReport(path, content) {
   await fs.writeFile(path, content, 'utf8');
 }
 
-async function main() {
-  const options = parseArgs(process.argv.slice(2));
+async function main(argv = process.argv.slice(2), { logger = console } = {}) {
+  const options = parseArgs(argv);
   const [results, templates] = await Promise.all([
     readJson(options.resultsPath),
     parseTemplate(options.templatePath)
@@ -227,13 +228,32 @@ async function main() {
   }
 
   if (hasFailures) {
-    console.info(`Recorded ${failureSteps.length} failure(s).`);
+    logger.info(`Recorded ${failureSteps.length} failure(s).`);
   } else {
-    console.info('No failures detected in monitored steps.');
+    logger.info('No failures detected in monitored steps.');
   }
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+export {
+  DEFAULT_RESULTS_PATH,
+  DEFAULT_REPORT_PATH,
+  DEFAULT_TEMPLATE_PATH,
+  parseArgs,
+  readJson,
+  normaliseCell,
+  parseTemplate,
+  matchesPattern,
+  findSuggestion,
+  formatDuration,
+  buildSummaryTable,
+  buildSection,
+  writeReport,
+  main
+};
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}

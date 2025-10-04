@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import { dirname } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { fileURLToPath } from 'node:url';
 
 const DEFAULT_RESULTS_PATH = 'reports/ci-step-results.json';
 
@@ -137,8 +138,8 @@ async function runCommand(commandArgs) {
   return { command, exitCode, combined, durationMs };
 }
 
-async function main() {
-  const { options, commandArgs } = parseArgs(process.argv.slice(2));
+async function main(argv = process.argv.slice(2), { exit = process.exit } = {}) {
+  const { options, commandArgs } = parseArgs(argv);
 
   if (options.skipReason) {
     await recordSkip(options);
@@ -170,11 +171,25 @@ async function main() {
   await writeResults(options.resultsPath, entry);
 
   if (status !== 'passed' && !options.nonBlocking) {
-    process.exit(exitCode || 1);
+    exit(exitCode || 1);
   }
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+export {
+  DEFAULT_RESULTS_PATH,
+  parseArgs,
+  ensureResultsFile,
+  readResults,
+  writeResults,
+  extractExcerpt,
+  recordSkip,
+  runCommand,
+  main
+};
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}
