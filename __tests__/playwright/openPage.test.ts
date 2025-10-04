@@ -7,16 +7,16 @@ const modulePath = '../../playwright/utils/openPage.ts';
 const helperPath = '../../scripts/url-helper.mjs';
 
 function createPageMock(finalUrl: string) {
-  const waitFor = jest.fn().mockResolvedValue(undefined);
+  const waitFor = jest.fn(async () => undefined);
   const locatorFactory = () => ({
     waitFor,
     first: () => ({ waitFor })
   });
 
   return {
-    setViewportSize: jest.fn().mockResolvedValue(undefined),
-    goto: jest.fn().mockResolvedValue(undefined),
-    waitForLoadState: jest.fn().mockResolvedValue(undefined),
+    setViewportSize: jest.fn(async () => undefined),
+    goto: jest.fn(async () => undefined),
+    waitForLoadState: jest.fn(async () => undefined),
     url: jest.fn(() => finalUrl),
     locator: jest.fn(locatorFactory),
     getByText: jest.fn(() => ({
@@ -26,7 +26,7 @@ function createPageMock(finalUrl: string) {
 }
 
 async function loadModule(
-  buildTargetURL: jest.Mock<BuildTarget, [string | undefined, string | undefined]>
+  buildTargetURL: jest.MockedFunction<(base?: string, path?: string) => BuildTarget>
 ) {
   jest.resetModules();
   jest.unstable_mockModule(helperPath, () => ({

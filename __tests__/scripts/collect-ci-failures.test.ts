@@ -168,20 +168,25 @@ describe('collect-ci-failures utilities', () => {
       writeFile(templatePath, template, 'utf8')
     ]);
 
-    const logger = { info: jest.fn() };
-    await collectFailures(
-      [
-        '--results',
-        resultsPath,
-        '--report',
-        reportPath,
-        '--template',
-        templatePath,
-        '--set-output',
-        outputPath
-      ],
-      { logger }
-    );
+    const infoSpy = jest.spyOn(console, 'info').mockImplementation(() => {});
+    try {
+      await collectFailures(
+        [
+          '--results',
+          resultsPath,
+          '--report',
+          reportPath,
+          '--template',
+          templatePath,
+          '--set-output',
+          outputPath
+        ],
+        { logger: console }
+      );
+      expect(infoSpy).toHaveBeenCalledWith('Recorded 2 failure(s).');
+    } finally {
+      infoSpy.mockRestore();
+    }
 
     const report = await readFile(reportPath, 'utf8');
     expect(report).toContain('# CI Failure Report');
@@ -193,7 +198,5 @@ describe('collect-ci-failures utilities', () => {
     const output = await readFile(outputPath, 'utf8');
     expect(output).toContain('has_failures=true');
     expect(output).toContain('has_blocking_failures=true');
-
-    expect(logger.info).toHaveBeenCalledWith('Recorded 2 failure(s).');
   });
 });
