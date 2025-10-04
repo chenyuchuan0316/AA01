@@ -1,6 +1,13 @@
-﻿type,path,duplicate_of,action,reason,risk,status,備註
-config,jest.config.js,jest.config.cjs,移除,合併為單一 Jest 設定檔,低,done,commit: chore: unify ci and deduplicate configs
-config,.eslintrc,eslint.config.js,移除,改用 flat config 作為唯一來源,低,done,commit: chore: unify ci and deduplicate configs
-config,tsconfig.json,tsconfig.test.json,調整,根設定僅保留通用規則,低,done,commit: chore: unify ci and deduplicate configs
-config,tsconfig.test.json,tsconfig.json,調整,測試設定延伸自通用規則,低,done,commit: chore: unify ci and deduplicate configs
-script,scripts/url-helper.mjs,N/A,保留,統一路徑與 URL 組裝來源,低,keep,維持單一來源
+type,path,duplicate_of,action,reason,risk,status,commit,備註
+workflow,.github/workflows/ci-preview.yml,.github/workflows/ci.yml,disable,"PR 主流程已涵蓋完整測試，預覽流程重複執行 Lint/Unit/E2E","中","pending",,"保留 clasp 預覽部署能力，後續改由主 CI 觸發單一路徑"
+workflow,.github/workflows/gas-deploy.yml,.github/workflows/ci.yml,optimize,"手動部署前仍重複跑 Jest 與 Playwright","中","pending",,"拆分為部署專職流程，改呼叫主 CI 產出結果"
+workflow,.github/workflows/predeploy.yml,.github/workflows/gas-deploy.yml,remove-tests,"main push 後再次佈署且缺乏測試覆蓋","高","pending",,"需確認新單一入口後仍能自動佈署 PROD"
+workflow,.github/workflows/npm-auto-upgrade.yml,.github/workflows/ci.yml,scope-reduce,"手動模式才跑測試，且與 PR CI 重疊","低","pending",,"保留升級邏輯，測試改委派 CI pipeline"
+workflow,.github/workflows/npm-outdated.yml,,keep,"僅盤點依賴，測試為選配","低","pending",,"維持報表功能，後續文件化使用說明"
+config,jest.config.js,jest.config.cjs,delete,"兩份 Jest 設定並存造成混淆","低","pending",,"統一改用單一本（cjs）並更新 npm scripts / 文件"
+config,tsconfig.json,tsconfig.test.json,merge,"根設定目前僅 re-export 測試設定，維護成本高","中","pending",,"後續統一型別設定，測試需求改以 extends 覆蓋"
+config,tsconfig.test.json,tsconfig.json,refactor,"測試與一般型別拆散導致雙本","中","pending",,"依 Wave 1 目標整併成單一來源"
+config,outdated.json,,delete,"靜態範例與 npm-outdated workflow 重複","低","pending",,"確認無腳本硬依賴後移除"
+script,playwright/utils/openPage.ts,scripts/url-helper.mjs,refactor,"URL 組裝邏輯分散在兩處","中","pending",,"將流程集中於 scripts/url-helper.mjs，Playwright 只呼叫 helper"
+script,scripts/run-pa11y.mjs,scripts/health-check.mjs,clarify,"a11y 與 HTTP 檢查責任需分流","低","pending",,"保留兩支腳本，文件化差異避免再度混用"
+script,scripts/auto-repair.mjs,.github/workflows/*,keep,"重試與健康檢查邏輯集中於腳本","低","pending",,"後續統一 workflow 呼叫此腳本，避免各自實作"
