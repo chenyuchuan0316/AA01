@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint --max-warnings=0 --no-error-on-unmatched-pattern --ext .js,.cjs,.mjs,.ts,.tsx src __tests__ playwright scripts",
     "format": "prettier --check .",
-    "typecheck": "tsc --project tsconfig.test.json --noEmit",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config=jest.config.cjs",
     "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch --config=jest.config.cjs",
     "test:playwright": "playwright test",

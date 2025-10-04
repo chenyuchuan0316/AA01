@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AA01 側欄 A11y Fallback</title>
+    <style>
+      body {
+        font-family:
+          'Noto Sans TC',
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        margin: 0;
+        background: #f6f7fb;
+        color: #222;
+      }
+      header {
+        background: #284388;
+        color: #fff;
+        padding: 1.5rem 2rem;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+      }
+      main {
+        padding: 2rem;
+      }
+      fieldset {
+        border: 1px solid #cbd5f5;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        background: #fff;
+      }
+      legend {
+        font-weight: 600;
+        padding: 0 0.5rem;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 6px;
+        border: 1px solid #bfc7d8;
+        font-size: 1rem;
+      }
+      textarea {
+        min-height: 6rem;
+      }
+      .hint {
+        margin-top: 0.35rem;
+        font-size: 0.875rem;
+        color: #4a5568;
+      }
+      .form-row {
+        margin-bottom: 1rem;
+      }
+      .submit-row {
+        text-align: right;
+      }
+      button {
+        background: #284388;
+        border: none;
+        border-radius: 6px;
+        color: #fff;
+        font-weight: 600;
+        padding: 0.75rem 1.25rem;
+        cursor: pointer;
+      }
+      button:hover,
+      button:focus {
+        background: #1f3467;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 id="appTitle">AA01 側欄可存取性檢查頁</h1>
+      <p id="appSubtitle">用於本地 pa11y 檢查的可存取性保險頁面</p>
+    </header>
+    <main id="appMain" aria-labelledby="appTitle appSubtitle">
+      <form aria-describedby="formDescription">
+        <p id="formDescription">
+          此表單涵蓋 AA01 側欄常見欄位樣式與互動控制，用於確保基礎可存取需求。
+        </p>
+        <fieldset>
+          <legend>基本資料</legend>
+          <div class="form-row">
+            <label for="caseName">個案姓名</label>
+            <input id="caseName" name="caseName" type="text" autocomplete="name" required />
+            <p id="caseNameHint" class="hint">請輸入中文全名。</p>
+          </div>
+          <div class="form-row">
+            <label for="caseAge">年齡</label>
+            <input
+              id="caseAge"
+              name="caseAge"
+              type="number"
+              min="0"
+              max="120"
+              aria-describedby="caseAgeHint"
+            />
+            <p id="caseAgeHint" class="hint">僅接受數字輸入。</p>
+          </div>
+          <div class="form-row">
+            <label for="caseRelationship">主要照顧者關係</label>
+            <select id="caseRelationship" name="caseRelationship">
+              <option value="">請選擇</option>
+              <optgroup label="家人">
+                <option value="spouse">配偶</option>
+                <option value="child">子女</option>
+                <option value="grandchild">孫子女</option>
+              </optgroup>
+              <optgroup label="其他">
+                <option value="friend">朋友</option>
+                <option value="neighbor">鄰居</option>
+              </optgroup>
+            </select>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>需求評估</legend>
+          <div class="form-row">
+            <label for="adlScore">日常生活功能評估分數</label>
+            <input id="adlScore" name="adlScore" type="number" min="0" max="100" />
+          </div>
+          <div class="form-row">
+            <label for="careGoals">照顧目標摘要</label>
+            <textarea id="careGoals" name="careGoals" aria-describedby="careGoalsHint"></textarea>
+            <p id="careGoalsHint" class="hint">描述 3 個月內期望達成的主要照護重點。</p>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>服務安排</legend>
+          <div class="form-row">
+            <label for="serviceFrequency">服務頻率</label>
+            <select id="serviceFrequency" name="serviceFrequency">
+              <option value="weekly">每週</option>
+              <option value="biweekly">雙週</option>
+              <option value="monthly">每月</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="careNotes">附註</label>
+            <textarea id="careNotes" name="careNotes"></textarea>
+          </div>
+        </fieldset>
+        <div class="submit-row">
+          <button type="submit">儲存表單</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

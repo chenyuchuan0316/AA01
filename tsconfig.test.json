@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "types": ["jest", "node"]
-  },
-  "include": ["__tests__/**/*", "test/**/*", "playwright/**/*", "scripts/**/*", "src/**/*"],
-  "exclude": ["node_modules", "dist", "coverage", "artifacts", "playwright-report"]
-}

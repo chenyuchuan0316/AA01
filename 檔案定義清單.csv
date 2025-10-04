@@ -1,101 +1,85 @@
-path,type,owner/責任,相依,是否影響測試,是否影響部署,備註
-.clasp.json,config,DevOps/部署,"clasp; gas-deploy.mjs","否","是","Clasp 專案設定，供手動/CI 佈署引用"
-.claspignore,config,DevOps/部署,"clasp","否","是","Clasp 忽略清單，避免多餘檔案上傳"
-.env,config,DevOps/本地環境,"npm scripts","否","否","本地環境變數，僅範例不進版控"
-.env.example,config,DevOps/本地環境,"npm scripts","否","否","本地環境變數模板"
-.gas-deploy.json,config,DevOps/部署,"gas-deploy.mjs","否","是","Apps Script 部署資訊，供自動化腳本使用"
-.github,directory,DevOps/CI,"n/a","是","是","GitHub 設定總目錄"
-.github/dependabot.yml,config,DevOps/維運,"GitHub Dependabot","否","否","套件安全性與升級排程"
-.github/pull_request_template.md,doc,維運/審查流程,"n/a","否","否","PR 稽核模板，確保回報資訊完整"
-.github/workflows/_tmpl_clasp.json,template,DevOps/CI,"GitHub Secrets (SCRIPT_ID)","否","否","clasp 設定樣板"
-.github/workflows/ci-preview.yml,workflow,DevOps/CI,"npm run e2e:ui,e2e:remote; scripts/health-check.mjs; scripts/auto-repair.mjs","是","是","預覽部署 + 本地/遠端測試，與主 CI 重疊"
-.github/workflows/ci.yml,workflow,DevOps/CI,"npm run lint,test,e2e:ui,test:a11y:*; scripts/health-check.mjs","是","是","PR CI 主流程，含 Lint/Unit/UI E2E/a11y/健康檢查/遠端 E2E"
-.github/workflows/codex-audit.yml,workflow,品質稽核,"npm run lint,typecheck,test,e2e; Playwright","是","否","issue_comment/手動觸發審計流程"
-.github/workflows/gas-deploy.yml,workflow,DevOps/部署,"clasp; npm run e2e:*; scripts/auto-repair.mjs; scripts/health-check.mjs","是","是","main push/手動部署；流程與 CI 重疊"
-.github/workflows/gas-deploy.yml.bak-20250929-054713,workflow-backup,DevOps/歷史備份,"n/a","否","否","舊版部署流程備份，僅參考"
-.github/workflows/npm-auto-upgrade.yml,workflow,DevOps/維運,"npm outdated; npm run test; npm run e2e","是","否","排程/手動升級並執行測試"
-.github/workflows/npm-outdated.yml,workflow,DevOps/維運,"npm outdated; npm run e2e:ui (可選)","否","否","每週套件盤點，可選跑本地 UI"
-.github/workflows/predeploy.yml,workflow,DevOps/部署前,"npm run e2e:*; scripts/health-check.mjs; clasp","是","是","main 佈署前品質檢查"
-.github/workflows/新增 文字文件.txt,note,DevOps/歷史記錄,"n/a","否","否","CLI 操作紀錄，不會被 runner 執行"
-.gitignore,config,DevOps/版本控管,"git","否","否","版控忽略設定"
-.husky/_/.gitignore,config,DevOps/版本控管,"git","否","否","husky 暫存忽略設定"
-.husky/_/husky.sh,script,DevOps/Git Hooks,"husky","否","否","husky 共用腳本"
-.husky/pre-commit,script,DevOps/Git Hooks,"npm run lint","是","否","本地 pre-commit 驗證"
-.husky/pre-push,script,DevOps/Git Hooks,"npm test","是","否","本地 pre-push 驗證"
-.husky/_/applypatch-msg,script,DevOps/Git Hooks,"git applypatch","否","否","預設 husky hook"
-.husky/_/commit-msg,script,DevOps/Git Hooks,"git commit-msg","否","否","預設 husky hook"
-.husky/_/h,script,DevOps/Git Hooks,"husky","否","否","husky 共用函式"
-.husky/_/post-applypatch,script,DevOps/Git Hooks,"git post-applypatch","否","否","預設 husky hook"
-.husky/_/post-checkout,script,DevOps/Git Hooks,"git post-checkout","否","否","預設 husky hook"
-.husky/_/post-commit,script,DevOps/Git Hooks,"git post-commit","否","否","預設 husky hook"
-.husky/_/post-merge,script,DevOps/Git Hooks,"git post-merge","否","否","預設 husky hook"
-.husky/_/post-rewrite,script,DevOps/Git Hooks,"git post-rewrite","否","否","預設 husky hook"
-.husky/_/pre-applypatch,script,DevOps/Git Hooks,"git pre-applypatch","否","否","預設 husky hook"
-.husky/_/pre-auto-gc,script,DevOps/Git Hooks,"git pre-auto-gc","否","否","預設 husky hook"
-.husky/_/pre-commit,script,DevOps/Git Hooks,"npm run lint","是","否","歷史 hook，與主 pre-commit 重複"
-.husky/_/pre-merge-commit,script,DevOps/Git Hooks,"git pre-merge-commit","否","否","預設 husky hook"
-.husky/_/pre-push,script,DevOps/Git Hooks,"npm test","是","否","歷史 hook，與主 pre-push 重複"
-.husky/_/pre-rebase,script,DevOps/Git Hooks,"git pre-rebase","否","否","預設 husky hook"
-.husky/_/prepare-commit-msg,script,DevOps/Git Hooks,"git prepare-commit-msg","否","否","預設 husky hook"
-.jscpd.json,config,品質/重複碼,"jscpd","否","否","重複碼掃描設定"
-.npmrc,config,DevOps/工具鏈,"npm","否","否","npm registry 與設定"
-.nvmrc,config,DevOps/工具鏈,"nvm","否","否","建議 Node 版本"
-AGENTS.md,doc,維運/流程治理,"n/a","否","否","專案規範"
-CHANGELOG.md,doc,產品/知識管理,"n/a","否","否","版本紀錄"
-CODEX_TESTING_ISSUES.md,doc,品質/測試,"n/a","否","否","已知測試環境議題"
-README.md,doc,產品/知識管理,"npm scripts; workflows","否","否","專案操作指南"
-__tests__,directory,前端/測試,"Jest","是","否","Jest 測試根目錄"
-__tests__/a11y/sidebar-a11y.test.ts,test,前端/可近性,"jest-axe; Sidebar.html","是","否","Axe 無障礙檢查"
-__tests__/fixtures/basic-form.json,data,前端/測試資料,"__tests__/a11y","是","否","測試表單範例"
-__tests__/sample.test.ts,test,前端/單元,"Jest","是","否","示範測試"
-__tests__/scripts/url-helper.test.ts,test,前端/工具,"scripts/url-helper.mjs","是","否","URL helper 單元測試"
-aa01_ui_code_audit_suspicious.csv,data,品質稽核,"reports/round-*","否","否","疑似問題清單"
-clasprc_base64.txt,secret-template,DevOps/部署,"clasp","否","是","clasp 認證範例"
-depcheck.config.cjs,config,品質/依賴,"depcheck","否","否","未使用依賴掃描設定"
-docs,directory,維運/文件,"n/a","否","否","手動文件彙整"
-docs/codebase-overview.md,doc,維運/文件,"n/a","否","否","程式庫概觀"
-docs/upgrade-plan.md,doc,維運/升級,"npm-auto-upgrade","否","否","升級計畫"
-docs/upgrade-report.md,doc,維運/升級,"reports/round-*","否","否","升級報告彙整"
-eslint.config.js,config,品質/靜態分析,"@eslint/js; @typescript-eslint; jest; playwright","是","否","Flat ESLint 設定"
-gas-deploy.mjs,script,DevOps/部署,"googleapis; .gas-deploy.json","否","是","Apps Script API 佈署腳本"
-get-refresh-token.mjs,script,DevOps/部署,"googleapis OAuth","否","否","協助取得 refresh token"
-jest.config.cjs,config,前端/測試,"ts-jest; test/setup-tests.cjs","是","否","主要 Jest 設定"
-jest.config.js,config,前端/測試,"Jest","是","否","Node 環境備援設定（與 .cjs 重複）"
-knip.json,config,品質/靜態分析,"knip","否","否","未使用程式碼掃描設定"
-outdated.json,sample-data,維運/示例,"npm outdated","否","否","過往過期套件報告"
-package-lock.json,lockfile,全端/工具鏈,"npm","是","是","鎖定套件版本"
-package.json,config,全端/工具鏈,"npm scripts; jest.config.cjs; playwright.config.mjs","是","是","工具鏈與腳本定義"
-playwright,directory,前端/E2E,"Playwright","是","否","Playwright 測試根目錄"
-playwright/remote.spec.ts,e2e,前端/E2E,"playwright/utils/openPage.ts; GAS_WEBAPP_URL","是","否","遠端 Smoke 測試"
-playwright/ui.spec.ts,e2e,前端/E2E,"playwright/utils/openPage.ts; Sidebar UI","是","否","本地 UI 互動測試"
-playwright/utils,dir,前端/E2E,"n/a","否","否","共用工具資料夾"
-playwright/utils/openPage.ts,util,前端/E2E,"scripts/url-helper.mjs","是","否","開頁工具，支援 local/remote"
-playwright.config.mjs,config,前端/E2E,"dotenv; scripts/url-helper.mjs","是","否","Playwright 專案設定"
-prettier.config.cjs,config,品質/格式化,"prettier","否","否","Prettier 規則"
-reports,directory,維運/報告,"n/a","否","否","報告輸出根目錄"
-reports/baseline,dir,維運/報告,"n/a","否","否","歷史基準資料"
-reports/去重執行對照表.csv,data,維運/報告,"n/a","否","否","去重規劃台帳（報告版）"
-reports/工作流盤點報告.md,doc,維運/報告,"n/a","否","否","工作流盤點報告（報告版）"
-reports/檔案定義清單.csv,data,維運/報告,"n/a","否","否","檔案定義清單（報告版）"
-scripts,directory,DevOps/工具,"n/a","是","是","CI/E2E 輔助腳本"
-scripts/auto-repair.mjs,script,DevOps/測試自動修復,"Playwright; scripts/health-check.mjs","是","否","Playwright 重試/健康檢查封裝"
-scripts/generate-inventory.mjs,script,DevOps/報告,"TypeScript compiler API","否","否","程式庫盤點腳本"
-scripts/health-check.mjs,script,DevOps/監控,"undici fetch","否","是","遠端健康檢查（允許 200/302）"
-scripts/run-pa11y.mjs,script,品質/可近性,"pa11y; scripts/url-helper.mjs","是","否","Pa11y 自動掃描"
-scripts/url-helper.d.ts,types,全端/共用,"scripts/url-helper.mjs","是","否","URL helper 型別宣告"
-scripts/url-helper.mjs,util,全端/共用,"URL; process.env","是","否","組裝本地/遠端 URL"
-src,dir,Apps Script,"n/a","是","是","GAS 原始碼根目錄"
-src/AppCore.gs,AppsScript,後端/GAS,"DocumentApp; applyH1_*","是","是","Sidebar 主流程與功能表"
-src/DataStore.gs,AppsScript,後端/GAS,"DriveApp; SpreadsheetApp","是","是","資料來源/快取"
-src/Main.gs,AppsScript,後端/GAS,"Logger","否","否","簡易 smoke 函式"
-src/Sidebar.html,AppsScript-UI,前端/Sidebar,"google.script.run","是","否","Sidebar UI"
-src/appsscript.json,manifest,後端/GAS,"clasp","是","是","Apps Script manifest"
-test,directory,前端/測試,"Jest","是","否","測試設定根目錄"
-test/setup-tests.cjs,config,前端/測試,"@testing-library/jest-dom","是","否","Jest setup"
-test/setup-tests.d.ts,types,前端/測試,"Jest","是","否","Setup 型別宣告"
-tsconfig.json,config,前端/型別設定,"tsconfig.test.json","是","否","共用型別設定（目前為 re-export）"
-tsconfig.test.json,config,前端/型別設定,"Jest; Playwright","是","否","測試 TypeScript 設定"
-去重執行對照表.csv,data,維運/報告,"n/a","否","否","待辦版去重台帳（PR 用）"
-工作流盤點報告.md,doc,維運/報告,"n/a","否","否","待辦版工作流盤點（PR 用）"
-新增 文字文件.txt,note,維運/歷史記錄,"n/a","否","否","CLI 指令備忘"
-桃園市_長照給付資料庫_v1.xlsx,data,業務/參考,"src/DataStore.gs","否","否","長照給付資料庫快照"
+path,type,owner,dependencies,affects_test,affects_deploy,notes
+.clasp.json,config,DevOps,clasp,no,yes,Apps Script project binding referenced by clasp workflows
+.claspignore,config,DevOps,clasp,no,yes,Ignore rules for clasp uploads to avoid bundling tooling assets
+.env,config,Local Dev,npm scripts,no,no,Example-only environment override kept out of version control
+.env.example,config,Local Dev,npm scripts,no,no,Template for local GAS_WEBAPP_URL and auth variables
+.gas-deploy.json,config,DevOps,gas-deploy.mjs,no,yes,Deployment metadata consumed by gas-deploy automation
+.github/dependabot.yml,config,DevOps,Dependabot,no,no,Security and upgrade schedule for npm packages
+.github/pull_request_template.md,doc,Process,GitHub PR,no,no,Checklist that enforces change summary and testing evidence
+.github/workflows/_tmpl_clasp.json,template,DevOps,GitHub Actions,no,yes,Starter clasp workflow JSON kept for reference only
+.github/workflows/ci.yml,workflow,DevOps,"npm run lint; npm test; npm run e2e:ui; npm run e2e:remote; npm run test:a11y:pa11y; node scripts/health-check.mjs",yes,yes,Single PR CI covering lint/unit/local e2e/health/a11y with remote run gated by secrets
+.github/workflows/ci-preview.yml,workflow,DevOps,"npx clasp; npm run e2e:remote; node scripts/health-check.mjs",no,yes,Manual staging deploy with optional remote smoke test and health artifacts
+.github/workflows/codex-audit.yml,workflow,QA,"npm run lint; npm run typecheck; npm test; npm run e2e; npx jscpd; npx madge; npx knip",yes,no,Two-phase manual/issue_comment audit covering quality gates and static analysis
+.github/workflows/gas-deploy.yml,workflow,DevOps,"npm run e2e:remote; clasp",conditional,yes,Staged deploy pipeline keeping remote smoke optional behind double secrets before clasp promotion
+.github/workflows/npm-auto-upgrade.yml,workflow,DevOps,"npm outdated; npm update",no,no,Automated dependency PRs with optional summary upload only
+.github/workflows/npm-outdated.yml,workflow,DevOps,"npm outdated",no,no,Weekly outdated report without redundant UI tests (handled by CI)
+.github/workflows/predeploy.yml,workflow,DevOps,"npx clasp version; npx clasp deploy",no,yes,Main-branch deploy gate ensuring clasp version bump and deployment
+.gitignore,config,DevOps,git,no,no,Repository ignore list covering artifacts and secrets
+.husky/pre-commit,script,Dev Experience,"npm run lint",yes,no,Local git hook enforcing lint before commits
+.husky/pre-push,script,Dev Experience,"npm test",yes,no,Local git hook running Jest before pushes
+.husky/_/.gitignore,config,Dev Experience,husky,no,no,Placeholder ignore within Husky templates
+.husky/_/applypatch-msg,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/commit-msg,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/h,script,Dev Experience,husky,no,no,Internal Husky helper referenced by generated hooks
+.husky/_/husky.sh,script,Dev Experience,husky,no,no,Core Husky bootstrap sourced by all hooks
+.husky/_/post-applypatch,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/post-checkout,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/post-commit,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/post-merge,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/post-rewrite,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/pre-applypatch,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/pre-auto-gc,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/pre-commit,script,Dev Experience,"npm run lint",yes,no,Legacy duplicate pre-commit hook left from older Husky init
+.husky/_/pre-merge-commit,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/pre-push,script,Dev Experience,"npm test",yes,no,Legacy duplicate pre-push hook left from older Husky init
+.husky/_/pre-rebase,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.husky/_/prepare-commit-msg,script,Dev Experience,git,no,no,Default Husky hook scaffold (unused)
+.jscpd.json,config,QA,jscpd,no,no,Duplicate code scan configuration consumed during audits
+.npmrc,config,DevOps,npm,no,no,Registry and npm CLI preferences
+.nvmrc,config,DevOps,nvm,no,no,Recommended Node.js version pin
+.pa11yci,config,QA,pa11y,yes,no,pa11y-ci defaults and target placeholders for accessibility scans
+AGENTS.md,doc,Process,n/a,no,no,Repository-wide governance and execution guidelines
+CHANGELOG.md,doc,Product,n/a,no,no,Human-readable release log for Apps Script project
+CODEX_TESTING_ISSUES.md,doc,QA,n/a,no,no,Known CI/container testing caveats for reviewers
+README.md,doc,Product,"npm scripts; clasp; Playwright",no,yes,Comprehensive project guide covering setup, testing, and deployment
+__tests__/a11y/sidebar-a11y.test.ts,test,QA,"jest; jest-axe",yes,no,Jest accessibility assertions loading Sidebar markup directly
+__tests__/fixtures/basic-form.json,data,QA,__tests__/sample.test.ts,yes,no,Sample payload used by baseline smoke tests
+__tests__/sample.test.ts,test,QA,jest,yes,no,Fixture sanity check ensuring core fields exist
+__tests__/scripts/url-helper.test.ts,test,QA,"jest; scripts/url-helper.mjs",yes,no,Unit tests around URL helper behaviors and artifact writes
+aa01_ui_code_audit_suspicious.csv,data,QA,reports,no,no,Historical UI audit anomalies spreadsheet for follow-up
+clasprc_base64.txt,secret-template,DevOps,clasp,no,yes,Sample Base64 clasp credentials kept outside version control
+depcheck.config.cjs,config,QA,depcheck,no,no,Unused dependency scan configuration
+docs/codebase-overview.md,doc,Docs,n/a,no,no,Curated architecture overview for onboarding
+docs/upgrade-plan.md,doc,Docs,npm outdated,no,no,Living plan for dependency upgrade sequencing
+docs/upgrade-report.md,doc,Docs,reports,no,no,Snapshot of upgrade findings aggregated from CI artifacts
+eslint.config.js,config,QA,"@eslint/js; @typescript-eslint; jest; playwright",yes,no,Flat ESLint configuration applied across scripts/tests
+gas-deploy.mjs,script,DevOps,"googleapis; .gas-deploy.json; .clasp.json",no,yes,Apps Script API deployment orchestrator supporting multiple auth modes
+get-refresh-token.mjs,script,DevOps,googleapis,no,yes,Interactive OAuth helper to capture refresh tokens for deployments
+jest.config.cjs,config,QA,"ts-jest; test/setup-tests.cjs; tsconfig.json",yes,no,Primary Jest configuration enabling jsdom and coverage collection
+knip.json,config,QA,knip,no,no,Unused code/exports scanning configuration
+outdated.json,data,DevOps,npm outdated,no,no,Most recent outdated dependency snapshot cached from tooling
+package-lock.json,lockfile,DevOps,npm,yes,yes,Lockfile ensuring deterministic installs for CI and deploy
+package.json,config,DevOps,"npm scripts; jest; playwright",yes,yes,Script definitions plus toolchain metadata
+playwright.config.mjs,config,QA,"@playwright/test; scripts/url-helper.mjs",yes,no,Playwright project defaults with remote/local switching logic
+playwright/remote.spec.ts,test,QA,"@playwright/test; scripts/url-helper.mjs",yes,no,Remote-target RWD smoke suite gated by auth state
+playwright/ui.spec.ts,test,QA,"@playwright/test; scripts/url-helper.mjs",yes,no,Local UI regression checks for Sidebar interactions
+playwright/utils/openPage.ts,util,QA,"@playwright/test; scripts/url-helper.mjs",yes,no,Shared helper building target URLs and waiting for page readiness
+prettier.config.cjs,config,QA,prettier,no,no,Formatting conventions for JS/TS/HTML/Markdown
+reports/codebase-overview.md,doc,Docs,n/a,no,no,Archived snapshot of architecture overview for audits
+reports/去重執行對照表.csv,data,Docs,n/a,no,no,Archived deduplication tracker from prior run
+reports/工作流盤點報告.md,doc,Docs,n/a,no,no,Archived workflow audit from prior automation
+reports/檔案定義清單.csv,data,Docs,n/a,no,no,Archived file inventory from prior automation
+scripts/auto-repair.mjs,script,QA,"node:child_process",conditional,no,Retry harness for flaky commands with stop-loss guard
+scripts/generate-inventory.mjs,script,DevOps,"typescript compiler API",no,no,Utility that walks repo to emit JSON inventory for audits
+scripts/health-check.mjs,script,QA,"undici; scripts/url-helper.mjs",yes,yes,HTTP health probe writing artifacts for CI consumption
+scripts/run-pa11y.mjs,script,QA,"pa11y; dotenv",yes,no,CLI wrapper running pa11y against remote or local Sidebar targets
+scripts/url-helper.d.ts,types,QA,scripts/url-helper.mjs,yes,no,Type definitions for shared URL helper module
+scripts/url-helper.mjs,util,QA,"node:fs; node:path",yes,yes,Core helper to normalize GAS_WEBAPP_URL and persist artifacts
+test/setup-tests.cjs,config,QA,"@testing-library/jest-dom; jest-axe",yes,no,Extends Jest matchers for DOM and accessibility assertions
+test/setup-tests.d.ts,types,QA,jest-axe,yes,no,Type augmentation for custom Jest matchers
+tsconfig.json,config,DevOps,TypeScript,yes,yes,Unified TypeScript settings covering scripts, tests, Playwright, and Apps Script sources
+去重執行對照表.csv,data,Docs,n/a,no,no,Current deduplication tracker produced by this audit
+工作流盤點報告.md,doc,Docs,n/a,no,no,Current workflow inventory produced by this audit
+新增 文字文件.txt,note,Docs,n/a,no,no,Manual command log kept for historical context
+桃園市_長照給付資料庫_v1.xlsx,data,Business,DataStore.gs,no,no,Reference rate sheet consumed by Apps Script logic
+檔案定義清單.csv,data,Docs,n/a,no,no,Current repository file inventory generated by this task

@@ -1,3 +1,7 @@
+## Summary
+
+- Remote E2E 跳過原因（若未執行請填寫，例如「缺 PLAYWRIGHT_AUTH_STATE」；若有執行請填「未跳過」）：
+
 ## 驗收報告
 
 - 條件 → 證據（截圖/trace/輸出片段）→ 結果

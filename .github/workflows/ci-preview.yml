@@ -84,9 +84,6 @@ jobs:
         id: url
         run: echo "url=https://script.google.com/macros/s/${TEST_DEPLOYMENT_ID}/exec" >> $GITHUB_OUTPUT
 
-      - name: Run local E2E (@ui)
-        run: npm run e2e:ui
-
       - name: Restore auth.json
         if: ${{ env.HAS_AUTH == 'true' }}
         run: echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json

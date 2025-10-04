@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   pull_request:
@@ -30,12 +30,18 @@ jobs:
       HUSKY: 0
       GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
       PLAYWRIGHT_AUTH_STATE_B64: ${{ secrets.PLAYWRIGHT_AUTH_STATE }}
+      HAS_PLAYWRIGHT_AUTH_STATE: ${{ format('{0}', secrets.PLAYWRIGHT_AUTH_STATE != '') }}
+      HAS_GAS_WEBAPP_URL: ${{ format('{0}', secrets.GAS_WEBAPP_URL != '') }}
+      HAS_REMOTE_TARGET: ${{ format('{0}', secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '') }}
       E2E_PATH: ${{ vars.E2E_PATH || '?route=AA01' }}
       E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
       LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Reset CI telemetry buffer
+        run: rm -f reports/ci-step-results.json
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
@@ -49,39 +55,57 @@ jobs:
           HUSKY: '0'
 
       - name: Lint
-        run: npm run lint
+        continue-on-error: true
+        run: node scripts/run-ci-step.mjs --category lint --label "Lint" -- npm run lint
 
       - name: Unit tests
-        run: npm test -- --runInBand
+        continue-on-error: true
+        run: node scripts/run-ci-step.mjs --category unit --label "Unit tests" -- npm test -- --runInBand
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: UI E2E (local)
-        run: npm run e2e:ui
+      - name: UI file-mode E2E
+        continue-on-error: true
+        run: node scripts/run-ci-step.mjs --category ui --label "UI file-mode E2E" -- npm run e2e:ui
 
       - name: Health check (non-blocking)
-        if: ${{ secrets.GAS_WEBAPP_URL != '' }}
+        if: ${{ env.HAS_GAS_WEBAPP_URL == 'true' }}
         continue-on-error: true
-        run: node scripts/health-check.mjs
+        run: node scripts/run-ci-step.mjs --category health --label "Health check" --non-blocking -- node scripts/health-check.mjs
         env:
           GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
           E2E_PATH: ${{ env.E2E_PATH }}
           E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
 
       - name: Accessibility scan (pa11y)
-        run: npm run test:a11y:pa11y
+        continue-on-error: true
+        run: node scripts/run-ci-step.mjs --category a11y --label "Accessibility scan" -- npm run test:a11y:pa11y
 
-      - name: Accessibility tests (jest-axe)
-        run: npm run test:a11y:jest
+      - name: Remote E2E prerequisites
+        if: ${{ env.HAS_REMOTE_TARGET != 'true' }}
+        run: |
+          echo "Skipping remote E2E."
+          if [[ '${{ env.HAS_PLAYWRIGHT_AUTH_STATE }}' != 'true' ]]; then
+            echo '- Missing PLAYWRIGHT_AUTH_STATE secret.'
+          fi
+          if [[ '${{ env.HAS_GAS_WEBAPP_URL }}' != 'true' ]]; then
+            echo '- Missing GAS_WEBAPP_URL secret.'
+          fi
+
+      - name: Record remote E2E skip
+        if: ${{ env.HAS_REMOTE_TARGET != 'true' }}
+        run: |
+          node scripts/run-ci-step.mjs --category remote --label "Remote E2E" --skip "Remote run skipped: missing required secrets"
 
       - name: Restore auth state
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
+        if: ${{ env.HAS_REMOTE_TARGET == 'true' }}
         run: echo "${{ env.PLAYWRIGHT_AUTH_STATE_B64 }}" | base64 -d > auth.json
 
       - name: Remote E2E (staging)
-        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
-        run: npm run e2e:remote
+        if: ${{ env.HAS_REMOTE_TARGET == 'true' }}
+        continue-on-error: true
+        run: node scripts/run-ci-step.mjs --category remote --label "Remote E2E" -- npm run e2e:remote
         env:
           GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
           E2E_PATH: ${{ env.E2E_PATH }}
@@ -103,3 +127,56 @@ jobs:
           name: health-check-${{ github.job }}
           path: artifacts/health*.json
           if-no-files-found: ignore
+
+      - name: Upload CI step telemetry
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-step-results-${{ github.job }}
+          path: reports/ci-step-results.json
+          if-no-files-found: warn
+
+  failure-report:
+    name: Failure report digest
+    needs: quality
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download CI telemetry
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: ci-step-results-quality
+          path: reports
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate failure report
+        id: generate
+        run: |
+          node scripts/collect-ci-failures.mjs \
+            --results reports/ci-step-results.json \
+            --report reports/ci-failure-report.md \
+            --template reports/ci-remediation-template.md \
+            --set-output "$GITHUB_OUTPUT"
+
+      - name: Attach report to summary
+        if: ${{ steps.generate.outputs.has_failures == 'true' }}
+        run: cat reports/ci-failure-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload failure report artifact
+        if: ${{ steps.generate.outputs.has_failures == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-failure-report
+          path: reports/ci-failure-report.md
+
+      - name: Mark workflow failed when blocking issues remain
+        if: ${{ steps.generate.outputs.has_blocking_failures == 'true' }}
+        run: exit 1

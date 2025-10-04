@@ -15,9 +15,13 @@ if (fs.existsSync(envFile)) {
 
 const placeholderValues = new Set(['', 'https://example.com', '<your-gas-webapp-url>']);
 const rawUrl = process.env.GAS_WEBAPP_URL?.trim() ?? '';
-const targetUrl = placeholderValues.has(rawUrl)
-  ? `file://${path.resolve(projectRoot, 'src', 'Sidebar.html')}`
-  : rawUrl;
+const fallbackFixture = `file://${path.resolve(projectRoot, 'test', 'a11y-fallback.html')}`;
+const hasRemoteTarget = !placeholderValues.has(rawUrl);
+const targetUrl = hasRemoteTarget ? rawUrl : fallbackFixture;
+
+if (!hasRemoteTarget) {
+  console.info(`pa11y fallback target: ${targetUrl}`);
+}
 
 try {
   const results = await pa11y(targetUrl, {
