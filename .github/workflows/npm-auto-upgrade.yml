@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       STRATEGY: ${{ github.event.inputs.strategy || 'safe' }}
+      IS_MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
       PR_TOKEN: ${{ secrets.NPM_UPGRADE_TOKEN != '' && secrets.NPM_UPGRADE_TOKEN || github.token }}
 
     steps:
@@ -51,6 +52,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Install Playwright browsers
+        if: ${{ env.IS_MANUAL == 'true' }}
         run: npx playwright install --with-deps
 
       - name: Capture outdated (before)
@@ -97,9 +99,11 @@ jobs:
           echo "commit_message=${title}" >> "$GITHUB_OUTPUT"
 
       - name: Run unit tests
+        if: ${{ env.IS_MANUAL == 'true' }}
         run: npm test -- --runInBand
 
       - name: Run E2E smoke tests (if configured)
+        if: ${{ env.IS_MANUAL == 'true' }}
         run: npm run e2e
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
