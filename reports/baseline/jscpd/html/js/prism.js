@@ -193,7 +193,10 @@ var _self =
           var a = t.rest;
           if (a) {
             for (var n in a) {
-              if (n === "__proto__" || n === "constructor" || n === "prototype") continue;
+              if (
+                !Object.prototype.hasOwnProperty.call(a, n) ||
+                n === "__proto__" || n === "constructor" || n === "prototype"
+              ) continue;
               t[n] = a[n];
             }
             delete t.rest;
