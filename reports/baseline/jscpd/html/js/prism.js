@@ -191,6 +191,19 @@ var _self =
         },
         tokenize: function (e, t) {
           var a = t.rest;
+          // Ensure t is a prototype-less object.
+          if (Object.getPrototypeOf(t) !== null) {
+            var oldT = t;
+            t = Object.create(null);
+            // Copy oldT's own properties (except __proto__, constructor, prototype)
+            for (var key in oldT) {
+              if (
+                !Object.prototype.hasOwnProperty.call(oldT, key) ||
+                key === "__proto__" || key === "constructor" || key === "prototype"
+              ) continue;
+              t[key] = oldT[key];
+            }
+          }
           if (a) {
             for (var n in a) {
               if (
