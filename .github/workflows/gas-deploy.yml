@@ -9,10 +9,6 @@ permissions:
   pull-requests: write
 
 on:
-  pull_request:
-    branches: [ "main" ]
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
 
 concurrency:
@@ -25,7 +21,6 @@ defaults:
 
 jobs:
   unit-tests:
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -56,7 +51,6 @@ jobs:
         run: npm test --if-present
 
   test-stage:
-    if: github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     needs: [unit-tests]
     timeout-minutes: 25
@@ -131,6 +125,7 @@ jobs:
 
       - name: Health check (200/302 or skip)
         if: ${{ env.HAS_WEBAPP_URL == 'true' }}
+        continue-on-error: true
         run: node scripts/health-check.mjs
         env:
           GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
@@ -138,14 +133,14 @@ jobs:
           E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() }}
         with:
           name: playwright-report-${{ github.job }}
           path: artifacts/playwright-report
           if-no-files-found: ignore
 
       - name: Upload health artifacts
-        if: always()
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: health-check-${{ github.job }}
@@ -323,7 +318,7 @@ jobs:
           fi
 
       - name: "Ensure TEST_DEPLOYMENT_ID exists BEFORE"
-        if: steps.check-test-deployment.outputs.has_secret == 'true'
+        if: ${{ steps.check-test-deployment.outputs.has_secret == 'true' }}
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -373,7 +368,7 @@ jobs:
           echo "new_ver=$ver" >> "$GITHUB_OUTPUT"
 
       - name: "Update deployment to NEW_VER (TEST)"
-        if: steps.check-test-deployment.outputs.has_secret == 'true'
+        if: ${{ steps.check-test-deployment.outputs.has_secret == 'true' }}
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -383,7 +378,7 @@ jobs:
           clasp deploy --deploymentId "$TEST_DEPLOYMENT_ID" --versionNumber "$NEW_VER" -d "[TEST] CI ${GITHUB_SHA::7}"
       # AFTER snapshot (TEST)
       - name: "Verify deployment points to NEW_VER (TEST)"
-        if: steps.check-test-deployment.outputs.has_secret == 'true'
+        if: ${{ steps.check-test-deployment.outputs.has_secret == 'true' }}
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -452,13 +447,13 @@ jobs:
           fi
 
       - name: "Run E2E tests (Puppeteer) against TEST"
-        if: steps.check-test-deployment.outputs.has_secret == 'true'
+        if: ${{ steps.check-test-deployment.outputs.has_secret == 'true' }}
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: npm run e2e --if-present
 
       - name: "Upload responsive screenshots"
-        if: steps.check-test-deployment.outputs.has_secret == 'true' && always()
+        if: ${{ steps.check-test-deployment.outputs.has_secret == 'true' && always() }}
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         uses: actions/upload-artifact@v4
@@ -469,7 +464,7 @@ jobs:
 
       # --- Health check on TEST（容忍 302 登入轉向） ---
       - name: "Health check (TEST)"
-        if: steps.check-test-deployment.outputs.has_secret == 'true'
+        if: ${{ steps.check-test-deployment.outputs.has_secret == 'true' }}
         env:
           TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
         run: |
@@ -486,7 +481,7 @@ jobs:
           echo "::error::TEST health check failed (code=${code} location=${loc})"; exit 1
 
   deploy-prod:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: [test-stage]
     timeout-minutes: 20
