@@ -1,0 +1,6 @@
+﻿type,path,duplicate_of,action,reason,risk,status,備註
+config,jest.config.js,jest.config.cjs,移除,合併為單一 Jest 設定檔,低,done,commit: chore: unify ci and deduplicate configs
+config,.eslintrc,eslint.config.js,移除,改用 flat config 作為唯一來源,低,done,commit: chore: unify ci and deduplicate configs
+config,tsconfig.json,tsconfig.test.json,調整,根設定僅保留通用規則,低,done,commit: chore: unify ci and deduplicate configs
+config,tsconfig.test.json,tsconfig.json,調整,測試設定延伸自通用規則,低,done,commit: chore: unify ci and deduplicate configs
+script,scripts/url-helper.mjs,N/A,保留,統一路徑與 URL 組裝來源,低,keep,維持單一來源

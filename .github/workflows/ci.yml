@@ -13,10 +13,6 @@ permissions:
   contents: read
   pull-requests: write
 
-env:
-  CI: true
-  HUSKY: 0
-
 defaults:
   run:
     shell: bash {0}
@@ -30,10 +26,10 @@ jobs:
       group: ${{ format('{0}-{1}', github.workflow, github.event.pull_request.number || github.ref_name || github.run_id) }}
       cancel-in-progress: true
     env:
-      HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
-      HAS_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
-      HAS_REMOTE: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
+      CI: true
+      HUSKY: 0
       GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
+      PLAYWRIGHT_AUTH_STATE_B64: ${{ secrets.PLAYWRIGHT_AUTH_STATE }}
       E2E_PATH: ${{ vars.E2E_PATH || '?route=AA01' }}
       E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
       LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
@@ -65,7 +61,7 @@ jobs:
         run: npm run e2e:ui
 
       - name: Health check (non-blocking)
-        if: ${{ env.HAS_URL == 'true' }}
+        if: ${{ secrets.GAS_WEBAPP_URL != '' }}
         continue-on-error: true
         run: node scripts/health-check.mjs
         env:
@@ -80,11 +76,11 @@ jobs:
         run: npm run test:a11y:jest
 
       - name: Restore auth state
-        if: ${{ env.HAS_REMOTE == 'true' }}
-        run: echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
+        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
+        run: echo "${{ env.PLAYWRIGHT_AUTH_STATE_B64 }}" | base64 -d > auth.json
 
       - name: Remote E2E (staging)
-        if: ${{ env.HAS_REMOTE == 'true' }}
+        if: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
         run: npm run e2e:remote
         env:
           GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}

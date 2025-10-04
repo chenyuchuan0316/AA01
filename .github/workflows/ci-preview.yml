@@ -104,9 +104,9 @@ jobs:
           BASE_URL: ${{ steps.url.outputs.url }}
           PATH_INPUT: ${{ env.E2E_PATH }}
 
-      - name: Auto-repair remote E2E (@remote → staging)
+      - name: Remote E2E (staging)
         if: ${{ env.HAS_AUTH == 'true' && env.HAS_URL_SECRET == 'true' }}
-        run: node scripts/auto-repair.mjs --run "npm run e2e:remote" --verify "node scripts/health-check.mjs"
+        run: npm run e2e:remote
         env:
           GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
           E2E_PATH: ${{ env.E2E_PATH }}
