@@ -8,7 +8,7 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 
 本文說明整體架構、環境需求、運作流程以及每個檔案的角色，協助開發者或使用者快速了解系統。
 
-> 更新日期：2025-10-22
+> 更新日期：2025-10-25
 
 ## Environments
 
@@ -113,7 +113,7 @@ GitHub Actions 的 `CI` workflow 依序執行下列步驟：
 3. **Unit (Jest)** — `npm test -- --runInBand`。
 4. **Install Playwright browsers** — `npx playwright install --with-deps`。
 5. **UI 檔案模式 E2E** — `npm run e2e:ui`。
-6. **Health** — `npm run health`（失敗不會使 job 失敗，但會上傳 JSON artifact）。
+6. **Health** — `npm run health`（失敗不會使 job 失敗，但會上傳 JSON artifact，HTTP 200 與 302 皆視為成功）。
 7. **A11y (pa11y)** — `npm run test:a11y:pa11y`，可 fallback 本地 HTML。
 8. **Remote E2E** — 僅在 `PLAYWRIGHT_AUTH_STATE` 與 `GAS_WEBAPP_URL` 同時存在時執行；缺少任一條件會輸出 skip 理由。
 9. **Failure Report** — 若前述任一步驟失敗，`collect-ci-failures.mjs` 會生成 `reports/ci-failure-report.md` 並附加至 workflow summary。
@@ -137,6 +137,8 @@ GitHub Actions 的 `CI` workflow 依序執行下列步驟：
 - 健康檢查共用同一組設定，並輸出 JSON artifact 供除錯。
 
 ## Artifact 位置
+
+所有 CI artifacts 可於 GitHub Actions 執行紀錄頁面右側的 **Artifacts** 區塊下載，也會同步保存在下列路徑：
 
 | Artifact                                             | 內容                 | 來源步驟                    |
 | ---------------------------------------------------- | -------------------- | --------------------------- |

@@ -6,3 +6,9 @@ doc,reports/codebase-overview.md,docs/codebase-overview.md,merge-into-docs,Prese
 hook,.husky/_/pre-commit,.husky/pre-commit,remove-legacy,Husky template stub still required for hook bootstrap; leave documented for now,low,keep,1c0cfc3
 hook,.husky/_/pre-push,.husky/pre-push,remove-legacy,Husky template stub still required for hook bootstrap; leave documented for now,low,keep,1c0cfc3
 config,tsconfig.test.json,tsconfig.json,merge-into-single-config,Consolidated TypeScript settings into one shared project for CI tooling,low,done,1c0cfc3
+workflow,.github/workflows/ci-preview.yml,.github/workflows/ci.yml,trim-tests,Retain only remote smoke/health so PR CI stays sole test runner,low,done,bcfbf54
+workflow,.github/workflows/gas-deploy.yml,.github/workflows/ci.yml,trim-tests,Focus staged deploy job on clasp with optional remote smoke,medium,done,bcfbf54
+workflow,.github/workflows/npm-auto-upgrade.yml,.github/workflows/ci.yml,trim-tests,Shift Jest/Playwright coverage to main CI for upgrade PRs,low,done,bcfbf54
+workflow,.github/workflows/npm-outdated.yml,.github/workflows/ci.yml,trim-tests,Prevent duplicate UI smoke in weekly inventory scans,low,done,9035e2f
+workflow,.github/workflows/gas-deploy.yml.bak-20250929-054713,n/a,delete,Remove obsolete backup to avoid confusion,low,done,bcfbf54
+note,.github/workflows/新增 文字文件.txt,n/a,delete,Drop manual note from workflows directory to keep inventory clean,low,done,bcfbf54
