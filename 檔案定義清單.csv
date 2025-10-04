@@ -1,130 +1,101 @@
-﻿path,type,owner/責任,相依,是否影響測試,是否影響部署,備註
-.clasp.json,config,專案維運,,否,是,
-.claspignore,other,專案維運,,否,是,
-.env,other,專案維運,,否,否,
-.env.example,other,專案維運,,否,否,
-.gas-deploy.json,config,專案維運,,否,是,
-.github,directory,維運團隊,,否,是,關鍵目錄
-.github/dependabot.yml,workflow,DevOps,,是,是,
-.github/pull_request_template.md,documentation,DevOps,,是,是,
-.github/workflows/_tmpl_clasp.json,config,DevOps,,是,是,
-.github/workflows/ci-preview.yml,workflow,DevOps,,是,是,
-.github/workflows/ci.yml,workflow,DevOps,,是,是,
-.github/workflows/codex-audit.yml,workflow,DevOps,,是,是,
-.github/workflows/gas-deploy.yml,workflow,DevOps,,是,是,
-.github/workflows/gas-deploy.yml.bak-20250929-054713,other,DevOps,,是,是,
-.github/workflows/npm-auto-upgrade.yml,workflow,DevOps,,是,是,
-.github/workflows/npm-outdated.yml,workflow,DevOps,,是,是,
-.github/workflows/predeploy.yml,workflow,DevOps,,是,是,
-.github/workflows/新增 文字文件.txt,documentation,DevOps,,是,是,
-.gitignore,other,專案維運,,否,否,
-.husky/_/.gitignore,other,專案維運,,否,否,
-.husky/_/applypatch-msg,other,專案維運,,否,否,
-.husky/_/commit-msg,other,專案維運,,否,否,
-.husky/_/h,other,專案維運,,否,否,
-.husky/_/husky.sh,other,專案維運,,否,否,
-.husky/_/post-applypatch,other,專案維運,,否,否,
-.husky/_/post-checkout,other,專案維運,,否,否,
-.husky/_/post-commit,other,專案維運,,否,否,
-.husky/_/post-merge,other,專案維運,,否,否,
-.husky/_/post-rewrite,other,專案維運,,否,否,
-.husky/_/pre-applypatch,other,專案維運,,否,否,
-.husky/_/pre-auto-gc,other,專案維運,,否,否,
-.husky/_/pre-commit,other,專案維運,,否,否,
-.husky/_/pre-merge-commit,other,專案維運,,否,否,
-.husky/_/pre-push,other,專案維運,,否,否,
-.husky/_/pre-rebase,other,專案維運,,否,否,
-.husky/_/prepare-commit-msg,other,專案維運,,否,否,
-.husky/pre-commit,other,專案維運,,否,否,
-.husky/pre-push,other,專案維運,,否,否,
-.jscpd.json,config,專案維運,,否,否,
-.npmrc,other,專案維運,,否,否,
-.nvmrc,other,專案維運,,否,否,
-.pa11yci,other,專案維運,,是,否,
-AGENTS.md,documentation,專案維運,,否,否,
-CHANGELOG.md,documentation,專案維運,,否,否,
-CODEX_TESTING_ISSUES.md,documentation,專案維運,,是,否,
-README.md,documentation,專案維運,,否,否,
-__tests__,directory,維運團隊,,是,否,關鍵目錄
-__tests__/a11y/sidebar-a11y.test.ts,config,QA,,是,否,
-__tests__/fixtures/basic-form.json,config,QA,,是,否,
-__tests__/sample.test.ts,config,QA,,是,否,
-__tests__/scripts/url-helper.test.ts,config,QA,,是,否,
-aa01_ui_code_audit_suspicious.csv,documentation,專案維運,,否,否,
-clasprc_base64.txt,documentation,專案維運,,否,是,
-depcheck.config.cjs,config,專案維運,,否,否,
-docs,directory,維運團隊,,否,否,關鍵目錄
-docs/codebase-overview.md,documentation,文件維護,,否,否,
-docs/upgrade-plan.md,documentation,文件維護,,否,否,
-docs/upgrade-report.md,documentation,文件維護,,否,否,
-eslint.config.js,config,專案維運,,否,否,
-gas-deploy.mjs,config,專案維運,,否,是,
-get-refresh-token.mjs,config,專案維運,,否,否,
-jest.config.cjs,config,專案維運,,是,否,
-knip.json,config,專案維運,,否,否,
-outdated.json,config,專案維運,,否,否,
-package-lock.json,config,專案維運,,否,否,
-package.json,config,專案維運,,否,否,
-playwright,directory,維運團隊,,是,否,關鍵目錄
-playwright.config.mjs,config,專案維運,,是,否,
-playwright/remote.spec.ts,config,QA,,是,否,
-playwright/ui.spec.ts,config,QA,,是,否,
-playwright/utils/openPage.ts,config,QA,,是,否,
-prettier.config.cjs,config,專案維運,,否,否,
-reports,directory,維運團隊,,否,否,關鍵目錄
-reports/baseline/audit.log,other,文件維護,,否,否,
-reports/baseline/build.log,other,文件維護,,否,否,
-reports/baseline/e2e-remote.json,config,文件維護,,否,否,
-reports/baseline/e2e-remote.log,other,文件維護,,否,否,
-reports/baseline/e2e-ui.json,config,文件維護,,否,否,
-reports/baseline/e2e-ui.log,other,文件維護,,否,否,
-reports/baseline/e2e.log,other,文件維護,,否,否,
-reports/baseline/health.log,other,文件維護,,否,否,
-reports/baseline/jscpd.log,other,文件維護,,否,否,
-reports/baseline/jscpd/html/index.html,other,文件維護,,否,否,
-reports/baseline/jscpd/html/js/prism.js,script,文件維護,,否,否,
-reports/baseline/jscpd/html/jscpd-report.json,config,文件維護,,否,否,
-reports/baseline/jscpd/html/styles/prism.css,other,文件維護,,否,否,
-reports/baseline/jscpd/html/styles/tailwind.css,other,文件維護,,否,否,
-reports/baseline/jscpd/jscpd-report.json,config,文件維護,,否,否,
-reports/baseline/knip.json,config,文件維護,,否,否,
-reports/baseline/knip.log,other,文件維護,,否,否,
-reports/baseline/lint.log,other,文件維護,,否,否,
-reports/baseline/madge.json,config,文件維護,,否,否,
-reports/baseline/madge.log,other,文件維護,,否,否,
-reports/baseline/repo-inventory.json,config,文件維護,,否,否,
-reports/baseline/risk-list.json,config,文件維護,,否,否,
-reports/baseline/test.json,config,文件維護,,是,否,
-reports/baseline/test.log,other,文件維護,,是,否,
-reports/baseline/typecheck.log,other,文件維護,,否,否,
-reports/codebase-overview.md,documentation,文件維護,,否,否,
-reports/round-0/summary.md,documentation,文件維護,,否,否,
-reports/round-1/summary.md,documentation,文件維護,,否,否,
-reports/round-2/summary.md,documentation,文件維護,,否,否,
-reports/round-3/summary.md,documentation,文件維護,,否,否,
-reports/round-5/summary.md,documentation,文件維護,,否,否,
-reports/去重執行對照表.csv,data,文件維護,,否,否,
-reports/工作流盤點報告.md,documentation,文件維護,,否,否,
-reports/檔案定義清單.csv,data,文件維護,,否,否,
-scripts,directory,維運團隊,,否,是,關鍵目錄
-scripts/auto-repair.mjs,script,自動化腳本,,否,否,
-scripts/generate-inventory.mjs,script,自動化腳本,,否,否,
-scripts/health-check.mjs,script,自動化腳本,,是,否,
-scripts/run-pa11y.mjs,script,自動化腳本,,是,否,
-scripts/url-helper.d.ts,script,自動化腳本,,否,否,
-scripts/url-helper.mjs,script,自動化腳本,,否,否,
-src/AppCore.gs,other,專案維運,,否,否,
-src/DataStore.gs,other,專案維運,,否,否,
-src/Main.gs,other,專案維運,,否,否,
-src/Sidebar.html,other,專案維運,,否,否,
-src/appsscript.json,config,專案維運,,否,否,
-test,directory,維運團隊,,是,否,關鍵目錄
-test/setup-tests.cjs,config,QA,,是,否,
-test/setup-tests.d.ts,config,QA,,是,否,
-tsconfig.json,config,專案維運,,否,否,
-tsconfig.test.json,config,專案維運,,是,否,
-去重執行對照表.csv,data,專案維運,,否,否,
-工作流盤點報告.md,documentation,專案維運,,否,否,
-新增 文字文件.txt,documentation,專案維運,,否,否,
-桃園市_長照給付資料庫_v1.xlsx,data,專案維運,,否,否,僅作參考資料，CI 排除掃描
-檔案定義清單.csv,data,專案維運,,否,否,
+path,type,owner/責任,相依,是否影響測試,是否影響部署,備註
+.clasp.json,config,DevOps/部署,"clasp; gas-deploy.mjs","否","是","Clasp 專案設定，供手動/CI 佈署引用"
+.claspignore,config,DevOps/部署,"clasp","否","是","Clasp 忽略清單，避免多餘檔案上傳"
+.env,config,DevOps/本地環境,"npm scripts","否","否","本地環境變數，僅範例不進版控"
+.env.example,config,DevOps/本地環境,"npm scripts","否","否","本地環境變數模板"
+.gas-deploy.json,config,DevOps/部署,"gas-deploy.mjs","否","是","Apps Script 部署資訊，供自動化腳本使用"
+.github,directory,DevOps/CI,"n/a","是","是","GitHub 設定總目錄"
+.github/dependabot.yml,config,DevOps/維運,"GitHub Dependabot","否","否","套件安全性與升級排程"
+.github/pull_request_template.md,doc,維運/審查流程,"n/a","否","否","PR 稽核模板，確保回報資訊完整"
+.github/workflows/_tmpl_clasp.json,template,DevOps/CI,"GitHub Secrets (SCRIPT_ID)","否","否","clasp 設定樣板"
+.github/workflows/ci-preview.yml,workflow,DevOps/CI,"npm run e2e:ui,e2e:remote; scripts/health-check.mjs; scripts/auto-repair.mjs","是","是","預覽部署 + 本地/遠端測試，與主 CI 重疊"
+.github/workflows/ci.yml,workflow,DevOps/CI,"npm run lint,test,e2e:ui,test:a11y:*; scripts/health-check.mjs","是","是","PR CI 主流程，含 Lint/Unit/UI E2E/a11y/健康檢查/遠端 E2E"
+.github/workflows/codex-audit.yml,workflow,品質稽核,"npm run lint,typecheck,test,e2e; Playwright","是","否","issue_comment/手動觸發審計流程"
+.github/workflows/gas-deploy.yml,workflow,DevOps/部署,"clasp; npm run e2e:*; scripts/auto-repair.mjs; scripts/health-check.mjs","是","是","main push/手動部署；流程與 CI 重疊"
+.github/workflows/gas-deploy.yml.bak-20250929-054713,workflow-backup,DevOps/歷史備份,"n/a","否","否","舊版部署流程備份，僅參考"
+.github/workflows/npm-auto-upgrade.yml,workflow,DevOps/維運,"npm outdated; npm run test; npm run e2e","是","否","排程/手動升級並執行測試"
+.github/workflows/npm-outdated.yml,workflow,DevOps/維運,"npm outdated; npm run e2e:ui (可選)","否","否","每週套件盤點，可選跑本地 UI"
+.github/workflows/predeploy.yml,workflow,DevOps/部署前,"npm run e2e:*; scripts/health-check.mjs; clasp","是","是","main 佈署前品質檢查"
+.github/workflows/新增 文字文件.txt,note,DevOps/歷史記錄,"n/a","否","否","CLI 操作紀錄，不會被 runner 執行"
+.gitignore,config,DevOps/版本控管,"git","否","否","版控忽略設定"
+.husky/_/.gitignore,config,DevOps/版本控管,"git","否","否","husky 暫存忽略設定"
+.husky/_/husky.sh,script,DevOps/Git Hooks,"husky","否","否","husky 共用腳本"
+.husky/pre-commit,script,DevOps/Git Hooks,"npm run lint","是","否","本地 pre-commit 驗證"
+.husky/pre-push,script,DevOps/Git Hooks,"npm test","是","否","本地 pre-push 驗證"
+.husky/_/applypatch-msg,script,DevOps/Git Hooks,"git applypatch","否","否","預設 husky hook"
+.husky/_/commit-msg,script,DevOps/Git Hooks,"git commit-msg","否","否","預設 husky hook"
+.husky/_/h,script,DevOps/Git Hooks,"husky","否","否","husky 共用函式"
+.husky/_/post-applypatch,script,DevOps/Git Hooks,"git post-applypatch","否","否","預設 husky hook"
+.husky/_/post-checkout,script,DevOps/Git Hooks,"git post-checkout","否","否","預設 husky hook"
+.husky/_/post-commit,script,DevOps/Git Hooks,"git post-commit","否","否","預設 husky hook"
+.husky/_/post-merge,script,DevOps/Git Hooks,"git post-merge","否","否","預設 husky hook"
+.husky/_/post-rewrite,script,DevOps/Git Hooks,"git post-rewrite","否","否","預設 husky hook"
+.husky/_/pre-applypatch,script,DevOps/Git Hooks,"git pre-applypatch","否","否","預設 husky hook"
+.husky/_/pre-auto-gc,script,DevOps/Git Hooks,"git pre-auto-gc","否","否","預設 husky hook"
+.husky/_/pre-commit,script,DevOps/Git Hooks,"npm run lint","是","否","歷史 hook，與主 pre-commit 重複"
+.husky/_/pre-merge-commit,script,DevOps/Git Hooks,"git pre-merge-commit","否","否","預設 husky hook"
+.husky/_/pre-push,script,DevOps/Git Hooks,"npm test","是","否","歷史 hook，與主 pre-push 重複"
+.husky/_/pre-rebase,script,DevOps/Git Hooks,"git pre-rebase","否","否","預設 husky hook"
+.husky/_/prepare-commit-msg,script,DevOps/Git Hooks,"git prepare-commit-msg","否","否","預設 husky hook"
+.jscpd.json,config,品質/重複碼,"jscpd","否","否","重複碼掃描設定"
+.npmrc,config,DevOps/工具鏈,"npm","否","否","npm registry 與設定"
+.nvmrc,config,DevOps/工具鏈,"nvm","否","否","建議 Node 版本"
+AGENTS.md,doc,維運/流程治理,"n/a","否","否","專案規範"
+CHANGELOG.md,doc,產品/知識管理,"n/a","否","否","版本紀錄"
+CODEX_TESTING_ISSUES.md,doc,品質/測試,"n/a","否","否","已知測試環境議題"
+README.md,doc,產品/知識管理,"npm scripts; workflows","否","否","專案操作指南"
+__tests__,directory,前端/測試,"Jest","是","否","Jest 測試根目錄"
+__tests__/a11y/sidebar-a11y.test.ts,test,前端/可近性,"jest-axe; Sidebar.html","是","否","Axe 無障礙檢查"
+__tests__/fixtures/basic-form.json,data,前端/測試資料,"__tests__/a11y","是","否","測試表單範例"
+__tests__/sample.test.ts,test,前端/單元,"Jest","是","否","示範測試"
+__tests__/scripts/url-helper.test.ts,test,前端/工具,"scripts/url-helper.mjs","是","否","URL helper 單元測試"
+aa01_ui_code_audit_suspicious.csv,data,品質稽核,"reports/round-*","否","否","疑似問題清單"
+clasprc_base64.txt,secret-template,DevOps/部署,"clasp","否","是","clasp 認證範例"
+depcheck.config.cjs,config,品質/依賴,"depcheck","否","否","未使用依賴掃描設定"
+docs,directory,維運/文件,"n/a","否","否","手動文件彙整"
+docs/codebase-overview.md,doc,維運/文件,"n/a","否","否","程式庫概觀"
+docs/upgrade-plan.md,doc,維運/升級,"npm-auto-upgrade","否","否","升級計畫"
+docs/upgrade-report.md,doc,維運/升級,"reports/round-*","否","否","升級報告彙整"
+eslint.config.js,config,品質/靜態分析,"@eslint/js; @typescript-eslint; jest; playwright","是","否","Flat ESLint 設定"
+gas-deploy.mjs,script,DevOps/部署,"googleapis; .gas-deploy.json","否","是","Apps Script API 佈署腳本"
+get-refresh-token.mjs,script,DevOps/部署,"googleapis OAuth","否","否","協助取得 refresh token"
+jest.config.cjs,config,前端/測試,"ts-jest; test/setup-tests.cjs","是","否","主要 Jest 設定"
+jest.config.js,config,前端/測試,"Jest","是","否","Node 環境備援設定（與 .cjs 重複）"
+knip.json,config,品質/靜態分析,"knip","否","否","未使用程式碼掃描設定"
+outdated.json,sample-data,維運/示例,"npm outdated","否","否","過往過期套件報告"
+package-lock.json,lockfile,全端/工具鏈,"npm","是","是","鎖定套件版本"
+package.json,config,全端/工具鏈,"npm scripts; jest.config.cjs; playwright.config.mjs","是","是","工具鏈與腳本定義"
+playwright,directory,前端/E2E,"Playwright","是","否","Playwright 測試根目錄"
+playwright/remote.spec.ts,e2e,前端/E2E,"playwright/utils/openPage.ts; GAS_WEBAPP_URL","是","否","遠端 Smoke 測試"
+playwright/ui.spec.ts,e2e,前端/E2E,"playwright/utils/openPage.ts; Sidebar UI","是","否","本地 UI 互動測試"
+playwright/utils,dir,前端/E2E,"n/a","否","否","共用工具資料夾"
+playwright/utils/openPage.ts,util,前端/E2E,"scripts/url-helper.mjs","是","否","開頁工具，支援 local/remote"
+playwright.config.mjs,config,前端/E2E,"dotenv; scripts/url-helper.mjs","是","否","Playwright 專案設定"
+prettier.config.cjs,config,品質/格式化,"prettier","否","否","Prettier 規則"
+reports,directory,維運/報告,"n/a","否","否","報告輸出根目錄"
+reports/baseline,dir,維運/報告,"n/a","否","否","歷史基準資料"
+reports/去重執行對照表.csv,data,維運/報告,"n/a","否","否","去重規劃台帳（報告版）"
+reports/工作流盤點報告.md,doc,維運/報告,"n/a","否","否","工作流盤點報告（報告版）"
+reports/檔案定義清單.csv,data,維運/報告,"n/a","否","否","檔案定義清單（報告版）"
+scripts,directory,DevOps/工具,"n/a","是","是","CI/E2E 輔助腳本"
+scripts/auto-repair.mjs,script,DevOps/測試自動修復,"Playwright; scripts/health-check.mjs","是","否","Playwright 重試/健康檢查封裝"
+scripts/generate-inventory.mjs,script,DevOps/報告,"TypeScript compiler API","否","否","程式庫盤點腳本"
+scripts/health-check.mjs,script,DevOps/監控,"undici fetch","否","是","遠端健康檢查（允許 200/302）"
+scripts/run-pa11y.mjs,script,品質/可近性,"pa11y; scripts/url-helper.mjs","是","否","Pa11y 自動掃描"
+scripts/url-helper.d.ts,types,全端/共用,"scripts/url-helper.mjs","是","否","URL helper 型別宣告"
+scripts/url-helper.mjs,util,全端/共用,"URL; process.env","是","否","組裝本地/遠端 URL"
+src,dir,Apps Script,"n/a","是","是","GAS 原始碼根目錄"
+src/AppCore.gs,AppsScript,後端/GAS,"DocumentApp; applyH1_*","是","是","Sidebar 主流程與功能表"
+src/DataStore.gs,AppsScript,後端/GAS,"DriveApp; SpreadsheetApp","是","是","資料來源/快取"
+src/Main.gs,AppsScript,後端/GAS,"Logger","否","否","簡易 smoke 函式"
+src/Sidebar.html,AppsScript-UI,前端/Sidebar,"google.script.run","是","否","Sidebar UI"
+src/appsscript.json,manifest,後端/GAS,"clasp","是","是","Apps Script manifest"
+test,directory,前端/測試,"Jest","是","否","測試設定根目錄"
+test/setup-tests.cjs,config,前端/測試,"@testing-library/jest-dom","是","否","Jest setup"
+test/setup-tests.d.ts,types,前端/測試,"Jest","是","否","Setup 型別宣告"
+tsconfig.json,config,前端/型別設定,"tsconfig.test.json","是","否","共用型別設定（目前為 re-export）"
+tsconfig.test.json,config,前端/型別設定,"Jest; Playwright","是","否","測試 TypeScript 設定"
+去重執行對照表.csv,data,維運/報告,"n/a","否","否","待辦版去重台帳（PR 用）"
+工作流盤點報告.md,doc,維運/報告,"n/a","否","否","待辦版工作流盤點（PR 用）"
+新增 文字文件.txt,note,維運/歷史記錄,"n/a","否","否","CLI 指令備忘"
+桃園市_長照給付資料庫_v1.xlsx,data,業務/參考,"src/DataStore.gs","否","否","長照給付資料庫快照"
