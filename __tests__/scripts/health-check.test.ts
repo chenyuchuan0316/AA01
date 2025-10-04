@@ -3,15 +3,27 @@ import { ReadableStream } from 'node:stream/web';
 import { TextDecoder, TextEncoder } from 'node:util';
 
 // Polyfill for undici within the Jest runtime
-// @ts-expect-error - allow assignment to the global object
-global.TextEncoder = TextEncoder;
-// @ts-expect-error - allow assignment to the global object
-global.TextDecoder = TextDecoder;
-// @ts-expect-error - allow assignment to the global object
-global.ReadableStream = ReadableStream;
+const globalWithUndici = globalThis as typeof globalThis & {
+  TextEncoder?: typeof TextEncoder;
+  TextDecoder?: typeof TextDecoder;
+  ReadableStream?: typeof ReadableStream;
+};
+
+Object.assign(globalWithUndici, {
+  TextEncoder,
+  TextDecoder,
+  ReadableStream
+});
 
 const scriptPath = '../../scripts/health-check.mjs';
 const helperModulePath = '../../scripts/url-helper.mjs';
+
+type MockResponse = {
+  status: number;
+  redirected: boolean;
+  headers: Headers;
+  text: () => Promise<string>;
+};
 
 const flushPromises = async () => new Promise(resolve => setTimeout(resolve, 0));
 
@@ -47,14 +59,16 @@ describe('scripts/health-check', () => {
       safeWriteJson
     }));
 
-    const fetchMock = jest.fn().mockResolvedValue({
-      status: 200,
-      redirected: false,
-      headers: new Headers(),
-      text: async () => 'ok'
-    });
-    // @ts-expect-error - assign mock fetch for the test runtime
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn(
+      async () =>
+        ({
+          status: 200,
+          redirected: false,
+          headers: new Headers(),
+          text: async () => 'ok'
+        }) satisfies MockResponse
+    );
+    (globalThis as { fetch?: typeof fetch }).fetch = fetchMock as unknown as typeof fetch;
 
     process.env.GAS_WEBAPP_URL = target.base;
     process.env.E2E_PATH = target.path;
@@ -93,14 +107,16 @@ describe('scripts/health-check', () => {
       safeWriteJson
     }));
 
-    const fetchMock = jest.fn().mockResolvedValue({
-      status: 503,
-      redirected: false,
-      headers: new Headers(),
-      text: async () => 'maintenance window'
-    });
-    // @ts-expect-error - assign mock fetch for the test runtime
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn(
+      async () =>
+        ({
+          status: 503,
+          redirected: false,
+          headers: new Headers(),
+          text: async () => 'maintenance window'
+        }) satisfies MockResponse
+    );
+    (globalThis as { fetch?: typeof fetch }).fetch = fetchMock as unknown as typeof fetch;
 
     process.env.GAS_WEBAPP_URL = target.base;
     process.env.E2E_PATH = target.path;

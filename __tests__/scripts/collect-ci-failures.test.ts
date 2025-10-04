@@ -168,7 +168,7 @@ describe('collect-ci-failures utilities', () => {
       writeFile(templatePath, template, 'utf8')
     ]);
 
-    const logger = { info: jest.fn() };
+    const logger = { info: jest.fn() } as unknown as typeof console;
     await collectFailures(
       [
         '--results',

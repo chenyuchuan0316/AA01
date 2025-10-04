@@ -19,7 +19,7 @@ async function executeScript({
 
   const infoLogs: string[] = [];
   const errorLogs: string[] = [];
-  const exitCalls: number[] = [];
+  const exitCalls: Array<number | string> = [];
 
   const exitSpy = jest.spyOn(process, 'exit').mockImplementation(code => {
     exitCalls.push(code ?? 0);
