@@ -11,13 +11,13 @@ module.exports = {
   ],
   ignores: [
     'cross-env',
-    'eslint-config-prettier',
     'husky',
     'jest-environment-jsdom',
     'jsdom',
     'lint-staged',
     'npm-run-all',
     'prettier',
-    'ts-jest'
+    'ts-jest',
+    'knip'
   ]
 };

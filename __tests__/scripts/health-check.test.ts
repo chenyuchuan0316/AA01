@@ -56,7 +56,8 @@ describe('scripts/health-check', () => {
 
     jest.unstable_mockModule(helperModulePath, () => ({
       buildTargetURL,
-      safeWriteJson
+      safeWriteJson,
+      isPlaceholderWebAppUrl: jest.fn().mockReturnValue(false)
     }));
 
     const fetchMock = jest.fn(
@@ -104,7 +105,8 @@ describe('scripts/health-check', () => {
 
     jest.unstable_mockModule(helperModulePath, () => ({
       buildTargetURL,
-      safeWriteJson
+      safeWriteJson,
+      isPlaceholderWebAppUrl: jest.fn().mockReturnValue(false)
     }));
 
     const fetchMock = jest.fn(
@@ -138,28 +140,33 @@ describe('scripts/health-check', () => {
     expect(infoSpy).toHaveBeenCalledWith(`HEALTH_TARGET_URL=${target.href}`);
   });
 
-  it('surfaces configuration errors when GAS_WEBAPP_URL is not provided', async () => {
-    const buildTargetURL = jest.fn(() => {
-      throw new Error('GAS_WEBAPP_URL is required.');
-    });
+  it('skips execution when GAS_WEBAPP_URL is missing or placeholder', async () => {
+    const buildTargetURL = jest.fn();
     const safeWriteJson = jest.fn();
 
     jest.unstable_mockModule(helperModulePath, () => ({
       buildTargetURL,
-      safeWriteJson
+      safeWriteJson,
+      isPlaceholderWebAppUrl: jest.fn().mockReturnValue(true)
     }));
 
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const infoSpy = jest.spyOn(console, 'info').mockImplementation(() => {});
 
     process.env.GAS_WEBAPP_URL = '   ';
-    delete process.env.E2E_PATH;
 
     await import(scriptPath);
     await flushPromises();
 
-    expect(buildTargetURL).toHaveBeenCalledWith('   ', undefined);
-    expect(safeWriteJson).not.toHaveBeenCalled();
-    expect(errorSpy).toHaveBeenCalledWith('HEALTH_CHECK_ERROR:', 'GAS_WEBAPP_URL is required.');
-    expect(process.exitCode).toBe(1);
+    expect(buildTargetURL).not.toHaveBeenCalled();
+    expect(safeWriteJson).toHaveBeenCalledWith(
+      'artifacts/health.json',
+      expect.objectContaining({ skipped: true, reason: 'GAS_WEBAPP_URL not configured' })
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      'HEALTH_CHECK_SKIP: GAS_WEBAPP_URL missing or placeholder.'
+    );
+    expect(infoSpy).toHaveBeenCalledWith('skip');
+    expect(process.exitCode).toBeUndefined();
   });
 });
