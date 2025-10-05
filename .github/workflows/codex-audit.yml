@@ -20,15 +20,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with:
+          node-version: 20
+          cache: npm
       - run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-      - run: echo "phase: lint" && npm run lint
-      - run: echo "phase: typecheck" && (npm run typecheck || npx tsc --noEmit)
-      - run: echo "phase: test" && npm run test -- --coverage
-      - run: echo "phase: e2e" && (npm run e2e || true)
-      - run: echo "phase: build" && npm run build
+      - run: 'echo "phase: lint" && npm run lint'
+      - run: 'echo "phase: typecheck" && (npm run typecheck || npx tsc --noEmit)'
+      - run: 'echo "phase: test" && npm run test -- --coverage'
+      - run: 'echo "phase: e2e" && (npm run e2e || true)'
+      - run: 'echo "phase: build" && npm run build'
       - name: Upload part1 artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -54,14 +56,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+        with:
+          node-version: 20
+          cache: npm
       - run: npm ci
       - name: Duplicate code report (jscpd)
         run: npx jscpd --reporters console,html --min-tokens 40 --threshold 1.5 --output jscpd-report || true
       - name: Circular deps (madge JSON)
         run: npx madge --extensions ts,tsx,js,jsx --circular --json src > reports/madge.json || true
       - name: Unused files/exports (knip)
-        run: npx knip --strict --exports --reporter json > reports/knip.json || true
+        run: npm run audit:knip -- --reporter json > reports/knip.json || true
       - name: Upload part2 artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

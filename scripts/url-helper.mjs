@@ -1,6 +1,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const PLACEHOLDER_WEBAPP_URLS = new Set([
+  'https://example.com',
+  'https://example.com/',
+  '<your-gas-webapp-url>'
+]);
+
+export function isPlaceholderWebAppUrl(rawValue) {
+  const trimmed = (rawValue ?? '').trim();
+  if (!trimmed) {
+    return true;
+  }
+  return PLACEHOLDER_WEBAPP_URLS.has(trimmed);
+}
+
 export function assertHttpBase(baseRaw) {
   const base = (baseRaw ?? '').trim();
   if (!base) {
@@ -40,7 +54,6 @@ export function buildTargetURL(baseRaw, e2ePathRaw) {
   if (isGasWebApp && /^\/exec(\/|\?|$)/.test(normalizedPath) && !normalizedPath.startsWith('?')) {
     throw new Error(
       `E2E_PATH should be query-only (e.g. "?route=...") when GAS_WEBAPP_URL already ends with /exec. Received: ${normalizedPath}`
-
     );
   }
 

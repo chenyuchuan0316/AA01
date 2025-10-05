@@ -91,6 +91,7 @@ npm run e2e:ui         # 本地 UI 規格（不需登入）
 npm run e2e:remote     # 遠端部署；需 auth.json 與 GAS_WEBAPP_URL
 npm run health         # 健康檢查；未設 URL 時會輸出 skip
 npm run test:a11y:pa11y # pa11y 掃描；缺 URL 時 fallback 本地 HTML
+npm run diagnose:ci     # 解析 `reports/ci-step-results.json` 並輸出診斷報告
 ```
 
 ## 測試矩陣
@@ -117,6 +118,7 @@ GitHub Actions 的 `CI` workflow 依序執行下列步驟：
 7. **A11y (pa11y)** — `npm run test:a11y:pa11y`，可 fallback 本地 HTML。
 8. **Remote E2E** — 僅在 `PLAYWRIGHT_AUTH_STATE` 與 `GAS_WEBAPP_URL` 同時存在時執行；缺少任一條件會輸出 skip 理由。
 9. **Failure Report** — 若前述任一步驟失敗，`collect-ci-failures.mjs` 會生成 `reports/ci-failure-report.md` 並附加至 workflow summary。
+10. **Error Diagnosis** — `error-diagnosis.mjs` 根據 `scripts/error-codes.json` 匹配常見錯誤訊息，輸出 `reports/ci-error-diagnosis.md` 與建議清單。
 
 ## Secrets 與環境變數
 
@@ -147,10 +149,12 @@ GitHub Actions 的 `CI` workflow 依序執行下列步驟：
 | `artifacts/playwright-results/`                      | 截圖、trace、影片    | UI / Remote E2E             |
 | `artifacts/health-url.json`、`artifacts/health.json` | 健康檢查目標與結果   | Health                      |
 | `reports/ci-failure-report.md`                       | 失敗分類摘要         | Failure Report job          |
+| `reports/ci-error-diagnosis.md`                      | 常見錯誤對照與建議   | Error Diagnosis job         |
 
 ## 常見紅燈處置
 
 - **Lint 失敗**：檢查 `npm run lint` 輸出，優先修正 ESLint 錯誤或格式問題。`collect-ci-failures.mjs` 會提供對應段落。
+- **不確定失敗原因**：查看 `reports/ci-error-diagnosis.md`，依建議調整 Secrets、E2E_PATH 或修正測試設定後重新執行。
 - **單元測試失敗**：下載 Playwright/Jest artifact 或參考 `reports/ci-failure-report.md` 中的 Stack trace，針對對應測試修復。
 - **UI E2E 失敗**：下載 `artifacts/playwright-results/` 的 trace 與截圖，比對 DOM 變動；必要時更新定位符。
 - **A11y 失敗**：確認 `test/a11y-fallback.html` 是否需要更新或部署頁面是否可公開讀取，依報告建議修正。

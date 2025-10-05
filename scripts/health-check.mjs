@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import process from 'node:process';
 import { ProxyAgent } from 'undici';
-import { buildTargetURL, safeWriteJson } from './url-helper.mjs';
+import { buildTargetURL, isPlaceholderWebAppUrl, safeWriteJson } from './url-helper.mjs';
 
 const proxyUrl = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY;
 const proxyDispatcher = proxyUrl ? new ProxyAgent(proxyUrl) : undefined;
@@ -38,6 +38,18 @@ async function fetchWithProxy(targetUrl) {
 
 async function main() {
   const base = process.env.GAS_WEBAPP_URL;
+  if (isPlaceholderWebAppUrl(base)) {
+    const summary = {
+      skipped: true,
+      reason: 'GAS_WEBAPP_URL not configured',
+      url: (base ?? '').trim() || undefined
+    };
+    console.warn('HEALTH_CHECK_SKIP: GAS_WEBAPP_URL missing or placeholder.');
+    safeWriteJson('artifacts/health.json', summary);
+    console.info('skip');
+    return;
+  }
+
   const e2ePath = process.env.E2E_PATH;
   const target = buildTargetURL(base, e2ePath);
 

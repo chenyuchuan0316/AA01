@@ -107,3 +107,19 @@ describe('safeWriteJson', () => {
     }
   });
 });
+
+describe('isPlaceholderWebAppUrl', () => {
+  it('treats missing or placeholder values as placeholders', () => {
+    expect(helpers.isPlaceholderWebAppUrl(undefined)).toBe(true);
+    expect(helpers.isPlaceholderWebAppUrl('   ')).toBe(true);
+    expect(helpers.isPlaceholderWebAppUrl('https://example.com')).toBe(true);
+    expect(helpers.isPlaceholderWebAppUrl('https://example.com/')).toBe(true);
+    expect(helpers.isPlaceholderWebAppUrl('<your-gas-webapp-url>')).toBe(true);
+  });
+
+  it('recognizes non-placeholder GAS web app URLs', () => {
+    expect(helpers.isPlaceholderWebAppUrl('https://demo.example.com/macros/s/abc123/exec')).toBe(
+      false
+    );
+  });
+});

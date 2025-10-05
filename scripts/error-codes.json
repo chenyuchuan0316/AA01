@@ -1,0 +1,83 @@
+[
+  {
+    "id": "E2E_PATH_QUERY_ONLY",
+    "title": "Remote E2E path must use a query string",
+    "category": "remote",
+    "severity": "high",
+    "description": "The Apps Script web app requires the route to be provided as a query string (for example `?route=AA01`). A leading slash will cause Apps Script to reject the request and Playwright will fail before navigation succeeds.",
+    "patterns": ["E2E_PATH should be query-only", "/E2E_PATH must start with \\?route=/i"],
+    "recommendations": [
+      "Update the `E2E_PATH` repository variable or secret so that it begins with `?route=`.",
+      "Re-run the workflow after pushing the corrected configuration."
+    ]
+  },
+  {
+    "id": "PLAYWRIGHT_INSTALL_MISSING",
+    "title": "Playwright browsers are not installed",
+    "category": "ui",
+    "severity": "medium",
+    "description": "UI tests cannot start because the Playwright browser binaries are missing.",
+    "patterns": ["Please run \"npx playwright install", "browser needs to be installed"],
+    "recommendations": [
+      "Add a step that runs `npx playwright install --with-deps` before executing UI tests.",
+      "If you are running locally, install the browsers once with `npx playwright install`."
+    ]
+  },
+  {
+    "id": "MISSING_GAS_URL",
+    "title": "GAS web app URL is missing",
+    "category": "health",
+    "severity": "medium",
+    "description": "Commands that reach the deployed Google Apps Script web app failed because `GAS_WEBAPP_URL` was not provided.",
+    "patterns": [
+      "Missing GAS_WEBAPP_URL",
+      "GAS web app URL was not provided",
+      "Request URL \"https://example.com"
+    ],
+    "recommendations": [
+      "Add the deployed Apps Script web app URL as the `GAS_WEBAPP_URL` secret in the repository.",
+      "Re-run the workflow once the secret is available."
+    ]
+  },
+  {
+    "id": "MISSING_PLAYWRIGHT_AUTH",
+    "title": "Remote Playwright authentication state missing",
+    "category": "remote",
+    "severity": "medium",
+    "description": "The remote Playwright run needs an authenticated storage state export. Without it the tests are skipped or fail during login.",
+    "patterns": ["Missing PLAYWRIGHT_AUTH_STATE", "PLAYWRIGHT_AUTH_STATE secret"],
+    "recommendations": [
+      "Upload a base64-encoded Playwright storage state as the `PLAYWRIGHT_AUTH_STATE` secret.",
+      "If remote tests are optional, mark the step as non-blocking or keep it skipped intentionally."
+    ]
+  },
+  {
+    "id": "TS_NODE_NEXT_IMPORT",
+    "title": "TypeScript NodeNext module resolution issue",
+    "category": "lint",
+    "severity": "medium",
+    "description": "TypeScript failed to resolve an import when using NodeNext module resolution. This usually happens when the import is missing a file extension or needs an assertion for JSON modules.",
+    "patterns": [
+      "Cannot find module",
+      "Consider using '--resolveJsonModule'",
+      "isn't under 'rootDir'"
+    ],
+    "recommendations": [
+      "Ensure relative imports include the `.js` extension when targeting NodeNext.",
+      "Add `assert { type: 'json' }` when importing JSON modules from TypeScript.",
+      "Confirm the file lives within the configured `rootDir`."
+    ]
+  },
+  {
+    "id": "JEST_TIMEOUT",
+    "title": "Jest tests timed out",
+    "category": "unit",
+    "severity": "medium",
+    "description": "A Jest test exceeded the configured timeout, often due to missing mocks or hanging asynchronous work.",
+    "patterns": ["Exceeded timeout", "Exceeded the timeout of"],
+    "recommendations": [
+      "Check the failing test for pending asynchronous operations and ensure promises are awaited or timers cleared.",
+      "Increase the timeout only after verifying the test is not hanging unexpectedly."
+    ]
+  }
+]

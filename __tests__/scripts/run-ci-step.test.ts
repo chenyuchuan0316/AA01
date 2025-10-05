@@ -118,7 +118,7 @@ describe('run-ci-step utilities', () => {
     const exit = jest.fn<(code?: string | number) => never>();
 
     await runCiStep(['--category', 'health', '--skip', 'No URL provided', '--results', file], {
-      exit
+      exit: exit as unknown as (code?: string | number) => never
     });
 
     expect(exit).not.toHaveBeenCalled();
@@ -146,7 +146,7 @@ describe('run-ci-step utilities', () => {
         'node',
         scriptPath
       ],
-      { exit }
+      { exit: exit as unknown as (code?: string | number) => never }
     );
 
     expect(exit).not.toHaveBeenCalled();
