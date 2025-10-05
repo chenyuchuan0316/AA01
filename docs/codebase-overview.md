@@ -50,6 +50,8 @@
 - `auto-repair.mjs`：重試指令工具，可設定主要指令、驗證指令、最大重試次數與退避秒數，並具備智慧停損（重複錯誤簽章即終止）。【F:scripts/auto-repair.mjs†L1-L98】
 - `health-check.mjs`：讀取 `GAS_WEBAPP_URL` 與 `E2E_PATH`，組合目標網址後進行 fetch（支援 ProxyAgent 與隧道失敗回退），接受 200 或 3xx；會輸出 `artifacts/health-url.json`、`artifacts/health.json` 供 CI 分析。【F:scripts/health-check.mjs†L1-L64】
 - `run-pa11y.mjs`：載入 `.env` 後決定掃描目標（遠端部署或本地 HTML），以 pa11y 依 WCAG 2.0 AA 檢測無障礙問題並列出違規清單。【F:scripts/run-pa11y.mjs†L1-L34】
+- `error-diagnosis.mjs`：彙整 `reports/ci-step-results.json` 與額外輸入的工作日誌，根據 `error-codes.json` 中定義的關鍵字對照表找出常見錯誤並產生建議清單。【F:scripts/error-diagnosis.mjs†L1-L228】【F:scripts/error-codes.json†L1-L86】
+- `error-codes.json`：列出常見錯誤代碼、分類、描述與修復建議，供 `error-diagnosis.mjs` 自動化分析引用。【F:scripts/error-codes.json†L1-L86】
 
 ## 5. `__tests__/` 目錄（Jest 測試）
 

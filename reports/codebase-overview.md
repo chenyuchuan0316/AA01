@@ -30,6 +30,8 @@
 - `scripts/auto-repair.mjs`：提供自動修復重試框架，可設定主要指令、驗證指令、最大重試次數與退避時間。【F:scripts/auto-repair.mjs†L1-L100】
 - `scripts/health-check.mjs`：依 `GAS_WEBAPP_URL` 與 `E2E_PATH` 取得目標網址，支援 Proxy，並將回應摘要寫入 `artifacts` 以利 CI 解析。【F:scripts/health-check.mjs†L1-L72】
 - `scripts/run-pa11y.mjs`：載入 `.env`，在缺少遠端網址時改掃描本地 `Sidebar.html`，使用 pa11y 進行 WCAG 2.1 AA 無障礙檢測。【F:scripts/run-pa11y.mjs†L1-L34】
+- `scripts/error-diagnosis.mjs`：讀取 `reports/ci-step-results.json` 與其他日誌，依 `scripts/error-codes.json` 定義的模式比對常見失敗訊息並輸出建議與證據摘要。【F:scripts/error-diagnosis.mjs†L1-L228】
+- `scripts/error-codes.json`：維護錯誤代碼、分類、關鍵字與建議的對照表，供 `error-diagnosis.mjs` 引用。【F:scripts/error-codes.json†L1-L86】
 - `scripts/url-helper.mjs` 與 `scripts/url-helper.d.ts`：整理 Web App 基底網址與測試路徑、驗證 `http/https`、輸出 JSON 檔案，並提供 TypeScript 型別定義供 Playwright 工具引用。【F:scripts/url-helper.mjs†L1-L65】【F:scripts/url-helper.d.ts†L1-L8】
 
 ## 4. 測試與驗證資源

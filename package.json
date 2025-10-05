@@ -18,6 +18,7 @@
     "health": "node scripts/health-check.mjs",
     "audit:deps": "depcheck",
     "audit:knip": "knip --strict --exports",
+    "diagnose:ci": "node scripts/error-diagnosis.mjs --results reports/ci-step-results.json --output reports/ci-error-diagnosis.md",
     "check": "npm-run-all lint test e2e test:a11y:pa11y test:a11y:jest health",
     "build": "echo \"No build step configured\"",
     "predeploy": "npm run check",
