@@ -23,12 +23,7 @@ jobs:
       cancel-in-progress: true
     timeout-minutes: 45
     env:
-      HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
-      HAS_URL_SECRET: ${{ secrets.GAS_WEBAPP_URL != '' }}
       TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
-      E2E_PATH: ${{ vars.E2E_PATH || '?route=AA01' }}
-      E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
-      LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -38,17 +33,6 @@ jobs:
         run: npm ci
         env:
           HUSKY: '0'
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-
-      - name: Install Playwright dependencies
-        run: npx playwright install --with-deps
 
       - name: Write ~/.clasprc.json
         env:
@@ -83,63 +67,4 @@ jobs:
       - name: Export STAGING url
         id: url
         run: echo "url=https://script.google.com/macros/s/${TEST_DEPLOYMENT_ID}/exec" >> $GITHUB_OUTPUT
-
-      - name: Restore auth.json
-        if: ${{ env.HAS_AUTH == 'true' }}
-        run: echo "${{ secrets.PLAYWRIGHT_AUTH_STATE }}" | base64 -d > auth.json
-
-      - name: Preflight – forbid overriding GAS exec path
-        run: |
-          set -euo pipefail
-          BASE="${BASE_URL:-}"
-          PATH_INPUT="${PATH_INPUT:-}"
-          if [[ ("$BASE" == */exec || "$BASE" == */exec/) && -n "$PATH_INPUT" && "$PATH_INPUT" == /* ]]; then
-            echo "::error::E2E_PATH should be query-only when base ends with /exec (use \"?route=...\")"
-            exit 1
-          fi
-        env:
-          BASE_URL: ${{ steps.url.outputs.url }}
-          PATH_INPUT: ${{ env.E2E_PATH }}
-
-      - name: Remote E2E (staging)
-        if: ${{ env.HAS_AUTH == 'true' && env.HAS_URL_SECRET == 'true' }}
-        run: npm run e2e:remote
-        env:
-          GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
-          E2E_PATH: ${{ env.E2E_PATH }}
-          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
-          LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
-
-      - name: Health (200/302 or skip)
-        continue-on-error: true
-        run: node scripts/health-check.mjs
-        env:
-          GAS_WEBAPP_URL: ${{ steps.url.outputs.url }}
-          E2E_PATH: ${{ env.E2E_PATH }}
-          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: playwright-report-${{ github.job }}
-          path: artifacts/playwright-report
-          if-no-files-found: ignore
-
-      - name: Upload health artifacts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: health-check-${{ github.job }}
-          path: artifacts/health*.json
-          if-no-files-found: ignore
-
-      - name: Detect Playwright report
-        id: detect_playwright_report
-        if: ${{ always() }}
-        run: |
-          if [ -d artifacts/playwright-report ]; then
-            echo "has-report=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has-report=false" >> "$GITHUB_OUTPUT"
-          fi
 

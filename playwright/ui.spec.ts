@@ -161,4 +161,70 @@ test.describe('@ui AA01 Sidebar UI smoke checks', () => {
       ).toBe(true);
     }
   });
+
+  test('@ui submit surfaces validation toast with accessible alert semantics', async ({ page }) => {
+    await openPage(page, 1024);
+
+    await page.click('[data-action="apply-and-save"]');
+
+    const toast = page.locator('#validationToast');
+    await expect(toast).toHaveAttribute('data-show', '1');
+    await expect(toast).toHaveAttribute('role', 'alert');
+    await expect(toast).toHaveAttribute('aria-live', 'assertive');
+    await expect(page.locator('#validationToastText')).toContainText('未完成');
+  });
+
+  test('@ui summary progress reacts to required field completion', async ({ page }) => {
+    await openPage(page, 1024);
+
+    const summaryText = page.locator('#summaryProgressText');
+    const summaryFill = page.locator('#summaryProgressFill');
+    const initialWidth = await summaryFill.evaluate(
+      element => element.getBoundingClientRect().width
+    );
+
+    await page.evaluate(() => {
+      const seedSelect = (id, value, label) => {
+        const select = document.getElementById(id);
+        if (!(select instanceof HTMLSelectElement)) {
+          return;
+        }
+        let option = Array.from(select.options).find(item => item.value === value);
+        if (!option) {
+          option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          select.append(option);
+        }
+        select.value = value;
+        select.dispatchEvent(new Event('input', { bubbles: true }));
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+
+      seedSelect('unitCode', 'A001', 'A001');
+      seedSelect('caseManagerName', '王專員', '王專員');
+      seedSelect('consultName', '李照專', '李照專');
+
+      const caseName = document.getElementById('caseName');
+      if (caseName instanceof HTMLInputElement) {
+        caseName.value = '王小明';
+        caseName.dispatchEvent(new Event('input', { bubbles: true }));
+        caseName.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    await page.click('#cmsLevelGroup button[data-level="3"]');
+
+    await expect(summaryText).toHaveText(/已完成/);
+    await expect(summaryText).not.toHaveText('—');
+
+    const updatedWidth = await summaryFill.evaluate(
+      element => element.getBoundingClientRect().width
+    );
+    expect(updatedWidth).toBeGreaterThan(initialWidth);
+
+    const progressItem = page.locator('.summary-item.summary-progress');
+    await expect(progressItem).toHaveAttribute('data-progress-state', /(low|mid|high)/);
+    await expect(page.locator('#stickySummary')).toHaveAttribute('aria-live', 'polite');
+  });
 });
