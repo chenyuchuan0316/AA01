@@ -2,13 +2,9 @@ import { jest } from '@jest/globals';
 import { ReadableStream } from 'node:stream/web';
 import { TextDecoder, TextEncoder } from 'node:util';
 
-// Polyfill for undici within the Jest runtime
-// @ts-expect-error - allow assignment to the global object
-global.TextEncoder = TextEncoder;
-// @ts-expect-error - allow assignment to the global object
-global.TextDecoder = TextDecoder;
-// @ts-expect-error - allow assignment to the global object
-global.ReadableStream = ReadableStream;
+Object.assign(globalThis, { TextEncoder, TextDecoder, ReadableStream });
+
+type FetchResponse = Awaited<ReturnType<typeof fetch>>;
 
 const scriptPath = '../../scripts/health-check.mjs';
 const helperModulePath = '../../scripts/url-helper.mjs';
@@ -47,14 +43,16 @@ describe('scripts/health-check', () => {
       safeWriteJson
     }));
 
-    const fetchMock = jest.fn().mockResolvedValue({
-      status: 200,
-      redirected: false,
-      headers: new Headers(),
-      text: async () => 'ok'
-    });
-    // @ts-expect-error - assign mock fetch for the test runtime
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn<typeof fetch>(
+      async () =>
+        ({
+          status: 200,
+          redirected: false,
+          headers: new Headers(),
+          text: async () => 'ok'
+        }) as FetchResponse
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
 
     process.env.GAS_WEBAPP_URL = target.base;
     process.env.E2E_PATH = target.path;
@@ -93,14 +91,16 @@ describe('scripts/health-check', () => {
       safeWriteJson
     }));
 
-    const fetchMock = jest.fn().mockResolvedValue({
-      status: 503,
-      redirected: false,
-      headers: new Headers(),
-      text: async () => 'maintenance window'
-    });
-    // @ts-expect-error - assign mock fetch for the test runtime
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn<typeof fetch>(
+      async () =>
+        ({
+          status: 503,
+          redirected: false,
+          headers: new Headers(),
+          text: async () => 'maintenance window'
+        }) as FetchResponse
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
 
     process.env.GAS_WEBAPP_URL = target.base;
     process.env.E2E_PATH = target.path;

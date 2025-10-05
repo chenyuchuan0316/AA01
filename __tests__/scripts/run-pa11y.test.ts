@@ -22,7 +22,7 @@ async function executeScript({
   const exitCalls: number[] = [];
 
   const exitSpy = jest.spyOn(process, 'exit').mockImplementation(code => {
-    exitCalls.push(code ?? 0);
+    exitCalls.push(typeof code === 'number' ? code : Number(code ?? 0));
     return undefined as never;
   });
   const infoSpy = jest.spyOn(console, 'info').mockImplementation(message => {
