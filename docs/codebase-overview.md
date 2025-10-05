@@ -50,6 +50,8 @@
 - `auto-repair.mjs`：重試指令工具，可設定主要指令、驗證指令、最大重試次數與退避秒數，並具備智慧停損（重複錯誤簽章即終止）。【F:scripts/auto-repair.mjs†L1-L98】
 - `health-check.mjs`：讀取 `GAS_WEBAPP_URL` 與 `E2E_PATH`，組合目標網址後進行 fetch（支援 ProxyAgent 與隧道失敗回退），接受 200 或 3xx；會輸出 `artifacts/health-url.json`、`artifacts/health.json` 供 CI 分析。【F:scripts/health-check.mjs†L1-L64】
 - `run-pa11y.mjs`：載入 `.env` 後決定掃描目標（遠端部署或本地 HTML），以 pa11y 依 WCAG 2.0 AA 檢測無障礙問題並列出違規清單。【F:scripts/run-pa11y.mjs†L1-L34】
+- `error-diagnosis.mjs`：彙整 `reports/ci-step-results.json` 與額外輸入的工作日誌，根據 `error-codes.json` 中定義的關鍵字對照表找出常見錯誤並產生建議清單。【F:scripts/error-diagnosis.mjs†L1-L228】【F:scripts/error-codes.json†L1-L86】
+- `error-codes.json`：列出常見錯誤代碼、分類、描述與修復建議，供 `error-diagnosis.mjs` 自動化分析引用。【F:scripts/error-codes.json†L1-L86】
 
 ## 5. `__tests__/` 目錄（Jest 測試）
 
@@ -80,7 +82,8 @@
 
 - `package.json`：定義 npm 指令、lint-staged 規則、開發相依與 overrides；測試流程涵蓋 lint、Jest、Playwright、pa11y、健康檢查與 predeploy 檢查。【F:package.json†L1-L38】
 - `package-lock.json`：鎖定 npm 相依版本，確保 CI 與本地環境一致。
-- `tsconfig.json`：採 NodeNext 模組解析，納入 `scripts/`、`src/`、`__tests__/`、`test/`、`playwright/`，關閉 emit 並內建 `jest`/`node` 型別，統一提供所有工具鏈使用。【F:tsconfig.json†L1-L24】
+- `tsconfig.json`：採 NodeNext 模組解析並允許 JSON/JS 檔案，納入 `src/`、`scripts/`、`__tests__/`、`playwright/`、`test/` 及根目錄工具腳本，作為各工具共用的單一設定來源。【F:tsconfig.json†L1-L23】
+- `tsconfig.test.json`：延伸根設定僅覆寫 `types`（加入 `jest`），讓 `npm run typecheck` 可取得測試用型別而不需維護多份編譯規則。【F:tsconfig.test.json†L1-L5】
 - `jest.config.cjs`：主 Jest 設定，使用 jsdom 環境、ts-jest ESM 轉換、coverage 收集規則與測試啟動檔案。【F:jest.config.cjs†L1-L30】
 - `eslint.config.js`：ESLint flat config，整合 TypeScript、Jest、Playwright 規則與忽略目錄設定。【F:eslint.config.js†L1-L45】
 - `prettier.config.cjs`：Prettier 格式化偏好（100 字寬、2 空格、單引號、忽略 HTML 空白敏感度）。【F:prettier.config.cjs†L1-L9】

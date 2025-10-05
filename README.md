@@ -15,7 +15,18 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 - **TEST**: `https://script.google.com/macros/s/AKfycbw1-3KBUwTLymBMK6pzNrvvaW9bxfNOGKPSNhsscssDwc9buXAJ3sUTbhljLiHcEDrh/exec?route=health`
 - **PROD**: `https://script.google.com/macros/s/AKfycbyDt6M-PYyU-ANWU2fQrLF4w_9T_f1ADZLFNNInG0_orf4LhmnLHt8peBen8v2mTY-c/exec?route=health`
 
-## 快速開始（Quickstart）
+## 安裝與快速開始（Installation & Quickstart）
+
+### 本地開發初始化
+
+1. **確認 Node.js / npm 版本** — 專案以 Node.js 18.20.0、npm 10.8.2 驗證。建議使用 `nvm install 18.20.0 && nvm use 18.20.0` 或企業提供的 LTS 管理工具統一版本。
+2. **取得程式碼** — `git clone https://github.com/chenyuchuan0316/AA01.git && cd AA01`。
+3. **安裝依賴** — 執行 `npm ci` 以還原 `package-lock.json` 記錄的版本，避免意外升版造成差異。
+4. **建立環境檔** — 複製 `.env.example` 為 `.env`，至少填入 `GAS_WEBAPP_URL`（可先使用 `https://example.com/exec` 佔位）與 `E2E_PATH=?route=AA01`；缺省時相關腳本會自動 fallback 至本地 HTML。
+5. **安裝 Playwright 瀏覽器** — `npx playwright install --with-deps`。第一次執行 UI / 遠端測試前務必完成，CI 亦會重複此步驟以確保一致。
+6. **驗證開發環境** — 依序執行 `npm run lint`、`npm test -- --runInBand`、`npm run e2e:ui`。若僅需最小驗證，可使用 `npm run predeploy` 一次完成所有檢查。
+
+### 建立或同步 Apps Script 專案
 
 1. **複製專案檔案**：在目標 Google 文件中開啟 `Extensions → Apps Script`，將本儲存庫的 `.gs` 與 `Sidebar.html` 內容貼入新建專案。
 2. **設定資源識別碼**：於 `Constants.gs` 填入模板文件、輸出資料夾與名單試算表的 ID，並確認這些資源已與執行帳號共享。
@@ -63,13 +74,28 @@ AA01 是一套以 Google Apps Script 打造的 Google 文件附加功能。長�
 
 ## 開發環境需求
 
-| 類別              | 需求                     | 備註                                                                             |
-| ----------------- | ------------------------ | -------------------------------------------------------------------------------- |
-| Node.js           | ≥ 18.20.0                | CI 使用 18.20.8；Jest 30 與 Playwright 需要 Node 18                              |
-| npm               | ≥ 10.8.0                 | CI 使用 10.8.2                                                                   |
-| 套件安裝          | `npm install`            | 同步 `package-lock.json`，避免使用 `npm update` 造成版本漂移                     |
-| Playwright 瀏覽器 | `npx playwright install` | 第一次執行遠端或 UI 測試前必須安裝                                               |
-| `.env`            | 參照 `.env.example`      | 本地測試需要 `GAS_WEBAPP_URL`、`E2E_PATH` 等參數；保留預設值時測試會改用本地檔案 |
+| 類別              | 需求                                 | 備註                                                                        |
+| ----------------- | ------------------------------------ | --------------------------------------------------------------------------- |
+| Node.js           | ≥ 18.20.0                            | CI 使用 18.20.8；Jest 30 與 Playwright 依賴 Node 18 LTS。                   |
+| npm               | ≥ 10.8.0                             | 建議與 Node 一併透過 nvm 管理，維持與 CI 相同版本。                         |
+| 套件安裝          | `npm ci`                             | 鎖定 `package-lock.json`，避免 `npm update` 造成版本漂移。                  |
+| Playwright 瀏覽器 | `npx playwright install --with-deps` | UI / 遠端測試與 CI 都需安裝對應瀏覽器。                                     |
+| `.env`            | 參照 `.env.example`                  | `GAS_WEBAPP_URL`、`E2E_PATH` 等變數決定測試目標，預設會 fallback 本地檔案。 |
+
+## 專案目錄結構（Project Structure）
+
+| 路徑 / 檔案                               | 角色說明                                                                                                       |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `src/`                                    | Apps Script 後端程式與 `Sidebar.html`。維持 2 空格縮排並確保 HtmlService 相容。                                |
+| `scripts/`                                | Node.js 工具腳本：部署（`gas-deploy.mjs`）、健康檢查、pa11y、錯誤診斷與 CI 共用 helper 均集中於此。            |
+| `__tests__/`                              | Jest 規格，涵蓋 GAS 工具、無障礙檢查、Playwright 輔助函式與 CI 腳本。                                          |
+| `playwright/`                             | Playwright 測試與 utilities，`ui.spec.ts` 覆蓋本地 HTML；`remote.spec.ts` 依 `HAS_AUTH` 判斷是否執行雲端煙測。 |
+| `test/`                                   | Jest 共用設定、DOM 夾具與 `test/a11y-fallback.html`（無遠端網址時供 pa11y 使用）。                             |
+| `docs/`                                   | 操作手冊、FAQ 與程式碼導覽，補充 README 無法詳述的維運資訊。                                                   |
+| `reports/`                                | CI 產生的統計與稽核資料，例如 `ci-failure-report.md`、`ci-error-diagnosis.md`、Playwright 基準輸出。           |
+| `.github/workflows/`                      | CI / CD 流程定義，涵蓋主 CI、預部署檢查、npm 更新與部署工作流程。                                              |
+| `gas-deploy.mjs`、`get-refresh-token.mjs` | 額外提供部署與 OAuth token 取得 CLI，與 `scripts/` 內模組互補。                                                |
+| `jest.config.cjs`、`tsconfig*.json`       | 測試與型別設定的唯一權威來源，已整合舊設定；請勿新增平行檔。                                                   |
 
 ### Playwright 登入態管理（auth.json）
 
@@ -91,7 +117,14 @@ npm run e2e:ui         # 本地 UI 規格（不需登入）
 npm run e2e:remote     # 遠端部署；需 auth.json 與 GAS_WEBAPP_URL
 npm run health         # 健康檢查；未設 URL 時會輸出 skip
 npm run test:a11y:pa11y # pa11y 掃描；缺 URL 時 fallback 本地 HTML
+npm run diagnose:ci     # 解析 `reports/ci-step-results.json` 並輸出診斷報告
 ```
+
+## 無障礙測試與報告
+
+- **Jest + jest-axe**：`__tests__/a11y/sidebar-a11y.test.ts` 會載入 `Sidebar.html` 並套用 `toHaveNoViolations`，確保主要表單與導覽元素符合 WCAG 2.1 AA。違規將在 Jest 終端輸出詳細節點。
+- **pa11y CLI**：`npm run test:a11y:pa11y` 由 `scripts/run-pa11y.mjs` 執行，預設掃描 WCAG2AA。任何 issue 都會使腳本以錯誤碼結束，視同 error 0、warning 0 的嚴格門檻。
+- **結果查看**：CI 會在 `A11y (pa11y)` 步驟日誌列出 `pa11y found X issue(s)` 明細；若未提供遠端網址則使用 `test/a11y-fallback.html` 並在輸出中標記 fallback 來源。
 
 ## 測試矩陣
 
@@ -117,16 +150,21 @@ GitHub Actions 的 `CI` workflow 依序執行下列步驟：
 7. **A11y (pa11y)** — `npm run test:a11y:pa11y`，可 fallback 本地 HTML。
 8. **Remote E2E** — 僅在 `PLAYWRIGHT_AUTH_STATE` 與 `GAS_WEBAPP_URL` 同時存在時執行；缺少任一條件會輸出 skip 理由。
 9. **Failure Report** — 若前述任一步驟失敗，`collect-ci-failures.mjs` 會生成 `reports/ci-failure-report.md` 並附加至 workflow summary。
+10. **Error Diagnosis** — `error-diagnosis.mjs` 根據 `scripts/error-codes.json` 匹配常見錯誤訊息，輸出 `reports/ci-error-diagnosis.md` 與建議清單。
 
 ## Secrets 與環境變數
 
-| 名稱                                                           | 用途                      | 必要條件                  | 備註                               |
-| -------------------------------------------------------------- | ------------------------- | ------------------------- | ---------------------------------- |
-| `GAS_WEBAPP_URL`                                               | 遠端測試、健康檢查、pa11y | 遠端 E2E、Health 必填     | 缺少時相關步驟會 skip 並說明原因   |
-| `PLAYWRIGHT_AUTH_STATE`                                        | 遠端 E2E 登入態           | Base64 編碼的 `auth.json` | 缺少時遠端 E2E skip，但會記錄原因  |
-| `CLASPRC_JSON`                                                 | clasp 部署憑證            | JSON 或 Base64            | 供 `gas-deploy.mjs` 使用           |
-| `GOOGLE_WORKLOAD_IDENTITY_PROVIDER` / `GOOGLE_SERVICE_ACCOUNT` | OIDC 部署                 | 選填                      | 若改用 Service Account JSON 可不填 |
-| `GAS_SERVICE_ACCOUNT_JSON`                                     | Service Account JSON      | 選填                      | 與 OIDC 擇一即可                   |
+| 名稱                                                              | 用途                                      | 必填條件                                          | 設定方式 / 範例                                                                                                   |
+| ----------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `GAS_WEBAPP_URL`                                                  | 遠端 E2E、健康檢查、pa11y 的目標網址      | 遠端驗證時必填；缺少時相關步驟會自動標記為 skip   | `https://script.google.com/macros/s/<DEPLOYMENT_ID>/exec`。若僅本地驗證，可維持 `https://example.com/exec` 佔位。 |
+| `E2E_PATH`                                                        | 與 `GAS_WEBAPP_URL` 合併產生測試網址      | 預設為 `?route=AA01`                              | 以查詢字串呈現（`?route=AA01` / `?route=health`）。當 base URL 已以 `/exec` 結尾時，不得再填寫路徑段。            |
+| `PLAYWRIGHT_AUTH_STATE`                                           | 遠端 Playwright 測試的登入態              | 提供 Base64 編碼的 `auth.json` 時才會啟用遠端煙測 | `cat auth.json                                                                                                    | base64` 後貼入 Secret。缺少時遠端規格會跳過並在 CI summary 顯示原因。 |
+| `HAS_AUTH` / `HAS_URL`                                            | 指示 CI 是否具備登入態與遠端網址          | 由 workflow 自動推導；手動執行時可覆寫            | 將值設為 `true` / `false`（字串）。例如手動觸發 `workflow_dispatch` 可帶入 `HAS_AUTH=false` 測試純本地流程。      |
+| `CLASPRC_JSON`                                                    | clasp 部署憑證                            | JSON 文字或 Base64 皆可                           | 內容需與 `.clasprc.json` 完整一致。CI 會自動判斷格式並寫入家目錄。                                                |
+| `GAS_CLIENT_ID` / `GAS_CLIENT_SECRET` / `GAS_OAUTH_REFRESH_TOKEN` | 使用 OAuth refresh token 部署 Apps Script | 擇一部署策略時必填                                | 依「部署 Web App」章節取得桌面 OAuth Client 與 refresh token，並以環境變數提供給 `gas-deploy.mjs`。               |
+| `GOOGLE_WORKLOAD_IDENTITY_PROVIDER` / `GOOGLE_SERVICE_ACCOUNT`    | 透過 OIDC 取得短期憑證                    | 若採用 Workload Identity Federation 時必填        | 參考 GCP 文件建立 Provider 與服務帳號後，在 GitHub Secrets 填入對應資源名稱。                                     |
+| `GAS_SERVICE_ACCOUNT_JSON`                                        | 以 Service Account JSON 部署 Apps Script  | 採用 Service Account 策略時必填                   | 支援原始 JSON 或 Base64。與 OIDC 擇一即可。                                                                       |
+| `VERSION_DESC` / `DEPLOY_DESC` / `DEPLOYMENT_ID`                  | 自訂部署版本描述與覆寫目標                | 選填                                              | 於部署前設定，供 `gas-deploy.mjs` 在建立版本與更新 deployment 時帶入說明或覆寫既有 deployment。                   |
 
 ### GAS_WEBAPP_URL 與 E2E_PATH 設定規則
 
@@ -147,10 +185,12 @@ GitHub Actions 的 `CI` workflow 依序執行下列步驟：
 | `artifacts/playwright-results/`                      | 截圖、trace、影片    | UI / Remote E2E             |
 | `artifacts/health-url.json`、`artifacts/health.json` | 健康檢查目標與結果   | Health                      |
 | `reports/ci-failure-report.md`                       | 失敗分類摘要         | Failure Report job          |
+| `reports/ci-error-diagnosis.md`                      | 常見錯誤對照與建議   | Error Diagnosis job         |
 
 ## 常見紅燈處置
 
 - **Lint 失敗**：檢查 `npm run lint` 輸出，優先修正 ESLint 錯誤或格式問題。`collect-ci-failures.mjs` 會提供對應段落。
+- **不確定失敗原因**：查看 `reports/ci-error-diagnosis.md`，依建議調整 Secrets、E2E_PATH 或修正測試設定後重新執行。
 - **單元測試失敗**：下載 Playwright/Jest artifact 或參考 `reports/ci-failure-report.md` 中的 Stack trace，針對對應測試修復。
 - **UI E2E 失敗**：下載 `artifacts/playwright-results/` 的 trace 與截圖，比對 DOM 變動；必要時更新定位符。
 - **A11y 失敗**：確認 `test/a11y-fallback.html` 是否需要更新或部署頁面是否可公開讀取，依報告建議修正。
