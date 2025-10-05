@@ -13,8 +13,11 @@
     "types": ["node"]
   },
   "include": [
+    "__tests__/**/*",
+    "playwright/**/*",
     "scripts/**/*",
     "src/**/*",
+    "test/**/*",
     "gas-deploy.mjs",
     "get-refresh-token.mjs",
     "playwright.config.mjs"

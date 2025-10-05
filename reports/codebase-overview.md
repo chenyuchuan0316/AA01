@@ -36,8 +36,7 @@
 
 - `package.json`：定義 lint、Jest、Playwright、pa11y、健康檢查等指令與 Node 18 / npm 10 需求，並列出相關開發依賴與 overrides。【F:package.json†L1-L62】
 - Jest：
-  - `jest.config.cjs` 以 jsdom 環境與 `ts-jest` 支援 TypeScript，蒐集 `scripts/`、`src/` 覆蓋率並啟用 `test/setup-tests.cjs`。【F:jest.config.cjs†L1-L32】
-  - `jest.config.js` 提供 Node 環境的簡化設定（兼容部分工具）。【F:jest.config.js†L1-L6】
+  - `jest.config.cjs` 作為唯一設定檔，提供 jsdom 環境、`ts-jest` ESM 支援、覆蓋率收集與 `test/setup-tests.cjs` 啟動腳本。【F:jest.config.cjs†L1-L32】
   - `__tests__/sample.test.ts` 驗證基本表單夾具格式；`__tests__/a11y/sidebar-a11y.test.ts` 以 `jest-axe` 檢查無障礙；`__tests__/scripts/url-helper.test.ts` 覆蓋 URL 工具各種邊界情境；`__tests__/fixtures/basic-form.json` 為測試資料。【F:**tests**/sample.test.ts†L1-L18】【F:**tests**/a11y/sidebar-a11y.test.ts†L1-L24】【F:**tests**/scripts/url-helper.test.ts†L1-L46】【F:**tests**/fixtures/basic-form.json†L1-L5】
   - `test/setup-tests.cjs` 匯入 `jest-dom` 與 `jest-axe` 擴充；`test/setup-tests.d.ts` 宣告自訂 Matcher 型別。【F:test/setup-tests.cjs†L1-L7】【F:test/setup-tests.d.ts†L1-L8】
 - Playwright：
@@ -51,7 +50,7 @@
 - `eslint.config.js`：採 Flat Config，整合 `@typescript-eslint`、`eslint-plugin-jest`、`eslint-plugin-playwright` 規則，並禁用一般 `console`。【F:eslint.config.js†L1-L46】
 - `prettier.config.cjs`：設定 100 字元換行、2 空格縮排、單引號等格式化規則。【F:prettier.config.cjs†L1-L8】
 - `depcheck.config.cjs` 與 `knip.json`：客製 depcheck 與 knip 的忽略清單與特別解析器，避免部署腳本等檔案被誤判為未使用。【F:depcheck.config.cjs†L1-L19】【F:knip.json†L1-L10】
-- `tsconfig.test.json` / `tsconfig.json`：採 `NodeNext` 模組解析、允許 JSON 模組與 JS 檔案，並將 Playwright、測試與 `src/utils` 納入編譯；根設定僅延伸測試專案配置。【F:tsconfig.test.json†L1-L15】【F:tsconfig.json†L1-L3】
+- `tsconfig.json` / `tsconfig.test.json`：共用 `NodeNext` 模組解析、JSON 模組允許與 `noEmit`，根設定納入 `src/`、`scripts/`、測試與 Playwright 目錄；`tsconfig.test.json` 只額外指定 Jest 型別，避免重複維護多份設定。【F:tsconfig.json†L1-L23】【F:tsconfig.test.json†L1-L5】
 - `eslint.config.js`、`lint-staged`（於 `package.json` 中）確保提交前執行 ESLint 與 Prettier 修正。【F:package.json†L18-L33】【F:eslint.config.js†L1-L46】
 
 ## 6. 文件與審查報告
