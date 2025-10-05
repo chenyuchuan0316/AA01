@@ -1,4 +1,4 @@
-name: GAS staged test & deploy (single workflow)
+name: GAS staged deploy
 
 env:
   CI: true
@@ -24,14 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      PLAYWRIGHT_AUTH_STATE_B64: ${{ secrets.PLAYWRIGHT_AUTH_STATE }}
-      GAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL }}
-      HAS_AUTH: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' }}
-      HAS_WEBAPP_URL: ${{ secrets.GAS_WEBAPP_URL != '' }}
-      HAS_REMOTE_TEST: ${{ secrets.PLAYWRIGHT_AUTH_STATE != '' && secrets.GAS_WEBAPP_URL != '' }}
-      E2E_PATH: ${{ vars.E2E_PATH || '?route=AA01' }}
-      E2E_TIMEOUT: ${{ vars.E2E_TIMEOUT || '30000' }}
-      LOCAL_BASE_URL: ${{ vars.LOCAL_BASE_URL || 'http://127.0.0.1:3000/' }}
+      TEST_DEPLOYMENT_ID: ${{ secrets.TEST_DEPLOYMENT_ID }}
 
     steps:
       - name: "Checkout"
@@ -46,72 +39,6 @@ jobs:
         run: npm ci
         env:
           HUSKY: '0'
-
-      - name: "Cache Playwright browsers"
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
-
-      - name: "Install Playwright browsers"
-        run: npx playwright install --with-deps
-
-      - name: Restore Playwright auth state
-        if: ${{ env.HAS_AUTH == 'true' }}
-        run: |
-          set -euo pipefail
-          echo "${PLAYWRIGHT_AUTH_STATE_B64}" | base64 -d > auth.json
-          echo "auth.json restored"
-
-      - name: Preflight – forbid overriding GAS exec path
-        run: |
-          set -euo pipefail
-          BASE="${BASE_URL:-}"
-          PATH_INPUT="${PATH_INPUT:-}"
-          if [[ ("$BASE" == */exec || "$BASE" == */exec/) && -n "$PATH_INPUT" && "$PATH_INPUT" == /* ]]; then
-            echo "::error::E2E_PATH should be query-only when base ends with /exec (use \"?route=...\")"
-            exit 1
-          fi
-        env:
-          BASE_URL: ${{ env.GAS_WEBAPP_URL }}
-          PATH_INPUT: ${{ env.E2E_PATH }}
-
-      - name: Remote E2E (staging)
-        if: ${{ env.HAS_REMOTE_TEST == 'true' }}
-        run: npm run e2e:remote
-        env:
-          GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
-          E2E_PATH: ${{ env.E2E_PATH }}
-          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
-          LOCAL_BASE_URL: ${{ env.LOCAL_BASE_URL }}
-      - name: Debug secrets → env mapping
-        run: |
-          set -euo pipefail
-          node -e "process.stdout.write('GAS_WEBAPP_URL length=' + String((process.env.GAS_WEBAPP_URL || '').length))"
-
-      - name: Health check (200/302 or skip)
-        if: ${{ env.HAS_WEBAPP_URL == 'true' }}
-        continue-on-error: true
-        run: node scripts/health-check.mjs
-        env:
-          GAS_WEBAPP_URL: ${{ env.GAS_WEBAPP_URL }}
-          E2E_PATH: ${{ env.E2E_PATH }}
-          E2E_TIMEOUT: ${{ env.E2E_TIMEOUT }}
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: playwright-report-${{ github.job }}
-          path: artifacts/playwright-report
-          if-no-files-found: ignore
-
-      - name: Upload health artifacts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: health-check-${{ github.job }}
-          path: artifacts/health*.json
-          if-no-files-found: ignore
 
       - name: "Install latest clasp"
         run: npm i -g @google/clasp

@@ -21,7 +21,6 @@
 - `aa01_ui_code_audit_suspicious.csv`：UI 稽核工具輸出的可疑 ID 與 CSS 使用狀態列表，標記未使用/重複 ID 等問題以利整理。【F:aa01_ui_code_audit_suspicious.csv†L1-L30】
 - `clasprc_base64.txt`：保存 `.clasprc.json` 的 Base64 字串範例，供部署流程或秘密管理參考。【F:clasprc_base64.txt†L1-L8】
 - `桃園市_長照給付資料庫_v1.xlsx`：桃園市長照給付資料庫原始試算表，對應 `DataStore.gs` 中的靜態 JSON 內容（僅供參考，程式未直接讀取）。
-- `新增 文字文件.txt`：空白占位檔，可刪除或作為測試用途。
 
 ## 3. `src/` 目錄（Apps Script 核心）
 
