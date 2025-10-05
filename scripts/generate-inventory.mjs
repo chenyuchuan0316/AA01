@@ -112,23 +112,38 @@ function collectInfo(filePath, text) {
   return info;
 }
 
-async function main() {
+async function generateInventory(rootDir = REPO_ROOT) {
   const inventory = [];
-  for await (const filePath of walk(REPO_ROOT)) {
-    const rel = path.relative(REPO_ROOT, filePath);
+  for await (const filePath of walk(rootDir)) {
+    const rel = path.relative(rootDir, filePath);
     if (!TARGET_EXTENSIONS.has(path.extname(rel))) continue;
     const text = await fs.readFile(filePath, 'utf8');
     const info = collectInfo(filePath, text);
     inventory.push({ file: rel, ...info });
   }
   inventory.sort((a, b) => a.file.localeCompare(b.file));
-  const outputDir = path.join(REPO_ROOT, 'reports', 'baseline');
-  await fs.mkdir(outputDir, { recursive: true });
-  const outputPath = path.join(outputDir, 'repo-inventory.json');
-  await fs.writeFile(outputPath, JSON.stringify(inventory, null, 2));
+  return inventory;
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+async function main({
+  rootDir = REPO_ROOT,
+  outputDir = path.join(REPO_ROOT, 'reports', 'baseline'),
+  fileName = 'repo-inventory.json'
+} = {}) {
+  const inventory = await generateInventory(rootDir);
+  await fs.mkdir(outputDir, { recursive: true });
+  const outputPath = path.join(outputDir, fileName);
+  await fs.writeFile(outputPath, JSON.stringify(inventory, null, 2));
+  return { inventory, outputPath };
+}
+
+const isCliInvocation = process.argv[1] === fileURLToPath(import.meta.url);
+
+export { collectInfo, resolveScriptKind, walk, generateInventory, main, TARGET_EXTENSIONS };
+
+if (isCliInvocation) {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}

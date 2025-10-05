@@ -2,6 +2,7 @@
 import { spawn } from 'node:child_process';
 import process from 'node:process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { fileURLToPath } from 'node:url';
 
 function parseArgs(argv) {
   const result = { run: null, verify: null, max: null, backoff: null };
@@ -27,9 +28,9 @@ function parseArgs(argv) {
   return result;
 }
 
-async function runCommand(command, label) {
+async function runCommand(command, label, spawnFn = spawn) {
   return new Promise(resolve => {
-    const child = spawn(command, { shell: true, stdio: 'inherit' });
+    const child = spawnFn(command, { shell: true, stdio: 'inherit' });
     child.on('exit', (code, signal) => {
       const exitCode = typeof code === 'number' ? code : 1;
       const signature = signal ? `${exitCode}:${signal}` : `${exitCode}`;
@@ -41,8 +42,17 @@ async function runCommand(command, label) {
   });
 }
 
-async function main() {
-  const args = parseArgs(process.argv.slice(2));
+async function main(
+  argv = process.argv.slice(2),
+  {
+    spawnFn = spawn,
+    delayFn = delay,
+    exit = code => {
+      process.exit(code);
+    }
+  } = {}
+) {
+  const args = parseArgs(argv);
   const runCommandText = args.run || process.env.AUTO_REPAIR_COMMAND;
   const verifyCommandText = args.verify || process.env.AUTO_REPAIR_VERIFY || null;
   const maxAttempts = Number.isInteger(args.max)
@@ -56,7 +66,8 @@ async function main() {
     console.error(
       '[auto-repair] Missing --run command or AUTO_REPAIR_COMMAND environment variable.'
     );
-    process.exit(2);
+    exit(2);
+    return;
   }
 
   console.info(`[auto-repair] Target command: ${runCommandText}`);
@@ -77,18 +88,19 @@ async function main() {
   while (attempt < maxAttempts) {
     attempt += 1;
     console.info(`[auto-repair] Attempt ${attempt} of ${maxAttempts}`);
-    const runResult = await runCommand(runCommandText, 'run');
+    const runResult = await runCommand(runCommandText, 'run', spawnFn);
     lastExitCode = runResult.exitCode;
 
     if (runResult.exitCode === 0) {
       console.info(`[auto-repair] Command succeeded on attempt ${attempt}.`);
-      process.exit(0);
+      exit(0);
+      return;
     }
 
     let verifySignature = 'no-verify';
     if (verifyCommandText) {
       console.info('[auto-repair] Running verify command after failure…');
-      const verifyResult = await runCommand(verifyCommandText, 'verify');
+      const verifyResult = await runCommand(verifyCommandText, 'verify', spawnFn);
       lastVerifyExit = verifyResult.exitCode;
       verifySignature = verifyResult.signature;
     }
@@ -110,21 +122,29 @@ async function main() {
 
     if (backoffSeconds > 0) {
       console.info(`[auto-repair] Waiting ${backoffSeconds}s before retry…`);
-      await delay(backoffSeconds * 1000);
+      await delayFn(backoffSeconds * 1000);
     }
   }
 
   console.error(
     `[auto-repair] Exhausted attempts. lastExit=${lastExitCode}, lastVerify=${lastVerifyExit ?? 'n/a'}`
   );
-  process.exit(lastExitCode || 1);
+  exit(lastExitCode || 1);
 }
 
-main().catch(error => {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error('[auto-repair] Unexpected error:', message);
-  if (error && typeof error.stack === 'string') {
-    console.error(error.stack);
-  }
-  process.exit(1);
-});
+function createCliRunner() {
+  return main().catch(error => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[auto-repair] Unexpected error:', message);
+    if (error && typeof error.stack === 'string') {
+      console.error(error.stack);
+    }
+    process.exit(1);
+  });
+}
+
+export { parseArgs, runCommand, main, createCliRunner };
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  createCliRunner();
+}

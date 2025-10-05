@@ -15,7 +15,6 @@ Object.assign(globalWithUndici, {
   ReadableStream
 });
 
-
 const scriptPath = '../../scripts/health-check.mjs';
 const helperModulePath = '../../scripts/url-helper.mjs';
 

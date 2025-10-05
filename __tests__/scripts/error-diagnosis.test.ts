@@ -1,13 +1,18 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { jest } from '@jest/globals';
+import { mkdtemp, rm, writeFile, readFile } from 'node:fs/promises';
+
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
+  parseArgs,
+  readJsonIfExists,
   normaliseCodes,
   matchCodes,
   buildReport,
   collectSources,
-  parsePattern
+  parsePattern,
+  main as runDiagnosis
 } from '../../scripts/error-diagnosis.mjs';
 
 describe('error diagnosis utilities', () => {
@@ -19,6 +24,7 @@ describe('error diagnosis utilities', () => {
 
   afterEach(async () => {
     await rm(tempDir, { recursive: true, force: true });
+    jest.restoreAllMocks();
   });
 
   test('parsePattern supports regular expression flags', () => {
@@ -97,5 +103,128 @@ describe('error diagnosis utilities', () => {
 
     expect(report).toContain('No known issues matched');
     expect(report).toContain('Lint');
+  });
+
+  test('parseArgs aggregates CLI flags and log paths', () => {
+    const options = parseArgs([
+      '--codes',
+      'codes.json',
+      '--results',
+      'results.json',
+      '--log',
+      'first.log',
+      '--log',
+      'second.log',
+      '--output',
+      'report.md',
+      '--set-output',
+      'gha.txt'
+    ]);
+
+    expect(options).toEqual({
+      codesPath: 'codes.json',
+      resultsPath: 'results.json',
+      logPaths: ['first.log', 'second.log'],
+      outputPath: 'report.md',
+      outputFileForGithub: 'gha.txt'
+    });
+  });
+
+  test('readJsonIfExists returns fallback when file is missing', async () => {
+    const fallback = { ok: true };
+    const result = await readJsonIfExists(join(tempDir, 'missing.json'), fallback);
+    expect(result).toBe(fallback);
+  });
+
+  test('buildReport includes recommendations and references for matches', () => {
+    const matches = matchCodes(
+      normaliseCodes([
+        {
+          id: 'PLAYWRIGHT_INSTALL',
+          title: 'Missing Playwright browsers',
+          severity: 'high',
+          category: 'e2e',
+          description: 'Playwright browsers must be installed before running UI specs.',
+          patterns: ['download missing browsers'],
+          recommendations: ['Run `npx playwright install --with-deps`.'],
+          references: ['https://playwright.dev/docs/cli']
+        }
+      ]),
+      [
+        {
+          id: 'ci:ui',
+          label: 'UI tests',
+          category: 'ui',
+          text: 'Please run "npx playwright install" to download missing browsers.'
+        }
+      ]
+    );
+
+    const report = buildReport(matches, [
+      { id: 'ci:ui', label: 'UI tests', category: 'ui', text: 'download missing browsers' }
+    ]);
+
+    expect(report).toContain('PLAYWRIGHT_INSTALL');
+    expect(report).toContain('Recommended actions');
+    expect(report).toContain('https://playwright.dev/docs/cli');
+  });
+
+  test('main writes report and GitHub outputs for detected matches', async () => {
+    const codesPath = join(tempDir, 'codes.json');
+    const resultsPath = join(tempDir, 'results.json');
+    const logPath = join(tempDir, 'run.log');
+    const outputPath = join(tempDir, 'report.md');
+    const ghaOutputsPath = join(tempDir, 'gha.txt');
+
+    await Promise.all([
+      writeFile(
+        codesPath,
+        JSON.stringify([
+          {
+            id: 'TYPECHECK_FAIL',
+            title: 'TypeScript compilation failed',
+            category: 'typecheck',
+            patterns: ['/error TS[0-9]+/'],
+            recommendations: ['Run `npm run typecheck` locally and fix the errors.']
+          }
+        ])
+      ),
+      writeFile(
+        resultsPath,
+        JSON.stringify({
+          steps: [
+            {
+              category: 'typecheck',
+              label: 'TypeScript',
+              excerpt: 'error TS2304: Cannot find name "window".'
+            }
+          ]
+        })
+      ),
+      writeFile(logPath, 'error TS2304: Cannot find name "window".')
+    ]);
+
+    jest.spyOn(console, 'info').mockImplementation(() => {});
+
+    await runDiagnosis([
+      '--codes',
+      codesPath,
+      '--results',
+      resultsPath,
+      '--log',
+      logPath,
+      '--output',
+      outputPath,
+      '--set-output',
+      ghaOutputsPath
+    ]);
+
+    const report = await readFile(outputPath, 'utf8');
+    expect(report).toContain('CI Error Diagnosis Report');
+    expect(report).toContain('Analysed sources');
+
+    const ghaOutputs = await readFile(ghaOutputsPath, 'utf8');
+    expect(ghaOutputs).toContain('has_matches=');
+    expect(ghaOutputs).toContain('match_count=');
   });
 });

@@ -67,7 +67,6 @@
 ## 7. 其他資產與示例
 
 - `clasprc_base64.txt`：展示 `.clasprc.json` 以 Base64 編碼的內容樣板，輔助 GitHub Actions 還原憑證。【F:clasprc_base64.txt†L1-L7】
-- `新增 文字文件.txt`：紀錄手動部署 Git 指令與 GitHub Actions 失敗 log，留存操作歷程。【F:新增 文字文件.txt†L1-L120】
 - `桃園市_長照給付資料庫_v1.xlsx`：原始長照給付參考資料，對應 `DataStore.gs` 內的靜態表格。
 - `aa01_ui_code_audit_suspicious.csv` 與 `reports/round-*/summary.md` 可協助查核 UI 與自動化驗證狀態。
 

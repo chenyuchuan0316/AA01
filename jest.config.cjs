@@ -26,9 +26,8 @@ module.exports = {
   collectCoverageFrom: [
     'scripts/**/*.{mjs,js,ts}',
     'src/**/*.{js,ts}',
+    'playwright/utils/**/*.ts',
     '!scripts/**/*.d.ts',
-    '!scripts/auto-repair.mjs',
-    '!scripts/health-check.mjs',
     '!scripts/run-pa11y.mjs',
     '!**/fixtures/**'
   ],
