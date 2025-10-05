@@ -115,7 +115,7 @@ describe('run-ci-step utilities', () => {
 
   test('main records skip without invoking exit', async () => {
     const file = resultsPath();
-    const exit = jest.fn();
+    const exit = jest.fn<(code?: string | number) => never>();
 
     await runCiStep(['--category', 'health', '--skip', 'No URL provided', '--results', file], {
       exit: exit as unknown as (code?: string | number) => never
@@ -128,7 +128,7 @@ describe('run-ci-step utilities', () => {
 
   test('main records failure for non-blocking command without exiting', async () => {
     const file = resultsPath();
-    const exit = jest.fn();
+    const exit = jest.fn<(code?: string | number) => never>();
 
     const scriptPath = join(tempDir, 'fail.mjs');
     await writeFile(scriptPath, 'console.error("a11y failure"); process.exit(1);', 'utf8');

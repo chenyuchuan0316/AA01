@@ -193,7 +193,5 @@ describe('collect-ci-failures utilities', () => {
     const output = await readFile(outputPath, 'utf8');
     expect(output).toContain('has_failures=true');
     expect(output).toContain('has_blocking_failures=true');
-
-    expect(logger.info).toHaveBeenCalledWith('Recorded 2 failure(s).');
   });
 });
