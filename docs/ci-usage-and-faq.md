@@ -4,12 +4,12 @@
 
 ## Workflow 概覽
 
-| 項目          | 說明                                                                                                        |
-| ------------- | ----------------------------------------------------------------------------------------------------------- |
-| 觸發條件      | Pull Request 事件（自動）、`workflow_dispatch`（手動）                                                      |
-| 主要目的      | 維持 lint、單元測試、UI/A11y 驗收與健康檢查綠燈，並在失敗時產生彙整報告                                     |
-| 遠端 E2E 條件 | `PLAYWRIGHT_AUTH_STATE` 與 `GAS_WEBAPP_URL` 兩個 Secrets 同時存在                                           |
-| 失敗報告      | `scripts/collect-ci-failures.mjs` 生成 `reports/ci-failure-report.md`，附加在 Workflow Summary 與 Artifacts |
+| 項目          | 說明                                                                                                                                                                             |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 觸發條件      | Pull Request 事件（自動）、`workflow_dispatch`（手動）                                                                                                                           |
+| 主要目的      | 維持 lint、單元測試、UI/A11y 驗收與健康檢查綠燈，並在失敗時產生彙整報告                                                                                                          |
+| 遠端 E2E 條件 | `PLAYWRIGHT_AUTH_STATE` 與 `GAS_WEBAPP_URL` 兩個 Secrets 同時存在                                                                                                                |
+| 失敗報告      | `scripts/collect-ci-failures.mjs` 與 `scripts/error-diagnosis.mjs` 會生成 `reports/ci-failure-report.md`、`reports/ci-error-diagnosis.md` 並附加在 Workflow Summary 與 Artifacts |
 
 ## 執行步驟與指令
 
@@ -24,6 +24,7 @@ Workflow 會照下列順序執行，步驟之間共用快取並在失敗時提�
 7. **A11y (pa11y)** – `npm run test:a11y:pa11y`（若缺 URL 會 fallback 至 `test/a11y-fallback.html`）
 8. **Remote E2E** – 僅在 Secrets 齊備時執行；否則標示 Skip 並說明原因
 9. **Failure Report** – 收斂各步驟的 stdout/stderr，彙製 Markdown 報告並以 artifact 保存
+10. **Error Diagnosis** – 透過 `error-diagnosis.mjs` 解析常見錯誤訊息並產出建議清單
 
 > 建議開發者在本地以 `npm run predeploy` 快速重現上述流程，以降低 PR CI 失敗的機率。
 
@@ -42,6 +43,7 @@ Workflow 會照下列順序執行，步驟之間共用快取並在失敗時提�
 ## 失敗報告與 artifacts
 
 - `reports/ci-failure-report.md`：列出失敗分類（lint/unit/ui/a11y/health/remote）、最近錯誤訊息與建議處置。
+- `reports/ci-error-diagnosis.md`：依 `scripts/error-codes.json` 將常見錯誤對應到分類與建議，提供快速修復指引。
 - `artifacts/playwright-report/`：Playwright 產出的 HTML 報告。
 - `artifacts/playwright-results/`：包含 trace、影片與截圖。
 - `artifacts/health*.json`：健康檢查的網址、HTTP 狀態碼與回應片段。

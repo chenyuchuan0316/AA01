@@ -3,9 +3,12 @@
   "ignore": [
     "gas-deploy.mjs",
     "get-refresh-token.mjs",
+    "scripts/auto-repair.mjs",
+    "scripts/generate-inventory.mjs",
     "scripts/url-helper.d.ts",
+    "reports/baseline/jscpd/html/js/prism.js",
     "depcheck.config.cjs"
   ],
-  "ignoreDependencies": ["googleapis"],
+  "ignoreDependencies": ["googleapis", "depcheck"],
   "ignoreBinaries": ["clasp", "jscpd", "madge"]
 }

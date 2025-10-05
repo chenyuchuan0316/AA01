@@ -166,9 +166,21 @@ jobs:
             --template reports/ci-remediation-template.md \
             --set-output "$GITHUB_OUTPUT"
 
+      - name: Diagnose common failures
+        id: diagnosis
+        run: |
+          node scripts/error-diagnosis.mjs \
+            --results reports/ci-step-results.json \
+            --output reports/ci-error-diagnosis.md \
+            --set-output "$GITHUB_OUTPUT"
+
       - name: Attach report to summary
         if: ${{ steps.generate.outputs.has_failures == 'true' }}
         run: cat reports/ci-failure-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Append diagnosis summary
+        if: ${{ steps.diagnosis.outputs.has_matches == 'true' }}
+        run: cat reports/ci-error-diagnosis.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload failure report artifact
         if: ${{ steps.generate.outputs.has_failures == 'true' }}
@@ -176,6 +188,14 @@ jobs:
         with:
           name: ci-failure-report
           path: reports/ci-failure-report.md
+
+      - name: Upload diagnosis artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-error-diagnosis
+          path: reports/ci-error-diagnosis.md
+          if-no-files-found: warn
 
       - name: Mark workflow failed when blocking issues remain
         if: ${{ steps.generate.outputs.has_blocking_failures == 'true' }}

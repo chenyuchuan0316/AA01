@@ -1,33 +1,33 @@
 import path from 'node:path';
 import { jest } from '@jest/globals';
+import type { Page } from '@playwright/test';
 
 type BuildTarget = { href: string; base: string; path: string };
+type BuildTargetURL = (base?: string, route?: string) => BuildTarget;
 
 const modulePath = '../../playwright/utils/openPage.ts';
 const helperPath = '../../scripts/url-helper.mjs';
 
-function createPageMock(finalUrl: string) {
-  const waitFor = jest.fn().mockResolvedValue(undefined);
+function createPageMock(finalUrl: string): Page {
+  const waitFor = jest.fn(async () => {});
   const locatorFactory = () => ({
     waitFor,
     first: () => ({ waitFor })
   });
 
   return {
-    setViewportSize: jest.fn().mockResolvedValue(undefined),
-    goto: jest.fn().mockResolvedValue(undefined),
-    waitForLoadState: jest.fn().mockResolvedValue(undefined),
+    setViewportSize: jest.fn(async () => {}),
+    goto: jest.fn(async () => {}),
+    waitForLoadState: jest.fn(async () => {}),
     url: jest.fn(() => finalUrl),
     locator: jest.fn(locatorFactory),
     getByText: jest.fn(() => ({
       first: () => ({ waitFor })
     }))
-  } as unknown as import('@playwright/test').Page;
+  } as unknown as Page;
 }
 
-async function loadModule(
-  buildTargetURL: jest.Mock<BuildTarget, [string | undefined, string | undefined]>
-) {
+async function loadModule(buildTargetURL: jest.MockedFunction<BuildTargetURL>) {
   jest.resetModules();
   jest.unstable_mockModule(helperPath, () => ({
     buildTargetURL
@@ -44,7 +44,12 @@ describe('playwright/utils/openPage', () => {
   });
 
   it('opens the local sidebar when remote mode is not requested', async () => {
-    const buildTargetURL = jest.fn(() => ({ href: '', base: '', path: '' }));
+    const buildTargetURL: jest.MockedFunction<BuildTargetURL> = jest.fn();
+    buildTargetURL.mockImplementation(() => ({
+      href: '',
+      base: '',
+      path: ''
+    }));
     const { openPage } = await loadModule(buildTargetURL);
     const page = createPageMock('file://local-sidebar');
 
@@ -67,7 +72,8 @@ describe('playwright/utils/openPage', () => {
       base: 'https://demo.example.com/macros/s/abc123/exec',
       path: '?route=ui'
     };
-    const buildTargetURL = jest.fn(() => remoteTarget);
+    const buildTargetURL: jest.MockedFunction<BuildTargetURL> = jest.fn();
+    buildTargetURL.mockImplementation(() => remoteTarget);
     const { openPage } = await loadModule(buildTargetURL);
 
     process.env.E2E_TARGET = 'remote';
@@ -93,7 +99,8 @@ describe('playwright/utils/openPage', () => {
       base: 'https://demo.example.com/macros/s/abc123/exec',
       path: '?route=ui'
     };
-    const buildTargetURL = jest.fn(() => remoteTarget);
+    const buildTargetURL: jest.MockedFunction<BuildTargetURL> = jest.fn();
+    buildTargetURL.mockImplementation(() => remoteTarget);
     const { openPage } = await loadModule(buildTargetURL);
 
     process.env.E2E_TARGET = 'remote';
@@ -111,7 +118,8 @@ describe('playwright/utils/openPage', () => {
       base: 'https://demo.example.com/macros/s/abc123/exec',
       path: '?route=ui'
     };
-    const buildTargetURL = jest.fn(() => remoteTarget);
+    const buildTargetURL: jest.MockedFunction<BuildTargetURL> = jest.fn();
+    buildTargetURL.mockImplementation(() => remoteTarget);
     const { openPage } = await loadModule(buildTargetURL);
 
     process.env.E2E_TARGET = 'remote';

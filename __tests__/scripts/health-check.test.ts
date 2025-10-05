@@ -3,15 +3,27 @@ import { ReadableStream } from 'node:stream/web';
 import { TextDecoder, TextEncoder } from 'node:util';
 
 // Polyfill for undici within the Jest runtime
-// @ts-expect-error - allow assignment to the global object
-global.TextEncoder = TextEncoder;
-// @ts-expect-error - allow assignment to the global object
-global.TextDecoder = TextDecoder;
-// @ts-expect-error - allow assignment to the global object
-global.ReadableStream = ReadableStream;
+const globalWithUndici = globalThis as typeof globalThis & {
+  TextEncoder?: typeof TextEncoder;
+  TextDecoder?: typeof TextDecoder;
+  ReadableStream?: typeof ReadableStream;
+};
+
+Object.assign(globalWithUndici, {
+  TextEncoder,
+  TextDecoder,
+  ReadableStream
+});
 
 const scriptPath = '../../scripts/health-check.mjs';
 const helperModulePath = '../../scripts/url-helper.mjs';
+
+type MockResponse = {
+  status: number;
+  redirected: boolean;
+  headers: Headers;
+  text: () => Promise<string>;
+};
 
 const flushPromises = async () => new Promise(resolve => setTimeout(resolve, 0));
 
@@ -44,17 +56,20 @@ describe('scripts/health-check', () => {
 
     jest.unstable_mockModule(helperModulePath, () => ({
       buildTargetURL,
-      safeWriteJson
+      safeWriteJson,
+      isPlaceholderWebAppUrl: jest.fn().mockReturnValue(false)
     }));
 
-    const fetchMock = jest.fn().mockResolvedValue({
-      status: 200,
-      redirected: false,
-      headers: new Headers(),
-      text: async () => 'ok'
-    });
-    // @ts-expect-error - assign mock fetch for the test runtime
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn(
+      async () =>
+        ({
+          status: 200,
+          redirected: false,
+          headers: new Headers(),
+          text: async () => 'ok'
+        }) satisfies MockResponse
+    );
+    (globalThis as { fetch?: typeof fetch }).fetch = fetchMock as unknown as typeof fetch;
 
     process.env.GAS_WEBAPP_URL = target.base;
     process.env.E2E_PATH = target.path;
@@ -90,17 +105,20 @@ describe('scripts/health-check', () => {
 
     jest.unstable_mockModule(helperModulePath, () => ({
       buildTargetURL,
-      safeWriteJson
+      safeWriteJson,
+      isPlaceholderWebAppUrl: jest.fn().mockReturnValue(false)
     }));
 
-    const fetchMock = jest.fn().mockResolvedValue({
-      status: 503,
-      redirected: false,
-      headers: new Headers(),
-      text: async () => 'maintenance window'
-    });
-    // @ts-expect-error - assign mock fetch for the test runtime
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn(
+      async () =>
+        ({
+          status: 503,
+          redirected: false,
+          headers: new Headers(),
+          text: async () => 'maintenance window'
+        }) satisfies MockResponse
+    );
+    (globalThis as { fetch?: typeof fetch }).fetch = fetchMock as unknown as typeof fetch;
 
     process.env.GAS_WEBAPP_URL = target.base;
     process.env.E2E_PATH = target.path;
@@ -122,28 +140,33 @@ describe('scripts/health-check', () => {
     expect(infoSpy).toHaveBeenCalledWith(`HEALTH_TARGET_URL=${target.href}`);
   });
 
-  it('surfaces configuration errors when GAS_WEBAPP_URL is not provided', async () => {
-    const buildTargetURL = jest.fn(() => {
-      throw new Error('GAS_WEBAPP_URL is required.');
-    });
+  it('skips execution when GAS_WEBAPP_URL is missing or placeholder', async () => {
+    const buildTargetURL = jest.fn();
     const safeWriteJson = jest.fn();
 
     jest.unstable_mockModule(helperModulePath, () => ({
       buildTargetURL,
-      safeWriteJson
+      safeWriteJson,
+      isPlaceholderWebAppUrl: jest.fn().mockReturnValue(true)
     }));
 
-    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const infoSpy = jest.spyOn(console, 'info').mockImplementation(() => {});
 
     process.env.GAS_WEBAPP_URL = '   ';
-    delete process.env.E2E_PATH;
 
     await import(scriptPath);
     await flushPromises();
 
-    expect(buildTargetURL).toHaveBeenCalledWith('   ', undefined);
-    expect(safeWriteJson).not.toHaveBeenCalled();
-    expect(errorSpy).toHaveBeenCalledWith('HEALTH_CHECK_ERROR:', 'GAS_WEBAPP_URL is required.');
-    expect(process.exitCode).toBe(1);
+    expect(buildTargetURL).not.toHaveBeenCalled();
+    expect(safeWriteJson).toHaveBeenCalledWith(
+      'artifacts/health.json',
+      expect.objectContaining({ skipped: true, reason: 'GAS_WEBAPP_URL not configured' })
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      'HEALTH_CHECK_SKIP: GAS_WEBAPP_URL missing or placeholder.'
+    );
+    expect(infoSpy).toHaveBeenCalledWith('skip');
+    expect(process.exitCode).toBeUndefined();
   });
 });

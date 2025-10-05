@@ -10,8 +10,17 @@
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "types": ["jest", "node"]
+    "types": ["node"]
   },
-  "include": ["scripts/**/*", "src/**/*", "__tests__/**/*", "test/**/*", "playwright/**/*"],
+  "include": [
+    "__tests__/**/*",
+    "playwright/**/*",
+    "scripts/**/*",
+    "src/**/*",
+    "test/**/*",
+    "gas-deploy.mjs",
+    "get-refresh-token.mjs",
+    "playwright.config.mjs"
+  ],
   "exclude": ["node_modules", "dist", "coverage", "artifacts", "playwright-report"]
 }

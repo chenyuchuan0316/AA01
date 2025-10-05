@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { config as loadEnv } from 'dotenv';
 import pa11y from 'pa11y';
+import { isPlaceholderWebAppUrl } from './url-helper.mjs';
 
 const projectRoot = process.cwd();
 const envFile = path.resolve(projectRoot, '.env');
@@ -13,10 +14,9 @@ if (fs.existsSync(envFile)) {
   loadEnv();
 }
 
-const placeholderValues = new Set(['', 'https://example.com', '<your-gas-webapp-url>']);
-const rawUrl = process.env.GAS_WEBAPP_URL?.trim() ?? '';
+const rawUrl = process.env.GAS_WEBAPP_URL ?? '';
 const fallbackFixture = `file://${path.resolve(projectRoot, 'test', 'a11y-fallback.html')}`;
-const hasRemoteTarget = !placeholderValues.has(rawUrl);
+const hasRemoteTarget = !isPlaceholderWebAppUrl(rawUrl);
 const targetUrl = hasRemoteTarget ? rawUrl : fallbackFixture;
 
 if (!hasRemoteTarget) {
