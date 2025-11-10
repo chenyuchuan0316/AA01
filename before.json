@@ -1,0 +1,114 @@
+{
+  "@eslint/js": {
+    "current": "9.36.0",
+    "wanted": "9.39.1",
+    "latest": "9.39.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@eslint/js"
+  },
+  "@playwright/test": {
+    "current": "1.55.1",
+    "wanted": "1.55.1",
+    "latest": "1.56.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@playwright/test"
+  },
+  "@testing-library/jest-dom": {
+    "current": "6.9.0",
+    "wanted": "6.9.1",
+    "latest": "6.9.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@testing-library/jest-dom"
+  },
+  "@types/jest": {
+    "current": "29.5.14",
+    "wanted": "29.5.14",
+    "latest": "30.0.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@types/jest"
+  },
+  "@types/node": {
+    "current": "22.18.8",
+    "wanted": "22.19.0",
+    "latest": "24.10.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@types/node"
+  },
+  "@typescript-eslint/eslint-plugin": {
+    "current": "8.45.0",
+    "wanted": "8.46.3",
+    "latest": "8.46.3",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@typescript-eslint/eslint-plugin"
+  },
+  "@typescript-eslint/parser": {
+    "current": "8.45.0",
+    "wanted": "8.46.3",
+    "latest": "8.46.3",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@typescript-eslint/parser"
+  },
+  "dotenv": {
+    "current": "16.6.1",
+    "wanted": "16.6.1",
+    "latest": "17.2.3",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/dotenv"
+  },
+  "eslint": {
+    "current": "9.36.0",
+    "wanted": "9.39.1",
+    "latest": "9.39.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/eslint"
+  },
+  "eslint-plugin-playwright": {
+    "current": "2.2.2",
+    "wanted": "2.3.0",
+    "latest": "2.3.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/eslint-plugin-playwright"
+  },
+  "globals": {
+    "current": "15.15.0",
+    "wanted": "15.15.0",
+    "latest": "16.5.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/globals"
+  },
+  "googleapis": {
+    "current": "148.0.0",
+    "wanted": "148.0.0",
+    "latest": "165.0.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/googleapis"
+  },
+  "jest-axe": {
+    "current": "9.0.0",
+    "wanted": "9.0.0",
+    "latest": "10.0.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/jest-axe"
+  },
+  "knip": {
+    "current": "5.64.1",
+    "wanted": "5.68.0",
+    "latest": "5.68.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/knip"
+  },
+  "pa11y": {
+    "current": "9.0.1",
+    "wanted": "9.0.1",
+    "latest": "8.0.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/pa11y"
+  },
+  "ts-jest": {
+    "current": "29.4.4",
+    "wanted": "29.4.5",
+    "latest": "29.4.5",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/ts-jest"
+  }
+}
