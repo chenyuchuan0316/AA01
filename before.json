@@ -1,17 +1,17 @@
 {
   "@eslint/js": {
-    "current": "9.36.0",
-    "wanted": "9.37.0",
-    "latest": "9.37.0",
+    "current": "9.37.0",
+    "wanted": "9.39.2",
+    "latest": "9.39.2",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/@eslint/js"
   },
-  "@testing-library/jest-dom": {
-    "current": "6.9.0",
-    "wanted": "6.9.1",
-    "latest": "6.9.1",
+  "@playwright/test": {
+    "current": "1.55.1",
+    "wanted": "1.55.1",
+    "latest": "1.58.1",
     "dependent": "AA01",
-    "location": "/home/runner/work/AA01/AA01/node_modules/@testing-library/jest-dom"
+    "location": "/home/runner/work/AA01/AA01/node_modules/@playwright/test"
   },
   "@types/jest": {
     "current": "29.5.14",
@@ -22,10 +22,24 @@
   },
   "@types/node": {
     "current": "22.18.8",
-    "wanted": "22.18.8",
-    "latest": "24.6.2",
+    "wanted": "22.19.7",
+    "latest": "25.2.0",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/@types/node"
+  },
+  "@typescript-eslint/eslint-plugin": {
+    "current": "8.45.0",
+    "wanted": "8.54.0",
+    "latest": "8.54.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@typescript-eslint/eslint-plugin"
+  },
+  "@typescript-eslint/parser": {
+    "current": "8.45.0",
+    "wanted": "8.54.0",
+    "latest": "8.54.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@typescript-eslint/parser"
   },
   "dotenv": {
     "current": "16.6.1",
@@ -35,23 +49,30 @@
     "location": "/home/runner/work/AA01/AA01/node_modules/dotenv"
   },
   "eslint": {
-    "current": "9.36.0",
-    "wanted": "9.37.0",
-    "latest": "9.37.0",
+    "current": "9.37.0",
+    "wanted": "9.39.2",
+    "latest": "9.39.2",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/eslint"
+  },
+  "eslint-plugin-playwright": {
+    "current": "2.2.2",
+    "wanted": "2.5.1",
+    "latest": "2.5.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/eslint-plugin-playwright"
   },
   "globals": {
     "current": "15.15.0",
     "wanted": "15.15.0",
-    "latest": "16.4.0",
+    "latest": "17.3.0",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/globals"
   },
   "googleapis": {
     "current": "148.0.0",
     "wanted": "148.0.0",
-    "latest": "161.0.0",
+    "latest": "171.0.0",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/googleapis"
   },
@@ -62,11 +83,39 @@
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/jest-axe"
   },
+  "knip": {
+    "current": "5.64.1",
+    "wanted": "5.82.1",
+    "latest": "5.82.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/knip"
+  },
   "pa11y": {
     "current": "9.0.1",
     "wanted": "9.0.1",
     "latest": "8.0.0",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/pa11y"
+  },
+  "prettier": {
+    "current": "3.6.2",
+    "wanted": "3.8.1",
+    "latest": "3.8.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/prettier"
+  },
+  "ts-jest": {
+    "current": "29.4.4",
+    "wanted": "29.4.6",
+    "latest": "29.4.6",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/ts-jest"
+  },
+  "undici": {
+    "current": "6.22.0",
+    "wanted": "6.23.0",
+    "latest": "6.23.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/undici"
   }
 }
