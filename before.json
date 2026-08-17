@@ -1,17 +1,24 @@
 {
   "@eslint/js": {
-    "current": "9.36.0",
-    "wanted": "9.37.0",
-    "latest": "9.37.0",
+    "current": "9.37.0",
+    "wanted": "9.39.5",
+    "latest": "9.39.5",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/@eslint/js"
   },
-  "@testing-library/jest-dom": {
-    "current": "6.9.0",
-    "wanted": "6.9.1",
-    "latest": "6.9.1",
+  "@jest/globals": {
+    "current": "30.2.0",
+    "wanted": "30.4.1",
+    "latest": "30.4.1",
     "dependent": "AA01",
-    "location": "/home/runner/work/AA01/AA01/node_modules/@testing-library/jest-dom"
+    "location": "/home/runner/work/AA01/AA01/node_modules/@jest/globals"
+  },
+  "@playwright/test": {
+    "current": "1.55.1",
+    "wanted": "1.55.1",
+    "latest": "1.61.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@playwright/test"
   },
   "@types/jest": {
     "current": "29.5.14",
@@ -22,45 +29,87 @@
   },
   "@types/node": {
     "current": "22.18.8",
-    "wanted": "22.18.8",
-    "latest": "24.6.2",
+    "wanted": "22.20.1",
+    "latest": "26.2.0",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/@types/node"
+  },
+  "@typescript-eslint/eslint-plugin": {
+    "current": "8.45.0",
+    "wanted": "8.67.0",
+    "latest": "8.67.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@typescript-eslint/eslint-plugin"
+  },
+  "@typescript-eslint/parser": {
+    "current": "8.45.0",
+    "wanted": "8.67.0",
+    "latest": "8.67.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/@typescript-eslint/parser"
   },
   "dotenv": {
     "current": "16.6.1",
     "wanted": "16.6.1",
-    "latest": "17.2.3",
+    "latest": "17.4.2",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/dotenv"
   },
   "eslint": {
-    "current": "9.36.0",
-    "wanted": "9.37.0",
-    "latest": "9.37.0",
+    "current": "9.37.0",
+    "wanted": "9.39.5",
+    "latest": "9.39.5",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/eslint"
+  },
+  "eslint-plugin-playwright": {
+    "current": "2.2.2",
+    "wanted": "2.11.0",
+    "latest": "2.11.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/eslint-plugin-playwright"
   },
   "globals": {
     "current": "15.15.0",
     "wanted": "15.15.0",
-    "latest": "16.4.0",
+    "latest": "17.11.0",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/globals"
   },
   "googleapis": {
     "current": "148.0.0",
     "wanted": "148.0.0",
-    "latest": "161.0.0",
+    "latest": "174.0.1",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/googleapis"
+  },
+  "jest": {
+    "current": "30.2.0",
+    "wanted": "30.4.2",
+    "latest": "30.4.2",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/jest"
   },
   "jest-axe": {
     "current": "9.0.0",
     "wanted": "9.0.0",
-    "latest": "10.0.0",
+    "latest": "11.0.0",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/jest-axe"
+  },
+  "jest-environment-jsdom": {
+    "current": "30.2.0",
+    "wanted": "30.2.0",
+    "latest": "30.4.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/jest-environment-jsdom"
+  },
+  "knip": {
+    "current": "5.64.1",
+    "wanted": "5.88.1",
+    "latest": "5.88.1",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/knip"
   },
   "pa11y": {
     "current": "9.0.1",
@@ -68,5 +117,33 @@
     "latest": "8.0.0",
     "dependent": "AA01",
     "location": "/home/runner/work/AA01/AA01/node_modules/pa11y"
+  },
+  "prettier": {
+    "current": "3.6.2",
+    "wanted": "3.9.6",
+    "latest": "3.9.6",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/prettier"
+  },
+  "ts-jest": {
+    "current": "29.4.4",
+    "wanted": "29.4.12",
+    "latest": "29.4.12",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/ts-jest"
+  },
+  "typescript": {
+    "current": "5.9.3",
+    "wanted": "5.9.3",
+    "latest": "7.0.2",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/typescript"
+  },
+  "undici": {
+    "current": "6.22.0",
+    "wanted": "6.28.0",
+    "latest": "6.28.0",
+    "dependent": "AA01",
+    "location": "/home/runner/work/AA01/AA01/node_modules/undici"
   }
 }
